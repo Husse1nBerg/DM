@@ -1,0 +1,50 @@
+basePath: /api/v1
+info:
+  contact:
+    email: g.andrewsameh@gmail.com
+    name: Andrew Sameh
+    url: https://andrewsam.xyz
+  description: This is a API Server.
+  title: DockMaster Web API
+  version: 0.0.1
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: Returns a Hello World message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Hello World
+      tags:
+      - Generic
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Checks the health of the server
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - Generic
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
