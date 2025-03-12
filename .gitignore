@@ -34,3 +34,6 @@ main
 *templ.go
 .env
 logs/
+
+# PostgreSQL data directory
+pgdata/
