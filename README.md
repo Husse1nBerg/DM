@@ -14,16 +14,18 @@ Before running Goose migrations, ensure you have the following installed and con
     ```bash
     go install github.com/pressly/goose/v3@latest
     ```
-  - In Mac:
-    ```bash
-    brew install goose
-    ```
 
 - **Docker** (for local setup):
   - Docker should be installed to run the PostgreSQL container.
 
     ```bash
     docker-compose up -d
+    ```
+
+- **sqlc**: Tool to generate Go code from SQL queries.
+  - Install it via:
+    ```bash
+    go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
     ```
 
 ### Apply Migrations
