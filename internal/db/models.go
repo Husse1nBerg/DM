@@ -5,75 +5,67 @@
 package db
 
 import (
-	"database/sql"
-	"time"
+	"database/sql/driver"
+	"fmt"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Address struct {
-	ID      int32
-	Created sql.NullTime
-	Street  string
-	City    string
-	State   string
-	ZipCode string
-	Country string
+type UserRole string
+
+const (
+	UserRoleAdmin    UserRole = "admin"
+	UserRoleUser     UserRole = "user"
+	UserRoleOwner    UserRole = "owner"
+	UserRoleManager  UserRole = "manager"
+	UserRoleReadOnly UserRole = "read_only"
+)
+
+func (e *UserRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRole(s)
+	case string:
+		*e = UserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+	}
+	return nil
 }
 
-type Company struct {
-	ID          int32
-	Created     sql.NullTime
-	Updated     sql.NullTime
-	Name        string
-	Website     sql.NullString
-	Email       sql.NullString
-	Phone       sql.NullString
-	CompanySize sql.NullString
-	Logo        sql.NullString
-	PlanID      sql.NullInt32
-	Address     sql.NullInt32
+type NullUserRole struct {
+	UserRole UserRole
+	Valid    bool // Valid is true if UserRole is not NULL
 }
 
-type GooseDbVersion struct {
-	ID        int32
-	VersionID int64
-	IsApplied bool
-	Tstamp    time.Time
+// Scan implements the Scanner interface.
+func (ns *NullUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRole.Scan(value)
 }
 
-type Role struct {
-	ID   int32
-	Name string
-}
-
-type SubscriptionPlan struct {
-	ID            int32
-	Created       sql.NullTime
-	Updated       sql.NullTime
-	Title         string
-	Description   sql.NullString
-	Options       sql.NullString
-	MonthlyPrice  float64
-	AnnuallyPrice float64
-	IsActive      sql.NullBool
-	IsDefault     sql.NullBool
-	NumberOfUsers sql.NullInt32
-	TrialPeriod   sql.NullInt32
+// Value implements the driver Valuer interface.
+func (ns NullUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRole), nil
 }
 
 type User struct {
-	ID                  int32
-	Created             sql.NullTime
-	Updated             sql.NullTime
-	Email               string
-	Password            string
-	FirstName           string
-	LastName            string
-	Phone               sql.NullString
-	RoleID              sql.NullInt32
-	LastPasswordChange  sql.NullTime
-	FailedLoginAttempts sql.NullInt32
-	LockoutUntil        sql.NullTime
-	CompanyID           sql.NullInt32
-	Avatar              sql.NullString
-	IsEnterpriseUser    sql.NullBool
+	ID           int64
+	Username     string
+	Email        string
+	PasswordHash string
+	CreatedAt    pgtype.Timestamp
+	FirstName    string
+	LastName     string
+	Role         UserRole
+	UpdatedAt    pgtype.Timestamp
+	DeletedAt    pgtype.Timestamp
+	IsSuperuser  bool
 }
