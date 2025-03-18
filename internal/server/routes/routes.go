@@ -7,11 +7,11 @@ import (
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	h "github.com/dockworks/dm-web-backend/internal/server/handlers"
 
-	// "github.com/dockworks/dm-web-backend/internal/services/token"
 	"github.com/brpaz/echozap"
-	// "github.com/golang-jwt/jwt/v5"
-	// echojwt "github.com/labstack/echo-jwt/v4"
-	// "github.com/labstack/echo/v4"
+	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/golang-jwt/jwt/v5"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
@@ -26,8 +26,8 @@ func RegisterRoutes(s *s.Server) {
 
 	// Handlers creation
 	genericHandler := h.NewGenericHandler(s)
-	// authHandler := h.NewAuthHandler(s)
-	// userHandler := h.NewUserHandler(s)
+	authHandler := h.NewAuthHandler(s)
+	userHandler := h.NewUserHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -49,20 +49,20 @@ func RegisterRoutes(s *s.Server) {
 	base.GET("/", genericHandler.HelloWorldHandler)
 	base.GET("/health", genericHandler.HealthHandler)
 
-	// auth := base.Group("/auth")
-	// auth.POST("/login", authHandler.Login)
-	// auth.POST("/register", authHandler.Register)
-	// auth.POST("/refresh", authHandler.RefreshToken)
+	auth := base.Group("/auth")
+	auth.POST("/login", authHandler.Login)
+	auth.POST("/register", authHandler.Register)
+	auth.POST("/refresh", authHandler.RefreshToken)
 
-	// r := base.Group("")
-	// // Configure middleware with the custom claims type
-	// config := echojwt.Config{
-	// 	NewClaimsFunc: func(_ echo.Context) jwt.Claims {
-	// 		return new(token.JwtCustomClaims)
-	// 	},
-	// 	SigningKey: []byte(s.Config.Auth.AccessSecret),
-	// }
-	// r.Use(echojwt.WithConfig(config))
-	// r.GET("/profile", userHandler.GetMyUserHandler)
-	// r.GET("/users", userHandler.ListUsersHandler)
+	r := base.Group("")
+	// Configure middleware with the custom claims type
+	config := echojwt.Config{
+		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
+			return new(token.JwtCustomClaims)
+		},
+		SigningKey: []byte(s.Config.Auth.AccessSecret),
+	}
+	r.Use(echojwt.WithConfig(config))
+	r.GET("/profile", userHandler.GetMyUserHandler)
+	r.GET("/users", userHandler.ListUsersHandler)
 }
