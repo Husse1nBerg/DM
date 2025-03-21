@@ -1,6 +1,10 @@
 # Simple Makefile for a Go project
 # ToDo: update the Makefile
-ARTIFACT_NAME := echo-engine 
+ARTIFACT_NAME := dm-web
+
+# Include .env file
+include .env
+export
 
 # Build the application
 all: build
@@ -37,12 +41,19 @@ instal_sqlc :
 install_goose :
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 
+swag :
+	swag init -g ./cmd/api/main.go -o ./docs
 
-goose_up:
-	cd sql/migrations && goose postgres postgres://andrew:password1234@localhost:5432/godb up
+create-migration :
+	cd db/migrations && goose create $(name) sql
 
-goose_down:
-	cd sql/migrations && goose postgres postgres://andrew:password1234@localhost:5432/godb down
+# Goose migration UP
+goose-up:
+	cd db/migrations && goose postgres postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME} up
+
+# Goose migration DOWN
+goose-down:
+	cd db/migrations && goose postgres postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME} down
 
 sqlc:
 	sqlc generate
@@ -60,7 +71,6 @@ go-test-with-cover:
 
 generate-mocks:
 	@mockery --all --with-expecter --keeptree
-
 
 # Clean the binary
 clean:

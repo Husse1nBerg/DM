@@ -6,21 +6,24 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/config"
 	db "github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 const ExpireCount = 2
 const ExpireRefreshCount = 168
 
 type JwtCustomClaims struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	ID       uuid.UUID `json:"id"`
+	OrgId    uuid.UUID `json:"organizationId"`
+	MarinaId uuid.UUID `json:"marinaId"`
+	Name     string    `json:"name"`
+	Email    string    `json:"email"`
+	RoleID   uuid.UUID `json:"roleId"`
 	jwt.RegisteredClaims
 }
 
 type JwtCustomRefreshClaims struct {
-	ID int64 `json:"id"`
+	ID uuid.UUID `json:"id"`
 	jwt.RegisteredClaims
 }
 
@@ -43,9 +46,11 @@ func (tokenService *Service) CreateAccessToken(user *db.User) (t string, expired
 	exp := time.Now().Add(time.Hour * ExpireCount)
 	claims := &JwtCustomClaims{
 		user.ID,
+		user.OrganizationID,
+		user.MarinaID,
 		user.FirstName + " " + user.LastName,
 		user.Email,
-		string(user.Role),
+		user.RoleID,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(exp),
 		},

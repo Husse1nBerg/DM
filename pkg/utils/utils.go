@@ -14,3 +14,7 @@ func PgTimeNow() pgtype.Timestamp {
 func PgTimeNowLocal() pgtype.Timestamp {
 	return pgtype.Timestamp{Time: time.Now().Local(), Valid: true}
 }
+
+func Pointer[T any](d T) *T {
+	return &d
+}

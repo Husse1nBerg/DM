@@ -9,7 +9,9 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	tokenservice "github.com/dockworks/dm-web-backend/pkg/token"
-	"github.com/dockworks/dm-web-backend/pkg/utils"
+	"github.com/google/uuid"
+
+	// "github.com/dockworks/dm-web-backend/pkg/utils"
 
 	"github.com/labstack/echo/v4"
 
@@ -144,7 +146,7 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 	}
 
 	// user := new(models.User)
-	user, err := queries.GetUserById(c.Request().Context(), claims["id"].(int64))
+	user, err := queries.GetUserByID(c.Request().Context(), claims["id"].(uuid.UUID))
 
 	if err != nil {
 		// return responses.ErrorResponse(c, http.StatusUnauthorized, "User not found")
@@ -183,7 +185,7 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			params	body		requests.RegisterRequest	true	"User's email, user's password"
-//	@Success		201		{object}	responses.Data
+//	@Success		201		{object}	map[string]string
 //	@Failure		400		{object}	responses.Error
 //	@Router			/auth/register [post]
 func (authHandler *AuthHandler) Register(c echo.Context) error {
@@ -226,10 +228,8 @@ func (authHandler *AuthHandler) Register(c echo.Context) error {
 		LastName:     registerRequest.LastName,
 		Username:     registerRequest.Username,
 		Email:        registerRequest.Email,
-		Role:         "user",
+		RoleID:       registerRequest.RoleID,
 		PasswordHash: string(encryptedPassword),
-		CreatedAt:    utils.PgTimeNow(),
-		UpdatedAt:    utils.PgTimeNow(),
 	}
 
 	newUser, err := queries.CreateUser(c.Request().Context(), userParams)

@@ -1,27 +1,133 @@
 -- name: CreateUser :one
-INSERT INTO users
-(
-    first_name,
-    last_name,
-    username,
-    email,
-    role,
-    password_hash,
-    created_at,
-    updated_at
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
-) RETURNING * ;
-
--- name: GetUserById :one
-SELECT * FROM users WHERE id = $1 LIMIT 1;
-
--- name: GetUserByUsername :one
-SELECT * FROM users WHERE username = $1 LIMIT 1;
-
+INSERT INTO users (
+        username,
+        first_name,
+        last_name,
+        email,
+        email_verified,
+        phone,
+        title,
+        image,
+        password_hash,
+        last_login,
+        failed_login_attempts,
+        locked_until,
+        last_password_reset,
+        organization_id,
+        marina_id,
+        role_id,
+        is_superuser,
+        is_active
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14,
+        $15,
+        $16,
+        $17,
+        $18
+    )
+RETURNING *;
+-- name: GetUserByID :one
+SELECT *
+FROM users
+WHERE id = $1
+    AND deleted_at IS NULL;
 -- name: GetUserByEmail :one
-SELECT * FROM users WHERE email = $1 LIMIT 1;
-
+SELECT *
+FROM users
+WHERE email = $1
+    AND deleted_at IS NULL;
+-- name: GetUserByUsername :one
+SELECT *
+FROM users
+WHERE username = $1
+    AND deleted_at IS NULL;
+-- name: GetUserByUsernameAndOrg :one
+SELECT *
+FROM users
+WHERE username = $1
+    AND organization_id = $2
+    AND deleted_at IS NULL;
+-- name: GetUserByEmailAndOrg :one
+SELECT *
+FROM users
+WHERE email = $1
+    AND organization_id = $2
+    AND deleted_at IS NULL;
 -- name: GetAllUsers :many
-SELECT * FROM users;
-
+SELECT *
+FROM users
+WHERE deleted_at IS NULL;
+-- name: GetUsersByRole :many
+SELECT *
+FROM users
+WHERE role_id = $1
+    AND deleted_at IS NULL;
+-- name: GetUsersByOrganization :many
+SELECT *
+FROM users
+WHERE organization_id = $1
+    AND deleted_at IS NULL;
+-- name: GetUsersByMarina :many
+SELECT *
+FROM users
+WHERE marina_id = $1
+    AND deleted_at IS NULL;
+-- name: GetUsersPaginated :many
+SELECT *
+FROM users
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
+-- name: GetUsersByOrganizationPaginated :many
+SELECT *
+FROM users
+WHERE organization_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: GetUsersByMarinaPaginated :many
+SELECT *
+FROM users
+WHERE marina_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: UpdateUser :one
+UPDATE users
+SET first_name = $2,
+    last_name = $3,
+    email = $4,
+    email_verified = $5,
+    phone = $6,
+    title = $7,
+    image = $8,
+    password_hash = $9,
+    last_login = $10,
+    failed_login_attempts = $11,
+    locked_until = $12,
+    last_password_reset = $13,
+    marina_id = $14,
+    role_id = $15,
+    is_superuser = $16,
+    is_active = $17,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: SoftDeleteUser :exec
+UPDATE users
+SET deleted_at = CURRENT_TIMESTAMP
+WHERE id = $1;

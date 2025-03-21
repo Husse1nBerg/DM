@@ -69,7 +69,7 @@ func (g *UserHandler) GetMyUserHandler(c echo.Context) error {
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	id := claims.ID
 	queries := g.server.DB.Queries()
-	user, err := queries.GetUserById(c.Request().Context(), id)
+	user, err := queries.GetUserByID(c.Request().Context(), id)
 	if err != nil {
 		res := responses.Response{
 			Code:    http.StatusInternalServerError,

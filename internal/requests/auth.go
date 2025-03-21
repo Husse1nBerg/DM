@@ -1,5 +1,7 @@
 package requests
 
+import "github.com/google/uuid"
+
 const (
 	minPathLength = 8
 )
@@ -15,10 +17,10 @@ type LoginRequest struct {
 
 type RegisterRequest struct {
 	BasicAuth
-	FirstName string `json:"first_name" validate:"required" example:"John"`
-	LastName  string `json:"last_name" validate:"required" example:"Doe"`
-	Role      string `json:"role" validate:"required" example:"admin"`
-	Username  string `json:"username" validate:"required" example:"johndoe"`
+	FirstName string    `json:"first_name" validate:"required" example:"John"`
+	LastName  string    `json:"last_name" validate:"required" example:"Doe"`
+	RoleID    uuid.UUID `json:"role_id" validate:"required" example:"admin"`
+	Username  string    `json:"username" validate:"required" example:"johndoe"`
 }
 
 type RefreshRequest struct {

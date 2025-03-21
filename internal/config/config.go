@@ -11,6 +11,8 @@ type Config struct {
 	Logger LoggerConfig
 	Auth   AuthConfig
 	DB     DBConfig
+	App    AppConfig
+	Redis  RedisConfig
 }
 
 func New() *Config {
@@ -24,5 +26,7 @@ func New() *Config {
 		Logger: LoadLoggerConfig(),
 		Auth:   LoadAuthConfig(),
 		DB:     LoadDBConfig(),
+		App:    LoadAppConfig(),
+		Redis:  LoadRedisConfig(),
 	}
 }

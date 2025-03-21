@@ -8,66 +8,128 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users
-(
-    first_name,
-    last_name,
-    username,
-    email,
-    role,
-    password_hash,
-    created_at,
-    updated_at
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
-) RETURNING id, username, email, password_hash, created_at, first_name, last_name, role, updated_at, deleted_at, is_superuser
+INSERT INTO users (
+        username,
+        first_name,
+        last_name,
+        email,
+        email_verified,
+        phone,
+        title,
+        image,
+        password_hash,
+        last_login,
+        failed_login_attempts,
+        locked_until,
+        last_password_reset,
+        organization_id,
+        marina_id,
+        role_id,
+        is_superuser,
+        is_active
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14,
+        $15,
+        $16,
+        $17,
+        $18
+    )
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
 `
 
 type CreateUserParams struct {
-	FirstName    string
-	LastName     string
-	Username     string
-	Email        string
-	Role         UserRole
-	PasswordHash string
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, createUser,
+		arg.Username,
 		arg.FirstName,
 		arg.LastName,
-		arg.Username,
 		arg.Email,
-		arg.Role,
+		arg.EmailVerified,
+		arg.Phone,
+		arg.Title,
+		arg.Image,
 		arg.PasswordHash,
-		arg.CreatedAt,
-		arg.UpdatedAt,
+		arg.LastLogin,
+		arg.FailedLoginAttempts,
+		arg.LockedUntil,
+		arg.LastPasswordReset,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.RoleID,
+		arg.IsSuperuser,
+		arg.IsActive,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
 		&i.FirstName,
 		&i.LastName,
-		&i.Role,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
+		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
-		&i.IsSuperuser,
 	)
 	return i, err
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, username, email, password_hash, created_at, first_name, last_name, role, updated_at, deleted_at, is_superuser FROM users
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE deleted_at IS NULL
 `
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
@@ -82,15 +144,26 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
-			&i.Email,
-			&i.PasswordHash,
-			&i.CreatedAt,
 			&i.FirstName,
 			&i.LastName,
-			&i.Role,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
-			&i.IsSuperuser,
 		); err != nil {
 			return nil, err
 		}
@@ -103,7 +176,10 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password_hash, created_at, first_name, last_name, role, updated_at, deleted_at, is_superuser FROM users WHERE email = $1 LIMIT 1
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE email = $1
+    AND deleted_at IS NULL
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -112,44 +188,115 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
 		&i.FirstName,
 		&i.LastName,
-		&i.Role,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
+		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
-		&i.IsSuperuser,
 	)
 	return i, err
 }
 
-const getUserById = `-- name: GetUserById :one
-SELECT id, username, email, password_hash, created_at, first_name, last_name, role, updated_at, deleted_at, is_superuser FROM users WHERE id = $1 LIMIT 1
+const getUserByEmailAndOrg = `-- name: GetUserByEmailAndOrg :one
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE email = $1
+    AND organization_id = $2
+    AND deleted_at IS NULL
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRow(ctx, getUserById, id)
+type GetUserByEmailAndOrgParams struct {
+	Email          string
+	OrganizationID uuid.UUID
+}
+
+func (q *Queries) GetUserByEmailAndOrg(ctx context.Context, arg GetUserByEmailAndOrgParams) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmailAndOrg, arg.Email, arg.OrganizationID)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
 		&i.FirstName,
 		&i.LastName,
-		&i.Role,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
+		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
 		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, email, password_hash, created_at, first_name, last_name, role, updated_at, deleted_at, is_superuser FROM users WHERE username = $1 LIMIT 1
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE username = $1
+    AND deleted_at IS NULL
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
@@ -158,15 +305,493 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
 		&i.FirstName,
 		&i.LastName,
-		&i.Role,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
+		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getUserByUsernameAndOrg = `-- name: GetUserByUsernameAndOrg :one
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE username = $1
+    AND organization_id = $2
+    AND deleted_at IS NULL
+`
+
+type GetUserByUsernameAndOrgParams struct {
+	Username       string
+	OrganizationID uuid.UUID
+}
+
+func (q *Queries) GetUserByUsernameAndOrg(ctx context.Context, arg GetUserByUsernameAndOrgParams) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByUsernameAndOrg, arg.Username, arg.OrganizationID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
 		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getUsersByMarina = `-- name: GetUsersByMarina :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE marina_id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUsersByMarina(ctx context.Context, marinaID uuid.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByMarina, marinaID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersByMarinaPaginated = `-- name: GetUsersByMarinaPaginated :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE marina_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetUsersByMarinaPaginatedParams struct {
+	MarinaID uuid.UUID
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByMarinaPaginatedParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByMarinaPaginated, arg.MarinaID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersByOrganization = `-- name: GetUsersByOrganization :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE organization_id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUsersByOrganization(ctx context.Context, organizationID uuid.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByOrganization, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersByOrganizationPaginated = `-- name: GetUsersByOrganizationPaginated :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE organization_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetUsersByOrganizationPaginatedParams struct {
+	OrganizationID uuid.UUID
+	Limit          int32
+	Offset         int32
+}
+
+func (q *Queries) GetUsersByOrganizationPaginated(ctx context.Context, arg GetUsersByOrganizationPaginatedParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByOrganizationPaginated, arg.OrganizationID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersByRole = `-- name: GetUsersByRole :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE role_id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUsersByRole(ctx context.Context, roleID uuid.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByRole, roleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersPaginated = `-- name: GetUsersPaginated :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+FROM users
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetUsersPaginatedParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetUsersPaginated(ctx context.Context, arg GetUsersPaginatedParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersPaginated, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const softDeleteUser = `-- name: SoftDeleteUser :exec
+UPDATE users
+SET deleted_at = CURRENT_TIMESTAMP
+WHERE id = $1
+`
+
+func (q *Queries) SoftDeleteUser(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, softDeleteUser, id)
+	return err
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET first_name = $2,
+    last_name = $3,
+    email = $4,
+    email_verified = $5,
+    phone = $6,
+    title = $7,
+    image = $8,
+    password_hash = $9,
+    last_login = $10,
+    failed_login_attempts = $11,
+    locked_until = $12,
+    last_password_reset = $13,
+    marina_id = $14,
+    role_id = $15,
+    is_superuser = $16,
+    is_active = $17,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at
+`
+
+type UpdateUserParams struct {
+	ID                  uuid.UUID
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.ID,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.EmailVerified,
+		arg.Phone,
+		arg.Title,
+		arg.Image,
+		arg.PasswordHash,
+		arg.LastLogin,
+		arg.FailedLoginAttempts,
+		arg.LockedUntil,
+		arg.LastPasswordReset,
+		arg.MarinaID,
+		arg.RoleID,
+		arg.IsSuperuser,
+		arg.IsActive,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
+		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
