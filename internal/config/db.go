@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 type DBConfig struct {
 	User     string
@@ -21,4 +24,8 @@ func LoadDBConfig() DBConfig {
 		Port:     os.Getenv("DB_PORT"),
 		Schema:   os.Getenv("DB_SCHEMA"),
 	}
+}
+
+func (a *DBConfig) Addr() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", a.User, a.Password, a.Host, a.Port, a.Name, a.Schema)
 }

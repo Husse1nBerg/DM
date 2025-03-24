@@ -46,8 +46,7 @@ func NewConnection(cfg *config.Config) DBService {
 	// }
 	pgOnce.Do(func() {
 		dbCfg := cfg.DB
-		connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", dbCfg.User, dbCfg.Password, dbCfg.Host, dbCfg.Port, dbCfg.Name, dbCfg.Schema)
-		pool, err := pgxpool.New(context.Background(), connStr)
+		pool, err := pgxpool.New(context.Background(), dbCfg.Addr())
 		if err != nil {
 			log.Fatal(err)
 		}

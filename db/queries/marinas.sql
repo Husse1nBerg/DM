@@ -1,0 +1,88 @@
+-- name: CreateMarina :one
+INSERT INTO marinas (
+        organization_id,
+        name,
+        email,
+        location,
+        phone,
+        country,
+        currency,
+        working_hours,
+        website,
+        image,
+        max_users,
+        is_active,
+        is_test,
+        address_id
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14
+    )
+RETURNING *;
+-- name: GetMarinaByID :one
+SELECT *
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL;
+-- name: GetMarinaByEmail :one
+SELECT *
+FROM marinas
+WHERE email = $1
+    AND deleted_at IS NULL;
+-- name: GetAllMarinas :many
+SELECT *
+FROM marinas
+WHERE deleted_at IS NULL;
+-- name: GetMarinasByOrganization :many
+SELECT *
+FROM marinas
+WHERE organization_id = $1
+    AND deleted_at IS NULL;
+-- name: GetMarinasPaginated :many
+SELECT *
+FROM marinas
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
+-- name: GetMarinasByOrganizationPaginated :many
+SELECT *
+FROM marinas
+WHERE organization_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: UpdateMarina :one
+UPDATE marinas
+SET name = $2,
+    email = $3,
+    location = $4,
+    phone = $5,
+    country = $6,
+    currency = $7,
+    working_hours = $8,
+    website = $9,
+    image = $10,
+    max_users = $11,
+    is_active = $12,
+    is_test = $13,
+    updated_at = CURRENT_TIMESTAMP,
+    address_id = $14
+WHERE id = $1
+RETURNING *;
+-- name: SoftDeleteMarina :exec
+UPDATE marinas
+SET deleted_at = CURRENT_TIMESTAMP
+WHERE id = $1;

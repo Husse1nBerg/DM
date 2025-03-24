@@ -43,5 +43,5 @@ func (g *GenericHandler) HelloWorldHandler(c echo.Context) error {
 //	@Success		200	{object}	map[string]string
 //	@Router			/health [get]
 func (g *GenericHandler) HealthHandler(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{"status": "ok"}) 
+	return c.JSON(http.StatusOK, g.server.DB.Health())
 }

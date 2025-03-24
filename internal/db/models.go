@@ -5,67 +5,99 @@
 package db
 
 import (
-	"database/sql/driver"
-	"fmt"
-
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type UserRole string
-
-const (
-	UserRoleAdmin    UserRole = "admin"
-	UserRoleUser     UserRole = "user"
-	UserRoleOwner    UserRole = "owner"
-	UserRoleManager  UserRole = "manager"
-	UserRoleReadOnly UserRole = "read_only"
-)
-
-func (e *UserRole) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = UserRole(s)
-	case string:
-		*e = UserRole(s)
-	default:
-		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
-	}
-	return nil
+type Address struct {
+	ID         uuid.UUID
+	Street     *string
+	City       *string
+	State      *string
+	PostalCode *string
+	Country    *string
+	Latitude   pgtype.Numeric
+	Longitude  pgtype.Numeric
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
+	DeletedAt  pgtype.Timestamp
 }
 
-type NullUserRole struct {
-	UserRole UserRole
-	Valid    bool // Valid is true if UserRole is not NULL
+type Marina struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	Name           string
+	Email          string
+	Location       *string
+	Phone          *string
+	Country        *string
+	Currency       *string
+	WorkingHours   []byte
+	Website        *string
+	Image          *string
+	MaxUsers       *int32
+	IsActive       *bool
+	IsTest         *bool
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+	AddressID      uuid.UUID
 }
 
-// Scan implements the Scanner interface.
-func (ns *NullUserRole) Scan(value interface{}) error {
-	if value == nil {
-		ns.UserRole, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.UserRole.Scan(value)
+type Organization struct {
+	ID        uuid.UUID
+	Email     string
+	Name      string
+	Image     *string
+	Website   *string
+	Country   *string
+	Phone     *string
+	IsActive  *bool
+	IsTest    *bool
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+	DeletedAt pgtype.Timestamp
+	AddressID uuid.UUID
 }
 
-// Value implements the driver Valuer interface.
-func (ns NullUserRole) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.UserRole), nil
+type Role struct {
+	ID          uuid.UUID
+	Name        string
+	Description *string
+	Permissions []byte
+	IsActive    *bool
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	DeletedAt   pgtype.Timestamp
 }
 
 type User struct {
-	ID           int64
-	Username     string
-	Email        string
-	PasswordHash string
-	CreatedAt    pgtype.Timestamp
-	FirstName    string
-	LastName     string
-	Role         UserRole
-	UpdatedAt    pgtype.Timestamp
-	DeletedAt    pgtype.Timestamp
-	IsSuperuser  bool
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+}
+
+type UserMarina struct {
+	UserID     uuid.UUID
+	MarinaID   uuid.UUID
+	AssignedAt pgtype.Timestamp
 }
