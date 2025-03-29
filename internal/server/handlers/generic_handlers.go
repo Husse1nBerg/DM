@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"net/http"
-
+	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/labstack/echo/v4"
 )
@@ -15,22 +14,9 @@ func NewGenericHandler(server *s.Server) *GenericHandler {
 	return &GenericHandler{server: server}
 }
 
-// HelloWorldHandler returns a Hello World message
-//
-//	@Summary		Hello World
-//	@Description	Returns a Hello World message
-//	@Tags			Generic
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object} map[string]string
-//	@Router			/ [get]
-func (g *GenericHandler) HelloWorldHandler(c echo.Context) error {
-	logger := c.Logger()
-	resp := map[string]string{
-		"message": "Hello World",
-	}
-	logger.Infof("Hello World")
-	return c.JSON(http.StatusOK, resp)
+// HealthResponse is purely for Swagger documentation
+type HealthResponse struct {
+	Data map[string]string `json:"data" example:"{\"status\":\"ok\",\"database\":\"connected\"}"`
 }
 
 // healthHandler checks the health of the server
@@ -40,8 +26,8 @@ func (g *GenericHandler) HelloWorldHandler(c echo.Context) error {
 //	@Tags			Generic
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	map[string]string
+//	@Success		200	{object} HealthResponse "Health status information"
 //	@Router			/health [get]
 func (g *GenericHandler) HealthHandler(c echo.Context) error {
-	return c.JSON(http.StatusOK, g.server.DB.Health())
+	return responses.NewSuccessResponse(g.server.DB.Health()).JSON(c)
 }

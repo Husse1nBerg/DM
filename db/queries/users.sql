@@ -71,11 +71,24 @@ WHERE email = $1
 SELECT *
 FROM users
 WHERE deleted_at IS NULL;
+-- name: GetAllUsersPaginated :many
+SELECT *
+FROM users
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
 -- name: GetUsersByRole :many
 SELECT *
 FROM users
 WHERE role_id = $1
     AND deleted_at IS NULL;
+-- name: GetUsersByRolePaginated :many
+SELECT *
+FROM users
+WHERE role_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
 -- name: GetUsersByOrganization :many
 SELECT *
 FROM users

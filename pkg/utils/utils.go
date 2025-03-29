@@ -18,3 +18,11 @@ func PgTimeNowLocal() pgtype.Timestamp {
 func Pointer[T any](d T) *T {
 	return &d
 }
+
+func PgTimeToTimePtr(pgTime pgtype.Timestamp) *time.Time {
+	if !pgTime.Valid {
+		return nil
+	}
+	t := pgTime.Time.UTC()
+	return &t
+}

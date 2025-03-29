@@ -1,11 +1,9 @@
 package config
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"os"
-	"reflect"
 	"strings"
 	"time"
 
@@ -43,12 +41,11 @@ func GetEchoLogConfig(cfg *Config) middleware.LoggerConfig {
 
 func LoadServerConfig() ServerConfig {
 	return ServerConfig{
-		Host:      os.Getenv("HOST"),
-		Port:      os.Getenv("PORT"),
-		Env:       os.Getenv("ENV"),
-		Validator: ValidatorInit(),
-		Binder:    &BinderWithValidation{},
-		// Validator:  &AppValidator{validate: validator.New()},
+		Host:       os.Getenv("HOST"),
+		Port:       os.Getenv("PORT"),
+		Env:        os.Getenv("ENV"),
+		Validator:  ValidatorInit(),
+		Binder:     &BinderWithValidation{},
 		CORSConfig: middleware.DefaultCORSConfig,
 	}
 }
@@ -77,32 +74,43 @@ func (BinderWithValidation) Bind(i interface{}, ctx echo.Context) error {
 	binder := &echo.DefaultBinder{}
 
 	if err := binder.Bind(i, ctx); err != nil {
-		return errors.New(err.(*echo.HTTPError).Message.(string))
-	}
-
-	if err := ctx.Validate(i); err != nil {
-		// Validate only provides verification function for struct.
-		// When the requested data type is not struct,
-		// the variable should be considered legal after the bind succeeds.
-		if reflect.TypeOf(i).Kind() != reflect.Struct {
-			return nil
-		}
-
-		var buf bytes.Buffer
-		if ferrs, ok := err.(validator.ValidationErrors); ok {
-			for _, ferr := range ferrs {
-				buf.WriteString("Validation failed on ")
-				buf.WriteString(ferr.Tag())
-				buf.WriteString(" for ")
-				buf.WriteString(ferr.StructField())
-				buf.WriteString("\n")
+		// Handle different error types
+		switch e := err.(type) {
+		case *echo.HTTPError:
+			// Handle Echo's HTTP errors
+			if msg, ok := e.Message.(string); ok {
+				return errors.New(msg)
 			}
-
-			return errors.New(buf.String())
+			return errors.New("Invalid request format")
+		default:
+			// Handle other errors including EOF
+			return errors.New("Request parsing error: " + err.Error())
 		}
-
-		return err
 	}
+
+	// if err := ctx.Validate(i); err != nil {
+	// 	// Validate only provides verification function for struct.
+	// 	// When the requested data type is not struct,
+	// 	// the variable should be considered legal after the bind succeeds.
+	// 	if reflect.TypeOf(i).Kind() != reflect.Struct {
+	// 		return nil
+	// 	}
+
+	// 	var buf bytes.Buffer
+	// 	if ferrs, ok := err.(validator.ValidationErrors); ok {
+	// 		for _, ferr := range ferrs {
+	// 			buf.WriteString("Validation failed on ")
+	// 			buf.WriteString(ferr.Tag())
+	// 			buf.WriteString(" for ")
+	// 			buf.WriteString(ferr.StructField())
+	// 			buf.WriteString("\n")
+	// 		}
+
+	// 		return errors.New(buf.String())
+	// 	}
+
+	// 	return err
+	// }
 
 	return nil
 }
