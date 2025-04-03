@@ -32,6 +32,62 @@ definitions:
     - marinaId
     - userId
     type: object
+  requests.CreateAddressRequest:
+    properties:
+      city:
+        example: San Francisco
+        type: string
+      country:
+        example: USA
+        type: string
+      latitude:
+        example: 37.7749
+        type: number
+      longitude:
+        example: -122.4194
+        type: number
+      postal_code:
+        example: "94105"
+        type: string
+      state:
+        example: CA
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+    type: object
+  requests.CreateOrganizationRequest:
+    properties:
+      address:
+        $ref: '#/definitions/requests.CreateAddressRequest'
+      country:
+        example: USA
+        type: string
+      email:
+        example: org@example.com
+        type: string
+      image:
+        example: https://example.com/logo.png
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_test:
+        example: false
+        type: boolean
+      name:
+        example: Sample Organization
+        type: string
+      phone:
+        example: +1 555-123-4567
+        type: string
+      website:
+        example: https://example.com
+        type: string
+    required:
+    - email
+    - name
+    type: object
   requests.CreateUserRequest:
     properties:
       email:
@@ -137,6 +193,86 @@ definitions:
     - role_id
     - username
     type: object
+  requests.UpdateAddressRequest:
+    properties:
+      city:
+        example: San Francisco
+        type: string
+      country:
+        example: USA
+        type: string
+      latitude:
+        example: 37.7749
+        type: number
+      longitude:
+        example: -122.4194
+        type: number
+      postal_code:
+        example: "94105"
+        type: string
+      state:
+        example: CA
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+    type: object
+  requests.UpdateOrgAddressRequest:
+    properties:
+      address:
+        $ref: '#/definitions/requests.UpdateAddressRequest'
+      country:
+        example: Canada
+        type: string
+      email:
+        example: updated@example.com
+        type: string
+      image:
+        example: https://example.com/new-logo.png
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_test:
+        example: false
+        type: boolean
+      name:
+        example: Updated Organization
+        type: string
+      phone:
+        example: +1 555-987-6543
+        type: string
+      website:
+        example: https://updated-example.com
+        type: string
+    type: object
+  requests.UpdateOrganizationRequest:
+    properties:
+      country:
+        example: Canada
+        type: string
+      email:
+        example: updated@example.com
+        type: string
+      image:
+        example: https://example.com/new-logo.png
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_test:
+        example: false
+        type: boolean
+      name:
+        example: Updated Organization
+        type: string
+      phone:
+        example: +1 555-987-6543
+        type: string
+      website:
+        example: https://updated-example.com
+        type: string
+    type: object
   requests.UpdateUserRequest:
     properties:
       email:
@@ -174,6 +310,55 @@ definitions:
         example: Manager
         type: string
     type: object
+  responses.AddressResponse:
+    properties:
+      city:
+        example: San Francisco
+        type: string
+      country:
+        example: USA
+        type: string
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      latitude:
+        example: 37.7749
+        type: number
+      longitude:
+        example: -122.4194
+        type: number
+      postal_code:
+        example: "94105"
+        type: string
+      state:
+        example: CA
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+      updated_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    type: object
+  responses.BaseResponse:
+    description: Standard response structure for all API endpoints
+    properties:
+      currentPage:
+        type: integer
+      data: {}
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
   responses.Error:
     description: Error response structure with optional validation details
     properties:
@@ -205,6 +390,83 @@ definitions:
         $ref: '#/definitions/responses.LoginResponse'
       message:
         example: Login successful
+        type: string
+    type: object
+  responses.OrganizationResponse:
+    properties:
+      address_id:
+        example: 123e4567-e89b-12d3-a456-426614174001
+        type: string
+      country:
+        example: USA
+        type: string
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      email:
+        example: org@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      image:
+        example: https://example.com/logo.png
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_test:
+        example: false
+        type: boolean
+      name:
+        example: Sample Organization
+        type: string
+      phone:
+        example: +1 555-123-4567
+        type: string
+      updated_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      website:
+        example: https://example.com
+        type: string
+    type: object
+  responses.OrganizationWithAddressResponse:
+    properties:
+      address:
+        $ref: '#/definitions/responses.AddressResponse'
+      country:
+        example: USA
+        type: string
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      email:
+        example: org@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      image:
+        example: https://example.com/logo.png
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_test:
+        example: false
+        type: boolean
+      name:
+        example: Example Organization
+        type: string
+      phone:
+        example: +1-555-123-4567
+        type: string
+      updated_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      website:
+        example: https://example.com
         type: string
     type: object
   responses.RegisterResponseWrapper:
@@ -325,6 +587,115 @@ info:
   title: DockMaster Web API
   version: 0.0.1
 paths:
+  /addresses:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new address in the system
+      parameters:
+      - description: Address details
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.AddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create address
+      tags:
+      - Addresses
+  /addresses/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an address by its ID
+      parameters:
+      - description: Address ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get address by ID
+      tags:
+      - Addresses
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing address
+      parameters:
+      - description: Address ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Address details
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update address
+      tags:
+      - Addresses
   /auth/login:
     post:
       consumes:
@@ -441,6 +812,299 @@ paths:
       summary: Health check
       tags:
       - Generic
+  /organizations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves organizations with pagination support
+      parameters:
+      - default: 10
+        description: Page size limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Page offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.OrganizationResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get paginated organizations
+      tags:
+      - Organizations
+    post:
+      consumes:
+      - application/json
+      description: Creates a new organization in the system
+      parameters:
+      - description: Organization details
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.OrganizationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create organization
+      tags:
+      - Organizations
+  /organizations/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes an organization
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete organization
+      tags:
+      - Organizations
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an organization by its ID
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.OrganizationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get organization by ID
+      tags:
+      - Organizations
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing organization
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Organization details
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.OrganizationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update organization
+      tags:
+      - Organizations
+  /organizations/{id}/with-address:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an organization and its address details
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.OrganizationWithAddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get organization with address
+      tags:
+      - Organizations
+    put:
+      consumes:
+      - application/json
+      description: Updates an organization and its address details
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Organization and address details
+        in: body
+        name: orgAddress
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateOrgAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.OrganizationWithAddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update organization with address
+      tags:
+      - Organizations
+  /organizations/by-email:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an organization by its email address
+      parameters:
+      - description: Organization email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.OrganizationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get organization by email
+      tags:
+      - Organizations
   /project-details:
     get:
       consumes:
