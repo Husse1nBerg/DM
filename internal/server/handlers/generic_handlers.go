@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"net/http"
-
+	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/labstack/echo/v4"
 )
@@ -15,22 +14,14 @@ func NewGenericHandler(server *s.Server) *GenericHandler {
 	return &GenericHandler{server: server}
 }
 
-// HelloWorldHandler returns a Hello World message
-//
-//	@Summary		Hello World
-//	@Description	Returns a Hello World message
-//	@Tags			Generic
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object} map[string]string
-//	@Router			/ [get]
-func (g *GenericHandler) HelloWorldHandler(c echo.Context) error {
-	logger := c.Logger()
-	resp := map[string]string{
-		"message": "Hello World",
-	}
-	logger.Infof("Hello World")
-	return c.JSON(http.StatusOK, resp)
+// HealthResponse is purely for Swagger documentation
+type HealthResponse struct {
+	Data map[string]string `json:"data" example:"{\"status\":\"ok\",\"database\":\"connected\"}"`
+}
+
+// ProjectDetailsResponse is purely for Swagger documentation
+type ProjectDetailsResponse struct {
+	Data map[string]string `json:"data" example:"{\"name\":\"Marina Management System\",\"version\":\"1.0.0\"}"`
 }
 
 // healthHandler checks the health of the server
@@ -40,8 +31,27 @@ func (g *GenericHandler) HelloWorldHandler(c echo.Context) error {
 //	@Tags			Generic
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	map[string]string
+//	@Success		200	{object} HealthResponse "Health status information"
 //	@Router			/health [get]
 func (g *GenericHandler) HealthHandler(c echo.Context) error {
-	return c.JSON(http.StatusOK, g.server.DB.Health())
+	return responses.NewSuccessResponse(g.server.DB.Health()).JSON(c)
+}
+
+// ProjectDetailsHandler returns information about the project
+//
+//	@Summary		Project details
+//	@Description	Returns information about the Marina Management System project
+//	@Tags			Generic
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object} ProjectDetailsResponse "Project details information"
+//	@Router			/project-details [get]
+func (g *GenericHandler) ProjectDetailsHandler(c echo.Context) error {
+	details := map[string]string{
+		"name":        "Marina Management System",
+		"version":     "1.0.0",
+		"description": "A multi-tenant platform for marina management",
+		"tech_stack":  "Go, Echo, PostgreSQL, SQLC",
+	}
+	return responses.NewSuccessResponse(details).JSON(c)
 }

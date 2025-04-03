@@ -1,12 +1,97 @@
 basePath: /api/v1
 definitions:
+  handlers.HealthResponse:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        example:
+          '"database"': '"connected"}'
+          '{"status"': '"ok"'
+        type: object
+    type: object
+  handlers.ProjectDetailsResponse:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        example:
+          '"version"': '"1.0.0"}'
+          '{"name"': '"Marina Management System"'
+        type: object
+    type: object
+  requests.AssignUserToMarinaRequest:
+    properties:
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - marinaId
+    - userId
+    type: object
+  requests.CreateUserRequest:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      image:
+        example: /images/profiles/johndoe.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isSuperuser:
+        example: false
+        type: boolean
+      lastName:
+        example: Doe
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      password:
+        example: SecureP@ssw0rd
+        minLength: 8
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      title:
+        example: Manager
+        type: string
+      username:
+        example: johndoe
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - marinaId
+    - organizationId
+    - password
+    - roleId
+    - username
+    type: object
   requests.LoginRequest:
     properties:
       email:
         example: john.doe@example.com
         type: string
       password:
-        example: "11111111"
+        example: Pa$$w0rd123
+        minLength: 8
         type: string
     required:
     - email
@@ -27,18 +112,22 @@ definitions:
         type: string
       first_name:
         example: John
+        minLength: 2
         type: string
       last_name:
         example: Doe
+        minLength: 2
         type: string
       password:
-        example: "11111111"
+        example: Pa$$w0rd123
+        minLength: 8
         type: string
       role_id:
         example: admin
         type: string
       username:
         example: johndoe
+        minLength: 3
         type: string
     required:
     - email
@@ -48,20 +137,183 @@ definitions:
     - role_id
     - username
     type: object
-  responses.Error:
+  requests.UpdateUserRequest:
     properties:
-      code:
-        type: integer
-      error:
+      email:
+        example: john.doe@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      image:
+        example: /images/profiles/johndoe.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isSuperuser:
+        example: false
+        type: boolean
+      lastName:
+        example: Doe
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      password:
+        example: NewSecureP@ssw0rd
+        minLength: 8
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      title:
+        example: Manager
+        type: string
+    type: object
+  responses.Error:
+    description: Error response structure with optional validation details
+    properties:
+      details:
+        items:
+          $ref: '#/definitions/responses.ValidationError'
+        type: array
+      message:
+        example: Validation failed
         type: string
     type: object
   responses.LoginResponse:
+    description: Authentication token response containing access token, refresh token
+      and expiration
     properties:
       accessToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
       exp:
+        example: 1714637422
         type: integer
       refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  responses.LoginResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.LoginResponse'
+      message:
+        example: Login successful
+        type: string
+    type: object
+  responses.RegisterResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.UserResponse'
+      message:
+        example: User created successfully
+        type: string
+    type: object
+  responses.UserListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.UserResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.UserResponse:
+    description: User profile data including personal information and system roles
+    properties:
+      createdAt:
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      emailVerified:
+        type: string
+      failedLoginAttempts:
+        example: 0
+        type: integer
+      firstName:
+        example: John
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image:
+        example: /images/profiles/johndoe.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isSuperuser:
+        example: false
+        type: boolean
+      lastLogin:
+        type: string
+      lastName:
+        example: Doe
+        type: string
+      lastPasswordReset:
+        type: string
+      lockedUntil:
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      title:
+        example: Manager
+        type: string
+      updatedAt:
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  responses.UserResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.UserResponse'
+      message:
+        example: User profile retrieved successfully
+        type: string
+    type: object
+  responses.ValidationError:
+    description: Specific validation error for a single field
+    properties:
+      field:
+        example: username
+        type: string
+      message:
+        example: Username is required
+        type: string
+      tag:
+        example: required
+        type: string
+      value:
+        example: invalid_value
         type: string
     type: object
 info:
@@ -73,23 +325,6 @@ info:
   title: DockMaster Web API
   version: 0.0.1
 paths:
-  /:
-    get:
-      consumes:
-      - application/json
-      description: Returns a Hello World message
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Hello World
-      tags:
-      - Generic
   /auth/login:
     post:
       consumes:
@@ -107,11 +342,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success response with login data
           schema:
-            $ref: '#/definitions/responses.LoginResponse'
+            $ref: '#/definitions/responses.LoginResponseWrapper'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
         "401":
-          description: Unauthorized
+          description: Authentication error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Authenticate a user
@@ -134,11 +377,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success response with new tokens
           schema:
-            $ref: '#/definitions/responses.LoginResponse'
+            $ref: '#/definitions/responses.LoginResponseWrapper'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
         "401":
-          description: Unauthorized
+          description: Authentication error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Refresh access token
@@ -151,7 +402,7 @@ paths:
       description: New user registration
       operationId: user-register
       parameters:
-      - description: User's email, user's password
+      - description: User's registration details
         in: body
         name: params
         required: true
@@ -161,13 +412,15 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: User created successfully
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/responses.RegisterResponseWrapper'
         "400":
-          description: Bad Request
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Register
@@ -182,15 +435,371 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Health status information
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/handlers.HealthResponse'
       summary: Health check
       tags:
       - Generic
-  /profile:
+  /project-details:
+    get:
+      consumes:
+      - application/json
+      description: Returns information about the Marina Management System project
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Project details information
+          schema:
+            $ref: '#/definitions/handlers.ProjectDetailsResponse'
+      summary: Project details
+      tags:
+      - Generic
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create user
+      tags:
+      - User
+  /user/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-delete a user (mark as deleted)
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete user
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      description: Get a specific user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update a user with partial fields (only provided fields will be
+        updated)
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: User information to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user
+      tags:
+      - User
+  /user/list:
+    get:
+      consumes:
+      - application/json
+      description: get users
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of users
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List users
+      tags:
+      - User
+  /user/marina/{marinaId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all users in a specific marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of users in the marina
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get users by marina
+      tags:
+      - User
+  /user/marina/{marinaId}/assigned:
+    get:
+      consumes:
+      - application/json
+      description: Get users assigned to a marina (through user_marinas table)
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users assigned to the marina
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina users
+      tags:
+      - User
+  /user/marina/assign:
+    post:
+      consumes:
+      - application/json
+      description: Create an association between a user and a marina
+      parameters:
+      - description: User and marina IDs
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AssignUserToMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Assign user to marina
+      tags:
+      - User
+  /user/marina/unassign:
+    post:
+      consumes:
+      - application/json
+      description: Remove an association between a user and a marina
+      parameters:
+      - description: User and marina IDs
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AssignUserToMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Unassign user from marina
+      tags:
+      - User
+  /user/organization/{organizationId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all users in a specific organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of users in the organization
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get users by organization
+      tags:
+      - User
+  /user/profile:
     get:
       consumes:
       - application/json
@@ -199,43 +808,55 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Current user's profile
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/responses.UserResponseWrapper'
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
       security:
       - ApiKeyAuth: []
       summary: Get my user
       tags:
       - User
-  /users:
+  /user/role/{roleId}:
     get:
       consumes:
       - application/json
-      description: get users
+      description: Get all users with a specific role
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: List of users with the specified role
           schema:
-            items:
-              items:
-                additionalProperties:
-                  type: string
-                type: object
-              type: array
-            type: array
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
         "500":
-          description: Internal Server Error
-          schema: {}
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
       security:
       - ApiKeyAuth: []
-      summary: List users
+      summary: Get users by role
       tags:
       - User
 securityDefinitions:

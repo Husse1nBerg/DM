@@ -11,9 +11,25 @@ FROM marinas m
     JOIN user_marinas um ON m.id = um.marina_id
 WHERE um.user_id = $1
     AND m.deleted_at IS NULL;
+-- name: GetUserMarinasListPaginated :many
+SELECT m.*
+FROM marinas m
+    JOIN user_marinas um ON m.id = um.marina_id
+WHERE um.user_id = $1
+    AND m.deleted_at IS NULL
+ORDER BY m.created_at DESC
+LIMIT $2 OFFSET $3;
 -- name: GetMarinaUsersList :many
 SELECT u.*
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
     AND u.deleted_at IS NULL;
+-- name: GetMarinaUsersListPaginated :many
+SELECT u.*
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE um.marina_id = $1
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $2 OFFSET $3;

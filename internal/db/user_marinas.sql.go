@@ -77,6 +77,65 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, marinaID uuid.UUID) ([
 	return items, nil
 }
 
+const getMarinaUsersListPaginated = `-- name: GetMarinaUsersListPaginated :many
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE um.marina_id = $1
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetMarinaUsersListPaginatedParams struct {
+	MarinaID uuid.UUID
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarinaUsersListPaginatedParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsersListPaginated, arg.MarinaID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserMarinasList = `-- name: GetUserMarinasList :many
 SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id
 FROM marinas m
@@ -87,6 +146,61 @@ WHERE um.user_id = $1
 
 func (q *Queries) GetUserMarinasList(ctx context.Context, userID uuid.UUID) ([]Marina, error) {
 	rows, err := q.db.Query(ctx, getUserMarinasList, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Marina
+	for rows.Next() {
+		var i Marina
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.Name,
+			&i.Email,
+			&i.Location,
+			&i.Phone,
+			&i.Country,
+			&i.Currency,
+			&i.WorkingHours,
+			&i.Website,
+			&i.Image,
+			&i.MaxUsers,
+			&i.IsActive,
+			&i.IsTest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AddressID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserMarinasListPaginated = `-- name: GetUserMarinasListPaginated :many
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id
+FROM marinas m
+    JOIN user_marinas um ON m.id = um.marina_id
+WHERE um.user_id = $1
+    AND m.deleted_at IS NULL
+ORDER BY m.created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetUserMarinasListPaginatedParams struct {
+	UserID uuid.UUID
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetUserMarinasListPaginated(ctx context.Context, arg GetUserMarinasListPaginatedParams) ([]Marina, error) {
+	rows, err := q.db.Query(ctx, getUserMarinasListPaginated, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
