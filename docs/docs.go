@@ -195,6 +195,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/project-details": {
+            "get": {
+                "description": "Returns information about the Marina Management System project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Generic"
+                ],
+                "summary": "Project details",
+                "responses": {
+                    "200": {
+                        "description": "Project details information",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ProjectDetailsResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user": {
             "post": {
                 "security": [
@@ -842,6 +865,21 @@ const docTemplate = `{
                     "example": {
                         "\"database\"": "\"connected\"}",
                         "{\"status\"": "\"ok\""
+                    }
+                }
+            }
+        },
+        "handlers.ProjectDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "\"version\"": "\"1.0.0\"}",
+                        "{\"name\"": "\"Marina Management System\""
                     }
                 }
             }

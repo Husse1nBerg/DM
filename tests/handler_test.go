@@ -18,7 +18,7 @@ func TestHandler(t *testing.T) {
 	resp := httptest.NewRecorder()
 	c := e.NewContext(req, resp)
 	s := &server.Server{}
-	handlerFunc := handlers.NewGenericHandler(s).HelloWorldHandler(c)
+	handlerFunc := handlers.NewGenericHandler(s).ProjectDetailsHandler(c)
 	// Assertions
 	if err := handlerFunc; err != nil {
 		t.Errorf("handler() error = %v", err)

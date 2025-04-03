@@ -49,6 +49,7 @@ func RegisterRoutes(s *s.Server) {
 	base := s.Echo.Group("/api/v1")
 
 	base.GET("/health", genericHandler.HealthHandler)
+	base.GET("/project-details", genericHandler.ProjectDetailsHandler)
 
 	auth := base.Group("/auth")
 	auth.POST("/login", authHandler.Login)

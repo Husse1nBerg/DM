@@ -95,6 +95,7 @@ You are a custom LLM built to work on this Go backend project. Use the above tec
 - Utilities should be placed in `pkg/` when reusable across domains.
 - Migrations must be placed in `db/migrations/` using Goose format.
 - Configuration loading must be centralized via `internal/config/`.
+- After doing any changes to the API, run the swag command to renew the documentation
 
 ---
 

@@ -10,6 +10,16 @@ definitions:
           '{"status"': '"ok"'
         type: object
     type: object
+  handlers.ProjectDetailsResponse:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        example:
+          '"version"': '"1.0.0"}'
+          '{"name"': '"Marina Management System"'
+        type: object
+    type: object
   requests.AssignUserToMarinaRequest:
     properties:
       marinaId:
@@ -429,6 +439,21 @@ paths:
           schema:
             $ref: '#/definitions/handlers.HealthResponse'
       summary: Health check
+      tags:
+      - Generic
+  /project-details:
+    get:
+      consumes:
+      - application/json
+      description: Returns information about the Marina Management System project
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Project details information
+          schema:
+            $ref: '#/definitions/handlers.ProjectDetailsResponse'
+      summary: Project details
       tags:
       - Generic
   /user:
