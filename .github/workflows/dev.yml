@@ -13,6 +13,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -22,13 +29,3 @@ jobs:
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
-
-      - name: Deploy and Run Container
-        run: |
-          docker run -d -p 8080:8080 \
-            -e DB_HOST=${{ secrets.AWS_RDS_DEV_HOST }} \
-            -e DB_PORT=${{ secrets.AWS_RDS_DEV_PORT }} \
-            -e DB_USER=${{ secrets.AWS_RDS_DEV_USER }} \
-            -e DB_PASSWORD=${{ secrets.AWS_RDS_DEV_PASSWORD }} \
-            -e DB_NAME=${{ secrets.AWS_RDS_DEV_NAME }} \
-            $IMAGE_URI
