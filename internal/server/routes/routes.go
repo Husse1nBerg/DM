@@ -30,6 +30,8 @@ func RegisterRoutes(s *s.Server) {
 	genericHandler := h.NewGenericHandler(s)
 	authHandler := h.NewAuthHandler(s)
 	userHandler := h.NewUserHandler(s)
+	organizationHandler := h.NewOrganizationHandler(s)
+	addressHandler := h.NewAddressHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -84,4 +86,21 @@ func RegisterRoutes(s *s.Server) {
 	// User-marina assignments
 	users.POST("/marina/assign", userHandler.AssignUserToMarinaHandler)
 	users.POST("/marina/unassign", userHandler.UnassignUserFromMarinaHandler)
+
+	// Organization routes
+	organizations := protected.Group("/organizations")
+	organizations.POST("", organizationHandler.CreateOrganization)
+	organizations.GET("", organizationHandler.GetOrganizationsPaginated)
+	organizations.GET("/by-email", organizationHandler.GetOrganizationByEmail)
+	organizations.GET("/:id", organizationHandler.GetOrganizationByID)
+	organizations.GET("/:id/with-address", organizationHandler.GetOrganizationWithAddress)
+	organizations.PUT("/:id", organizationHandler.UpdateOrganization)
+	organizations.PUT("/:id/with-address", organizationHandler.UpdateOrgAddress)
+	organizations.DELETE("/:id", organizationHandler.DeleteOrganization)
+
+	// Address routes
+	addresses := protected.Group("/addresses")
+	addresses.POST("", addressHandler.CreateAddress)
+	addresses.GET("/:id", addressHandler.GetAddressById)
+	addresses.PUT("/:id", addressHandler.UpdateAddress)
 }

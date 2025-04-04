@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAddress = `-- name: CreateAddress :one
@@ -32,8 +31,8 @@ type CreateAddressParams struct {
 	State      *string
 	PostalCode *string
 	Country    *string
-	Latitude   pgtype.Numeric
-	Longitude  pgtype.Numeric
+	Latitude   float64
+	Longitude  float64
 }
 
 func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error) {
@@ -109,8 +108,8 @@ type UpdateAddressParams struct {
 	State      *string
 	PostalCode *string
 	Country    *string
-	Latitude   pgtype.Numeric
-	Longitude  pgtype.Numeric
+	Latitude   float64
+	Longitude  float64
 }
 
 func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error) {
