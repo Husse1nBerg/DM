@@ -16,8 +16,8 @@ type Address struct {
 	State      *string
 	PostalCode *string
 	Country    *string
-	Latitude   pgtype.Numeric
-	Longitude  pgtype.Numeric
+	Latitude   float64
+	Longitude  float64
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
 	DeletedAt  pgtype.Timestamp

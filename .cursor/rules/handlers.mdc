@@ -1,0 +1,14 @@
+---
+description: Use this rules when asked to create handlers or endpoints
+globs: 
+alwaysApply: false
+---
+
+- The handlers should be created in /internal/server/handlers
+- The request bodies and the validation should be in internal/requests
+- The response types should be in internal/responses (hide any critical information such as passwords)
+- Create comments to follow swaggo swag documentation for each endpoint handler
+- create a type for swag (if needed) and put it in the responses folder
+- run the swag command and finalizing to update the api documentation schema.
+- use the users handler as a refrence 
+- utalize helper functions from pkg/utils/utils if needed to convert db types, if you need to create other utils similar create it there.
