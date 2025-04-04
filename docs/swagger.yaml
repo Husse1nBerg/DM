@@ -20,6 +20,30 @@ definitions:
           '{"name"': '"Marina Management System"'
         type: object
     type: object
+  models.WorkingHours:
+    properties:
+      friday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      monday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      saturday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      sunday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      thursday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      tuesday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      wednesday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+    type: object
   requests.AssignUserToMarinaRequest:
     properties:
       marinaId:
@@ -55,6 +79,53 @@ definitions:
       street:
         example: 123 Main St
         type: string
+    type: object
+  requests.CreateMarinaRequest:
+    properties:
+      address:
+        $ref: '#/definitions/requests.CreateAddressRequest'
+      country:
+        example: USA
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      name:
+        example: Harbor Bay Marina
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
+    required:
+    - email
+    - name
+    - organizationId
     type: object
   requests.CreateOrganizationRequest:
     properties:
@@ -216,6 +287,46 @@ definitions:
       street:
         example: 123 Main St
         type: string
+    type: object
+  requests.UpdateMarinaRequest:
+    properties:
+      address:
+        $ref: '#/definitions/requests.UpdateAddressRequest'
+      country:
+        example: USA
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      name:
+        example: Harbor Bay Marina
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
     type: object
   requests.UpdateOrgAddressRequest:
     properties:
@@ -391,6 +502,142 @@ definitions:
       message:
         example: Login successful
         type: string
+    type: object
+  responses.MarinaListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.MarinaResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.MarinaResponse:
+    description: Marina data including location, contact information, and operational
+      details
+    properties:
+      addressId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      country:
+        example: USA
+        type: string
+      createdAt:
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      name:
+        example: Harbor Bay Marina
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      updatedAt:
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
+    type: object
+  responses.MarinaResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.MarinaResponse'
+    type: object
+  responses.MarinaWithAddressResponse:
+    description: Marina data with address details
+    properties:
+      address:
+        $ref: '#/definitions/responses.AddressResponse'
+      addressId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      country:
+        example: USA
+        type: string
+      createdAt:
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      name:
+        example: Harbor Bay Marina
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      updatedAt:
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
+    type: object
+  responses.MarinaWithAddressResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.MarinaWithAddressResponse'
     type: object
   responses.OrganizationResponse:
     properties:
@@ -812,6 +1059,348 @@ paths:
       summary: Health check
       tags:
       - Generic
+  /marinas:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas with pagination support
+      parameters:
+      - default: 10
+        description: Page size limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Page offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get paginated marinas
+      tags:
+      - Marinas
+    post:
+      consumes:
+      - application/json
+      description: Creates a new marina in the system
+      parameters:
+      - description: Marina details
+        in: body
+        name: marina
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create marina
+      tags:
+      - Marinas
+  /marinas/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete marina
+      tags:
+      - Marinas
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a marina by its ID
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina by ID
+      tags:
+      - Marinas
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Marina details
+        in: body
+        name: marina
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina
+      tags:
+      - Marinas
+  /marinas/{id}/with-address:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a marina and its address details
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaWithAddressResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina with address
+      tags:
+      - Marinas
+    put:
+      consumes:
+      - application/json
+      description: Updates a marina and its address details
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Marina details with address
+        in: body
+        name: marina
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaWithAddressResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina with address
+      tags:
+      - Marinas
+  /marinas/by-email:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a marina by its email address
+      parameters:
+      - description: Marina email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina by email
+      tags:
+      - Marinas
+  /marinas/organization/{organizationId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas belonging to a specific organization with pagination
+        support
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - default: 10
+        description: Page size limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Page offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marinas by organization
+      tags:
+      - Marinas
   /organizations:
     get:
       consumes:

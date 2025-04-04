@@ -365,6 +365,534 @@ const docTemplate = `{
                 }
             }
         },
+        "/marinas": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas with pagination support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get paginated marinas",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Page offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MarinaListResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new marina in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Create marina",
+                "parameters": [
+                    {
+                        "description": "Marina details",
+                        "name": "marina",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMarinaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/by-email": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a marina by its email address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get marina by email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/organization/{organizationId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas belonging to a specific organization with pagination support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get marinas by organization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Page offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MarinaListResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a marina by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get marina by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Update marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Marina details",
+                        "name": "marina",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateMarinaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Soft deletes a marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Delete marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/{id}/with-address": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a marina and its address details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get marina with address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaWithAddressResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates a marina and its address details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Update marina with address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Marina details with address",
+                        "name": "marina",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateMarinaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaWithAddressResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/organizations": {
             "get": {
                 "security": [
@@ -1509,6 +2037,39 @@ const docTemplate = `{
                 }
             }
         },
+        "models.WorkingHours": {
+            "type": "object",
+            "properties": {
+                "friday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "monday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "saturday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "sunday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "thursday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "tuesday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "wednesday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                }
+            }
+        },
         "requests.AssignUserToMarinaRequest": {
             "type": "object",
             "required": [
@@ -1556,6 +2117,70 @@ const docTemplate = `{
                 "street": {
                     "type": "string",
                     "example": "123 Main St"
+                }
+            }
+        },
+        "requests.CreateMarinaRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "organizationId"
+            ],
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/requests.CreateAddressRequest"
+                },
+                "country": {
+                    "type": "string",
+                    "example": "USA"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@harborbay.com"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/marinas/harborbay.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isTest": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Miami Beach"
+                },
+                "maxUsers": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Harbor Bay Marina"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "website": {
+                    "type": "string",
+                    "example": "https://harborbay.com"
+                },
+                "workingHours": {
+                    "$ref": "#/definitions/models.WorkingHours"
                 }
             }
         },
@@ -1772,6 +2397,61 @@ const docTemplate = `{
                 "street": {
                     "type": "string",
                     "example": "123 Main St"
+                }
+            }
+        },
+        "requests.UpdateMarinaRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/requests.UpdateAddressRequest"
+                },
+                "country": {
+                    "type": "string",
+                    "example": "USA"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@harborbay.com"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/marinas/harborbay.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isTest": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Miami Beach"
+                },
+                "maxUsers": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Harbor Bay Marina"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "website": {
+                    "type": "string",
+                    "example": "https://harborbay.com"
+                },
+                "workingHours": {
+                    "$ref": "#/definitions/models.WorkingHours"
                 }
             }
         },
@@ -2012,6 +2692,194 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Login successful"
+                }
+            }
+        },
+        "responses.MarinaListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MarinaResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "responses.MarinaResponse": {
+            "description": "Marina data including location, contact information, and operational details",
+            "type": "object",
+            "properties": {
+                "addressId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "country": {
+                    "type": "string",
+                    "example": "USA"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@harborbay.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/marinas/harborbay.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isTest": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Miami Beach"
+                },
+                "maxUsers": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Harbor Bay Marina"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string",
+                    "example": "https://harborbay.com"
+                },
+                "workingHours": {
+                    "$ref": "#/definitions/models.WorkingHours"
+                }
+            }
+        },
+        "responses.MarinaResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.MarinaResponse"
+                }
+            }
+        },
+        "responses.MarinaWithAddressResponse": {
+            "description": "Marina data with address details",
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/responses.AddressResponse"
+                },
+                "addressId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "country": {
+                    "type": "string",
+                    "example": "USA"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@harborbay.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/marinas/harborbay.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isTest": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Miami Beach"
+                },
+                "maxUsers": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Harbor Bay Marina"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string",
+                    "example": "https://harborbay.com"
+                },
+                "workingHours": {
+                    "$ref": "#/definitions/models.WorkingHours"
+                }
+            }
+        },
+        "responses.MarinaWithAddressResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.MarinaWithAddressResponse"
                 }
             }
         },
