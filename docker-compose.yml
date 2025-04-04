@@ -1,12 +1,14 @@
 version: "3.9"
 
 services:
-  db:
-    image: postgres
+  app:
+    image: dmweb-backend
     restart: always
-    environment:
-      POSTGRES_PASSWORD: postgres
     ports:
-      - "5433:5432"
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - "8080:8080"
+    environment:
+      DB_HOST: ${AWS_RDS_DEV_HOST}
+      DB_PORT: ${AWS_RDS_DEV_PORT}
+      DB_USER: ${AWS_RDS_DEV_USER}
+      DB_PASSWORD: ${AWS_RDS_DEV_PASSWORD}
+      DB_NAME: ${AWS_RDS_DEV_NAME}
