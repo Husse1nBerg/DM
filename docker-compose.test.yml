@@ -2,17 +2,19 @@ version: "3.9"
 
 services:
   app:
-    image: dmweb-backend
-    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    env_file: .env
     environment:
-      DB_HOST: ${AWS_RDS_DEV_HOST}
-      DB_PORT: ${AWS_RDS_DEV_PORT}
-      DB_USER: ${AWS_RDS_DEV_USER}
-      DB_PASSWORD: ${AWS_RDS_DEV_PASSWORD}
-      DB_NAME: ${AWS_RDS_DEV_NAME}
-      DB_SCHEMA: ${AWS_RDS_DEV_SCHEMA}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SCHEMA: ${DB_SCHEMA}
       # App
       PORT: ${PORT}
       ENV: ${ENV}

@@ -40,10 +40,25 @@ func GetEchoLogConfig(cfg *Config) middleware.LoggerConfig {
 }
 
 func LoadServerConfig() ServerConfig {
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "development"
+	}
+
 	return ServerConfig{
-		Host:       os.Getenv("HOST"),
-		Port:       os.Getenv("PORT"),
-		Env:        os.Getenv("ENV"),
+		Host:       host,
+		Port:       port,
+		Env:        env,
 		Validator:  ValidatorInit(),
 		Binder:     &BinderWithValidation{},
 		CORSConfig: middleware.DefaultCORSConfig,

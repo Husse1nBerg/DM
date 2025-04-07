@@ -107,6 +107,37 @@ dm-web-backend
    go run cmd/api/main.go
    ```
 
+## Local Development with Docker
+
+To run the application locally using Docker with a PostgreSQL database:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit the .env file with your preferred configuration (optional)
+
+# Start the application and database
+docker-compose -f docker-compose.local.yml up -d
+
+# Stop the containers
+docker-compose -f docker-compose.local.yml down
+
+# Stop the containers and remove volumes
+docker-compose -f docker-compose.local.yml down -v
+```
+
+This setup includes:
+- The application running on port 8080 (configurable in .env)
+- PostgreSQL database exposed on port 5432 (configurable in .env)
+- Default environment variables in .env.example:
+  - Admin credentials: admin@example.com / admin123
+  - Database: marina_dev
+  - Database user: postgres
+  - Database password: postgres
+
+The docker-compose.local.yml file uses environment variables from the .env file with fallback values if any variables are not defined.
+
 ## Development Commands
 
 ### Generate API Documentation

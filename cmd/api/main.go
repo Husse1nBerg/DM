@@ -31,6 +31,8 @@ func main() {
 	if zlog.Zap != nil {
 		defer zlog.Zap.Sync()
 	}
+	// Log the environment and the port
+	zlog.Zap.Infof("Environment: %s, Port: %s", cfg.Server.Env, cfg.Server.Port)
 
 	server := server.NewServer(cfg, zlog)
 	routes.RegisterRoutes(server)
