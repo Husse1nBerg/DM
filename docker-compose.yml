@@ -6,24 +6,3 @@ services:
     restart: always
     ports:
       - "8080:8080"
-    environment:
-      DB_HOST: ${AWS_RDS_DEV_HOST}
-      DB_PORT: ${AWS_RDS_DEV_PORT}
-      DB_USER: ${AWS_RDS_DEV_USER}
-      DB_PASSWORD: ${AWS_RDS_DEV_PASSWORD}
-      DB_NAME: ${AWS_RDS_DEV_NAME}
-      DB_SCHEMA: ${AWS_RDS_DEV_SCHEMA}
-      # App
-      PORT: ${PORT}
-      ENV: ${ENV}
-      ACCESS_SECRET: ${ACCESS_SECRET}
-      REFRESH_SECRET: ${REFRESH_SECRET}
-      LOGS_FORMAT: ${LOGS_FORMAT}
-      LOGS_LEVEL: ${LOGS_LEVEL}
-      LOGS_DIRECTORY: ${LOGS_DIRECTORY}
-      LOGS_NAME: ${LOGS_NAME}
-      LOGS_LOCAL: ${LOGS_LOCAL}
-
-      # Admin User Details
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
