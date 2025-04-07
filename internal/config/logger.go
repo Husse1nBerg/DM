@@ -19,11 +19,31 @@ func LoadLoggerConfig() LoggerConfig {
 		local = false
 	}
 
+	format := os.Getenv("LOGS_FORMAT")
+	if format == "" {
+		format = "json"
+	}
+
+	level := os.Getenv("LOGS_LEVEL")
+	if level == "" {
+		level = "info"
+	}
+
+	directory := os.Getenv("LOGS_DIRECTORY")
+	if directory == "" {
+		directory = "logs"
+	}
+
+	name := os.Getenv("LOGS_NAME")
+	if name == "" {
+		name = "echo"
+	}
+
 	return LoggerConfig{
-		Format:    os.Getenv("LOGS_FORMAT"),
-		Level:     os.Getenv("LOGS_LEVEL"),
-		Directory: os.Getenv("LOGS_DIRECTORY"),
-		Name:      os.Getenv("LOGS_NAME"),
+		Format:    format,
+		Level:     level,
+		Directory: directory,
+		Name:      name,
 		Local:     local,
 	}
 }
