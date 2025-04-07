@@ -8,10 +8,10 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/dockworks/dm-web-backend/internal/config"
 	sqlc "github.com/dockworks/dm-web-backend/internal/db"
 	conn "github.com/dockworks/dm-web-backend/internal/pg"
-
-	"github.com/dockworks/dm-web-backend/internal/config"
+	"github.com/dockworks/dm-web-backend/pkg/models"
 	u "github.com/dockworks/dm-web-backend/pkg/utils"
 )
 
@@ -22,7 +22,7 @@ func main() {
 	q := db.Queries()
 
 	// Seed Organization
-	org, err := q.GetOrganizationByEmail(ctx, "org@acme.com")
+	org, err := q.GetOrganizationByEmail(ctx, "dmweb@dockmaster.com")
 	if err != nil {
 		if err == pgx.ErrNoRows {
 
@@ -31,8 +31,8 @@ func main() {
 				log.Fatalf("failed to create org address: %v", err)
 			}
 			org, err = q.CreateOrganization(ctx, sqlc.CreateOrganizationParams{
-				Email:     "org@acme.com",
-				Name:      "Acme Corp",
+				Email:     "dmweb@dockmaster.com",
+				Name:      "Dockmaster Web Org",
 				AddressID: orgAddress.ID,
 				IsActive:  u.Pointer(true),
 			})
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// Seed Marina
-	marina, err := q.GetMarinaByEmail(ctx, "marina@acme.com")
+	marina, err := q.GetMarinaByEmail(ctx, "marina@dockmaster.com")
 	if err != nil {
 		if err == pgx.ErrNoRows {
 
@@ -54,13 +54,21 @@ func main() {
 			if err != nil {
 				log.Fatalf("failed to create marina address: %v", err)
 			}
+
+			// Create working hours using the new model
+			workingHours := models.DefaultWorkingHours()
+			workingHoursBytes, err := workingHours.ToBytes()
+			if err != nil {
+				log.Fatalf("failed to create working hours: %v", err)
+			}
+
 			marina, err = q.CreateMarina(ctx, sqlc.CreateMarinaParams{
-				Name:           "Acme Marina",
-				Email:          "marina@acme.com",
+				Name:           "Dockmaster Web",
+				Email:          "marina@dockmaster.com",
 				IsActive:       u.Pointer(true),
 				AddressID:      marinaAddress.ID,
 				OrganizationID: org.ID,
-				WorkingHours:   []byte(`{"monday": "9:00 AM - 5:00 PM", "tuesday": "9:00 AM - 5:00 PM", "wednesday": "9:00 AM - 5:00 PM", "thursday": "9:00 AM - 5:00 PM", "friday": "9:00 AM - 5:00 PM", "saturday": "9:00 AM - 5:00 PM", "sunday": "9:00 AM - 5:00 PM"}`),
+				WorkingHours:   workingHoursBytes,
 			})
 			if err != nil {
 				log.Fatalf("failed to create marina: %v", err)
@@ -159,7 +167,7 @@ func main() {
 	}
 
 	// Seed Admin User
-	user, err := q.GetUserByEmail(ctx, "admin@acme.com")
+	user, err := q.GetUserByEmail(ctx, cfg.App.AdminEmail)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 
@@ -182,7 +190,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("failed to create admin user: %v", err)
 			}
-			log.Println("Created admin user: admin@acme.com")
+			log.Println("Created admin user: ", cfg.App.AdminEmail)
 		} else {
 			log.Fatalf("failed to get user: %v", err)
 		}
