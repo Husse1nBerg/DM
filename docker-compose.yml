@@ -12,3 +12,4 @@ services:
       DB_USER: ${AWS_RDS_DEV_USER}
       DB_PASSWORD: ${AWS_RDS_DEV_PASSWORD}
       DB_NAME: ${AWS_RDS_DEV_NAME}
+      
