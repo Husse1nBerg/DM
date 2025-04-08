@@ -24,28 +24,8 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Create .env file with environment variables
-        run: |
-          echo "DB_HOST=${{ secrets.AWS_RDS_DEV_HOST }}" >> .env
-          echo "DB_PORT=${{ secrets.AWS_RDS_DEV_PORT }}" >> .env
-          echo "DB_USER=${{ secrets.AWS_RDS_DEV_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.AWS_RDS_DEV_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.AWS_RDS_DEV_NAME }}" >> .env
-          echo "AWS_RDS_DEV_SCHEMA=${{ secrets.AWS_RDS_DEV_SCHEMA }}" >> .env
-          echo "PORT=${{ secrets.PORT }}" >> .env
-          echo "ENV=${{ secrets.ENV }}" >> .env
-          echo "ACCESS_SECRET=${{ secrets.ACCESS_SECRET }}" >> .env
-          echo "REFRESH_SECRET=${{ secrets.REFRESH_SECRET }}" >> .env
-          echo "LOGS_FORMAT=${{ secrets.LOGS_FORMAT }}" >> .env
-          echo "LOGS_LEVEL=${{ secrets.LOGS_LEVEL }}" >> .env
-          echo "LOGS_DIRECTORY=${{ secrets.LOGS_DIRECTORY }}" >> .env
-          echo "LOGS_NAME=${{ secrets.LOGS_NAME }}" >> .env
-          echo "LOGS_LOCAL=${{ secrets.LOGS_LOCAL }}" >> .env
-          echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> .env
-          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
-
       - name: Build and Push Docker Image to ECR
         run: |
           IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
-          docker build --build-arg ENV_FILE=.env -t $IMAGE_URI .
+          docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
