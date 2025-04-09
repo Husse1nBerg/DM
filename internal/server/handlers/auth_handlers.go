@@ -71,7 +71,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 
 	if user.LockedUntil.Valid && user.LockedUntil.Time.After(now) {
 		logger.Zap.Info("login failed: account locked", c.Response().Header().Get(echo.HeaderXRequestID))
-		return responses.NewErrorResponse(http.StatusForbidden, "Account is locked due to too many failed login attempts. Please try again later.").JSON(c)
+		return responses.NewErrorResponse(http.StatusForbidden, "Account is locked until "+user.LockedUntil.Time.Format(time.RFC3339)).JSON(c)
 	}
 
 	// Check password
@@ -129,7 +129,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 
 		// If we just locked the account, return a 403 instead of 401
 		if attempts >= maxAttempts {
-			return responses.NewErrorResponse(http.StatusForbidden, "Account is locked due to too many failed login attempts. Please try again later.").JSON(c)
+			return responses.NewErrorResponse(http.StatusForbidden, "Account is locked until "+user.LockedUntil.Time.Format(time.RFC3339)).JSON(c)
 		}
 
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid credentials").JSON(c)
@@ -175,7 +175,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	// Double-check lock status
 	if updatedUser.LockedUntil.Valid && updatedUser.LockedUntil.Time.After(now) {
 		logger.Zap.Info("login rejected: account is locked", c.Response().Header().Get(echo.HeaderXRequestID))
-		return responses.NewErrorResponse(http.StatusForbidden, "Account is locked due to too many failed login attempts. Please try again later.").JSON(c)
+		return responses.NewErrorResponse(http.StatusForbidden, "Account is locked until "+user.LockedUntil.Time.Format(time.RFC3339)).JSON(c)
 	}
 
 	tokenService := tokenservice.NewTokenService(authHandler.server.Config)
@@ -254,10 +254,10 @@ func (authHandler *AuthHandler) RefreshToken(c echo.Context) error {
 	}
 
 	// Check if account is locked
-	now := time.Now()
+	now := time.Now().UTC()
 	if user.LockedUntil.Valid && user.LockedUntil.Time.After(now) {
 		logger.Zap.Info("token refresh failed: account locked", c.Response().Header().Get(echo.HeaderXRequestID))
-		return responses.NewErrorResponse(http.StatusForbidden, "Account is locked due to too many failed login attempts. Please try again later.").JSON(c)
+		return responses.NewErrorResponse(http.StatusForbidden, "Account is locked until "+user.LockedUntil.Time.Format(time.RFC3339)).JSON(c)
 	}
 
 	tokenService := tokenservice.NewTokenService(authHandler.server.Config)
