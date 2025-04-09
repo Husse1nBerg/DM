@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
@@ -646,4 +648,351 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 
 	response := responses.NewUserResponseSuccess(updatedUser)
 	return response.JSON(c)
+}
+
+// ResetPassword
+//
+//	@Summary		Reset user password
+//	@Description	Reset authenticated user's password and check against previous passwords
+//	@ID				user-reset-password
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			params	body		requests.ResetPasswordRequest	true	"Password reset info"
+//	@Success		200		{object}	responses.BaseResponse			"Password reset success"
+//	@Failure		400		{object}	responses.Error					"Validation error"
+//	@Failure		401		{object}	responses.Error					"Authentication error"
+//	@Failure		500		{object}	responses.Error					"Server error"
+//	@Security		ApiKeyAuth
+//	@Router			/user/reset-password [post]
+func (g *UserHandler) ResetPassword(c echo.Context) error {
+	logger := g.server.Logger
+	queries := g.server.DB.Queries()
+
+	resetRequest := new(requests.ResetPasswordRequest)
+
+	if err := c.Bind(resetRequest); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(resetRequest); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Get user from database
+	user, err := queries.GetUserByID(c.Request().Context(), resetRequest.UserID)
+	if err != nil {
+		logger.Zap.Info("password reset failed: user not found", c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusUnauthorized, "User not found").JSON(c)
+	}
+
+	// Verify current password
+	if err := utils.VerifyPassword(user.PasswordHash, resetRequest.OldPassword); err != nil {
+		logger.Zap.Info("password reset failed: invalid current password", c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid current password").JSON(c)
+	}
+
+	// Get password history (last 4 passwords)
+	historyLimit := int32(4)
+	passwordHistory, err := queries.GetPasswordHistoryByUser(c.Request().Context(), db.GetPasswordHistoryByUserParams{
+		UserID: user.ID,
+		Limit:  historyLimit,
+	})
+	if err != nil {
+		logger.Zap.Error("failed to get password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password reset").JSON(c)
+	}
+
+	// Create a slice of password hashes from the history
+	historyHashes := make([]string, 0, len(passwordHistory)+1)
+	historyHashes = append(historyHashes, user.PasswordHash)  // Add current password to history
+	historyHashes = append(historyHashes, passwordHistory...) // Add previous password hashes
+
+	// Check if new password matches any of the last 4 passwords
+	isReused, err := utils.IsPasswordInHistory(resetRequest.NewPassword, historyHashes)
+	if err != nil {
+		logger.Zap.Error("failed to check password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password reset").JSON(c)
+	}
+
+	if isReused {
+		return responses.NewErrorResponse(http.StatusBadRequest, utils.ErrPasswordReused).JSON(c)
+	}
+
+	// Hash the new password
+	newPasswordHash, lastPasswordReset, err := utils.UpdatePasswordFields(resetRequest.NewPassword)
+	if err != nil {
+		logger.Zap.Error("failed to hash new password", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password reset").JSON(c)
+	}
+
+	// Add old password to history first
+	_, err = queries.AddPasswordToHistory(c.Request().Context(), db.AddPasswordToHistoryParams{
+		UserID:       user.ID,
+		PasswordHash: user.PasswordHash, // Store the old password that's being replaced
+	})
+	if err != nil {
+		logger.Zap.Error("failed to update password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating password history").JSON(c)
+	}
+
+	// Update user record with new password
+	updateParams := db.UpdateUserParams{
+		ID:                  user.ID,
+		FirstName:           user.FirstName,
+		LastName:            user.LastName,
+		Email:               user.Email,
+		EmailVerified:       user.EmailVerified,
+		Phone:               user.Phone,
+		Title:               user.Title,
+		Image:               user.Image,
+		PasswordHash:        newPasswordHash,
+		LastLogin:           user.LastLogin,
+		FailedLoginAttempts: user.FailedLoginAttempts,
+		LockedUntil:         user.LockedUntil,
+		LastPasswordReset:   lastPasswordReset,
+		MarinaID:            user.MarinaID,
+		RoleID:              user.RoleID,
+		IsSuperuser:         user.IsSuperuser,
+		IsActive:            user.IsActive,
+	}
+
+	_, err = queries.UpdateUser(c.Request().Context(), updateParams)
+	if err != nil {
+		logger.Zap.Error("failed to update user password", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating password").JSON(c)
+	}
+
+	// Cleanup old passwords if we have more than the limit
+	err = queries.CleanupOldPasswords(c.Request().Context(), db.CleanupOldPasswordsParams{
+		UserID: user.ID,
+		Offset: historyLimit,
+	})
+	if err != nil {
+		logger.Zap.Error("failed to cleanup old passwords", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error cleaning up password history").JSON(c)
+	}
+
+	return responses.NewMessageResponse(http.StatusOK, "Password updated successfully").JSON(c)
+}
+
+// RecoverPassword
+//
+//	@Summary		Complete password recovery
+//	@Description	Verify token and set new password
+//	@ID				user-recover-password
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			params	body		requests.CompletePasswordRecoveryRequest	true	"Recovery token and new password"
+//	@Success		200		{object}	responses.BaseResponse			"Password updated successfully"
+//	@Failure		400		{object}	responses.Error					"Invalid token or validation error"
+//	@Failure		500		{object}	responses.Error					"Server error"
+//	@Router			/user/recover-password [post]
+func (g *UserHandler) RecoverPassword(c echo.Context) error {
+	logger := g.server.Logger
+	queries := g.server.DB.Queries()
+
+	recoverRequest := new(requests.CompletePasswordRecoveryRequest)
+
+	if err := c.Bind(recoverRequest); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(recoverRequest); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Look up the token
+	recoveryRecord, err := queries.GetPasswordRecoveryToken(c.Request().Context(), db.GetPasswordRecoveryTokenParams{
+		Token: recoverRequest.Token,
+		Email: recoverRequest.Email,
+	})
+	if err != nil {
+		logger.Zap.Info("password recovery failed: invalid or expired token", c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid or expired recovery token").JSON(c)
+	}
+
+	// Get the user from the recovery record
+	user, err := queries.GetUserByID(c.Request().Context(), recoveryRecord.UserID)
+	if err != nil {
+		logger.Zap.Error("password recovery failed: user not found", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
+	}
+
+	// Check password history
+	historyLimit := int32(4)
+	passwordHistory, err := queries.GetPasswordHistoryByUser(c.Request().Context(), db.GetPasswordHistoryByUserParams{
+		UserID: user.ID,
+		Limit:  historyLimit,
+	})
+	if err != nil {
+		logger.Zap.Error("failed to get password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
+	}
+
+	// Create a slice of password hashes from the history
+	historyHashes := make([]string, 0, len(passwordHistory)+1)
+	historyHashes = append(historyHashes, user.PasswordHash)  // Add current password to history
+	historyHashes = append(historyHashes, passwordHistory...) // Add previous password hashes
+
+	// Check if new password matches any of the last 4 passwords
+	isReused, err := utils.IsPasswordInHistory(recoverRequest.NewPassword, historyHashes)
+	if err != nil {
+		logger.Zap.Error("failed to check password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
+	}
+
+	if isReused {
+		return responses.NewErrorResponse(http.StatusBadRequest, utils.ErrPasswordReused).JSON(c)
+	}
+
+	// Hash the new password
+	newPasswordHash, lastPasswordReset, err := utils.UpdatePasswordFields(recoverRequest.NewPassword)
+	if err != nil {
+		logger.Zap.Error("failed to hash new password", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
+	}
+
+	// Add old password to history first
+	_, err = queries.AddPasswordToHistory(c.Request().Context(), db.AddPasswordToHistoryParams{
+		UserID:       user.ID,
+		PasswordHash: user.PasswordHash, // Store the old password that's being replaced
+	})
+	if err != nil {
+		logger.Zap.Error("failed to update password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating password history").JSON(c)
+	}
+
+	// Update user record with new password
+	updateParams := db.UpdateUserParams{
+		ID:                  user.ID,
+		FirstName:           user.FirstName,
+		LastName:            user.LastName,
+		Email:               user.Email,
+		EmailVerified:       user.EmailVerified,
+		Phone:               user.Phone,
+		Title:               user.Title,
+		Image:               user.Image,
+		PasswordHash:        newPasswordHash,
+		LastLogin:           user.LastLogin,
+		FailedLoginAttempts: user.FailedLoginAttempts,
+		LockedUntil:         user.LockedUntil,
+		LastPasswordReset:   lastPasswordReset,
+		MarinaID:            user.MarinaID,
+		RoleID:              user.RoleID,
+		IsSuperuser:         user.IsSuperuser,
+		IsActive:            user.IsActive,
+	}
+
+	_, err = queries.UpdateUser(c.Request().Context(), updateParams)
+	if err != nil {
+		logger.Zap.Error("failed to update user password", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating password").JSON(c)
+	}
+
+	// Cleanup old passwords if we have more than the limit
+	err = queries.CleanupOldPasswords(c.Request().Context(), db.CleanupOldPasswordsParams{
+		UserID: user.ID,
+		Offset: historyLimit,
+	})
+	if err != nil {
+		logger.Zap.Error("failed to cleanup old passwords", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		// Continue even if cleanup fails
+	}
+
+	// Mark the token as used
+	err = queries.MarkTokenAsUsed(c.Request().Context(), db.MarkTokenAsUsedParams{
+		Token: recoverRequest.Token,
+		Email: recoverRequest.Email,
+	})
+	if err != nil {
+		logger.Zap.Error("failed to mark token as used", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		// Continue even if marking token as used fails
+	}
+
+	return responses.NewMessageResponse(http.StatusOK, "Password has been successfully updated").JSON(c)
+}
+
+// ForgotPassword
+//
+//	@Summary		Forgot password
+//	@Description	Initiate password recovery process
+//	@ID				user-forgot-password
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			params	body		requests.ForgotPasswordRequest	true	"Email for password recovery"
+//	@Success		200		{object}	responses.BaseResponse			"Password recovery email sent"
+//	@Failure		400		{object}	responses.Error					"Validation error"
+//	@Failure		404		{object}	responses.Error					"User not found"
+//	@Failure		500		{object}	responses.Error					"Server error"
+//	@Router			/user/forgot-password [post]
+func (g *UserHandler) ForgotPassword(c echo.Context) error {
+	logger := g.server.Logger
+	queries := g.server.DB.Queries()
+
+	forgotRequest := new(requests.ForgotPasswordRequest)
+
+	if err := c.Bind(forgotRequest); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(forgotRequest); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Find user by email
+	user, err := queries.GetUserByEmail(c.Request().Context(), forgotRequest.Email)
+	if err != nil {
+		// Don't reveal whether the user exists or not for security
+		logger.Zap.Info("password recovery requested for non-existent email", c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewMessageResponse(http.StatusOK, "If your email is registered, you will receive password recovery instructions").JSON(c)
+	}
+
+	// Generate a random token
+	token, err := utils.GenerateRandomToken(32)
+	if err != nil {
+		logger.Zap.Error("failed to generate recovery token", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
+	}
+
+	// Set expiration time (24 hours from now)
+	expiresAt := utils.PgTimeNow()
+	expiresAt.Time = time.Now().UTC().Add(24 * time.Hour)
+
+	// Store token in database
+	_, err = queries.CreatePasswordRecoveryToken(c.Request().Context(), db.CreatePasswordRecoveryTokenParams{
+		UserID:    user.ID,
+		Email:     user.Email,
+		Token:     token,
+		ExpiresAt: expiresAt,
+	})
+	if err != nil {
+		logger.Zap.Error("failed to create password recovery token", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
+	}
+
+	// TODO: Send email with recovery link
+	// In a real implementation, you would send an email here with a link containing the token
+	// For example: https://yourdomain.com/reset-password?token=xyz&email=user@example.com
+	logger.LogWithFields(
+		fmt.Sprintf("Password recovery token generated for user %s: %s", user.Email, token),
+		c.Response().Header().Get(echo.HeaderXRequestID),
+		"password_recovery",
+	)
+
+	// FOR DEVELOPMENT ONLY: Return token in response
+	// In production, this should be removed and replaced with email delivery
+	type devResponse struct {
+		Message string `json:"message"`
+		Token   string `json:"token,omitempty"` // Only for development
+		Email   string `json:"email,omitempty"` // Only for development
+	}
+
+	return c.JSON(http.StatusOK, devResponse{
+		Message: "If your email is registered, you will receive password recovery instructions",
+		Token:   token,
+		Email:   user.Email,
+	})
 }
