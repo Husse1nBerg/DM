@@ -231,3 +231,108 @@ go install github.com/cosmtrek/air@latest
    exclude_dir = ["assets", "tmp", "vendor", "docs"]
    delay = 1000 # ms
    ```
+
+## Testing
+
+### Testing Setup
+
+The project uses the [testify](https://github.com/stretchr/testify) package for writing and running tests. The testing infrastructure is designed to support both:
+
+1. **Mock-based testing**: Tests run with mock database implementations (default)
+2. **Real database testing**: Tests run against a dedicated test database
+
+### Running Tests
+
+#### Using Mock Database (Default)
+
+Run tests with mock database implementation (no actual database connection required):
+
+```bash
+make test
+```
+
+Or specifically for API endpoint tests:
+
+```bash
+make test-api
+```
+
+#### Using Real Test Database
+
+To run tests against a real PostgreSQL test database:
+
+1. **Start the test database container**:
+   ```bash
+   make test-db-up
+   ```
+
+2. **Run migrations on the test database**:
+   ```bash
+   make test-goose-up
+   ```
+
+3. **Seed the test database with test data**:
+   ```bash
+   make test-db-seed
+   ```
+
+4. **Run tests with the real database**:
+   ```bash
+   make test-api-real
+   ```
+
+5. **Reset the test database (optional)**:
+   ```bash
+   make test-db-reset
+   ```
+
+6. **Shutdown the test database when done**:
+   ```bash
+   make test-db-down
+   ```
+
+### Writing Tests
+
+Tests are organized in the `tests/` directory:
+
+- `tests/setup_test.go`: Base test suite and utilities
+- `tests/mock_db.go`: Mock database implementation
+- `tests/marina_handlers_test.go`: Example test for marina endpoints
+- Add more `*_handlers_test.go` files for additional endpoint groups
+
+#### Example Test Pattern
+
+```go
+// Create a test suite by embedding the base TestSuite
+type UserHandlerTestSuite struct {
+    tests.TestSuite
+}
+
+// Entry point function for the test suite
+func TestUserHandlers(t *testing.T) {
+    suite.Run(t, new(UserHandlerTestSuite))
+}
+
+// Individual test method
+func (suite *UserHandlerTestSuite) Test_GetUserByID() {
+    // 1. Setup (get auth token, prepare test data)
+    adminToken := suite.TestUsers["admin"].AccessToken
+    
+    // 2. Execute request
+    resp := suite.performRequest(
+        http.MethodGet,
+        "/api/v1/users/some-id",
+        nil,
+        adminToken,
+    )
+    
+    // 3. Validate response
+    suite.assertResponseCode(resp, http.StatusOK)
+    
+    // 4. Parse and verify response data
+    var responseObj responses.BaseResponse
+    err := suite.parseResponse(resp, &responseObj)
+    suite.NoError(err)
+    suite.Equal("success", responseObj.Status)
+}
+```

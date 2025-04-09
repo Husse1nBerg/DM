@@ -39,14 +39,13 @@ var (
 	pgOnce     sync.Once
 )
 
-func NewConnection(cfg *config.Config) DBService {
+func NewConnection(cfg *config.DBConfig) DBService {
 	// Reuse Connection
 	// if dbInstance != nil {
 	// 	return dbInstance
 	// }
 	pgOnce.Do(func() {
-		dbCfg := cfg.DB
-		pool, err := pgxpool.New(context.Background(), dbCfg.Addr())
+		pool, err := pgxpool.New(context.Background(), cfg.Addr())
 		if err != nil {
 			log.Fatal(err)
 		}

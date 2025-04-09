@@ -41,12 +41,6 @@ type UpdateMarinaRequest struct {
 	Address      *UpdateAddressRequest `json:"address,omitempty"`
 }
 
-// GetMarinasPaginatedRequest represents parameters for paginated marina retrieval
-type GetMarinasPaginatedRequest struct {
-	Limit  int32 `query:"limit" validate:"gte=0" default:"10"`
-	Offset int32 `query:"offset" validate:"gte=0" default:"0"`
-}
-
 // Validate performs custom validation on the create marina request
 func (r *CreateMarinaRequest) Validate() error {
 	validate := validator.New()
@@ -55,12 +49,6 @@ func (r *CreateMarinaRequest) Validate() error {
 
 // Validate performs custom validation on the update marina request
 func (r *UpdateMarinaRequest) Validate() error {
-	validate := validator.New()
-	return validate.Struct(r)
-}
-
-// Validate performs custom validation on the pagination request
-func (r *GetMarinasPaginatedRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)
 }

@@ -58,7 +58,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	user, err := queries.GetUserByEmail(c.Request().Context(), loginRequest.Email)
 
 	if err != nil {
-		logger.Zap.Info("login failed: user not found", c.Response().Header().Get(echo.HeaderXRequestID))
+		logger.Zap.Info("login failed: user not found ", err, loginRequest.Email, c.Response().Header().Get(echo.HeaderXRequestID))
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid credentials").JSON(c)
 	}
 

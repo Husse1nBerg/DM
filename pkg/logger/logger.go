@@ -29,6 +29,36 @@ func (l *Logger) LogWithFields(msg string, requestID string, serviceName string)
 	l.Zap.With(zap.String("request_id", requestID), zap.String("service_name", serviceName)).Info(msg)
 }
 
+func NewTestLogger() *Logger {
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:        "ts",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		FunctionKey:    zapcore.OmitKey,
+		MessageKey:     "msg",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+		EncodeTime:     localTimeEncoder,
+	}
+
+	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
+	core := zapcore.NewCore(
+		consoleEncoder,
+		zapcore.AddSync(os.Stdout),
+		zap.NewAtomicLevelAt(zap.DebugLevel),
+	)
+
+	logger := zap.New(core)
+	return &Logger{
+		Zap:        logger.Sugar(),
+		DesugarZap: logger,
+	}
+}
+
 func NewLogger(config config.LoggerConfig) *Logger {
 	var options []zap.Option
 	var encoder zapcore.Encoder

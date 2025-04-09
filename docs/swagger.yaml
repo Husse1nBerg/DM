@@ -20,6 +20,56 @@ definitions:
           '{"name"': '"Marina Management System"'
         type: object
     type: object
+  models.Permissions:
+    properties:
+      deleteMarinas:
+        example: false
+        type: boolean
+      deleteOrganizations:
+        example: false
+        type: boolean
+      deleteRoles:
+        example: false
+        type: boolean
+      deleteUsers:
+        example: false
+        type: boolean
+      readMarinas:
+        description: Marina permissions
+        example: true
+        type: boolean
+      readOrganizations:
+        description: Organization permissions
+        example: true
+        type: boolean
+      readRoles:
+        description: Role permissions
+        example: true
+        type: boolean
+      readSettings:
+        description: Settings permissions
+        example: true
+        type: boolean
+      readUsers:
+        description: User permissions
+        example: true
+        type: boolean
+      writeMarinas:
+        example: true
+        type: boolean
+      writeOrganizations:
+        example: true
+        type: boolean
+      writeRoles:
+        example: true
+        type: boolean
+      writeSettings:
+        example: true
+        type: boolean
+      writeUsers:
+        example: true
+        type: boolean
+    type: object
   models.WorkingHours:
     properties:
       friday:
@@ -158,6 +208,23 @@ definitions:
     required:
     - email
     - name
+    type: object
+  requests.CreateRoleRequest:
+    properties:
+      description:
+        example: Administrator role with full access
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      name:
+        example: Admin
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
+    required:
+    - name
+    - permissions
     type: object
   requests.CreateUserRequest:
     properties:
@@ -383,6 +450,20 @@ definitions:
       website:
         example: https://updated-example.com
         type: string
+    type: object
+  requests.UpdateRoleRequest:
+    properties:
+      description:
+        example: Administrator role with full access
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      name:
+        example: Admin
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
     type: object
   requests.UpdateUserRequest:
     properties:
@@ -722,6 +803,30 @@ definitions:
         $ref: '#/definitions/responses.UserResponse'
       message:
         example: User created successfully
+        type: string
+    type: object
+  responses.RoleResponse:
+    description: Role representation for API responses
+    properties:
+      createdAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Administrator role with full access
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      name:
+        example: Admin
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
+      updatedAt:
+        example: "2023-01-02T00:00:00Z"
         type: string
     type: object
   responses.UserListResponse:
@@ -1065,15 +1170,15 @@ paths:
       - application/json
       description: Retrieves marinas with pagination support
       parameters:
-      - default: 10
-        description: Page size limit
+      - default: 1
+        description: Page number
         in: query
-        name: limit
+        name: page
         type: integer
-      - default: 0
-        description: Page offset
+      - default: 10
+        description: Page size
         in: query
-        name: offset
+        name: pageSize
         type: integer
       produces:
       - application/json
@@ -1365,15 +1470,15 @@ paths:
         name: organizationId
         required: true
         type: string
-      - default: 10
-        description: Page size limit
+      - default: 1
+        description: Page number
         in: query
-        name: limit
+        name: page
         type: integer
-      - default: 0
-        description: Page offset
+      - default: 10
+        description: Page size
         in: query
-        name: offset
+        name: pageSize
         type: integer
       produces:
       - application/json
@@ -1407,15 +1512,15 @@ paths:
       - application/json
       description: Retrieves organizations with pagination support
       parameters:
-      - default: 10
-        description: Page size limit
+      - default: 1
+        description: Page number
         in: query
-        name: limit
+        name: page
         type: integer
-      - default: 0
-        description: Page offset
+      - default: 10
+        description: Page size
         in: query
-        name: offset
+        name: pageSize
         type: integer
       produces:
       - application/json
@@ -1709,6 +1814,216 @@ paths:
       summary: Project details
       tags:
       - Generic
+  /role:
+    post:
+      consumes:
+      - application/json
+      description: Create a new role
+      parameters:
+      - description: Role information
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created role
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create role
+      tags:
+      - Role
+  /role/{roleId}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete role
+      tags:
+      - Role
+    get:
+      consumes:
+      - application/json
+      description: Get a specific role by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role details
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get role
+      tags:
+      - Role
+    put:
+      consumes:
+      - application/json
+      description: Update an existing role
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      - description: Updated role information
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated role
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update role
+      tags:
+      - Role
+  /role/list:
+    get:
+      consumes:
+      - application/json
+      description: Get all roles with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of roles
+          schema:
+            items:
+              $ref: '#/definitions/responses.RoleResponse'
+            type: array
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List roles
+      tags:
+      - Role
+  /role/name:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific role by name
+      parameters:
+      - description: Role name
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role details
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get role by name
+      tags:
+      - Role
   /user:
     post:
       consumes:
@@ -1851,11 +2166,13 @@ paths:
       - application/json
       description: get users
       parameters:
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -1886,11 +2203,13 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -1925,11 +2244,13 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -2024,11 +2345,13 @@ paths:
         name: organizationId
         required: true
         type: string
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -2084,11 +2407,13 @@ paths:
         name: roleId
         required: true
         type: string
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer

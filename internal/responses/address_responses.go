@@ -69,28 +69,3 @@ func ConvertAddressToResponse(address db.Address) AddressResponse {
 func NewAddressResponseSuccess(address db.Address) BaseResponse {
 	return NewSuccessResponse(ConvertAddressToResponse(address))
 }
-
-// NewOrganizationWithAddressResponse creates a response containing organization and its address
-func NewOrganizationWithAddressResponse(org db.Organization, address *db.Address) BaseResponse {
-	orgResponse := ConvertOrganizationToResponse(org)
-	response := OrganizationWithAddressResponse{
-		ID:        orgResponse.ID,
-		Email:     orgResponse.Email,
-		Name:      orgResponse.Name,
-		Image:     orgResponse.Image,
-		Website:   orgResponse.Website,
-		Country:   orgResponse.Country,
-		Phone:     orgResponse.Phone,
-		IsActive:  orgResponse.IsActive,
-		IsTest:    orgResponse.IsTest,
-		CreatedAt: orgResponse.CreatedAt,
-		UpdatedAt: orgResponse.UpdatedAt,
-	}
-
-	if address != nil {
-		addressResponse := ConvertAddressToResponse(*address)
-		response.Address = &addressResponse
-	}
-
-	return NewSuccessResponse(response)
-}

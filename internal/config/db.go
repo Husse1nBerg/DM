@@ -36,6 +36,17 @@ func LoadDBConfig() DBConfig {
 	}
 }
 
+func LoadTestDBConfig() DBConfig {
+	return DBConfig{
+		User:     os.Getenv("TEST_DB_USER"),
+		Password: os.Getenv("TEST_DB_PASSWORD"),
+		Name:     os.Getenv("TEST_DB_NAME"),
+		Host:     os.Getenv("TEST_DB_HOST"),
+		Port:     os.Getenv("TEST_DB_PORT"),
+		Schema:   os.Getenv("TEST_DB_SCHEMA"),
+	}
+}
+
 func (a *DBConfig) Addr() string {
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", a.User, a.Password, a.Host, a.Port, a.Name, a.Schema)
 }
