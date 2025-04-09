@@ -202,15 +202,15 @@ func (h *OrganizationHandler) GetOrganizationByEmail(c echo.Context) error {
 //	@Tags			Organizations
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Page size limit"	default(10)
-//	@Param			offset	query		int	false	"Page offset"		default(0)
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200		{array}		responses.OrganizationResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/organizations [get]
 func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
-	var req requests.GetOrganizationsPaginatedRequest
+	var req requests.PaginationQuery
 
 	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -221,8 +221,8 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 	}
 
 	// Set defaults
-	if req.Limit <= 0 {
-		req.Limit = 10
+	if req.PageSize <= 0 {
+		req.PageSize = 10
 	}
 
 	// Calculate total count (in a real app, you'd use a COUNT query)
@@ -234,8 +234,8 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 
 	// Fetch paginated data
 	params := db.GetOrganizationsPaginatedParams{
-		Limit:  req.Limit,
-		Offset: req.Offset,
+		Limit:  req.PageSize,
+		Offset: (req.Page - 1) * req.PageSize,
 	}
 
 	orgs, err := h.server.DB.Queries().GetOrganizationsPaginated(c.Request().Context(), params)
@@ -244,9 +244,9 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 	}
 
 	// Calculate current page
-	currentPage := req.Offset/req.Limit + 1
+	currentPage := req.Page
 
-	return responses.NewOrganizationsPaginatedResponse(orgs, total, req.Limit, currentPage).JSON(c)
+	return responses.NewOrganizationsPaginatedResponse(orgs, total, req.PageSize, currentPage).JSON(c)
 }
 
 // UpdateOrganization updates an existing organization

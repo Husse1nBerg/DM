@@ -29,8 +29,8 @@ func NewUserHandler(server *s.Server) *UserHandler {
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			page		query		int		false	"Page number"
-//	@Param			pageSize	query		int		false	"Page size"
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200	{object}	responses.UserListResponse "Paginated list of users"
 //	@Failure		500	{object}	responses.Error "Server error"
 //	@Security		ApiKeyAuth
@@ -241,8 +241,8 @@ func (g *UserHandler) DeleteUserHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			roleId	path		string	true	"Role ID"
-//	@Param			page	query		int		false	"Page number"
-//	@Param			pageSize	query		int		false	"Page size"
+//	@Param			page	query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200		{object}	responses.UserListResponse "List of users with the specified role"
 //	@Failure		400		{object}	responses.Error "Bad request"
 //	@Failure		500		{object}	responses.Error "Server error"
@@ -294,8 +294,8 @@ func (g *UserHandler) GetUsersByRoleHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			organizationId	path		string	true	"Organization ID"
-//	@Param			page			query		int		false	"Page number"
-//	@Param			pageSize		query		int		false	"Page size"
+//	@Param			page				query		int		false	"Page number"	default(1)
+//	@Param			pageSize			query		int		false	"Page size"		default(10)
 //	@Success		200				{object}	responses.UserListResponse "Paginated list of users in the organization"
 //	@Failure		400				{object}	responses.Error "Bad request"
 //	@Failure		500				{object}	responses.Error "Server error"
@@ -350,8 +350,8 @@ func (g *UserHandler) GetUsersByOrganizationHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	path		string	true	"Marina ID"
-//	@Param			page		query		int		false	"Page number"
-//	@Param			pageSize	query		int		false	"Page size"
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200			{object}	responses.UserListResponse "Paginated list of users in the marina"
 //	@Failure		400			{object}	responses.Error "Bad request"
 //	@Failure		500			{object}	responses.Error "Server error"
@@ -404,8 +404,8 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	path		string	true	"Marina ID"
-//	@Param			page		query		int		false	"Page number"
-//	@Param			pageSize	query		int		false	"Page size"
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200			{object}	responses.UserListResponse "List of users assigned to the marina"
 //	@Failure		400			{object}	responses.Error "Bad request"
 //	@Failure		500			{object}	responses.Error "Server error"

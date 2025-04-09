@@ -48,12 +48,6 @@ type AssignUserToMarinaRequest struct {
 	MarinaID uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
 }
 
-// PaginationQuery defines the pagination parameters
-type PaginationQuery struct {
-	Page     int32 `query:"page" validate:"gte=1" default:"1"`
-	PageSize int32 `query:"pageSize" validate:"gte=1,lte=100" default:"10"`
-}
-
 // Validate performs custom validation on the request
 func (r *CreateUserRequest) Validate() error {
 	validate := validator.New()
@@ -70,10 +64,4 @@ func (r *UpdateUserRequest) Validate() error {
 func (r *AssignUserToMarinaRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)
-}
-
-// Validate performs custom validation on the pagination query
-func (p *PaginationQuery) Validate() error {
-	validate := validator.New()
-	return validate.Struct(p)
 }

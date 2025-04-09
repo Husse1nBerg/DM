@@ -24,9 +24,3 @@ type UpdateOrganizationRequest struct {
 	IsActive *bool   `json:"is_active,omitempty" example:"true"`
 	IsTest   *bool   `json:"is_test,omitempty" example:"false"`
 }
-
-// GetOrganizationsPaginatedRequest defines the pagination parameters for organization list
-type GetOrganizationsPaginatedRequest struct {
-	Limit  int32 `query:"limit" validate:"omitempty,min=1,max=100" example:"10"`
-	Offset int32 `query:"offset" validate:"omitempty,min=0" example:"0"`
-}

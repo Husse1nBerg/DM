@@ -236,15 +236,15 @@ func (h *MarinaHandler) GetMarinaByEmail(c echo.Context) error {
 //	@Tags			Marinas
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Page size limit"	default(10)
-//	@Param			offset	query		int	false	"Page offset"		default(0)
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200		{array}		responses.MarinaListResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/marinas [get]
 func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
-	var req requests.GetMarinasPaginatedRequest
+	var req requests.PaginationQuery
 
 	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -255,8 +255,8 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 	}
 
 	// Set defaults
-	if req.Limit <= 0 {
-		req.Limit = 10
+	if req.PageSize <= 0 {
+		req.PageSize = 10
 	}
 
 	// Calculate total count
@@ -268,8 +268,8 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 
 	// Fetch paginated data
 	params := db.GetMarinasPaginatedParams{
-		Limit:  req.Limit,
-		Offset: req.Offset,
+		Limit:  req.PageSize,
+		Offset: (req.Page - 1) * req.PageSize,
 	}
 
 	marinas, err := h.server.DB.Queries().GetMarinasPaginated(c.Request().Context(), params)
@@ -278,9 +278,9 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 	}
 
 	// Calculate current page
-	currentPage := req.Offset/req.Limit + 1
+	currentPage := req.Page
 
-	return responses.NewMarinasPaginatedResponse(marinas, total, req.Limit, currentPage).JSON(c)
+	return responses.NewMarinasPaginatedResponse(marinas, total, req.PageSize, currentPage).JSON(c)
 }
 
 // GetMarinasByOrganization retrieves marinas for a specific organization with pagination
@@ -291,8 +291,8 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			organizationId	path		string	true	"Organization ID"	Format(uuid)
-//	@Param			limit			query		int		false	"Page size limit"	default(10)
-//	@Param			offset			query		int		false	"Page offset"		default(0)
+//	@Param			page				query		int		false	"Page number"	default(1)
+//	@Param			pageSize			query		int		false	"Page size"		default(10)
 //	@Success		200				{array}		responses.MarinaListResponse
 //	@Failure		400				{object}	responses.BaseResponse
 //	@Failure		404				{object}	responses.BaseResponse
@@ -306,7 +306,7 @@ func (h *MarinaHandler) GetMarinasByOrganization(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid organization ID").JSON(c)
 	}
 
-	var req requests.GetMarinasPaginatedRequest
+	var req requests.PaginationQuery
 	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
@@ -316,8 +316,8 @@ func (h *MarinaHandler) GetMarinasByOrganization(c echo.Context) error {
 	}
 
 	// Set defaults
-	if req.Limit <= 0 {
-		req.Limit = 10
+	if req.PageSize <= 0 {
+		req.PageSize = 10
 	}
 
 	// Get all marinas for this organization to calculate total
@@ -329,14 +329,14 @@ func (h *MarinaHandler) GetMarinasByOrganization(c echo.Context) error {
 
 	if total == 0 {
 		// Return empty response if no marinas found
-		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, req.Limit, 1).JSON(c)
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, req.PageSize, 1).JSON(c)
 	}
 
 	// Fetch paginated data for this organization
 	params := db.GetMarinasByOrganizationPaginatedParams{
 		OrganizationID: orgID,
-		Limit:          req.Limit,
-		Offset:         req.Offset,
+		Limit:          req.PageSize,
+		Offset:         (req.Page - 1) * req.PageSize,
 	}
 
 	marinas, err := h.server.DB.Queries().GetMarinasByOrganizationPaginated(c.Request().Context(), params)
@@ -345,9 +345,9 @@ func (h *MarinaHandler) GetMarinasByOrganization(c echo.Context) error {
 	}
 
 	// Calculate current page
-	currentPage := req.Offset/req.Limit + 1
+	currentPage := req.Page
 
-	return responses.NewMarinasPaginatedResponse(marinas, total, req.Limit, currentPage).JSON(c)
+	return responses.NewMarinasPaginatedResponse(marinas, total, req.PageSize, currentPage).JSON(c)
 }
 
 // UpdateMarina updates an existing marina

@@ -11,6 +11,7 @@ type Config struct {
 	Logger LoggerConfig
 	Auth   AuthConfig
 	DB     DBConfig
+	TestDB DBConfig
 	App    AppConfig
 	Redis  RedisConfig
 }
@@ -19,6 +20,7 @@ func New() *Config {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")
+		log.Println(err)
 	}
 
 	// Load all configurations
@@ -35,6 +37,7 @@ func New() *Config {
 		Logger: LoadLoggerConfig(),
 		Auth:   LoadAuthConfig(),
 		DB:     dbConfig,
+		TestDB: LoadTestDBConfig(),
 		App:    LoadAppConfig(),
 		Redis:  LoadRedisConfig(),
 	}
