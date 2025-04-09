@@ -5,11 +5,14 @@ import (
 	"encoding/base64"
 	"log"
 	"os"
+	"strconv"
 )
 
 type AuthConfig struct {
-	AccessSecret  string
-	RefreshSecret string
+	AccessSecret    string
+	RefreshSecret   string
+	LoginAttempts   int32
+	LockoutDuration int32
 }
 
 // generateSecureToken creates a random token for use as a secret key
@@ -36,8 +39,24 @@ func LoadAuthConfig() AuthConfig {
 		log.Println("Warning: Using generated REFRESH_SECRET. Consider setting a permanent value in your .env file")
 	}
 
+	LoginAttemptsValue := int32(6)
+	if val := os.Getenv("LOGIN_ATTEMPTS"); val != "" {
+		if parsed, err := strconv.ParseInt(val, 10, 32); err == nil {
+			LoginAttemptsValue = int32(parsed)
+		}
+	}
+
+	LockoutDurationValue := int32(30)
+	if val := os.Getenv("LOCKOUT_DURATION"); val != "" {
+		if parsed, err := strconv.ParseInt(val, 10, 32); err == nil {
+			LockoutDurationValue = int32(parsed)
+		}
+	}
+
 	return AuthConfig{
-		AccessSecret:  accessSecret,
-		RefreshSecret: refreshSecret,
+		AccessSecret:    accessSecret,
+		RefreshSecret:   refreshSecret,
+		LoginAttempts:   LoginAttemptsValue,
+		LockoutDuration: LockoutDurationValue,
 	}
 }
