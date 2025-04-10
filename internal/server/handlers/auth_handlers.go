@@ -324,21 +324,25 @@ func (authHandler *AuthHandler) Register(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing registration").JSON(c)
 	}
 
-	// Get organization ID - using first org for now (in a real app, you'd handle this differently)
-	orgs, err := queries.GetAllOrganizations(c.Request().Context())
-	if err != nil || len(orgs) == 0 {
-		logger.Zap.Error("failed to get organizations: %v", err, c.Response().Header().Get(echo.HeaderXRequestID))
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to assign organization").JSON(c)
+	// Validate organization exists
+	_, err = queries.GetOrganizationByID(c.Request().Context(), registerRequest.OrganizationID)
+	if err != nil {
+		logger.Zap.Error("invalid organization ID: %v", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid organization ID").JSON(c)
 	}
-	organizationID := orgs[0].ID
 
-	// Get marinas for the organization
-	marinas, err := queries.GetMarinasByOrganization(c.Request().Context(), organizationID)
-	if err != nil || len(marinas) == 0 {
-		logger.Zap.Error("failed to get marinas: %v", err, c.Response().Header().Get(echo.HeaderXRequestID))
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to assign marina").JSON(c)
+	// Validate marina exists and belongs to the organization
+	marina, err := queries.GetMarinaByID(c.Request().Context(), registerRequest.MarinaID)
+	if err != nil {
+		logger.Zap.Error("invalid marina ID: %v", err, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
 	}
-	marinaID := marinas[0].ID
+
+	// Ensure marina belongs to the organization
+	if marina.OrganizationID != registerRequest.OrganizationID {
+		logger.Zap.Error("marina does not belong to the specified organization", c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina does not belong to the specified organization").JSON(c)
+	}
 
 	// Default to active user
 	isActive := true
@@ -351,8 +355,8 @@ func (authHandler *AuthHandler) Register(c echo.Context) error {
 		Email:          registerRequest.Email,
 		RoleID:         registerRequest.RoleID,
 		PasswordHash:   string(encryptedPassword),
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
+		OrganizationID: registerRequest.OrganizationID,
+		MarinaID:       registerRequest.MarinaID,
 		IsActive:       &isActive,
 	}
 
@@ -365,7 +369,7 @@ func (authHandler *AuthHandler) Register(c echo.Context) error {
 	// Assign user to marina
 	err = queries.AssignUserToMarina(c.Request().Context(), database.AssignUserToMarinaParams{
 		UserID:   newUser.ID,
-		MarinaID: marinaID,
+		MarinaID: registerRequest.MarinaID,
 	})
 	if err != nil {
 		logger.Zap.Error("failed to assign user to marina: %v", err, c.Response().Header().Get(echo.HeaderXRequestID))
