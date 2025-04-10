@@ -14,12 +14,6 @@ type LoginResponseWrapper struct {
 	Message string        `json:"message,omitempty" example:"Login successful"`
 }
 
-// RegisterResponseWrapper is purely for Swagger documentation
-type RegisterResponseWrapper struct {
-	Data    UserResponse `json:"data"`
-	Message string       `json:"message" example:"User created successfully"`
-}
-
 // NewLoginSuccessResponse creates a success response with login information
 func NewLoginSuccessResponse(token, refreshToken string, exp int64) BaseResponse {
 	return NewSuccessResponse(&LoginResponse{

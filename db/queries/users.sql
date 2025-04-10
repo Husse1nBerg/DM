@@ -17,7 +17,9 @@ INSERT INTO users (
         marina_id,
         role_id,
         is_superuser,
-        is_active
+        is_active,
+        modules,
+        permissions
     )
 VALUES (
         $1,
@@ -37,7 +39,9 @@ VALUES (
         $15,
         $16,
         $17,
-        $18
+        $18,
+        $19,
+        $20
     )
 RETURNING *;
 -- name: GetUserByID :one
@@ -137,6 +141,8 @@ SET first_name = $2,
     role_id = $15,
     is_superuser = $16,
     is_active = $17,
+    modules = $18,
+    permissions = $19,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;

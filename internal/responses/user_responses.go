@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
+	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 )
@@ -11,29 +12,48 @@ import (
 // UserResponse represents a user profile in the system
 // @Description User profile data including personal information and system roles
 type UserResponse struct {
-	ID                  uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username            string     `json:"username" example:"johndoe"`
-	FirstName           string     `json:"firstName" example:"John"`
-	LastName            string     `json:"lastName" example:"Doe"`
-	Email               string     `json:"email" example:"john.doe@example.com"`
-	EmailVerified       *time.Time `json:"emailVerified,omitempty"`
-	Phone               *string    `json:"phone,omitempty" example:"+15551234567"`
-	Title               *string    `json:"title,omitempty" example:"Manager"`
-	Image               *string    `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
-	LastLogin           *time.Time `json:"lastLogin,omitempty"`
-	FailedLoginAttempts *int32     `json:"failedLoginAttempts,omitempty" example:"0"`
-	LockedUntil         *time.Time `json:"lockedUntil,omitempty"`
-	LastPasswordReset   *time.Time `json:"lastPasswordReset,omitempty"`
-	OrganizationID      uuid.UUID  `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	MarinaID            uuid.UUID  `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
-	RoleID              uuid.UUID  `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
-	IsSuperuser         *bool      `json:"isSuperuser,omitempty" example:"false"`
-	IsActive            *bool      `json:"isActive,omitempty" example:"true"`
-	CreatedAt           *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt           *time.Time `json:"updatedAt,omitempty"`
+	ID                  uuid.UUID           `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username            string              `json:"username" example:"johndoe"`
+	FirstName           string              `json:"firstName" example:"John"`
+	LastName            string              `json:"lastName" example:"Doe"`
+	Email               string              `json:"email" example:"john.doe@example.com"`
+	EmailVerified       *time.Time          `json:"emailVerified,omitempty"`
+	Phone               *string             `json:"phone,omitempty" example:"+15551234567"`
+	Title               *string             `json:"title,omitempty" example:"Manager"`
+	Image               *string             `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
+	LastLogin           *time.Time          `json:"lastLogin,omitempty"`
+	FailedLoginAttempts *int32              `json:"failedLoginAttempts,omitempty" example:"0"`
+	LockedUntil         *time.Time          `json:"lockedUntil,omitempty"`
+	LastPasswordReset   *time.Time          `json:"lastPasswordReset,omitempty"`
+	OrganizationID      uuid.UUID           `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID            uuid.UUID           `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
+	RoleID              uuid.UUID           `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	IsSuperuser         *bool               `json:"isSuperuser,omitempty" example:"false"`
+	IsActive            *bool               `json:"isActive,omitempty" example:"true"`
+	CreatedAt           *time.Time          `json:"createdAt,omitempty"`
+	UpdatedAt           *time.Time          `json:"updatedAt,omitempty"`
+	Permissions         *models.Permissions `json:"permissions,omitempty"`
+	Modules             *models.Modules     `json:"modules,omitempty"`
 }
 
 func NewUserResponse(user db.User) UserResponse {
+	// Create instances to fill from DB byte arrays
+	var permissions models.Permissions
+	var modules models.Modules
+
+	// Convert byte arrays to structs
+	if user.Permissions != nil {
+		if err := permissions.FromBytes(user.Permissions); err != nil {
+			// Handle error or set to nil (using default zero values is fine)
+		}
+	}
+
+	if user.Modules != nil {
+		if err := modules.FromBytes(user.Modules); err != nil {
+			// Handle error or set to nil (using default zero values is fine)
+		}
+	}
+
 	return UserResponse{
 		ID:                  user.ID,
 		Username:            user.Username,
@@ -55,6 +75,8 @@ func NewUserResponse(user db.User) UserResponse {
 		IsActive:            user.IsActive,
 		CreatedAt:           utils.PgTimeToTimePtr(user.CreatedAt),
 		UpdatedAt:           utils.PgTimeToTimePtr(user.UpdatedAt),
+		Permissions:         &permissions,
+		Modules:             &modules,
 	}
 }
 

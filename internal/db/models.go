@@ -111,6 +111,8 @@ type User struct {
 	CreatedAt           pgtype.Timestamp
 	UpdatedAt           pgtype.Timestamp
 	DeletedAt           pgtype.Timestamp
+	Modules             []byte
+	Permissions         []byte
 }
 
 type UserMarina struct {

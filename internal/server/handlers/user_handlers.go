@@ -9,6 +9,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -112,6 +113,38 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		isSuperuser = *req.IsSuperuser
 	}
 
+	// Convert permissions and modules to bytes
+	var permissionsBytes, modulesBytes []byte
+
+	// Use provided permissions or default from role
+	if req.Permissions != nil {
+		var err error
+		permissionsBytes, err = req.Permissions.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
+		}
+	} else {
+		// Set default permissions based on the role
+		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		permissionsBytes = role.Permissions
+	}
+
+	// Use provided modules or default read-only modules
+	if req.Modules != nil {
+		var err error
+		modulesBytes, err = req.Modules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+		}
+	} else {
+		// Set default read-only modules if not provided
+		defaultModules := models.ReadOnlyModules()
+		modulesBytes, _ = defaultModules.ToBytes()
+	}
+
 	params := db.CreateUserParams{
 		Username:            req.Username,
 		FirstName:           req.FirstName,
@@ -128,6 +161,8 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		RoleID:              req.RoleID,
 		IsSuperuser:         &isSuperuser,
 		IsActive:            &isActive,
+		Modules:             modulesBytes,
+		Permissions:         permissionsBytes,
 	}
 
 	user, err := queries.CreateUser(c.Request().Context(), params)
@@ -597,6 +632,8 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		RoleID:              currentUser.RoleID,
 		IsSuperuser:         currentUser.IsSuperuser,
 		IsActive:            currentUser.IsActive,
+		Modules:             currentUser.Modules,
+		Permissions:         currentUser.Permissions,
 	}
 
 	// Update only the fields that were provided in the request
@@ -638,6 +675,24 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 	}
 	if req.IsActive != nil {
 		updateParams.IsActive = req.IsActive
+	}
+
+	// Update permissions if provided
+	if req.Permissions != nil {
+		permissionsBytes, err := req.Permissions.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
+		}
+		updateParams.Permissions = permissionsBytes
+	}
+
+	// Update modules if provided
+	if req.Modules != nil {
+		modulesBytes, err := req.Modules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+		}
+		updateParams.Modules = modulesBytes
 	}
 
 	// Perform update
