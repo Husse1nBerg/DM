@@ -3004,7 +3004,7 @@ const docTemplate = `{
                 },
                 "role_id": {
                     "type": "string",
-                    "example": "admin"
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
                 "username": {
                     "type": "string",
