@@ -37,8 +37,13 @@ func main() {
 	server := server.NewServer(cfg, zlog)
 	routes.RegisterRoutes(server)
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
-	zlog.Zap.Infof("Service URL: http://localhost:%s/swagger/index.html", cfg.Server.Port)
+	if cfg.Server.Env != "local" {
+		docs.SwaggerInfo.Host = fmt.Sprintf("%s", cfg.Server.Host)
+		zlog.Zap.Infof("Service URL: https://%s/swagger/index.html", cfg.Server.Host)
+	} else {
+		docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
+		zlog.Zap.Infof("Service URL: http://localhost:%s/swagger/index.html", cfg.Server.Port)
+	}
 
 	err := server.Start(cfg.Server.Port)
 
