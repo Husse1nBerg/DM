@@ -5,6 +5,9 @@ RUN apk add --no-cache curl
 
 WORKDIR /app
 
+# # Install Goose
+# RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -19,6 +22,11 @@ WORKDIR /app
 
 # Copy built binary
 COPY --from=build /app/main /app/main
+
+# # Copy Goose binary
+# COPY --from=build /go/bin/goose /usr/local/bin/goose
+# # Copy migration files
+# COPY --from=build /app/db/migrations /app/db/migrations
 
 # Copy entrypoint script
 COPY --from=build /app/scripts/entrypoint.sh /app/entrypoint.sh

@@ -20,6 +20,37 @@ definitions:
           '{"name"': '"Marina Management System"'
         type: object
     type: object
+  models.Modules:
+    properties:
+      customerVesselsRead:
+        type: boolean
+      customerVesselsWrite:
+        type: boolean
+      inventoryManagementRead:
+        type: boolean
+      inventoryManagementWrite:
+        type: boolean
+      marinaManagementRead:
+        type: boolean
+      marinaManagementWrite:
+        type: boolean
+      paymentsRead:
+        type: boolean
+      paymentsWrite:
+        type: boolean
+      posRead:
+        type: boolean
+      posWrite:
+        type: boolean
+      salesManagementRead:
+        type: boolean
+      salesManagementWrite:
+        type: boolean
+      serviceManagementRead:
+        type: boolean
+      serviceManagementWrite:
+        type: boolean
+    type: object
   models.Permissions:
     properties:
       deleteMarinas:
@@ -267,6 +298,8 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
+      modules:
+        $ref: '#/definitions/models.Modules'
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
@@ -274,6 +307,8 @@ definitions:
         example: SecureP@ssw0rd
         minLength: 12
         type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -325,46 +360,6 @@ definitions:
         type: string
     required:
     - token
-    type: object
-  requests.RegisterRequest:
-    properties:
-      email:
-        example: john.doe@example.com
-        type: string
-      first_name:
-        example: John
-        minLength: 2
-        type: string
-      last_name:
-        example: Doe
-        minLength: 2
-        type: string
-      marina_id:
-        example: 550e8400-e29b-41d4-a716-446655440002
-        type: string
-      organization_id:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      password:
-        example: Pa$$w0rd123
-        minLength: 12
-        type: string
-      role_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
-      username:
-        example: johndoe
-        minLength: 3
-        type: string
-    required:
-    - email
-    - first_name
-    - last_name
-    - marina_id
-    - organization_id
-    - password
-    - role_id
-    - username
     type: object
   requests.ResetPasswordRequest:
     description: Password reset request payload
@@ -541,10 +536,14 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
+      modules:
+        $ref: '#/definitions/models.Modules'
       password:
         example: NewSecureP@ssw0rd
         minLength: 12
         type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -852,14 +851,6 @@ definitions:
         example: https://example.com
         type: string
     type: object
-  responses.RegisterResponseWrapper:
-    properties:
-      data:
-        $ref: '#/definitions/responses.UserResponse'
-      message:
-        example: User created successfully
-        type: string
-    type: object
   responses.RoleResponse:
     description: Role representation for API responses
     properties:
@@ -943,9 +934,13 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
+      modules:
+        $ref: '#/definitions/models.Modules'
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -1179,37 +1174,6 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Refresh access token
-      tags:
-      - Authentication
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: New user registration
-      operationId: user-register
-      parameters:
-      - description: User's registration details
-        in: body
-        name: params
-        required: true
-        schema:
-          $ref: '#/definitions/requests.RegisterRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: User created successfully
-          schema:
-            $ref: '#/definitions/responses.RegisterResponseWrapper'
-        "400":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Server error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Register
       tags:
       - Authentication
   /health:

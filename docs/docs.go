@@ -307,53 +307,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
-            "post": {
-                "description": "New user registration",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Register",
-                "operationId": "user-register",
-                "parameters": [
-                    {
-                        "description": "User's registration details",
-                        "name": "params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.RegisterRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "User created successfully",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RegisterResponseWrapper"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/health": {
             "get": {
                 "description": "Checks the health of the server",
@@ -2546,6 +2499,53 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Modules": {
+            "type": "object",
+            "properties": {
+                "customerVesselsRead": {
+                    "type": "boolean"
+                },
+                "customerVesselsWrite": {
+                    "type": "boolean"
+                },
+                "inventoryManagementRead": {
+                    "type": "boolean"
+                },
+                "inventoryManagementWrite": {
+                    "type": "boolean"
+                },
+                "marinaManagementRead": {
+                    "type": "boolean"
+                },
+                "marinaManagementWrite": {
+                    "type": "boolean"
+                },
+                "paymentsRead": {
+                    "type": "boolean"
+                },
+                "paymentsWrite": {
+                    "type": "boolean"
+                },
+                "posRead": {
+                    "type": "boolean"
+                },
+                "posWrite": {
+                    "type": "boolean"
+                },
+                "salesManagementRead": {
+                    "type": "boolean"
+                },
+                "salesManagementWrite": {
+                    "type": "boolean"
+                },
+                "serviceManagementRead": {
+                    "type": "boolean"
+                },
+                "serviceManagementWrite": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.Permissions": {
             "type": "object",
             "properties": {
@@ -2892,6 +2892,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
@@ -2900,6 +2903,9 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 12,
                     "example": "SecureP@ssw0rd"
+                },
+                "permissions": {
+                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -2959,57 +2965,6 @@ const docTemplate = `{
                 "token": {
                     "type": "string",
                     "example": "refresh_token"
-                }
-            }
-        },
-        "requests.RegisterRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "first_name",
-                "last_name",
-                "marina_id",
-                "organization_id",
-                "password",
-                "role_id",
-                "username"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
-                "first_name": {
-                    "type": "string",
-                    "minLength": 2,
-                    "example": "John"
-                },
-                "last_name": {
-                    "type": "string",
-                    "minLength": 2,
-                    "example": "Doe"
-                },
-                "marina_id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440002"
-                },
-                "organization_id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 12,
-                    "example": "Pa$$w0rd123"
-                },
-                "role_id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440003"
-                },
-                "username": {
-                    "type": "string",
-                    "minLength": 3,
-                    "example": "johndoe"
                 }
             }
         },
@@ -3253,10 +3208,16 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "password": {
                     "type": "string",
                     "minLength": 12,
                     "example": "NewSecureP@ssw0rd"
+                },
+                "permissions": {
+                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -3680,18 +3641,6 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.RegisterResponseWrapper": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/responses.UserResponse"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "User created successfully"
-                }
-            }
-        },
         "responses.RoleResponse": {
             "description": "Role representation for API responses",
             "type": "object",
@@ -3807,9 +3756,15 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "permissions": {
+                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",

@@ -11,16 +11,6 @@ type LoginRequest struct {
 	BasicAuth
 }
 
-type RegisterRequest struct {
-	BasicAuth
-	FirstName      string    `json:"first_name" validate:"required,min=2" example:"John"`
-	LastName       string    `json:"last_name" validate:"required,min=2" example:"Doe"`
-	RoleID         uuid.UUID `json:"role_id" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
-	Username       string    `json:"username" validate:"required,min=3,alphanum" example:"johndoe"`
-	OrganizationID uuid.UUID `json:"organization_id" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
-	MarinaID       uuid.UUID `json:"marina_id" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
-}
-
 type RefreshRequest struct {
 	Token string `json:"token" validate:"required" example:"refresh_token"`
 }

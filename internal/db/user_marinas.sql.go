@@ -27,7 +27,7 @@ func (q *Queries) AssignUserToMarina(ctx context.Context, arg AssignUserToMarina
 }
 
 const getMarinaUsersList = `-- name: GetMarinaUsersList :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
@@ -66,6 +66,8 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, marinaID uuid.UUID) ([
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.Modules,
+			&i.Permissions,
 		); err != nil {
 			return nil, err
 		}
@@ -78,7 +80,7 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, marinaID uuid.UUID) ([
 }
 
 const getMarinaUsersListPaginated = `-- name: GetMarinaUsersListPaginated :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
@@ -125,6 +127,8 @@ func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarina
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.Modules,
+			&i.Permissions,
 		); err != nil {
 			return nil, err
 		}

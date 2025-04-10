@@ -6,6 +6,7 @@ import (
 	_ "github.com/dockworks/dm-web-backend/docs"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	h "github.com/dockworks/dm-web-backend/internal/server/handlers"
+	"go.uber.org/zap"
 
 	"github.com/brpaz/echozap"
 	"github.com/dockworks/dm-web-backend/pkg/token"
@@ -24,7 +25,7 @@ func RegisterRoutes(s *s.Server) {
 	s.Echo.Validator = s.Config.Server.Validator
 	s.Echo.Binder = s.Config.Server.Binder
 
-	// zapLogger := s.Logger.DesugarZap
+	zapLogger := s.Logger.DesugarZap
 	// Handlers creation
 	genericHandler := h.NewGenericHandler(s)
 	authHandler := h.NewAuthHandler(s)
@@ -40,10 +41,10 @@ func RegisterRoutes(s *s.Server) {
 	s.Echo.Use(middleware.CORSWithConfig(s.Config.Server.CORSConfig))
 	s.Echo.Use(middleware.Recover())
 	s.Echo.Use(middleware.Timeout())
-	// s.Echo.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-	// 	zapLogger.Info("Request Body", zap.String("body", string(reqBody)), zap.String("path", c.Path()), zap.String("method", c.Request().Method), zap.String("query", c.QueryString()), zap.String("remote_ip", c.RealIP()), zap.String("host", c.Request().Host), zap.String("user_agent", c.Request().UserAgent()), zap.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)))
-	// 	zapLogger.Info("Response Body", zap.String("body", string(resBody)), zap.String("path", c.Path()), zap.String("method", c.Request().Method), zap.String("query", c.QueryString()), zap.String("remote_ip", c.RealIP()), zap.String("host", c.Request().Host), zap.String("user_agent", c.Request().UserAgent()), zap.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)))
-	// }))
+	s.Echo.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+		zapLogger.Info("Request Body", zap.String("body", string(reqBody)), zap.String("path", c.Path()), zap.String("method", c.Request().Method), zap.String("query", c.QueryString()), zap.String("remote_ip", c.RealIP()), zap.String("host", c.Request().Host), zap.String("user_agent", c.Request().UserAgent()), zap.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)))
+		zapLogger.Info("Response Body", zap.String("body", string(resBody)), zap.String("path", c.Path()), zap.String("method", c.Request().Method), zap.String("query", c.QueryString()), zap.String("remote_ip", c.RealIP()), zap.String("host", c.Request().Host), zap.String("user_agent", c.Request().UserAgent()), zap.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)))
+	}))
 
 	// Base Routes
 	s.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -56,7 +57,6 @@ func RegisterRoutes(s *s.Server) {
 
 	auth := base.Group("/auth")
 	auth.POST("/login", authHandler.Login)
-	auth.POST("/register", authHandler.Register)
 	auth.POST("/refresh", authHandler.RefreshToken)
 
 	protected := base.Group("")
