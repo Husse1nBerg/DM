@@ -233,6 +233,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.Error"
                         }
                     },
+                    "403": {
+                        "description": "Account locked",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
                     "500": {
                         "description": "Server error",
                         "schema": {
@@ -282,6 +288,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Authentication error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Account locked",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -2956,6 +2968,8 @@ const docTemplate = `{
                 "email",
                 "first_name",
                 "last_name",
+                "marina_id",
+                "organization_id",
                 "password",
                 "role_id",
                 "username"
@@ -2974,6 +2988,14 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 2,
                     "example": "Doe"
+                },
+                "marina_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "organization_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
                 },
                 "password": {
                     "type": "string",

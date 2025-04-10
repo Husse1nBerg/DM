@@ -339,6 +339,12 @@ definitions:
         example: Doe
         minLength: 2
         type: string
+      marina_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      organization_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
       password:
         example: Pa$$w0rd123
         minLength: 12
@@ -354,6 +360,8 @@ definitions:
     - email
     - first_name
     - last_name
+    - marina_id
+    - organization_id
     - password
     - role_id
     - username
@@ -1123,6 +1131,10 @@ paths:
           description: Authentication error
           schema:
             $ref: '#/definitions/responses.Error'
+        "403":
+          description: Account locked
+          schema:
+            $ref: '#/definitions/responses.Error'
         "500":
           description: Server error
           schema:
@@ -1156,6 +1168,10 @@ paths:
             $ref: '#/definitions/responses.Error'
         "401":
           description: Authentication error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "403":
+          description: Account locked
           schema:
             $ref: '#/definitions/responses.Error'
         "500":
