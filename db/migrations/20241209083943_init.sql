@@ -37,6 +37,7 @@ CREATE TABLE marinas (
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP EXTENSION IF EXISTS "uuid-ossp";
 DROP TABLE IF EXISTS marinas;
 DROP TABLE IF EXISTS organizations;
 -- +goose StatementEnd

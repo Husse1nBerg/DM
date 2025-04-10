@@ -1751,6 +1751,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/forgot-password": {
+            "post": {
+                "description": "Initiate password recovery process",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Forgot password",
+                "operationId": "user-forgot-password",
+                "parameters": [
+                    {
+                        "description": "Email for password recovery",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ForgotPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password recovery email sent",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/list": {
             "get": {
                 "security": [
@@ -2109,6 +2162,111 @@ const docTemplate = `{
                         "description": "Current user's profile",
                         "schema": {
                             "$ref": "#/definitions/responses.UserResponseWrapper"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/recover-password": {
+            "post": {
+                "description": "Verify token and set new password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Complete password recovery",
+                "operationId": "user-recover-password",
+                "parameters": [
+                    {
+                        "description": "Recovery token and new password",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CompletePasswordRecoveryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid token or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/reset-password": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Reset authenticated user's password and check against previous passwords",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Reset user password",
+                "operationId": "user-reset-password",
+                "parameters": [
+                    {
+                        "description": "Password reset info",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password reset success",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
                         }
                     },
                     "500": {
@@ -2492,6 +2650,30 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CompletePasswordRecoveryRequest": {
+            "description": "Complete password recovery request payload",
+            "type": "object",
+            "required": [
+                "email",
+                "newPassword",
+                "token"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "newPassword": {
+                    "type": "string",
+                    "minLength": 12,
+                    "example": "NewPa$$w0rd123"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "recovery-token-123"
+                }
+            }
+        },
         "requests.CreateAddressRequest": {
             "type": "object",
             "properties": {
@@ -2704,7 +2886,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 8,
+                    "minLength": 12,
                     "example": "SecureP@ssw0rd"
                 },
                 "phone": {
@@ -2725,6 +2907,19 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.ForgotPasswordRequest": {
+            "description": "Forgot password request payload",
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                }
+            }
+        },
         "requests.LoginRequest": {
             "type": "object",
             "required": [
@@ -2738,7 +2933,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 8,
+                    "minLength": 12,
                     "example": "Pa$$w0rd123"
                 }
             }
@@ -2782,7 +2977,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 8,
+                    "minLength": 12,
                     "example": "Pa$$w0rd123"
                 },
                 "role_id": {
@@ -2793,6 +2988,30 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 3,
                     "example": "johndoe"
+                }
+            }
+        },
+        "requests.ResetPasswordRequest": {
+            "description": "Password reset request payload",
+            "type": "object",
+            "required": [
+                "newPassword",
+                "oldPassword",
+                "userId"
+            ],
+            "properties": {
+                "newPassword": {
+                    "type": "string",
+                    "minLength": 12,
+                    "example": "NewPa$$w0rd123"
+                },
+                "oldPassword": {
+                    "type": "string",
+                    "example": "OldPa$$w0rd123"
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
             }
         },
@@ -3014,7 +3233,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 8,
+                    "minLength": 12,
                     "example": "NewSecureP@ssw0rd"
                 },
                 "phone": {
@@ -3032,6 +3251,7 @@ const docTemplate = `{
             }
         },
         "responses.AddressResponse": {
+            "description": "Address response model",
             "type": "object",
             "properties": {
                 "city": {
@@ -3386,6 +3606,7 @@ const docTemplate = `{
             }
         },
         "responses.OrganizationWithAddressResponse": {
+            "description": "Organization with address response model",
             "type": "object",
             "properties": {
                 "address": {

@@ -14,7 +14,7 @@ type CreateUserRequest struct {
 	Phone          *string   `json:"phone,omitempty" example:"+15551234567"`
 	Title          *string   `json:"title,omitempty" example:"Manager"`
 	Image          *string   `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
-	Password       string    `json:"password" validate:"required,min=8" example:"SecureP@ssw0rd"`
+	Password       string    `json:"password" validate:"required,min=12,letters,number,specialchar" example:"SecureP@ssw0rd"`
 	OrganizationID uuid.UUID `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
 	MarinaID       uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
 	RoleID         uuid.UUID `json:"roleId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
@@ -30,7 +30,7 @@ type UpdateUserRequest struct {
 	Phone       *string    `json:"phone,omitempty" example:"+15551234567"`
 	Title       *string    `json:"title,omitempty" example:"Manager"`
 	Image       *string    `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
-	Password    *string    `json:"password,omitempty" validate:"omitempty,min=8" example:"NewSecureP@ssw0rd"`
+	Password    *string    `json:"password,omitempty" validate:"omitempty,min=12,letters,number,specialchar" example:"NewSecureP@ssw0rd"`
 	MarinaID    *uuid.UUID `json:"marinaId,omitempty" validate:"omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
 	RoleID      *uuid.UUID `json:"roleId,omitempty" validate:"omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
 	IsSuperuser *bool      `json:"isSuperuser,omitempty" example:"false"`

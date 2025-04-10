@@ -9,6 +9,8 @@ import (
 )
 
 // AddressResponse defines the response for address data
+// @Description Address response model
+// @Schema responses.AddressResponse
 type AddressResponse struct {
 	ID         uuid.UUID  `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
 	Street     *string    `json:"street,omitempty" example:"123 Main St"`
@@ -23,6 +25,8 @@ type AddressResponse struct {
 }
 
 // OrganizationWithAddressResponse extends the organization response to include the address
+// @Description Organization with address response model
+// @Schema responses.OrganizationWithAddressResponse
 type OrganizationWithAddressResponse struct {
 	ID        uuid.UUID        `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
 	Email     string           `json:"email" example:"org@example.com"`

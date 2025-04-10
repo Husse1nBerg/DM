@@ -77,6 +77,11 @@ func RegisterRoutes(s *s.Server) {
 	users.GET("/:userId", userHandler.GetUserHandler)
 	users.PUT("/:userId", userHandler.UpdateUserHandler)
 	users.DELETE("/:userId", userHandler.DeleteUserHandler)
+	users.POST("/reset-password", userHandler.ResetPassword)
+
+	// Password recovery (public endpoints)
+	base.POST("/user/forgot-password", userHandler.ForgotPassword)
+	base.POST("/user/recover-password", userHandler.RecoverPassword)
 
 	// User by role, organization, marina
 	users.GET("/role/:roleId", userHandler.GetUsersByRoleHandler)

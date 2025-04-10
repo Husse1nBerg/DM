@@ -60,6 +60,23 @@ type Organization struct {
 	AddressID uuid.UUID
 }
 
+type PasswordHistory struct {
+	ID           uuid.UUID
+	UserID       uuid.UUID
+	PasswordHash string
+	CreatedAt    pgtype.Timestamp
+}
+
+type PasswordRecovery struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Email     string
+	Token     string
+	ExpiresAt pgtype.Timestamp
+	Used      *bool
+	CreatedAt pgtype.Timestamp
+}
+
 type Role struct {
 	ID          uuid.UUID
 	Name        string

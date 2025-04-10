@@ -39,9 +39,21 @@ func GetValidationMessage(tag string) string {
 	case "email":
 		return "Invalid email format"
 	case "min":
-		return "Value is less than minimum allowed"
+		return "Value is less than minimum 12 characters allowed"
 	case "max":
 		return "Value is more than maximum allowed"
+	case "alphanumspecial":
+		return "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+	case "uppercase":
+		return "Password must contain at least one uppercase letter"
+	case "lowercase":
+		return "Password must contain at least one lowercase letter"
+	case "letters":
+		return "Password must contain both uppercase and lowercase letters"
+	case "number":
+		return "Password must contain at least one number"
+	case "specialchar":
+		return "Password must contain at least one special character"
 	default:
 		return "Validation failed for " + tag
 	}
