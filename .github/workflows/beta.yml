@@ -1,4 +1,4 @@
-name: Deploy Go Backend DEV
+name: Deploy Go Backend BETA
 
 on:
   push:
