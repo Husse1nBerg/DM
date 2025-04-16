@@ -13,7 +13,8 @@ INSERT INTO marinas (
         max_users,
         is_active,
         is_test,
-        address_id
+        address_id,
+        system_id
     )
 VALUES (
         $1,
@@ -29,7 +30,8 @@ VALUES (
         $11,
         $12,
         $13,
-        $14
+        $14,
+        $15
     )
 RETURNING *;
 -- name: GetMarinaByID :one
@@ -79,10 +81,17 @@ SET name = $2,
     is_active = $12,
     is_test = $13,
     updated_at = CURRENT_TIMESTAMP,
-    address_id = $14
+    address_id = $14,
+    system_id = $15
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec
 UPDATE marinas
 SET deleted_at = CURRENT_TIMESTAMP
 WHERE id = $1;
+-- name: UpdateMarinaSystemID :one
+UPDATE marinas
+SET system_id = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;

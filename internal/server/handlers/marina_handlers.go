@@ -8,6 +8,8 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
+	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -403,6 +405,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		IsActive:     currentMarina.IsActive,
 		IsTest:       currentMarina.IsTest,
 		AddressID:    currentMarina.AddressID,
+		SystemID:     currentMarina.SystemID,
 	}
 
 	// Update only fields that are provided
@@ -446,6 +449,9 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 	}
 	if req.IsTest != nil {
 		params.IsTest = req.IsTest
+	}
+	if req.SystemID != nil {
+		params.SystemID = req.SystemID
 	}
 
 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
@@ -509,6 +515,7 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		IsActive:     currentMarina.IsActive,
 		IsTest:       currentMarina.IsTest,
 		AddressID:    currentMarina.AddressID,
+		SystemID:     currentMarina.SystemID,
 	}
 
 	// Update only fields that are provided
@@ -552,6 +559,9 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 	}
 	if req.IsTest != nil {
 		params.IsTest = req.IsTest
+	}
+	if req.SystemID != nil {
+		params.SystemID = req.SystemID
 	}
 
 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
@@ -651,4 +661,73 @@ func (h *MarinaHandler) DeleteMarina(c echo.Context) error {
 	}
 
 	return responses.NewMessageResponse(http.StatusOK, "Marina successfully deleted").JSON(c)
+}
+
+// GetUserMarinas retrieves marinas associated with a user with pagination
+//
+//	@Summary		Get user marinas
+//	@Description	Retrieves marinas associated with a specific user with pagination support
+//	@Tags			Marinas
+//	@Accept			json
+//	@Produce		json
+//	@Param			userId		path		string	true	"User ID"	Format(uuid)
+//	@Success		200			{array}		responses.MarinaListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		404			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/marinas/user/{userId} [get]
+func (h *MarinaHandler) GetUserMarinas(c echo.Context) error {
+	userIDStr := c.Param("userId")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid user ID").JSON(c)
+	}
+
+	// Get all marinas for this user to calculate total
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUserMarinas))
+
+	if total == 0 {
+		// Return empty response if no marinas found
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
+	}
+
+	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
+}
+
+// GetMyUserMarinas retrieves marinas associated with the current user
+//
+//	@Summary		Get my user marinas
+//	@Description	Retrieves marinas associated with the current authenticated user
+//	@Tags			Marinas
+//	@Accept			json
+//	@Produce		json
+//	@Success		200			{array}		responses.MarinaListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/marinas/user [get]
+func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
+	// Get user ID from the token
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+
+	// Get all marinas for this user to calculate total
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUserMarinas))
+
+	if total == 0 {
+		// Return empty response if no marinas found
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
+	}
+
+	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
 }

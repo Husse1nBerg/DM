@@ -14,6 +14,7 @@ type Config struct {
 	TestDB DBConfig
 	App    AppConfig
 	Redis  RedisConfig
+	DME    DMEConfig
 }
 
 func New() *Config {
@@ -40,5 +41,6 @@ func New() *Config {
 		TestDB: LoadTestDBConfig(),
 		App:    LoadAppConfig(),
 		Redis:  LoadRedisConfig(),
+		DME:    LoadDMEConfig(),
 	}
 }

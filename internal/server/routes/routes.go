@@ -34,6 +34,9 @@ func RegisterRoutes(s *s.Server) {
 	addressHandler := h.NewAddressHandler(s)
 	marinaHandler := h.NewMarinaHandler(s)
 	roleHandler := h.NewRoleHandler(s)
+	dmeCredentialHandler := h.NewDMECredentialHandler(s)
+	dmeSysIDHandler := h.NewDMESysIDHandler(s)
+	dmeHandler := h.NewDMEHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -119,6 +122,8 @@ func RegisterRoutes(s *s.Server) {
 	marinas.GET("", marinaHandler.GetMarinasPaginated)
 	marinas.GET("/by-email", marinaHandler.GetMarinaByEmail)
 	marinas.GET("/organization/:organizationId", marinaHandler.GetMarinasByOrganization)
+	marinas.GET("/user/:userId", marinaHandler.GetUserMarinas)
+	marinas.GET("/user", marinaHandler.GetMyUserMarinas)
 	marinas.GET("/:id", marinaHandler.GetMarinaByID)
 	marinas.GET("/:id/with-address", marinaHandler.GetMarinaWithAddress)
 	marinas.PUT("/:id", marinaHandler.UpdateMarina)
@@ -130,4 +135,31 @@ func RegisterRoutes(s *s.Server) {
 	addresses.POST("", addressHandler.CreateAddress)
 	addresses.GET("/:id", addressHandler.GetAddressById)
 	addresses.PUT("/:id", addressHandler.UpdateAddress)
+
+	// DME routes
+	dme := protected.Group("/dme")
+
+	// DME Credentials routes
+	credGroup := dme.Group("/credentials")
+	credGroup.POST("", dmeCredentialHandler.CreateDMECredential)
+	credGroup.GET("/organization/:organizationId", dmeCredentialHandler.GetDMECredentialByOrgID)
+	credGroup.PUT("/organization/:organizationId", dmeCredentialHandler.UpdateDMECredential)
+	credGroup.DELETE("/organization/:organizationId", dmeCredentialHandler.DeleteDMECredential)
+
+	// DME System ID routes
+	sysidGroup := dme.Group("/sysids")
+	sysidGroup.POST("", dmeSysIDHandler.CreateDMESysID)
+	sysidGroup.GET("", dmeSysIDHandler.ListDMESysIDs)
+	sysidGroup.GET("/:id", dmeSysIDHandler.GetDMESysIDByID)
+	sysidGroup.PUT("/:id", dmeSysIDHandler.UpdateDMESysID)
+	sysidGroup.DELETE("/:id", dmeSysIDHandler.DeleteDMESysID)
+	sysidGroup.GET("/system/:systemId", dmeSysIDHandler.GetDMESysIDBySystemID)
+	sysidGroup.GET("/organization/:organizationId", dmeSysIDHandler.GetDMESysIDsByOrgID)
+	sysidGroup.GET("/marina/:marinaId", dmeSysIDHandler.GetDMESysIDByMarinaID)
+	sysidGroup.PATCH("/:id/link", dmeSysIDHandler.LinkDMESysIDToMarina)
+	sysidGroup.PATCH("/:id/unlink", dmeSysIDHandler.UnlinkDMESysIDFromMarina)
+
+	// DME API proxy
+	dme.POST("/api", dmeHandler.CallDMEAPI)
+	dme.GET("/vessels", dmeHandler.GetVessels)
 }

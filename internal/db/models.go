@@ -23,6 +23,33 @@ type Address struct {
 	DeletedAt  pgtype.Timestamp
 }
 
+type DmeCredential struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	Username       string
+	Password       *string
+	IsOldApi       *bool
+	AccessToken    *string
+	RefreshToken   *string
+	ExpiryDate     pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
+type DmeSysid struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Name           string
+	Description    *string
+	SystemID       string
+	IsActive       *bool
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
 type Marina struct {
 	ID             uuid.UUID
 	OrganizationID uuid.UUID
@@ -42,6 +69,7 @@ type Marina struct {
 	UpdatedAt      pgtype.Timestamp
 	DeletedAt      pgtype.Timestamp
 	AddressID      uuid.UUID
+	SystemID       *string
 }
 
 type Organization struct {
