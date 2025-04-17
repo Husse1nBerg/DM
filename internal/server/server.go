@@ -4,22 +4,36 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/config"
 	db "github.com/dockworks/dm-web-backend/internal/pg"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
+	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/labstack/echo/v4"
 )
 
 type Server struct {
-	Echo   *echo.Echo
-	Config *config.Config
-	DB     db.DBService
-	Logger *logger.Logger
+	Echo         *echo.Echo
+	Config       *config.Config
+	DB           db.DBService
+	Logger       *logger.Logger
+	S3Service    *s3.S3Service
+	ImageService *s3.ImageService
 }
 
 func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
+	// Initialize S3 service
+	s3Service, err := s3.NewS3Service(cfg.S3)
+	if err != nil {
+		logger.Zap.Error("Failed to initialize S3 service", err, "initialization")
+	}
+
+	// Initialize image service with S3
+	imageService := s3.NewImageService(s3Service, "")
+
 	return &Server{
-		Config: cfg,
-		Echo:   echo.New(),
-		DB:     db.NewConnection(&cfg.DB),
-		Logger: logger,
+		Config:       cfg,
+		Echo:         echo.New(),
+		DB:           db.NewConnection(&cfg.DB),
+		Logger:       logger,
+		S3Service:    s3Service,
+		ImageService: imageService,
 	}
 }
 

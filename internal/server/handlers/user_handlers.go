@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -10,6 +11,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
+	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -595,23 +597,16 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		"Method", c.Request().Method,
 		"URL", c.Request().URL.String())
 
-	// Parse and validate the request body
-	req := new(requests.UpdateUserRequest)
-	if err := c.Bind(req); err != nil {
-		g.server.Logger.Zap.Error("Error binding request body", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, "Error parsing request: "+err.Error()).JSON(c)
-	}
-	if err := c.Validate(req); err != nil {
-		g.server.Logger.Zap.Error("Error validating request body", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-	}
-
 	// Get current user data to update only changed fields
 	queries := g.server.DB.Queries()
 	currentUser, err := queries.GetUserByID(c.Request().Context(), userID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusNotFound, err).JSON(c)
 	}
+
+	// Check if this is a multipart form (which would include a file upload)
+	contentType := c.Request().Header.Get("Content-Type")
+	isMultipart := strings.HasPrefix(contentType, "multipart/form-data")
 
 	// Build update params with current values that will be overridden if provided
 	updateParams := db.UpdateUserParams{
@@ -636,63 +631,138 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		Permissions:         currentUser.Permissions,
 	}
 
-	// Update only the fields that were provided in the request
-	if req.FirstName != nil {
-		updateParams.FirstName = *req.FirstName
-	}
-	if req.LastName != nil {
-		updateParams.LastName = *req.LastName
-	}
-	if req.Email != nil {
-		updateParams.Email = *req.Email
-	}
-	if req.Phone != nil {
-		updateParams.Phone = req.Phone
-	}
-	if req.Title != nil {
-		updateParams.Title = req.Title
-	}
-	if req.Image != nil {
-		updateParams.Image = req.Image
-	}
-	if req.Password != nil {
-		// Use helper function to hash password and update timestamp
-		passwordHash, lastPasswordReset, err := utils.UpdatePasswordFields(*req.Password)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
-		}
-		updateParams.PasswordHash = passwordHash
-		updateParams.LastPasswordReset = lastPasswordReset
-	}
-	if req.MarinaID != nil {
-		updateParams.MarinaID = *req.MarinaID
-	}
-	if req.RoleID != nil {
-		updateParams.RoleID = *req.RoleID
-	}
-	if req.IsSuperuser != nil {
-		updateParams.IsSuperuser = req.IsSuperuser
-	}
-	if req.IsActive != nil {
-		updateParams.IsActive = req.IsActive
-	}
+	// Handle image upload if this is a multipart request
+	if isMultipart {
+		// Check if there's an image file in the form
+		file, header, err := c.Request().FormFile("image")
+		if err == nil {
+			defer file.Close()
 
-	// Update permissions if provided
-	if req.Permissions != nil {
-		permissionsBytes, err := req.Permissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-		}
-		updateParams.Permissions = permissionsBytes
-	}
+			// Upload the image to S3
+			imagePath, err := g.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.UserImageType)
+			if err != nil {
+				g.server.Logger.Zap.Error("Error uploading user image to S3", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
+			}
 
-	// Update modules if provided
-	if req.Modules != nil {
-		modulesBytes, err := req.Modules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+			// Update the image path
+			updateParams.Image = &imagePath
 		}
-		updateParams.Modules = modulesBytes
+
+		// Process other form fields regardless of whether an image was uploaded
+		if firstName := c.FormValue("firstName"); firstName != "" {
+			updateParams.FirstName = firstName
+		}
+		if lastName := c.FormValue("lastName"); lastName != "" {
+			updateParams.LastName = lastName
+		}
+		if email := c.FormValue("email"); email != "" {
+			updateParams.Email = email
+		}
+		if phone := c.FormValue("phone"); phone != "" {
+			updateParams.Phone = &phone
+		}
+		if title := c.FormValue("title"); title != "" {
+			updateParams.Title = &title
+		}
+		if password := c.FormValue("password"); password != "" {
+			// Use helper function to hash password and update timestamp
+			passwordHash, lastPasswordReset, err := utils.UpdatePasswordFields(password)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
+			}
+			updateParams.PasswordHash = passwordHash
+			updateParams.LastPasswordReset = lastPasswordReset
+		}
+		// Handle boolean and UUID fields
+		if isActive := c.FormValue("isActive"); isActive != "" {
+			active := isActive == "true"
+			updateParams.IsActive = &active
+		}
+		if isSuperuser := c.FormValue("isSuperuser"); isSuperuser != "" {
+			superuser := isSuperuser == "true"
+			updateParams.IsSuperuser = &superuser
+		}
+		if marinaIDStr := c.FormValue("marinaId"); marinaIDStr != "" {
+			if marinaID, err := uuid.Parse(marinaIDStr); err == nil {
+				updateParams.MarinaID = marinaID
+			}
+		}
+		if roleIDStr := c.FormValue("roleId"); roleIDStr != "" {
+			if roleID, err := uuid.Parse(roleIDStr); err == nil {
+				updateParams.RoleID = roleID
+			}
+		}
+	} else {
+		// Parse and validate the JSON request body
+		req := new(requests.UpdateUserRequest)
+		if err := c.Bind(req); err != nil {
+			g.server.Logger.Zap.Error("Error binding request body", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Error parsing request: "+err.Error()).JSON(c)
+		}
+		if err := c.Validate(req); err != nil {
+			g.server.Logger.Zap.Error("Error validating request body", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+		}
+
+		// Update only the fields that were provided in the request
+		if req.FirstName != nil {
+			updateParams.FirstName = *req.FirstName
+		}
+		if req.LastName != nil {
+			updateParams.LastName = *req.LastName
+		}
+		if req.Email != nil {
+			updateParams.Email = *req.Email
+		}
+		if req.Phone != nil {
+			updateParams.Phone = req.Phone
+		}
+		if req.Title != nil {
+			updateParams.Title = req.Title
+		}
+		if req.Image != nil {
+			updateParams.Image = req.Image
+		}
+		if req.Password != nil {
+			// Use helper function to hash password and update timestamp
+			passwordHash, lastPasswordReset, err := utils.UpdatePasswordFields(*req.Password)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
+			}
+			updateParams.PasswordHash = passwordHash
+			updateParams.LastPasswordReset = lastPasswordReset
+		}
+		if req.MarinaID != nil {
+			updateParams.MarinaID = *req.MarinaID
+		}
+		if req.RoleID != nil {
+			updateParams.RoleID = *req.RoleID
+		}
+		if req.IsSuperuser != nil {
+			updateParams.IsSuperuser = req.IsSuperuser
+		}
+		if req.IsActive != nil {
+			updateParams.IsActive = req.IsActive
+		}
+
+		// Update permissions if provided
+		if req.Permissions != nil {
+			permissionsBytes, err := req.Permissions.ToBytes()
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
+			}
+			updateParams.Permissions = permissionsBytes
+		}
+
+		// Update modules if provided
+		if req.Modules != nil {
+			modulesBytes, err := req.Modules.ToBytes()
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+			}
+			updateParams.Modules = modulesBytes
+		}
 	}
 
 	// Perform update
