@@ -13,6 +13,7 @@ func LoadS3Config() s3.S3Config {
 		AccessKeyID:     getEnvOrDefault("AWS_ACCESS_KEY_ID", ""),
 		SecretAccessKey: getEnvOrDefault("AWS_SECRET_ACCESS_KEY", ""),
 		Bucket:          getEnvOrDefault("AWS_S3_BUCKET", ""),
+		BaseURL:         getEnvOrDefault("AWS_S3_BASE_URL", ""),
 	}
 }
 

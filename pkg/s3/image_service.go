@@ -60,6 +60,27 @@ func (i *ImageService) DeleteImage(ctx context.Context, key string) error {
 	return i.s3Service.DeleteFileFromS3(ctx, key)
 }
 
+// GetFullImageURL takes an image path and returns a complete URL with the base URL if needed
+func (i *ImageService) GetFullImageURL(imagePath *string) *string {
+	if imagePath == nil || *imagePath == "" {
+		return nil
+	}
+
+	// If the image path is already a full URL, return it as is
+	if strings.HasPrefix(*imagePath, "http://") || strings.HasPrefix(*imagePath, "https://") {
+		return imagePath
+	}
+
+	// Concatenate the base URL with the image path
+	fullURL := i.baseURL
+	if !strings.HasSuffix(fullURL, "/") && !strings.HasPrefix(*imagePath, "/") {
+		fullURL += "/"
+	}
+	fullURL += *imagePath
+
+	return &fullURL
+}
+
 // isValidImageType checks if the file has a valid image extension
 func isValidImageType(filename string) bool {
 	ext := strings.ToLower(filename[strings.LastIndex(filename, ".")+1:])

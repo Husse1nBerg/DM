@@ -5,6 +5,7 @@ import (
 	db "github.com/dockworks/dm-web-backend/internal/pg"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/labstack/echo/v4"
 )
 
@@ -24,8 +25,11 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 		logger.Zap.Error("Failed to initialize S3 service", err, "initialization")
 	}
 
-	// Initialize image service with S3
-	imageService := s3.NewImageService(s3Service, "")
+	// Initialize image service with S3 and BaseURL from config
+	imageService := s3.NewImageService(s3Service, cfg.S3.BaseURL)
+
+	// Set the image service in the responses package
+	utils.SetImageService(imageService)
 
 	return &Server{
 		Config:       cfg,

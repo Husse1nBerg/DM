@@ -3,8 +3,11 @@ package utils
 import (
 	"time"
 
+	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+var imageService *s3.ImageService
 
 // Now returns the current time as a pgtype.Timestamp UTC.
 func PgTimeNow() pgtype.Timestamp {
@@ -25,4 +28,18 @@ func PgTimeToTimePtr(pgTime pgtype.Timestamp) *time.Time {
 	}
 	t := pgTime.Time.UTC()
 	return &t
+}
+
+// SetImageService sets the image service for use in response formatting
+func SetImageService(service *s3.ImageService) {
+	imageService = service
+}
+
+// GetFullImageURL converts an image path to a full URL using the image service
+func GetFullImageURL(imagePath *string) *string {
+	if imageService == nil || imagePath == nil || *imagePath == "" {
+		return imagePath
+	}
+
+	return imageService.GetFullImageURL(imagePath)
 }
