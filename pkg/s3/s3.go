@@ -20,6 +20,7 @@ type S3Config struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	Bucket          string
+	BaseURL         string
 }
 
 // S3Service provides methods for interacting with S3

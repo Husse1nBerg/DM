@@ -63,7 +63,7 @@ func NewUserResponse(user db.User) UserResponse {
 		EmailVerified:       utils.PgTimeToTimePtr(user.EmailVerified),
 		Phone:               user.Phone,
 		Title:               user.Title,
-		Image:               user.Image,
+		Image:               utils.GetFullImageURL(user.Image),
 		LastLogin:           utils.PgTimeToTimePtr(user.LastLogin),
 		FailedLoginAttempts: user.FailedLoginAttempts,
 		LockedUntil:         utils.PgTimeToTimePtr(user.LockedUntil),
