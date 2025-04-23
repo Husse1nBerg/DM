@@ -29,9 +29,9 @@ func NewDMECredentialHandler(server *s.Server) *DMECredentialHandler {
 // @Produce json
 // @Param request body requests.CreateDMECredentialRequest true "Create DME credential request"
 // @Success 200 {object} responses.DMECredentialResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/credentials [post]
 func (h *DMECredentialHandler) CreateDMECredential(c echo.Context) error {
 	req := new(requests.CreateDMECredentialRequest)
@@ -58,6 +58,11 @@ func (h *DMECredentialHandler) CreateDMECredential(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
+	err = h.server.DME.InitializeCredentials(c.Request().Context(), req.OrganizationID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
 	return responses.NewDMECredentialResponseSuccess(credential).JSON(c)
 }
 
@@ -69,9 +74,9 @@ func (h *DMECredentialHandler) CreateDMECredential(c echo.Context) error {
 // @Produce json
 // @Param organizationId path string true "Organization ID"
 // @Success 200 {object} responses.DMECredentialResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/credentials/organization/{organizationId} [get]
 func (h *DMECredentialHandler) GetDMECredentialByOrgID(c echo.Context) error {
 	orgIDStr := c.Param("organizationId")
@@ -98,9 +103,9 @@ func (h *DMECredentialHandler) GetDMECredentialByOrgID(c echo.Context) error {
 // @Param organizationId path string true "Organization ID"
 // @Param request body requests.UpdateDMECredentialRequest true "Update DME credential request"
 // @Success 200 {object} responses.DMECredentialResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/credentials/organization/{organizationId} [put]
 func (h *DMECredentialHandler) UpdateDMECredential(c echo.Context) error {
 	orgIDStr := c.Param("organizationId")
@@ -160,9 +165,9 @@ func (h *DMECredentialHandler) UpdateDMECredential(c echo.Context) error {
 // @Produce json
 // @Param organizationId path string true "Organization ID"
 // @Success 204 "No Content"
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/credentials/organization/{organizationId} [delete]
 func (h *DMECredentialHandler) DeleteDMECredential(c echo.Context) error {
 	orgIDStr := c.Param("organizationId")
@@ -174,12 +179,12 @@ func (h *DMECredentialHandler) DeleteDMECredential(c echo.Context) error {
 	queries := h.server.DB.Queries()
 
 	// First, check if the credentials exist
-	_, err = queries.GetDMECredentialsByOrgID(c.Request().Context(), orgID)
+	_, err = queries.GetDMECredentialsByOrgIDWithDeleted(c.Request().Context(), orgID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusNotFound, "DME credentials not found").JSON(c)
 	}
 
-	err = queries.DeleteDMECredentials(c.Request().Context(), orgID)
+	err = queries.HardDeleteDMECredentials(c.Request().Context(), orgID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}

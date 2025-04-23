@@ -29,9 +29,9 @@ func NewDMESysIDHandler(server *s.Server) *DMESysIDHandler {
 // @Produce json
 // @Param request body requests.CreateDMESysIDRequest true "Create DME System ID request"
 // @Success 200 {object} responses.DMESysIDResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids [post]
 func (h *DMESysIDHandler) CreateDMESysID(c echo.Context) error {
 	req := new(requests.CreateDMESysIDRequest)
@@ -74,9 +74,9 @@ func (h *DMESysIDHandler) CreateDMESysID(c echo.Context) error {
 // @Produce json
 // @Param id path string true "DME System ID identifier"
 // @Success 200 {object} responses.DMESysIDResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/{id} [get]
 func (h *DMESysIDHandler) GetDMESysIDByID(c echo.Context) error {
 	idStr := c.Param("id")
@@ -102,9 +102,9 @@ func (h *DMESysIDHandler) GetDMESysIDByID(c echo.Context) error {
 // @Produce json
 // @Param systemId path string true "System identifier"
 // @Success 200 {object} responses.DMESysIDResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/system/{systemId} [get]
 func (h *DMESysIDHandler) GetDMESysIDBySystemID(c echo.Context) error {
 	systemID := c.Param("systemId")
@@ -129,8 +129,8 @@ func (h *DMESysIDHandler) GetDMESysIDBySystemID(c echo.Context) error {
 // @Produce json
 // @Param organizationId path string true "Organization ID"
 // @Success 200 {object} responses.DMESysIDListResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/organization/{organizationId} [get]
 func (h *DMESysIDHandler) GetDMESysIDsByOrgID(c echo.Context) error {
 	orgIDStr := c.Param("organizationId")
@@ -156,9 +156,9 @@ func (h *DMESysIDHandler) GetDMESysIDsByOrgID(c echo.Context) error {
 // @Produce json
 // @Param marinaId path string true "Marina ID"
 // @Success 200 {object} responses.DMESysIDResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/marina/{marinaId} [get]
 func (h *DMESysIDHandler) GetDMESysIDByMarinaID(c echo.Context) error {
 	marinaIDStr := c.Param("marinaId")
@@ -183,7 +183,7 @@ func (h *DMESysIDHandler) GetDMESysIDByMarinaID(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Success 200 {object} responses.DMESysIDListResponseWrapper
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids [get]
 func (h *DMESysIDHandler) ListDMESysIDs(c echo.Context) error {
 	queries := h.server.DB.Queries()
@@ -204,9 +204,9 @@ func (h *DMESysIDHandler) ListDMESysIDs(c echo.Context) error {
 // @Param id path string true "DME System ID identifier"
 // @Param request body requests.UpdateDMESysIDRequest true "Update DME System ID request"
 // @Success 200 {object} responses.DMESysIDResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/{id} [put]
 func (h *DMESysIDHandler) UpdateDMESysID(c echo.Context) error {
 	idStr := c.Param("id")
@@ -277,9 +277,9 @@ func (h *DMESysIDHandler) UpdateDMESysID(c echo.Context) error {
 // @Param id path string true "DME System ID identifier"
 // @Param request body requests.LinkDMESysIDRequest true "Link DME System ID request"
 // @Success 200 {object} responses.DMESysIDResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/{id}/link [patch]
 func (h *DMESysIDHandler) LinkDMESysIDToMarina(c echo.Context) error {
 	idStr := c.Param("id")
@@ -309,8 +309,19 @@ func (h *DMESysIDHandler) LinkDMESysIDToMarina(c echo.Context) error {
 		ID:       id,
 		MarinaID: req.MarinaID,
 	}
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
+	}
 
 	sysid, err := queries.LinkDMESysIDToMarina(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	_, err = queries.UpdateMarinaSystemID(c.Request().Context(), db.UpdateMarinaSystemIDParams{
+		ID:       marina.ID,
+		SystemID: &sysid.SystemID,
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -326,9 +337,9 @@ func (h *DMESysIDHandler) LinkDMESysIDToMarina(c echo.Context) error {
 // @Produce json
 // @Param id path string true "DME System ID identifier"
 // @Success 200 {object} responses.DMESysIDResponseWrapper
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/{id}/unlink [patch]
 func (h *DMESysIDHandler) UnlinkDMESysIDFromMarina(c echo.Context) error {
 	idStr := c.Param("id")
@@ -340,17 +351,30 @@ func (h *DMESysIDHandler) UnlinkDMESysIDFromMarina(c echo.Context) error {
 	queries := h.server.DB.Queries()
 
 	// Check if the system ID exists
-	_, err = queries.GetDMESysIDByID(c.Request().Context(), id)
+	sysid, err := queries.GetDMESysIDByID(c.Request().Context(), id)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusNotFound, "DME System ID not found").JSON(c)
 	}
 
-	sysid, err := queries.UnlinkDMESysIDFromMarina(c.Request().Context(), id)
+	marina, err := queries.GetMarinaByID(c.Request().Context(), sysid.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
+	}
+
+	updatedSysID, err := queries.UnlinkDMESysIDFromMarina(c.Request().Context(), id)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	return responses.NewDMESysIDResponseSuccess(sysid).JSON(c)
+	_, err = queries.UpdateMarinaSystemID(c.Request().Context(), db.UpdateMarinaSystemIDParams{
+		ID:       marina.ID,
+		SystemID: nil,
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return responses.NewDMESysIDResponseSuccess(updatedSysID).JSON(c)
 }
 
 // DeleteDMESysID godoc
@@ -361,9 +385,9 @@ func (h *DMESysIDHandler) UnlinkDMESysIDFromMarina(c echo.Context) error {
 // @Produce json
 // @Param id path string true "DME System ID identifier"
 // @Success 204 "No Content"
-// @Failure 400 {object} responses.ErrorResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
+// @Failure 400 {object} responses.Error
+// @Failure 404 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /dme/sysids/{id} [delete]
 func (h *DMESysIDHandler) DeleteDMESysID(c echo.Context) error {
 	idStr := c.Param("id")
@@ -375,12 +399,12 @@ func (h *DMESysIDHandler) DeleteDMESysID(c echo.Context) error {
 	queries := h.server.DB.Queries()
 
 	// Check if the system ID exists
-	_, err = queries.GetDMESysIDByID(c.Request().Context(), id)
+	_, err = queries.GetDMESysIDByIDWithDeleted(c.Request().Context(), id)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusNotFound, "DME System ID not found").JSON(c)
 	}
 
-	err = queries.DeleteDMESysID(c.Request().Context(), id)
+	err = queries.HardDeleteDMESysID(c.Request().Context(), id)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}

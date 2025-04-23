@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/config"
@@ -14,16 +15,15 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.uber.org/zap"
 )
 
 // ClientConfig holds configuration options for the DME client
 type ClientConfig struct {
-	BaseURL    string
-	AuthURL    string
-	APIVersion string
-	IsOldAPI   bool
-	Logger     *logger.Logger
-	DB         pg.DBService
+	BaseURL string
+	AuthURL string
+	Logger  *logger.Logger
+	DB      pg.DBService
 }
 
 // Client represents a DockMaster API client
@@ -51,26 +51,14 @@ func NewClient(cfg *ClientConfig) *Client {
 	}
 }
 
-// Authenticate authenticates with the DME API for a specific organization
-func (c *Client) Authenticate(ctx context.Context, organizationID uuid.UUID) error {
-	queries := c.db.Queries()
-
-	// Get credentials from database
-	credential, err := queries.GetDMECredentialsByOrgID(ctx, organizationID)
+// Initialize credentials for an organization
+func (c *Client) InitializeCredentials(ctx context.Context, organizationID uuid.UUID) error {
+	credential, err := c.db.Queries().GetDMECredentialsByOrgID(ctx, organizationID)
 	if err != nil {
-		return fmt.Errorf("failed to get DME credentials for organization %s: %w", organizationID, err)
+		return fmt.Errorf("failed to get DME credentials: %w", err)
 	}
 
-	// Check if we need to authenticate or refresh token
-	if credential.AccessToken == nil || credential.RefreshToken == nil ||
-		credential.ExpiryDate.Time.Before(time.Now().Add(30*time.Second)) {
-		// Need to authenticate
-		if err := c.authenticateOrg(ctx, credential); err != nil {
-			return fmt.Errorf("failed to authenticate organization %s: %w", organizationID, err)
-		}
-	}
-
-	return nil
+	return c.authenticateOrg(ctx, credential)
 }
 
 // authenticateOrg performs authentication for an organization and updates the tokens in the database
@@ -107,13 +95,67 @@ func (c *Client) authenticateOrg(ctx context.Context, credential db.DmeCredentia
 	}
 	// Update the system IDs in the database
 	for _, systemID := range systemIDs {
-		params := db.UpdateDMESysIDParams{
+		// Set default values for required fields
+		name := systemID.Name
+		if name == "" {
+			name = systemID.SystemID
+		}
+		description := fmt.Sprintf("Imported from DME API for organization %s", credential.OrganizationID)
+		isActive := true
+
+		// First, try to find if this system ID already exists for this organization
+		existingSysID, err := c.db.Queries().GetDMESysIDByOrgAndSystemID(ctx, db.GetDMESysIDByOrgAndSystemIDParams{
 			OrganizationID: credential.OrganizationID,
 			SystemID:       systemID.SystemID,
-		}
-		_, err = c.db.Queries().UpdateDMESysID(ctx, params)
+		})
+
 		if err != nil {
-			return fmt.Errorf("failed to update DME system ID in database: %w", err)
+			// If not found, create a new one
+			if err.Error() == "no rows in result set" {
+				createParams := db.CreateDMESysIDWithoutMarinaIDParams{
+					OrganizationID: credential.OrganizationID,
+					Name:           name,
+					Description:    &description,
+					SystemID:       systemID.SystemID,
+					IsActive:       &isActive,
+				}
+
+				_, err = c.db.Queries().CreateDMESysIDWithoutMarinaID(ctx, createParams)
+				if err != nil {
+					c.logger.Zap.Error("Failed to create DME system ID",
+						zap.Error(err),
+						zap.String("systemID", systemID.SystemID),
+						zap.String("organizationID", credential.OrganizationID.String()))
+					return fmt.Errorf("failed to create DME system ID in database: %w", err)
+				}
+			} else {
+				// If it's a different error, return it
+				c.logger.Zap.Error("Failed to look up DME system ID",
+					zap.Error(err),
+					zap.String("systemID", systemID.SystemID),
+					zap.String("organizationID", credential.OrganizationID.String()))
+				return fmt.Errorf("failed to look up DME system ID in database: %w", err)
+			}
+		} else {
+			// If found, update it
+			updateParams := db.UpdateDMESysIDParams{
+				ID:             existingSysID.ID,
+				OrganizationID: credential.OrganizationID,
+				MarinaID:       existingSysID.MarinaID, // Preserve existing marina association
+				Name:           name,
+				Description:    &description,
+				SystemID:       systemID.SystemID,
+				IsActive:       &isActive,
+			}
+
+			_, err = c.db.Queries().UpdateDMESysID(ctx, updateParams)
+			if err != nil {
+				c.logger.Zap.Error("Failed to update DME system ID",
+					zap.Error(err),
+					zap.String("systemID", systemID.SystemID),
+					zap.String("organizationID", credential.OrganizationID.String()))
+				return fmt.Errorf("failed to update DME system ID in database: %w", err)
+			}
 		}
 	}
 
@@ -297,7 +339,7 @@ func (c *Client) ensureValidToken(ctx context.Context, organizationID uuid.UUID)
 	// Get the token from the database
 	credential, err := c.db.Queries().GetDMECredentialsByOrgID(ctx, organizationID)
 	if err != nil {
-		return fmt.Errorf("failed to get DME credentials: %w", err)
+		return fmt.Errorf("no credentials found for organization %s", organizationID)
 	}
 
 	// Check if token exists and is valid
@@ -323,6 +365,7 @@ func (c *Client) getHeaders(ctx context.Context, organizationID uuid.UUID, syste
 	headers := http.Header{}
 	headers.Set("Authorization", "Bearer "+*credential.AccessToken)
 	headers.Set("Content-Type", "application/json")
+	headers.Set("X-DMAPI_KEY", "E9CAB5C7-9D23-4EE1-963B-DE738FD0366C")
 
 	if systemID != "" && (credential.IsOldApi == nil || !*credential.IsOldApi) {
 		headers.Set("X-DM_SYSTEM_ID", systemID)
@@ -332,7 +375,7 @@ func (c *Client) getHeaders(ctx context.Context, organizationID uuid.UUID, syste
 }
 
 // DoRequest makes an HTTP request to the DME API with the specified organization and system ID
-func (c *Client) DoRequest(ctx context.Context, method, endpoint string, body interface{}, organizationID uuid.UUID, systemID string) (*http.Response, error) {
+func (c *Client) DoRequest(ctx context.Context, method, endpoint string, body interface{}, organizationID uuid.UUID, systemID string, params map[string]string) (*http.Response, error) {
 	if err := c.ensureValidToken(ctx, organizationID); err != nil {
 		return nil, fmt.Errorf("failed to ensure valid token: %w", err)
 	}
@@ -348,10 +391,20 @@ func (c *Client) DoRequest(ctx context.Context, method, endpoint string, body in
 	}
 
 	url := c.config.BaseURL
-	if c.config.APIVersion != "" {
-		url += c.config.APIVersion
+	if strings.HasPrefix(endpoint, "/") {
+		url += endpoint
+	} else {
+		url += "/" + endpoint
 	}
-	url += endpoint
+
+	// Add query parameters if provided
+	if len(params) > 0 {
+		query := make([]string, 0, len(params))
+		for k, v := range params {
+			query = append(query, fmt.Sprintf("%s=%s", k, v))
+		}
+		url += "?" + strings.Join(query, "&")
+	}
 
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(reqBody))
 	if err != nil {
@@ -374,19 +427,22 @@ func (c *Client) DoRequest(ctx context.Context, method, endpoint string, body in
 }
 
 // DoJSONRequest makes an HTTP request and decodes the JSON response
-func (c *Client) DoJSONRequest(ctx context.Context, method, endpoint string, body, result interface{}, organizationID uuid.UUID, systemID string) error {
-	resp, err := c.DoRequest(ctx, method, endpoint, body, organizationID, systemID)
+func (c *Client) DoJSONRequest(ctx context.Context, method, endpoint string, body, result interface{}, organizationID uuid.UUID, systemID string, params map[string]string) error {
+	resp, err := c.DoRequest(ctx, method, endpoint, body, organizationID, systemID, params)
 	if err != nil {
+		c.logger.DesugarZap.Error("request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Error(err))
 		return fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		c.logger.DesugarZap.Error("request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode))
 		return fmt.Errorf("request failed with status: %d", resp.StatusCode)
 	}
 
 	if result != nil {
 		if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
+			c.logger.DesugarZap.Error("failed to decode response", zap.String("method", method), zap.String("endpoint", endpoint), zap.Error(err))
 			return fmt.Errorf("failed to decode response: %w", err)
 		}
 	}
@@ -397,12 +453,10 @@ func (c *Client) DoJSONRequest(ctx context.Context, method, endpoint string, bod
 // NewClientFromConfig creates a new DME API client from app config
 func NewClientFromConfig(cfg *config.Config, logger *logger.Logger, db pg.DBService) *Client {
 	clientCfg := &ClientConfig{
-		BaseURL:    cfg.DME.BaseURL,
-		AuthURL:    cfg.DME.AuthURL,
-		APIVersion: cfg.DME.APIVersion,
-		IsOldAPI:   cfg.DME.IsOldAPI,
-		Logger:     logger,
-		DB:         db,
+		BaseURL: cfg.DME.BaseURL,
+		AuthURL: cfg.DME.AuthURL,
+		Logger:  logger,
+		DB:      db,
 	}
 
 	return NewClient(clientCfg)

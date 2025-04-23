@@ -1,5 +1,499 @@
 basePath: /api/v1
 definitions:
+  dme.BillingCode:
+    properties:
+      cycle:
+        type: string
+      department:
+        type: string
+      departmentDesc:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      lengthAreaOrCubicFeet:
+        type: string
+      loaLwlOrSpar:
+        type: string
+      overrideRate:
+        type: number
+      perFoot:
+        type: boolean
+      proRated:
+        type: boolean
+      rates:
+        items:
+          $ref: '#/definitions/dme.Rate'
+        type: array
+      slipBoatOrLongest:
+        type: string
+    type: object
+  dme.Boat:
+    properties:
+      beam:
+        type: string
+      billingCodes:
+        items:
+          $ref: '#/definitions/dme.BillingCode'
+        type: array
+      boatDescriptionCodes:
+        items:
+          $ref: '#/definitions/dme.BoatDescriptionCode'
+        type: array
+      color:
+        type: string
+      comments:
+        type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      doNotLaunch:
+        type: boolean
+      draft:
+        type: string
+      height:
+        type: string
+      hin:
+        type: string
+      id:
+        type: string
+      insuranceCompany:
+        type: string
+      insuranceExpDate:
+        type: string
+      integrationId:
+        type: string
+      lastModified:
+        type: string
+      loa:
+        type: string
+      lwl:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      motors:
+        items:
+          $ref: '#/definitions/dme.Motor'
+        type: array
+      name:
+        type: string
+      operationsHistory:
+        items:
+          $ref: '#/definitions/dme.OperationHistory'
+        type: array
+      ownerId:
+        type: string
+      ownerIntegrationId:
+        type: string
+      registration:
+        type: string
+      slip:
+        $ref: '#/definitions/dme.Slip'
+      slipId:
+        type: string
+      summerSlip:
+        type: string
+      trailerLocation:
+        type: string
+      trailerMake:
+        type: string
+      trailerModel:
+        type: string
+      trailerRegistration:
+        type: string
+      trailerSerial:
+        type: string
+      winterSlip:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.BoatDescriptionCode:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+    type: object
+  dme.CategoryCode:
+    properties:
+      desc:
+        type: string
+      id:
+        type: string
+    type: object
+  dme.CustomInformation:
+    properties:
+      fieldName:
+        type: string
+      fieldValue:
+        type: string
+    type: object
+  dme.Customer:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      allowBackOrders:
+        type: boolean
+      allowTransactions:
+        type: boolean
+      altAddress1:
+        type: string
+      altAddress2:
+        type: string
+      altAddress3:
+        type: string
+      altCity:
+        type: string
+      altCountry:
+        type: string
+      altFirstName:
+        type: string
+      altLastName:
+        type: string
+      altPhone:
+        type: string
+      altState:
+        type: string
+      altZip:
+        type: string
+      balance:
+        type: number
+      boats:
+        items:
+          $ref: '#/definitions/dme.Boat'
+        type: array
+      categoryCodes:
+        items:
+          $ref: '#/definitions/dme.CategoryCode'
+        type: array
+      cellPhone:
+        type: string
+      city:
+        type: string
+      comments:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      creditLimit:
+        type: number
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      discount:
+        type: number
+      email:
+        type: string
+      emergencyContact:
+        type: string
+      emergencyPhone:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      inactive:
+        type: boolean
+      inactiveDate:
+        type: string
+      integrationId:
+        type: string
+      invoices:
+        items:
+          $ref: '#/definitions/dme.InvoiceDetailed'
+        type: array
+      lastModified:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      noCcSurcharge:
+        type: boolean
+      paymentTermsCode:
+        type: string
+      paymentTermsCodeDescription:
+        type: string
+      phone:
+        type: string
+      poRequired:
+        type: boolean
+      priceColumn:
+        type: string
+      prospectId:
+        type: string
+      sendMassEmail:
+        type: boolean
+      shipmentMethod:
+        type: string
+      shipmentMethodDescription:
+        type: string
+      state:
+        type: string
+      taxFlag:
+        type: boolean
+      taxId:
+        type: string
+      taxIdState:
+        type: string
+      taxSchema:
+        type: string
+      useAltAddress:
+        type: boolean
+      waitListEntries:
+        items:
+          $ref: '#/definitions/dme.WaitListEntry'
+        type: array
+      webId:
+        type: string
+      webPassword:
+        type: string
+      workPhone:
+        type: string
+      zip:
+        type: string
+    type: object
+  dme.CustomerList:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/dme.Customer'
+        type: array
+      currentPage:
+        type: integer
+      maxPages:
+        type: integer
+      pageSize:
+        type: integer
+    type: object
+  dme.CustomerSearch:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      companyName:
+        type: string
+      customerID:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      prospectId:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+    type: object
+  dme.CustomerUpdate:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      altAddress1:
+        type: string
+      altAddress2:
+        type: string
+      altAddress3:
+        type: string
+      altCity:
+        type: string
+      altCountry:
+        type: string
+      altFirstName:
+        type: string
+      altLastName:
+        type: string
+      altPhone:
+        type: string
+      altState:
+        type: string
+      altZip:
+        type: string
+      cellPhone:
+        type: string
+      city:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      emergencyContact:
+        type: string
+      emergencyPhone:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      shipmentMethod:
+        type: string
+      shipmentMethodDescription:
+        type: string
+      state:
+        type: string
+      useAltAddress:
+        type: boolean
+      workPhone:
+        type: string
+      zip:
+        type: string
+    type: object
+  dme.Installment:
+    properties:
+      amount:
+        type: number
+      dueDate:
+        type: string
+      id:
+        type: string
+    type: object
+  dme.InvoiceDetailed:
+    properties:
+      amount:
+        type: number
+      customerId:
+        type: string
+      description:
+        type: string
+      dueDate:
+        type: string
+      id:
+        type: string
+      installments:
+        items:
+          $ref: '#/definitions/dme.Installment'
+        type: array
+      invoiceAmount:
+        type: number
+      invoiceBalance:
+        type: number
+      locationCode:
+        type: string
+      unappliedPayment:
+        type: boolean
+    type: object
+  dme.Motor:
+    properties:
+      drive:
+        type: string
+      hours:
+        type: number
+      make:
+        type: string
+      model:
+        type: string
+      number:
+        type: integer
+      serial:
+        type: string
+      size:
+        type: string
+      transomId:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.OperationHistory:
+    properties:
+      code:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      operationCharges:
+        type: number
+      type:
+        type: string
+      workOrder:
+        type: string
+    type: object
+  dme.Rate:
+    properties:
+      endDate:
+        type: string
+      rate:
+        type: number
+      startDate:
+        type: string
+    type: object
+  dme.Slip:
+    properties:
+      cableTv:
+        type: boolean
+      description:
+        type: string
+      draft:
+        type: string
+      electric:
+        type: boolean
+      id:
+        type: string
+      lastModifiedDate:
+        type: string
+      length:
+        type: string
+      linear:
+        type: boolean
+      location:
+        type: string
+      phone:
+        type: boolean
+      tieOff:
+        type: string
+      transient:
+        type: boolean
+      type:
+        type: string
+      unusable:
+        type: boolean
+      water:
+        type: boolean
+      width:
+        type: string
+    type: object
+  dme.WaitListEntry:
+    properties:
+      boatId:
+        type: string
+      boatName:
+        type: string
+      customerId:
+        type: string
+      description:
+        type: string
+      entryDate:
+        type: string
+      entryNumber:
+        type: string
+      id:
+        type: string
+      waitListName:
+        type: string
+    type: object
   handlers.HealthResponse:
     properties:
       data:
@@ -179,6 +673,57 @@ definitions:
         example: 123 Main St
         type: string
     type: object
+  requests.CreateDMECredentialRequest:
+    properties:
+      accessToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expiryDate:
+        type: string
+      isOldApi:
+        example: false
+        type: boolean
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      password:
+        example: secure_password
+        type: string
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      username:
+        example: api_user
+        type: string
+    required:
+    - organizationId
+    - username
+    type: object
+  requests.CreateDMESysIDRequest:
+    properties:
+      description:
+        example: Primary production environment for marina operations
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Production System
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+    required:
+    - name
+    - organizationId
+    - systemId
+    type: object
   requests.CreateMarinaRequest:
     properties:
       address:
@@ -215,6 +760,9 @@ definitions:
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      systemId:
+        example: SYS123456
         type: string
       website:
         example: https://harborbay.com
@@ -340,6 +888,14 @@ definitions:
     required:
     - email
     type: object
+  requests.LinkDMESysIDRequest:
+    properties:
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    required:
+    - marinaId
+    type: object
   requests.LoginRequest:
     properties:
       email:
@@ -403,6 +959,44 @@ definitions:
         example: 123 Main St
         type: string
     type: object
+  requests.UpdateDMECredentialRequest:
+    properties:
+      accessToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expiryDate:
+        type: string
+      isOldApi:
+        example: false
+        type: boolean
+      password:
+        example: secure_password
+        type: string
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      username:
+        example: api_user
+        type: string
+    type: object
+  requests.UpdateDMESysIDRequest:
+    properties:
+      description:
+        example: Primary production environment for marina operations
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Production System
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+    type: object
   requests.UpdateMarinaRequest:
     properties:
       address:
@@ -436,6 +1030,9 @@ definitions:
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      systemId:
+        example: SYS123456
         type: string
       website:
         example: https://harborbay.com
@@ -604,6 +1201,78 @@ definitions:
       total:
         type: integer
     type: object
+  responses.DMECredentialResponse:
+    description: DME API credentials used for integration
+    properties:
+      accessToken:
+        type: string
+      createdAt:
+        type: string
+      expiryDate:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOldApi:
+        example: false
+        type: boolean
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      refreshToken:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        example: api_user
+        type: string
+    type: object
+  responses.DMECredentialResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.DMECredentialResponse'
+    type: object
+  responses.DMESysIDListResponseWrapper:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.DMESysIDResponse'
+        type: array
+    type: object
+  responses.DMESysIDResponse:
+    description: DME System IDs used for marina integration
+    properties:
+      createdAt:
+        type: string
+      description:
+        example: Primary production environment
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Production System
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.DMESysIDResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.DMESysIDResponse'
+    type: object
   responses.Error:
     description: Error response structure with optional validation details
     properties:
@@ -701,6 +1370,9 @@ definitions:
       phone:
         example: "+15551234567"
         type: string
+      systemId:
+        example: SYS123456
+        type: string
       updatedAt:
         type: string
       website:
@@ -759,6 +1431,9 @@ definitions:
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      systemId:
+        example: SYS123456
         type: string
       updatedAt:
         type: string
@@ -981,10 +1656,7 @@ definitions:
         type: string
     type: object
 info:
-  contact:
-    email: g.andrewsameh@gmail.com
-    name: Andrew Sameh
-    url: https://andrewsam.xyz
+  contact: {}
   description: This is a API Server.
   title: DockMaster Web API
   version: 0.0.1
@@ -1098,6 +1770,136 @@ paths:
       summary: Update address
       tags:
       - Addresses
+  /api/v1/customers/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of customers
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dme.CustomerList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List customers by page
+      tags:
+      - Customers
+  /api/v1/customers/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a customer by their ID
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dme.Customer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer by ID
+      tags:
+      - Customers
+  /api/v1/customers/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for customers based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dme.CustomerSearch'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search customers
+      tags:
+      - Customers
+  /api/v1/customers/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates a customer's information
+      parameters:
+      - description: Customer information
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/dme.CustomerUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dme.Customer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update customer
+      tags:
+      - Customers
   /auth/login:
     post:
       consumes:
@@ -1176,6 +1978,461 @@ paths:
       summary: Refresh access token
       tags:
       - Authentication
+  /dme/credentials:
+    post:
+      consumes:
+      - application/json
+      description: Create new DME API credentials for an organization
+      parameters:
+      - description: Create DME credential request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateDMECredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMECredentialResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create DME credentials
+      tags:
+      - DME Credentials
+  /dme/credentials/organization/{organizationId}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete DME API credentials for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete DME credentials
+      tags:
+      - DME Credentials
+    get:
+      consumes:
+      - application/json
+      description: Get DME API credentials for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMECredentialResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME credentials by organization ID
+      tags:
+      - DME Credentials
+    put:
+      consumes:
+      - application/json
+      description: Update DME API credentials for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: Update DME credential request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateDMECredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMECredentialResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update DME credentials
+      tags:
+      - DME Credentials
+  /dme/sysids:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all DME System IDs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDListResponseWrapper'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List all DME System IDs
+      tags:
+      - DME System IDs
+    post:
+      consumes:
+      - application/json
+      description: Create a new DME System ID for an organization
+      parameters:
+      - description: Create DME System ID request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateDMESysIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create DME System ID
+      tags:
+      - DME System IDs
+  /dme/sysids/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a DME System ID
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete DME System ID
+      tags:
+      - DME System IDs
+    get:
+      consumes:
+      - application/json
+      description: Get DME System ID by its unique identifier
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System ID by ID
+      tags:
+      - DME System IDs
+    put:
+      consumes:
+      - application/json
+      description: Update a DME System ID
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update DME System ID request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateDMESysIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update DME System ID
+      tags:
+      - DME System IDs
+  /dme/sysids/{id}/link:
+    patch:
+      consumes:
+      - application/json
+      description: Link a DME System ID to a specific marina
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Link DME System ID request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.LinkDMESysIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Link DME System ID to marina
+      tags:
+      - DME System IDs
+  /dme/sysids/{id}/unlink:
+    patch:
+      consumes:
+      - application/json
+      description: Remove the link between a DME System ID and a marina
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Unlink DME System ID from marina
+      tags:
+      - DME System IDs
+  /dme/sysids/marina/{marinaId}:
+    get:
+      consumes:
+      - application/json
+      description: Get DME System ID linked to a specific marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System ID by marina ID
+      tags:
+      - DME System IDs
+  /dme/sysids/organization/{organizationId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all DME System IDs for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDListResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System IDs by organization ID
+      tags:
+      - DME System IDs
+  /dme/sysids/system/{systemId}:
+    get:
+      consumes:
+      - application/json
+      description: Get DME System ID by its external system identifier
+      parameters:
+      - description: System identifier
+        in: path
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System ID by system identifier
+      tags:
+      - DME System IDs
   /health:
     get:
       consumes:
@@ -1531,6 +2788,72 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get marinas by organization
+      tags:
+      - Marinas
+  /marinas/user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas associated with the current authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get my user marinas
+      tags:
+      - Marinas
+  /marinas/user/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas associated with a specific user with pagination
+        support
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user marinas
       tags:
       - Marinas
   /organizations:

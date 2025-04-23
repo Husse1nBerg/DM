@@ -61,7 +61,10 @@ install-mockery:
 install-swag:
 	go install github.com/swaggo/swag/cmd/swag@latest
 
-install-tools: install-sqlc install-goose install-mockery install-swag
+install-air:
+	go install github.com/air-verse/air@latest
+
+install-tools: install-sqlc install-goose install-mockery install-swag install-air
 
 ####################
 # CODE GENERATION
@@ -102,6 +105,11 @@ local-down:
 .PHONY: create-migration goose-up goose-down db-seed
 
 create-migration:
+	@if [ -z "$(name)" ]; then \
+		echo "Error: Migration name is required. Usage: make create-migration name=migration_name"; \
+		exit 1; \
+	fi
+	@echo "Creating migration: $(name)"
 	cd db/migrations && goose create $(name) sql
 
 goose-up:

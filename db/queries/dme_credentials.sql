@@ -23,6 +23,10 @@ SELECT *
 FROM dme_credentials
 WHERE organization_id = $1
     AND deleted_at IS NULL;
+-- name: GetDMECredentialsByOrgIDWithDeleted :one
+SELECT *
+FROM dme_credentials
+WHERE organization_id = $1;
 -- name: UpdateDMECredentials :one
 UPDATE dme_credentials
 SET username = $2,
@@ -45,4 +49,7 @@ RETURNING *;
 -- name: DeleteDMECredentials :exec
 UPDATE dme_credentials
 SET deleted_at = CURRENT_TIMESTAMP
+WHERE organization_id = $1;
+-- name: HardDeleteDMECredentials :exec
+DELETE FROM dme_credentials
 WHERE organization_id = $1;

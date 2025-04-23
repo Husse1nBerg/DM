@@ -36,7 +36,7 @@ func RegisterRoutes(s *s.Server) {
 	roleHandler := h.NewRoleHandler(s)
 	dmeCredentialHandler := h.NewDMECredentialHandler(s)
 	dmeSysIDHandler := h.NewDMESysIDHandler(s)
-	dmeHandler := h.NewDMEHandler(s)
+	customerHandler := h.NewCustomerHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -159,7 +159,10 @@ func RegisterRoutes(s *s.Server) {
 	sysidGroup.PATCH("/:id/link", dmeSysIDHandler.LinkDMESysIDToMarina)
 	sysidGroup.PATCH("/:id/unlink", dmeSysIDHandler.UnlinkDMESysIDFromMarina)
 
-	// DME API proxy
-	dme.POST("/api", dmeHandler.CallDMEAPI)
-	dme.GET("/vessels", dmeHandler.GetVessels)
+	// Customer routes
+	customers := protected.Group("/customers")
+	customers.GET("/list", customerHandler.ListCustomersByPage)
+	customers.GET("/retrieve", customerHandler.RetrieveCustomer)
+	customers.GET("/search", customerHandler.SearchCustomers)
+	customers.POST("/update", customerHandler.UpdateCustomer)
 }

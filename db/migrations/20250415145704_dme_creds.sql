@@ -17,15 +17,16 @@ CREATE TABLE dme_credentials (
 CREATE TABLE dme_sysids (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-    marina_id UUID REFERENCES marinas(id) ON DELETE
-    SET NULL,
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        system_id VARCHAR(255) NOT NULL UNIQUE,
-        is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP,
-        deleted_at TIMESTAMP
+    marina_id UUID DEFAULT NULL, -- explicitly optional foreign key
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    system_id VARCHAR(255) NOT NULL UNIQUE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    CONSTRAINT fk_sysid_org_id UNIQUE (organization_id, system_id),
+    CONSTRAINT fk_sysid_marina_id FOREIGN KEY (marina_id) REFERENCES marinas(id) ON DELETE SET NULL
 );
 ALTER TABLE marinas
 ADD COLUMN system_id VARCHAR(255);
