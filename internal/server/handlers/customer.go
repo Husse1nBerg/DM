@@ -33,7 +33,7 @@ func NewCustomerHandler(server *s.Server) *CustomerHandler {
 // @Produce json
 // @Param page query int true "Page number" minimum(1)
 // @Param pageSize query int true "Page size" minimum(1) maximum(100)
-// @Success 200 {object} dme.CustomerList
+// @Success 200 {object} responses.CustomerListResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
 // @Router /customers/list [get]
@@ -59,7 +59,7 @@ func (h *CustomerHandler) ListCustomersByPage(c echo.Context) error {
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
 
-	response, err := h.server.DME.CustomersList(ctx, req.Page, req.PageSize, orgID, *systemID)
+	dmeResponse, err := h.server.DME.CustomersList(ctx, req.Page, req.PageSize, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list customers",
 			zap.Error(err),
@@ -68,6 +68,8 @@ func (h *CustomerHandler) ListCustomersByPage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to list customers: "+err.Error())
 	}
 
+	// Convert DME response to API response
+	response := responses.ConvertCustomerList(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -77,9 +79,9 @@ func (h *CustomerHandler) ListCustomersByPage(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param CustomerId query string true "Customer ID"
-// @Success 200 {object} dme.Customer
-// @Failure 400 {object} errors.ErrorResponse
-// @Failure 500 {object} errors.ErrorResponse
+// @Success 200 {object} responses.CustomerResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /customers/retrieve [get]
 func (h *CustomerHandler) RetrieveCustomer(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -102,7 +104,8 @@ func (h *CustomerHandler) RetrieveCustomer(c echo.Context) error {
 
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
-	response, err := h.server.DME.CustomerRetrieve(ctx, req.CustomerID, orgID, *systemID)
+
+	dmeResponse, err := h.server.DME.CustomerRetrieve(ctx, req.CustomerID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve customer",
 			zap.Error(err),
@@ -110,6 +113,8 @@ func (h *CustomerHandler) RetrieveCustomer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve customer: "+err.Error())
 	}
 
+	// Convert DME response to API response
+	response := responses.ConvertCustomer(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -120,9 +125,9 @@ func (h *CustomerHandler) RetrieveCustomer(c echo.Context) error {
 // @Produce json
 // @Param SearchString query string true "Search string"
 // @Param DirectHit query bool false "Direct hit search" default(false)
-// @Success 200 {object} dme.CustomerSearch
-// @Failure 400 {object} errors.ErrorResponse
-// @Failure 500 {object} errors.ErrorResponse
+// @Success 200 {object} responses.CustomerSearchResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /customers/search [get]
 func (h *CustomerHandler) SearchCustomers(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -146,7 +151,7 @@ func (h *CustomerHandler) SearchCustomers(c echo.Context) error {
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
 
-	response, err := h.server.DME.CustomerSearch(ctx, req.SearchString, req.DirectHit, orgID, *systemID)
+	dmeResponse, err := h.server.DME.CustomerSearch(ctx, req.SearchString, req.DirectHit, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to search customers",
 			zap.Error(err),
@@ -155,6 +160,8 @@ func (h *CustomerHandler) SearchCustomers(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to search customers: "+err.Error())
 	}
 
+	// Convert DME response to API response
+	response := responses.ConvertCustomerSearch(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -164,9 +171,9 @@ func (h *CustomerHandler) SearchCustomers(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param customer body dme.CustomerUpdate true "Customer information"
-// @Success 200 {object} dme.Customer
-// @Failure 400 {object} errors.ErrorResponse
-// @Failure 500 {object} errors.ErrorResponse
+// @Success 200 {object} responses.CustomerResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
 // @Router /customers/update [post]
 func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -209,7 +216,7 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		ShipmentMethodDescription: req.ShipmentMethodDescription,
 	}
 
-	response, err := h.server.DME.CustomerUpdate(ctx, dmeReq, orgID, *systemID)
+	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, dmeReq, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to update customer",
 			zap.Error(err),
@@ -217,5 +224,54 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update customer: "+err.Error())
 	}
 
+	// Convert DME response to API response
+	response := responses.ConvertCustomer(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary List customers short
+// @Description Retrieves a paginated short list of customers
+// @Tags Customers
+// @Accept json
+// @Produce json
+// @Param page query int true "Page number" minimum(1)
+// @Param pageSize query int true "Page size" minimum(1) maximum(100)
+// @Success 200 {object} responses.CustomerListShortResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /customers/list-short [get]
+func (h *CustomerHandler) ListCustomersShortByPage(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.CustomerListRequest)
+	if err := c.Bind(req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request parameters: "+err.Error())
+	}
+
+	if err := c.Validate(req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Validation failed: "+err.Error())
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	marinaIDStr := claims.MarinaId
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	dmeResponse, err := h.server.DME.CustomersListShort(ctx, req.Page, req.PageSize, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to list customers short",
+			zap.Error(err),
+			zap.Int("page", req.Page),
+			zap.Int("pageSize", req.PageSize))
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to list customers short: "+err.Error())
+	}
+
+	// Convert DME response to API response
+	response := responses.ConvertCustomerListShort(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }

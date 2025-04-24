@@ -264,19 +264,6 @@ definitions:
       zip:
         type: string
     type: object
-  dme.CustomerList:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/dme.Customer'
-        type: array
-      currentPage:
-        type: integer
-      maxPages:
-        type: integer
-      pageSize:
-        type: integer
-    type: object
   dme.CustomerSearch:
     properties:
       address:
@@ -296,6 +283,17 @@ definitions:
       state:
         type: string
       zip:
+        type: string
+    type: object
+  dme.CustomerShort:
+    properties:
+      companyName:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
         type: string
     type: object
   dme.CustomerUpdate:
@@ -1201,6 +1199,56 @@ definitions:
       total:
         type: integer
     type: object
+  responses.CustomerListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.Customer'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.CustomerListShortResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.CustomerShort'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.CustomerResponse:
+    properties:
+      customer:
+        $ref: '#/definitions/dme.Customer'
+    type: object
+  responses.CustomerSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.CustomerSearch'
+        type: array
+    type: object
   responses.DMECredentialResponse:
     description: DME API credentials used for integration
     properties:
@@ -1770,136 +1818,6 @@ paths:
       summary: Update address
       tags:
       - Addresses
-  /api/v1/customers/list:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves a paginated list of customers
-      parameters:
-      - description: Page number
-        in: query
-        minimum: 1
-        name: page
-        required: true
-        type: integer
-      - description: Page size
-        in: query
-        maximum: 100
-        minimum: 1
-        name: pageSize
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dme.CustomerList'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: List customers by page
-      tags:
-      - Customers
-  /api/v1/customers/retrieve:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves a customer by their ID
-      parameters:
-      - description: Customer ID
-        in: query
-        name: CustomerId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dme.Customer'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Retrieve customer by ID
-      tags:
-      - Customers
-  /api/v1/customers/search:
-    get:
-      consumes:
-      - application/json
-      description: Searches for customers based on search string
-      parameters:
-      - description: Search string
-        in: query
-        name: SearchString
-        required: true
-        type: string
-      - default: false
-        description: Direct hit search
-        in: query
-        name: DirectHit
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dme.CustomerSearch'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Search customers
-      tags:
-      - Customers
-  /api/v1/customers/update:
-    post:
-      consumes:
-      - application/json
-      description: Updates a customer's information
-      parameters:
-      - description: Customer information
-        in: body
-        name: customer
-        required: true
-        schema:
-          $ref: '#/definitions/dme.CustomerUpdate'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dme.Customer'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Update customer
-      tags:
-      - Customers
   /auth/login:
     post:
       consumes:
@@ -1978,6 +1896,173 @@ paths:
       summary: Refresh access token
       tags:
       - Authentication
+  /customers/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of customers
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List customers by page
+      tags:
+      - Customers
+  /customers/list-short:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated short list of customers
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerListShortResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List customers short
+      tags:
+      - Customers
+  /customers/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a customer by their ID
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer by ID
+      tags:
+      - Customers
+  /customers/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for customers based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search customers
+      tags:
+      - Customers
+  /customers/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates a customer's information
+      parameters:
+      - description: Customer information
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/dme.CustomerUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update customer
+      tags:
+      - Customers
   /dme/credentials:
     post:
       consumes:

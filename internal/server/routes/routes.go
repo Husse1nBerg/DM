@@ -162,6 +162,7 @@ func RegisterRoutes(s *s.Server) {
 	// Customer routes
 	customers := protected.Group("/customers")
 	customers.GET("/list", customerHandler.ListCustomersByPage)
+	customers.GET("/list-short", customerHandler.ListCustomersShortByPage)
 	customers.GET("/retrieve", customerHandler.RetrieveCustomer)
 	customers.GET("/search", customerHandler.SearchCustomers)
 	customers.POST("/update", customerHandler.UpdateCustomer)
