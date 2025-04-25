@@ -62,7 +62,7 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		Currency:       marina.Currency,
 		WorkingHours:   workingHours,
 		Website:        marina.Website,
-		Image:          marina.Image,
+		Image:          utils.GetFullImageURL(marina.Image),
 		MaxUsers:       marina.MaxUsers,
 		IsActive:       marina.IsActive,
 		IsTest:         marina.IsTest,

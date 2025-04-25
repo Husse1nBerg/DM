@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 
+	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/joho/godotenv"
 )
 
@@ -15,6 +16,7 @@ type Config struct {
 	App    AppConfig
 	Redis  RedisConfig
 	DME    DMEConfig
+	S3     s3.S3Config
 }
 
 func New() *Config {
@@ -42,5 +44,6 @@ func New() *Config {
 		App:    LoadAppConfig(),
 		Redis:  LoadRedisConfig(),
 		DME:    LoadDMEConfig(),
+		S3:     LoadS3Config(),
 	}
 }
