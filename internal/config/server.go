@@ -137,10 +137,10 @@ func (BinderWithValidation) Bind(i interface{}, ctx echo.Context) error {
 			if msg, ok := e.Message.(string); ok {
 				return errors.New(msg)
 			}
-			return errors.New("Invalid request format")
+			return errors.New("invalid request format")
 		default:
 			// Handle other errors including EOF
-			return errors.New("Request parsing error: " + err.Error())
+			return errors.New("request parsing error: " + err.Error())
 		}
 	}
 

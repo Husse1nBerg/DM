@@ -11,6 +11,8 @@ import (
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -462,6 +464,9 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 			isTest := isTestStr == "true"
 			updateParams.IsTest = &isTest
 		}
+		if systemID := c.FormValue("systemID"); systemID != "" {
+			updateParams.SystemID = &systemID
+		}
 	} else {
 		// Parse and validate the JSON request body
 		req := new(requests.UpdateMarinaRequest)
@@ -515,6 +520,9 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		}
 		if req.IsTest != nil {
 			updateParams.IsTest = req.IsTest
+		}
+		if req.SystemID != nil {
+			updateParams.SystemID = req.SystemID
 		}
 	}
 
@@ -582,6 +590,7 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		IsActive:     currentMarina.IsActive,
 		IsTest:       currentMarina.IsTest,
 		AddressID:    currentMarina.AddressID,
+		SystemID:     currentMarina.SystemID,
 	}
 
 	// Update only fields that are provided
@@ -625,6 +634,9 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 	}
 	if req.IsTest != nil {
 		params.IsTest = req.IsTest
+	}
+	if req.SystemID != nil {
+		params.SystemID = req.SystemID
 	}
 
 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
@@ -725,3 +737,167 @@ func (h *MarinaHandler) DeleteMarina(c echo.Context) error {
 
 	return responses.NewMessageResponse(http.StatusOK, "Marina successfully deleted").JSON(c)
 }
+
+// GetUserMarinas retrieves marinas associated with a user with pagination
+//
+//	@Summary		Get user marinas
+//	@Description	Retrieves marinas associated with a specific user with pagination support
+//	@Tags			Marinas
+//	@Accept			json
+//	@Produce		json
+//	@Param			userId		path		string	true	"User ID"	Format(uuid)
+//	@Success		200			{array}		responses.MarinaListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		404			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/marinas/user/{userId} [get]
+func (h *MarinaHandler) GetUserMarinas(c echo.Context) error {
+	userIDStr := c.Param("userId")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid user ID").JSON(c)
+	}
+
+	// Get all marinas for this user to calculate total
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUserMarinas))
+
+	if total == 0 {
+		// Return empty response if no marinas found
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
+	}
+
+	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
+}
+
+// GetMyUserMarinas retrieves marinas associated with the current user
+//
+//	@Summary		Get my user marinas
+//	@Description	Retrieves marinas associated with the current authenticated user
+//	@Tags			Marinas
+//	@Accept			json
+//	@Produce		json
+//	@Success		200			{array}		responses.MarinaListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/marinas/user [get]
+func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
+	// Get user ID from the token
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+
+	// Get all marinas for this user to calculate total
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUserMarinas))
+
+	if total == 0 {
+		// Return empty response if no marinas found
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
+	}
+
+	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
+}
+
+// func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
+// 	idStr := c.Param("id")
+// 	id, err := uuid.Parse(idStr)
+// 	if err != nil {
+// 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
+// 	}
+
+// 	// Check if marina exists and get current values
+// 	currentMarina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), id)
+// 	if err != nil {
+// 		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
+// 	}
+
+// 	var req requests.UpdateMarinaRequest
+// 	if err := c.Bind(&req); err != nil {
+// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+// 	}
+
+// 	if err := c.Validate(&req); err != nil {
+// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+// 	}
+
+// 	// Build update params with current values that will be overridden
+// 	params := db.UpdateMarinaParams{
+// 		ID:           id,
+// 		Name:         currentMarina.Name,
+// 		Email:        currentMarina.Email,
+// 		Location:     currentMarina.Location,
+// 		Phone:        currentMarina.Phone,
+// 		Country:      currentMarina.Country,
+// 		Currency:     currentMarina.Currency,
+// 		WorkingHours: currentMarina.WorkingHours,
+// 		Website:      currentMarina.Website,
+// 		Image:        currentMarina.Image,
+// 		MaxUsers:     currentMarina.MaxUsers,
+// 		IsActive:     currentMarina.IsActive,
+// 		IsTest:       currentMarina.IsTest,
+// 		AddressID:    currentMarina.AddressID,
+// 		SystemID:     currentMarina.SystemID,
+// 	}
+
+// 	// Update only fields that are provided
+// 	if req.Name != nil {
+// 		params.Name = *req.Name
+// 	}
+// 	if req.Email != nil {
+// 		params.Email = *req.Email
+// 	}
+// 	if req.Location != nil {
+// 		params.Location = req.Location
+// 	}
+// 	if req.Phone != nil {
+// 		params.Phone = req.Phone
+// 	}
+// 	if req.Country != nil {
+// 		params.Country = req.Country
+// 	}
+// 	if req.Currency != nil {
+// 		params.Currency = req.Currency
+// 	}
+// 	if req.WorkingHours != nil {
+// 		// Convert WorkingHours struct to []byte for database storage
+// 		workingHoursBytes, err := req.WorkingHours.ToBytes()
+// 		if err != nil {
+// 			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid working hours format").JSON(c)
+// 		}
+// 		params.WorkingHours = workingHoursBytes
+// 	}
+// 	if req.Website != nil {
+// 		params.Website = req.Website
+// 	}
+// 	if req.Image != nil {
+// 		params.Image = req.Image
+// 	}
+// 	if req.MaxUsers != nil {
+// 		params.MaxUsers = req.MaxUsers
+// 	}
+// 	if req.IsActive != nil {
+// 		params.IsActive = req.IsActive
+// 	}
+// 	if req.IsTest != nil {
+// 		params.IsTest = req.IsTest
+// 	}
+// 	if req.SystemID != nil {
+// 		params.SystemID = req.SystemID
+// 	}
+
+// 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
+// 	if err != nil {
+// 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+// 	}
+
+// 	return responses.NewMarinaResponseSuccess(updatedMarina).JSON(c)
+// }

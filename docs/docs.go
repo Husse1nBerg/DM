@@ -9,11 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "Andrew Sameh",
-            "url": "https://andrewsam.xyz",
-            "email": "g.andrewsameh@gmail.com"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -307,6 +303,989 @@ const docTemplate = `{
                 }
             }
         },
+        "/customers/create": {
+            "post": {
+                "description": "Creates a new customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Create customer",
+                "parameters": [
+                    {
+                        "description": "Customer information",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CustomerCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/list": {
+            "get": {
+                "description": "Retrieves a paginated list of customers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "List customers by page",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/list-short": {
+            "get": {
+                "description": "Retrieves a paginated short list of customers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "List customers short",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerListShortResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/retrieve": {
+            "get": {
+                "description": "Retrieves a customer by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Retrieve customer by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/search": {
+            "get": {
+                "description": "Searches for customers based on search string",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Search customers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search string",
+                        "name": "SearchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Direct hit search",
+                        "name": "DirectHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/update": {
+            "post": {
+                "description": "Updates a customer's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Update customer",
+                "parameters": [
+                    {
+                        "description": "Customer information",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dme.CustomerUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/credentials": {
+            "post": {
+                "description": "Create new DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Create DME credentials",
+                "parameters": [
+                    {
+                        "description": "Create DME credential request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateDMECredentialRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/credentials/organization/{organizationId}": {
+            "get": {
+                "description": "Get DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Get DME credentials by organization ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Update DME credentials",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update DME credential request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateDMECredentialRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Soft delete DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Delete DME credentials",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids": {
+            "get": {
+                "description": "Get a list of all DME System IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "List all DME System IDs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDListResponseWrapper"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new DME System ID for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Create DME System ID",
+                "parameters": [
+                    {
+                        "description": "Create DME System ID request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateDMESysIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/marina/{marinaId}": {
+            "get": {
+                "description": "Get DME System ID linked to a specific marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System ID by marina ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/organization/{organizationId}": {
+            "get": {
+                "description": "Get all DME System IDs for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System IDs by organization ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDListResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/system/{systemId}": {
+            "get": {
+                "description": "Get DME System ID by its external system identifier",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System ID by system identifier",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System identifier",
+                        "name": "systemId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/{id}": {
+            "get": {
+                "description": "Get DME System ID by its unique identifier",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System ID by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a DME System ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Update DME System ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update DME System ID request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateDMESysIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Soft delete a DME System ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Delete DME System ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/{id}/link": {
+            "patch": {
+                "description": "Link a DME System ID to a specific marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Link DME System ID to marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Link DME System ID request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.LinkDMESysIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/{id}/unlink": {
+            "patch": {
+                "description": "Remove the link between a DME System ID and a marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Unlink DME System ID from marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Checks the health of the server",
@@ -533,6 +1512,108 @@ const docTemplate = `{
                         "description": "Page size",
                         "name": "pageSize",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MarinaListResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/user": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas associated with the current authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get my user marinas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MarinaListResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/user/{userId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas associated with a specific user with pagination support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get user marinas",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -2469,6 +3550,752 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dme.BillingCode": {
+            "type": "object",
+            "properties": {
+                "cycle": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "departmentDesc": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lengthAreaOrCubicFeet": {
+                    "type": "string"
+                },
+                "loaLwlOrSpar": {
+                    "type": "string"
+                },
+                "overrideRate": {
+                    "type": "number"
+                },
+                "perFoot": {
+                    "type": "boolean"
+                },
+                "proRated": {
+                    "type": "boolean"
+                },
+                "rates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Rate"
+                    }
+                },
+                "slipBoatOrLongest": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Boat": {
+            "type": "object",
+            "properties": {
+                "beam": {
+                    "type": "string"
+                },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Motor"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "ownerIntegrationId": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/dme.Slip"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatDescriptionCode": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CategoryCode": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomInformation": {
+            "type": "object",
+            "properties": {
+                "fieldName": {
+                    "type": "string"
+                },
+                "fieldValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Customer": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "allowBackOrders": {
+                    "type": "boolean"
+                },
+                "allowTransactions": {
+                    "type": "boolean"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "balance": {
+                    "type": "number"
+                },
+                "boats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Boat"
+                    }
+                },
+                "categoryCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CategoryCode"
+                    }
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "creditLimit": {
+                    "type": "number"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "inactiveDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "invoices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.InvoiceDetailed"
+                    }
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "noCcSurcharge": {
+                    "type": "boolean"
+                },
+                "paymentTermsCode": {
+                    "type": "string"
+                },
+                "paymentTermsCodeDescription": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "poRequired": {
+                    "type": "boolean"
+                },
+                "priceColumn": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "sendMassEmail": {
+                    "type": "boolean"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "taxId": {
+                    "type": "string"
+                },
+                "taxIdState": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "waitListEntries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WaitListEntry"
+                    }
+                },
+                "webId": {
+                    "type": "string"
+                },
+                "webPassword": {
+                    "type": "string"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerSearch": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "customerID": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerShort": {
+            "type": "object",
+            "properties": {
+                "companyName": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerUpdate": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Installment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.InvoiceDetailed": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "installments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Installment"
+                    }
+                },
+                "invoiceAmount": {
+                    "type": "number"
+                },
+                "invoiceBalance": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "unappliedPayment": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dme.Motor": {
+            "type": "object",
+            "properties": {
+                "drive": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "transomId": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.OperationHistory": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "operationCharges": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "workOrder": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Rate": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                },
+                "startDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Slip": {
+            "type": "object",
+            "properties": {
+                "cableTv": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "electric": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModifiedDate": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "string"
+                },
+                "linear": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "boolean"
+                },
+                "tieOff": {
+                    "type": "string"
+                },
+                "transient": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "unusable": {
+                    "type": "boolean"
+                },
+                "water": {
+                    "type": "boolean"
+                },
+                "width": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WaitListEntry": {
+            "type": "object",
+            "properties": {
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "entryDate": {
+                    "type": "string"
+                },
+                "entryNumber": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "waitListName": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.HealthResponse": {
             "type": "object",
             "properties": {
@@ -2719,6 +4546,76 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CreateDMECredentialRequest": {
+            "type": "object",
+            "required": [
+                "organizationId",
+                "username"
+            ],
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "expiryDate": {
+                    "type": "string"
+                },
+                "isOldApi": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "secure_password"
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "username": {
+                    "type": "string",
+                    "example": "api_user"
+                }
+            }
+        },
+        "requests.CreateDMESysIDRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "organizationId",
+                "systemId"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Primary production environment for marina operations"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Production System"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                }
+            }
+        },
         "requests.CreateMarinaRequest": {
             "type": "object",
             "required": [
@@ -2773,6 +4670,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
                 },
                 "website": {
                     "type": "string",
@@ -2925,6 +4826,101 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CustomerCreateRequest": {
+            "type": "object",
+            "required": [
+                "lastName"
+            ],
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
@@ -2935,6 +4931,18 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "john.doe@example.com"
+                }
+            }
+        },
+        "requests.LinkDMESysIDRequest": {
+            "type": "object",
+            "required": [
+                "marinaId"
+            ],
+            "properties": {
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
                 }
             }
         },
@@ -3025,6 +5033,59 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.UpdateDMECredentialRequest": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "expiryDate": {
+                    "type": "string"
+                },
+                "isOldApi": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "password": {
+                    "type": "string",
+                    "example": "secure_password"
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "username": {
+                    "type": "string",
+                    "example": "api_user"
+                }
+            }
+        },
+        "requests.UpdateDMESysIDRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Primary production environment for marina operations"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Production System"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                }
+            }
+        },
         "requests.UpdateMarinaRequest": {
             "type": "object",
             "properties": {
@@ -3070,6 +5131,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
                 },
                 "website": {
                     "type": "string",
@@ -3301,6 +5366,183 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.CustomerListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Customer"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "responses.CustomerListShortResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerShort"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "responses.CustomerResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.Customer"
+                }
+            }
+        },
+        "responses.CustomerSearchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerSearch"
+                    }
+                }
+            }
+        },
+        "responses.DMECredentialResponse": {
+            "description": "DME API credentials used for integration",
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "expiryDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOldApi": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "api_user"
+                }
+            }
+        },
+        "responses.DMECredentialResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.DMECredentialResponse"
+                }
+            }
+        },
+        "responses.DMESysIDListResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.DMESysIDResponse"
+                    }
+                }
+            }
+        },
+        "responses.DMESysIDResponse": {
+            "description": "DME System IDs used for marina integration",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Primary production environment"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Production System"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.DMESysIDResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.DMESysIDResponse"
+                }
+            }
+        },
         "responses.Error": {
             "description": "Error response structure with optional validation details",
             "type": "object",
@@ -3433,6 +5675,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+15551234567"
                 },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -3514,6 +5760,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
                 },
                 "updatedAt": {
                     "type": "string"

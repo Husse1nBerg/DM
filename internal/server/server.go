@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/dockworks/dm-web-backend/internal/config"
 	db "github.com/dockworks/dm-web-backend/internal/pg"
+	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
@@ -16,9 +17,11 @@ type Server struct {
 	Logger       *logger.Logger
 	S3Service    *s3.S3Service
 	ImageService *s3.ImageService
+	DME          *dme.Client
 }
 
 func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
+	dbConn := db.NewConnection(&cfg.DB)
 	// Initialize S3 service
 	s3Service, err := s3.NewS3Service(cfg.S3)
 	if err != nil {
@@ -34,10 +37,11 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 	return &Server{
 		Config:       cfg,
 		Echo:         echo.New(),
-		DB:           db.NewConnection(&cfg.DB),
+		DB:           dbConn,
 		Logger:       logger,
 		S3Service:    s3Service,
 		ImageService: imageService,
+		DME:          dme.NewClientFromConfig(cfg, logger, dbConn),
 	}
 }
 
