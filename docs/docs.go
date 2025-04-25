@@ -303,6 +303,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/customers/create": {
+            "post": {
+                "description": "Creates a new customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Create customer",
+                "parameters": [
+                    {
+                        "description": "Customer information",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CustomerCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/customers/list": {
             "get": {
                 "description": "Retrieves a paginated list of customers",
@@ -4780,6 +4826,101 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CustomerCreateRequest": {
+            "type": "object",
+            "required": [
+                "lastName"
+            ],
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
@@ -5282,7 +5423,7 @@ const docTemplate = `{
         "responses.CustomerResponse": {
             "type": "object",
             "properties": {
-                "customer": {
+                "data": {
                     "$ref": "#/definitions/dme.Customer"
                 }
             }

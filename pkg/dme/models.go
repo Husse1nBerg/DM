@@ -182,6 +182,10 @@ type CustomerCreate struct {
 	ShipmentMethodDescription string `json:"shipmentMethodDescription"`
 }
 
+type CustomerCreateUpdateResponse struct {
+	CustomerID string `json:"customerID"`
+}
+
 // WaitListEntry represents wait list entry information
 type WaitListEntry struct {
 	ID           string `json:"id"`

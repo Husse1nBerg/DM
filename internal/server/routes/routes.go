@@ -166,4 +166,5 @@ func RegisterRoutes(s *s.Server) {
 	customers.GET("/retrieve", customerHandler.RetrieveCustomer)
 	customers.GET("/search", customerHandler.SearchCustomers)
 	customers.POST("/update", customerHandler.UpdateCustomer)
+	customers.POST("/create", customerHandler.CreateCustomer)
 }

@@ -29,14 +29,14 @@ type CustomerSearchResponse struct {
 
 // CustomerResponse represents a single customer response
 type CustomerResponse struct {
-	Customer dme.Customer `json:"customer"`
+	Data dme.Customer `json:"data"`
 }
 
 // ConvertCustomerListShort converts DME CustomerListShort to CustomerListShortResponse
 func ConvertCustomerListShort(dmeResponse *dme.CustomerListShort) *CustomerListShortResponse {
 	return &CustomerListShortResponse{
 		Data:        dmeResponse.Content,
-		Total:       int64(len(dmeResponse.Content)),
+		Total:       int64(dmeResponse.MaxPages * dmeResponse.PageSize),
 		PerPage:     int32(dmeResponse.PageSize),
 		CurrentPage: int32(dmeResponse.CurrentPage),
 		LastPage:    int32(dmeResponse.MaxPages),
@@ -47,7 +47,7 @@ func ConvertCustomerListShort(dmeResponse *dme.CustomerListShort) *CustomerListS
 func ConvertCustomerList(dmeResponse *dme.CustomerList) *CustomerListResponse {
 	return &CustomerListResponse{
 		Data:        dmeResponse.Content,
-		Total:       int64(len(dmeResponse.Content)),
+		Total:       int64(dmeResponse.MaxPages * dmeResponse.PageSize),
 		PerPage:     int32(dmeResponse.PageSize),
 		CurrentPage: int32(dmeResponse.CurrentPage),
 		LastPage:    int32(dmeResponse.MaxPages),
@@ -55,16 +55,16 @@ func ConvertCustomerList(dmeResponse *dme.CustomerList) *CustomerListResponse {
 }
 
 // ConvertCustomerSearch converts DME CustomerSearch to CustomerSearchResponse
-func ConvertCustomerSearch(dmeResponse *dme.CustomerSearch) *CustomerSearchResponse {
+func ConvertCustomerSearch(dmeResponse *[]dme.CustomerSearch) *CustomerSearchResponse {
 	return &CustomerSearchResponse{
-		Data: []dme.CustomerSearch{*dmeResponse},
+		Data: *dmeResponse,
 	}
 }
 
 // ConvertCustomer converts DME Customer to CustomerResponse
 func ConvertCustomer(dmeResponse *dme.Customer) *CustomerResponse {
 	return &CustomerResponse{
-		Customer: *dmeResponse,
+		Data: *dmeResponse,
 	}
 }
 

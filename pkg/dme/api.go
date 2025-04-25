@@ -39,8 +39,8 @@ func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, sy
 // -----
 
 // CustomerSearch searches for customers
-func (c *Client) CustomerSearch(ctx context.Context, searchTerm string, directHit bool, organizationID uuid.UUID, systemID string) (*CustomerSearch, error) {
-	var result CustomerSearch
+func (c *Client) CustomerSearch(ctx context.Context, searchTerm string, directHit string, organizationID uuid.UUID, systemID string) (*[]CustomerSearch, error) {
+	var result []CustomerSearch
 	credential, err := c.db.Queries().GetDMECredentialsByOrgID(ctx, organizationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get DME credential: %w", err)
@@ -57,7 +57,7 @@ func (c *Client) CustomerSearch(ctx context.Context, searchTerm string, directHi
 			return nil, fmt.Errorf("failed to search customers: %w", err)
 		}
 	} else {
-		endpoint := fmt.Sprintf("/Customers/Search?SearchString=%s&DirectHit=%t", searchTerm, directHit)
+		endpoint := fmt.Sprintf("/Customers/Search?SearchString=%s&DirectHit=%s", searchTerm, directHit)
 		err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to search customers: %w", err)
@@ -126,8 +126,8 @@ func (c *Client) CustomersListShort(ctx context.Context, page int, pageSize int,
 }
 
 // UpdateCustomer updates a customer
-func (c *Client) CustomerUpdate(ctx context.Context, customer *CustomerUpdate, organizationID uuid.UUID, systemID string) (*Customer, error) {
-	var result Customer
+func (c *Client) CustomerUpdate(ctx context.Context, payload interface{}, organizationID uuid.UUID, systemID string) (*Customer, error) {
+	var result CustomerCreateUpdateResponse
 
 	endpoint := "/DockMaster/Customers/UpdateCustomer"
 
@@ -135,7 +135,7 @@ func (c *Client) CustomerUpdate(ctx context.Context, customer *CustomerUpdate, o
 		ctx,
 		http.MethodPost,
 		endpoint,
-		customer,
+		payload,
 		&result,
 		organizationID,
 		systemID,
@@ -144,13 +144,16 @@ func (c *Client) CustomerUpdate(ctx context.Context, customer *CustomerUpdate, o
 	if err != nil {
 		return nil, fmt.Errorf("failed to update customer: %w", err)
 	}
-
-	return &result, nil
+	updatedCustomer, err := c.CustomerRetrieve(ctx, result.CustomerID, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve updated customer: %w", err)
+	}
+	return updatedCustomer, nil
 }
 
 // CreateCustomer creates a new customer
 func (c *Client) CreateCustomer(ctx context.Context, customer *CustomerCreate, organizationID uuid.UUID, systemID string) (*Customer, error) {
-	var result Customer
+	var result CustomerCreateUpdateResponse
 	endpoint := "/DockMaster/Customers/UpdateCustomer"
 
 	err := c.DoJSONRequest(
@@ -164,10 +167,13 @@ func (c *Client) CreateCustomer(ctx context.Context, customer *CustomerCreate, o
 		nil,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update customer: %w", err)
+		return nil, fmt.Errorf("failed to create customer: %w", err)
 	}
-
-	return &result, nil
+	createdCustomer, err := c.CustomerRetrieve(ctx, result.CustomerID, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve created customer: %w", err)
+	}
+	return createdCustomer, nil
 }
 
 // -----
