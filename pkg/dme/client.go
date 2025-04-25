@@ -46,7 +46,7 @@ func NewClient(cfg *ClientConfig) *Client {
 	return &Client{
 		config:     cfg,
 		logger:     cfg.Logger,
-		httpClient: &http.Client{Timeout: 10 * time.Second},
+		httpClient: &http.Client{Timeout: 20 * time.Second},
 		db:         cfg.DB,
 	}
 }
