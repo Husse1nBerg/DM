@@ -41,7 +41,7 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 		Logger:       logger,
 		S3Service:    s3Service,
 		ImageService: imageService,
-    DME:          dme.NewClientFromConfig(cfg, logger, dbConn),
+		DME:          dme.NewClientFromConfig(cfg, logger, dbConn),
 	}
 }
 

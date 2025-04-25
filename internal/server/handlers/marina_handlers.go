@@ -10,9 +10,9 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
+	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -464,6 +464,9 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 			isTest := isTestStr == "true"
 			updateParams.IsTest = &isTest
 		}
+		if systemID := c.FormValue("systemID"); systemID != "" {
+			updateParams.SystemID = &systemID
+		}
 	} else {
 		// Parse and validate the JSON request body
 		req := new(requests.UpdateMarinaRequest)
@@ -518,9 +521,9 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		if req.IsTest != nil {
 			updateParams.IsTest = req.IsTest
 		}
-	}
-	if req.SystemID != nil {
-		params.SystemID = req.SystemID
+		if req.SystemID != nil {
+			updateParams.SystemID = req.SystemID
+		}
 	}
 
 	// Update marina in database
@@ -804,7 +807,6 @@ func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
 	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
 }
 
-
 // func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 // 	idStr := c.Param("id")
 // 	id, err := uuid.Parse(idStr)
@@ -899,5 +901,3 @@ func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
 
 // 	return responses.NewMarinaResponseSuccess(updatedMarina).JSON(c)
 // }
-
-
