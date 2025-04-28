@@ -104,7 +104,7 @@ func (c *Client) authenticateOrg(ctx context.Context, credential db.DmeCredentia
 		isActive := true
 
 		// First, try to find if this system ID already exists for this organization
-		existingSysID, err := c.db.Queries().GetDMESysIDByOrgAndSystemID(ctx, db.GetDMESysIDByOrgAndSystemIDParams{
+		_, err := c.db.Queries().GetDMESysIDByOrgAndSystemID(ctx, db.GetDMESysIDByOrgAndSystemIDParams{
 			OrganizationID: credential.OrganizationID,
 			SystemID:       systemID.SystemID,
 		})
@@ -136,27 +136,28 @@ func (c *Client) authenticateOrg(ctx context.Context, credential db.DmeCredentia
 					zap.String("organizationID", credential.OrganizationID.String()))
 				return fmt.Errorf("failed to look up DME system ID in database: %w", err)
 			}
-		} else {
-			// If found, update it
-			updateParams := db.UpdateDMESysIDParams{
-				ID:             existingSysID.ID,
-				OrganizationID: credential.OrganizationID,
-				MarinaID:       existingSysID.MarinaID, // Preserve existing marina association
-				Name:           name,
-				Description:    &description,
-				SystemID:       systemID.SystemID,
-				IsActive:       &isActive,
-			}
-
-			_, err = c.db.Queries().UpdateDMESysID(ctx, updateParams)
-			if err != nil {
-				c.logger.Zap.Error("Failed to update DME system ID",
-					zap.Error(err),
-					zap.String("systemID", systemID.SystemID),
-					zap.String("organizationID", credential.OrganizationID.String()))
-				return fmt.Errorf("failed to update DME system ID in database: %w", err)
-			}
 		}
+		// else {
+		// 	// If found, update it
+		// 	updateParams := db.UpdateDMESysIDParams{
+		// 		ID:             existingSysID.ID,
+		// 		OrganizationID: credential.OrganizationID,
+		// 		MarinaID:       existingSysID.MarinaID, // Preserve existing marina association
+		// 		Name:           name,
+		// 		Description:    &description,
+		// 		SystemID:       systemID.SystemID,
+		// 		IsActive:       &isActive,
+		// 	}
+
+		// 	_, err = c.db.Queries().UpdateDMESysID(ctx, updateParams)
+		// 	if err != nil {
+		// 		c.logger.Zap.Error("Failed to update DME system ID",
+		// 			zap.Error(err),
+		// 			zap.String("systemID", systemID.SystemID),
+		// 			zap.String("organizationID", credential.OrganizationID.String()))
+		// 		return fmt.Errorf("failed to update DME system ID in database: %w", err)
+		// 	}
+		// }
 	}
 
 	_, err = c.db.Queries().UpdateDMEToken(ctx, params)
