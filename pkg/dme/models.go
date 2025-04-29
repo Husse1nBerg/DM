@@ -202,6 +202,14 @@ type WaitListEntry struct {
 // BOAT MODELS
 //
 
+// BoatList represents a paginated list of boats
+type BoatList struct {
+	Content     []Boat `json:"content"`
+	CurrentPage int    `json:"currentPage"`
+	MaxPages    int    `json:"maxPages"`
+	PageSize    int    `json:"pageSize"`
+}
+
 // Motor represents motor information
 type Motor struct {
 	Number    int     `json:"number"`
@@ -369,6 +377,19 @@ type BoatCreate struct {
 	SlipID              string  `json:"slipId"`
 	Slip                Slip    `json:"slip"`
 	Motors              []Motor `json:"motors"`
+}
+
+type BoatCreateUpdateResponse struct {
+	BoatID string `json:"boatID"`
+}
+
+// BoatSearch represents search results for boats
+type BoatSearch struct {
+	BoatID        string `json:"boatId"`
+	Name          string `json:"boatName"`
+	OwnerName     string `json:"ownerName"`
+	ArrivalDate   string `json:"arrivalDate"`
+	DepartureDate string `json:"departureDate"`
 }
 
 //
