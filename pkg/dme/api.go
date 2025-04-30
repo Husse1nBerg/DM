@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -270,8 +271,20 @@ func (c *Client) SearchBoats(ctx context.Context, searchTerm string, directHit b
 
 // UpdateBoat updates a boat
 func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationID uuid.UUID, systemID string) (*Boat, error) {
-	var result Boat
+	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
+
+	// Fix for issue: Motors field is required and cannot be null
+	if boat.Motors == nil {
+		// Add empty motor array if none provided
+		boat.Motors = []Motor{}
+	}
+
+	// Fix for issue: LastModifedDate field is required (note the typo in the API)
+	if boat.Slip.LastModifedDate == "" {
+		// Set current time if not provided
+		boat.Slip.LastModifedDate = time.Now().Format("2000-01-01T00:00:00")
+	}
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -286,14 +299,29 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	if err != nil {
 		return nil, fmt.Errorf("failed to update boat: %w", err)
 	}
-
-	return &result, nil
+	updatedBoat, err := c.RetrieveBoatByID(ctx, result.BoatID, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve updated boat: %w", err)
+	}
+	return updatedBoat, nil
 }
 
 // CreateBoat creates a new boat
 func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationID uuid.UUID, systemID string) (*Boat, error) {
 	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
+
+	// Fix for issue: Motors field is required and cannot be null
+	if boat.Motors == nil {
+		// Add empty motor array if none provided
+		boat.Motors = []Motor{}
+	}
+
+	// Fix for issue: LastModifedDate field is required (note the typo in the API)
+	if boat.Slip.LastModifedDate == "" {
+		// Set current time if not provided
+		boat.Slip.LastModifedDate = time.Now().Format("2000-01-01T00:00:00")
+	}
 
 	err := c.DoJSONRequest(
 		ctx,

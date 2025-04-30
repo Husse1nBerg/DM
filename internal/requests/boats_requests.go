@@ -17,13 +17,31 @@ type BoatSearchRequest struct {
 	DirectHit    bool   `query:"DirectHit"`
 }
 
+// BoatCreateRequest represents a request to create a new boat
+// It mirrors dme.BoatCreate but is used for input validation
+// No id field should be present
 type BoatCreateRequest struct {
-	OwnerID      string `json:"ownerId"`
-	Name         string `json:"name"`
-	Registration string `json:"registration"`
-	Year         string `json:"year"`
-	Make         string `json:"make"`
-	Model        string `json:"model"`
-	Hin          string `json:"hin"`
-	Height       string `json:"height"`
+	OwnerID             string `json:"ownerId" validate:"required"`
+	Name                string `json:"name" validate:"required"`
+	Registration        string `json:"registration"`
+	Year                string `json:"year"`
+	Make                string `json:"make"`
+	Model               string `json:"model"`
+	Hin                 string `json:"hin"`
+	LOA                 string `json:"loa"`
+	LWL                 string `json:"lwl"`
+	Draft               string `json:"draft"`
+	Beam                string `json:"beam"`
+	Height              string `json:"height"`
+	Color               string `json:"color"`
+	TrailerMake         string `json:"trailerMake"`
+	TrailerModel        string `json:"trailerModel"`
+	TrailerSerial       string `json:"trailerSerial"`
+	TrailerRegistration string `json:"trailerRegistration"`
+	TrailerLocation     string `json:"trailerLocation"`
+	SummerSlip          string `json:"summerSlip"`
+	WinterSlip          string `json:"winterSlip"`
+	InsuranceCompany    string `json:"insuranceCompany"`
+	InsuranceExpDate    string `json:"insuranceExpDate"`
+	SlipID              string `json:"slipId"`
 }

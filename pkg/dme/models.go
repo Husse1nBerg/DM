@@ -264,22 +264,22 @@ type OperationHistory struct {
 
 // Slip represents slip information
 type Slip struct {
-	ID               string `json:"id"`
-	Description      string `json:"description"`
-	Type             string `json:"type"`
-	Location         string `json:"location"`
-	Length           string `json:"length"`
-	Width            string `json:"width"`
-	Draft            string `json:"draft"`
-	TieOff           string `json:"tieOff"`
-	LastModifiedDate string `json:"lastModifiedDate"`
-	Water            bool   `json:"water"`
-	Electric         bool   `json:"electric"`
-	Phone            bool   `json:"phone"`
-	CableTV          bool   `json:"cableTv"`
-	Transient        bool   `json:"transient"`
-	Linear           bool   `json:"linear"`
-	Unusable         bool   `json:"unusable"`
+	ID              string `json:"id"`
+	Description     string `json:"description"`
+	Type            string `json:"type"`
+	Location        string `json:"location"`
+	Length          string `json:"length"`
+	Width           string `json:"width"`
+	Draft           string `json:"draft"`
+	TieOff          string `json:"tieOff"`
+	LastModifedDate string `json:"lastModifedDate"`
+	Water           bool   `json:"water"`
+	Electric        bool   `json:"electric"`
+	Phone           bool   `json:"phone"`
+	CableTV         bool   `json:"cableTv"`
+	Transient       bool   `json:"transient"`
+	Linear          bool   `json:"linear"`
+	Unusable        bool   `json:"unusable"`
 }
 
 // Boat represents boat detail information
