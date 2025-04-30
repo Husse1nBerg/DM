@@ -37,6 +37,7 @@ func RegisterRoutes(s *s.Server) {
 	dmeCredentialHandler := h.NewDMECredentialHandler(s)
 	dmeSysIDHandler := h.NewDMESysIDHandler(s)
 	customerHandler := h.NewCustomerHandler(s)
+	boatHandler := h.NewBoatHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -167,4 +168,13 @@ func RegisterRoutes(s *s.Server) {
 	customers.GET("/search", customerHandler.SearchCustomers)
 	customers.POST("/update", customerHandler.UpdateCustomer)
 	customers.POST("/create", customerHandler.CreateCustomer)
+
+	// Boat routes
+	boats := protected.Group("/boats")
+	boats.GET("/list", boatHandler.ListBoatsByPage)
+	boats.GET("/retrieve", boatHandler.RetrieveBoat)
+	boats.GET("/customer", boatHandler.RetrieveBoatsForCustomer)
+	boats.GET("/search", boatHandler.SearchBoats)
+	boats.POST("/update", boatHandler.UpdateBoat)
+	boats.POST("/create", boatHandler.CreateBoat)
 }

@@ -16,3 +16,14 @@ type BoatSearchRequest struct {
 	SearchString string `query:"SearchString" validate:"required"`
 	DirectHit    bool   `query:"DirectHit"`
 }
+
+type BoatCreateRequest struct {
+	OwnerID      string `json:"ownerId"`
+	Name         string `json:"name"`
+	Registration string `json:"registration"`
+	Year         string `json:"year"`
+	Make         string `json:"make"`
+	Model        string `json:"model"`
+	Hin          string `json:"hin"`
+	Height       string `json:"height"`
+}

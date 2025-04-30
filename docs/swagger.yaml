@@ -119,6 +119,88 @@ definitions:
       description:
         type: string
     type: object
+  dme.BoatSearch:
+    properties:
+      boatId:
+        type: string
+      boatName:
+        type: string
+      hin:
+        type: string
+      loa:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      ownerId:
+        type: string
+      ownerName:
+        type: string
+      registration:
+        type: string
+      slipDesc:
+        type: string
+      slipId:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.BoatUpdate:
+    properties:
+      beam:
+        type: string
+      color:
+        type: string
+      draft:
+        type: string
+      height:
+        type: string
+      hin:
+        type: string
+      id:
+        type: string
+      insuranceCompany:
+        type: string
+      insuranceExpDate:
+        type: string
+      loa:
+        type: string
+      lwl:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      motors:
+        items:
+          $ref: '#/definitions/dme.Motor'
+        type: array
+      name:
+        type: string
+      registration:
+        type: string
+      slip:
+        $ref: '#/definitions/dme.Slip'
+      slipId:
+        type: string
+      summerSlip:
+        type: string
+      trailerLocation:
+        type: string
+      trailerMake:
+        type: string
+      trailerModel:
+        type: string
+      trailerRegistration:
+        type: string
+      trailerSerial:
+        type: string
+      winterSlip:
+        type: string
+      year:
+        type: string
+    type: object
   dme.CategoryCode:
     properties:
       desc:
@@ -628,6 +710,25 @@ definitions:
     required:
     - marinaId
     - userId
+    type: object
+  requests.BoatCreateRequest:
+    properties:
+      height:
+        type: string
+      hin:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      name:
+        type: string
+      ownerId:
+        type: string
+      registration:
+        type: string
+      year:
+        type: string
     type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
@@ -1261,6 +1362,37 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  responses.BoatListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.Boat'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.BoatResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.Boat'
+    type: object
+  responses.BoatSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.BoatSearch'
+        type: array
     type: object
   responses.CustomerListResponse:
     properties:
@@ -1959,6 +2091,195 @@ paths:
       summary: Refresh access token
       tags:
       - Authentication
+  /boats/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new boat
+      parameters:
+      - description: Boat information
+        in: body
+        name: boat
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BoatCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create boat
+      tags:
+      - Boats
+  /boats/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves boats associated with a customer
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boats for customer
+      tags:
+      - Boats
+  /boats/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of boats
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List boats by page
+      tags:
+      - Boats
+  /boats/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a boat by its ID
+      parameters:
+      - description: Boat ID
+        in: query
+        name: BoatId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boat by ID
+      tags:
+      - Boats
+  /boats/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for boats based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search boats
+      tags:
+      - Boats
+  /boats/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates a boat's information
+      parameters:
+      - description: Boat information
+        in: body
+        name: boat
+        required: true
+        schema:
+          $ref: '#/definitions/dme.BoatUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update boat
+      tags:
+      - Boats
   /customers/create:
     post:
       consumes:

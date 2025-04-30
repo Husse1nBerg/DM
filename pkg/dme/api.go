@@ -182,7 +182,7 @@ func (c *Client) CreateCustomer(ctx context.Context, customer *CustomerCreate, o
 
 // BoatsList retrieves a list of boats
 func (c *Client) BoatsList(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) ([]Boat, error) {
-	var result []Boat
+	var result BoatList
 	endpoint := fmt.Sprintf("/Boats/ListNewOrChanged?Page=%d&PageSize=%d", page, pageSize)
 
 	err := c.DoJSONRequest(
@@ -199,7 +199,7 @@ func (c *Client) BoatsList(ctx context.Context, page int, pageSize int, organiza
 		return nil, fmt.Errorf("failed to list boats: %w", err)
 	}
 
-	return result, nil
+	return result.Content, nil
 }
 
 // RetrieveBoatByID retrieves a boat by its ID
@@ -247,8 +247,8 @@ func (c *Client) RetrieveBoatsForCustomer(ctx context.Context, customerID string
 }
 
 // SearchBoats searches for boats
-func (c *Client) SearchBoats(ctx context.Context, searchTerm string, directHit bool, organizationID uuid.UUID, systemID string) ([]Boat, error) {
-	var result []Boat
+func (c *Client) SearchBoats(ctx context.Context, searchTerm string, directHit bool, organizationID uuid.UUID, systemID string) ([]BoatSearch, error) {
+	var result []BoatSearch
 	endpoint := fmt.Sprintf("/Boats/Search?SearchString=%s&DirectHit=%t", searchTerm, directHit)
 
 	err := c.DoJSONRequest(
@@ -292,7 +292,7 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 
 // CreateBoat creates a new boat
 func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationID uuid.UUID, systemID string) (*Boat, error) {
-	var result Boat
+	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
 
 	err := c.DoJSONRequest(
@@ -308,8 +308,11 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	if err != nil {
 		return nil, fmt.Errorf("failed to create boat: %w", err)
 	}
-
-	return &result, nil
+	createdBoat, err := c.RetrieveBoatByID(ctx, result.BoatID, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve created boat: %w", err)
+	}
+	return createdBoat, nil
 }
 
 // -----
