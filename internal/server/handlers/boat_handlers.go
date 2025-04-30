@@ -318,17 +318,31 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
 
-	// Convert request to dme.BoatCreate
+	// Convert request to dme.BoatCreate with all fields properly mapped
 	boat := &dme.BoatCreate{
-		Name:         req.Name,
-		OwnerID:      req.OwnerID,
-		Registration: req.Registration,
-		Year:         req.Year,
-		Make:         req.Make,
-		Model:        req.Model,
-		HIN:          req.Hin,
-		Height:       req.Height,
-		// Add other fields as needed based on the request structure
+		Name:                req.Name,
+		OwnerID:             req.OwnerID,
+		Registration:        req.Registration,
+		Year:                req.Year,
+		Make:                req.Make,
+		Model:               req.Model,
+		HIN:                 req.Hin,
+		LOA:                 req.LOA,
+		LWL:                 req.LWL,
+		Draft:               req.Draft,
+		Beam:                req.Beam,
+		Height:              req.Height,
+		Color:               req.Color,
+		TrailerMake:         req.TrailerMake,
+		TrailerModel:        req.TrailerModel,
+		TrailerSerial:       req.TrailerSerial,
+		TrailerRegistration: req.TrailerRegistration,
+		TrailerLocation:     req.TrailerLocation,
+		SummerSlip:          req.SummerSlip,
+		WinterSlip:          req.WinterSlip,
+		InsuranceCompany:    req.InsuranceCompany,
+		InsuranceExpDate:    req.InsuranceExpDate,
+		SlipID:              req.SlipID,
 	}
 
 	dmeResponse, err := h.server.DME.CreateBoat(ctx, boat, orgID, *systemID)

@@ -4018,40 +4018,19 @@ const docTemplate = `{
         "dme.BoatSearch": {
             "type": "object",
             "properties": {
+                "arrivalDate": {
+                    "type": "string"
+                },
                 "boatId": {
                     "type": "string"
                 },
                 "boatName": {
                     "type": "string"
                 },
-                "hin": {
-                    "type": "string"
-                },
-                "loa": {
-                    "type": "string"
-                },
-                "make": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "ownerId": {
+                "departureDate": {
                     "type": "string"
                 },
                 "ownerName": {
-                    "type": "string"
-                },
-                "registration": {
-                    "type": "string"
-                },
-                "slipDesc": {
-                    "type": "string"
-                },
-                "slipId": {
-                    "type": "string"
-                },
-                "year": {
                     "type": "string"
                 }
             }
@@ -4641,7 +4620,7 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "lastModifiedDate": {
+                "lastModifedDate": {
                     "type": "string"
                 },
                 "length": {
@@ -4900,11 +4879,36 @@ const docTemplate = `{
         },
         "requests.BoatCreateRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "ownerId"
+            ],
             "properties": {
+                "beam": {
+                    "type": "string"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
                 "height": {
                     "type": "string"
                 },
                 "hin": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
                     "type": "string"
                 },
                 "make": {
@@ -4920,6 +4924,30 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "registration": {
+                    "type": "string"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
                     "type": "string"
                 },
                 "year": {
