@@ -8,15 +8,17 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig
-	Logger LoggerConfig
-	Auth   AuthConfig
-	DB     DBConfig
-	TestDB DBConfig
-	App    AppConfig
-	Redis  RedisConfig
-	DME    DMEConfig
-	S3     s3.S3Config
+	Server     ServerConfig
+	Logger     LoggerConfig
+	Auth       AuthConfig
+	DB         DBConfig
+	TestDB     DBConfig
+	App        AppConfig
+	Redis      RedisConfig
+	DME        DMEConfig
+	S3         s3.S3Config
+	SendGrid   SendGridConfig
+	Telgorithm TelgorithmConfig
 }
 
 func New() *Config {
@@ -36,14 +38,16 @@ func New() *Config {
 	}
 
 	return &Config{
-		Server: LoadServerConfig(),
-		Logger: LoadLoggerConfig(),
-		Auth:   LoadAuthConfig(),
-		DB:     dbConfig,
-		TestDB: LoadTestDBConfig(),
-		App:    LoadAppConfig(),
-		Redis:  LoadRedisConfig(),
-		DME:    LoadDMEConfig(),
-		S3:     LoadS3Config(),
+		Server:     LoadServerConfig(),
+		Logger:     LoadLoggerConfig(),
+		Auth:       LoadAuthConfig(),
+		DB:         dbConfig,
+		TestDB:     LoadTestDBConfig(),
+		App:        LoadAppConfig(),
+		Redis:      LoadRedisConfig(),
+		DME:        LoadDMEConfig(),
+		S3:         LoadS3Config(),
+		SendGrid:   LoadSendGridConfig(),
+		Telgorithm: LoadTelgorithmConfig(),
 	}
 }

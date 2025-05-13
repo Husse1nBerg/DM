@@ -629,6 +629,42 @@ definitions:
     - marinaId
     - userId
     type: object
+  requests.BatchSMSMessageRequest:
+    properties:
+      expires_on:
+        type: string
+      media_urls:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      priority:
+        enum:
+        - Urgent
+        - High
+        - Normal
+        - Low
+        type: string
+      to:
+        items:
+          type: string
+        type: array
+    required:
+    - message
+    - to
+    type: object
+  requests.BatchSMSRequest:
+    properties:
+      from_number:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/requests.BatchSMSMessageRequest'
+        type: array
+    required:
+    - messages
+    type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
     properties:
@@ -970,6 +1006,46 @@ definitions:
     - email
     - password
     type: object
+  requests.PasswordResetEmailRequest:
+    description: Send password reset email request payload
+    properties:
+      companyName:
+        example: Dockmaster
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      expiresIn:
+        example: 24 hours
+        type: string
+      firstName:
+        example: John
+        type: string
+      fromEmail:
+        example: no-reply@dockmaster.com
+        type: string
+      fromName:
+        example: Dockmaster
+        type: string
+      subject:
+        example: Reset Your Password
+        type: string
+      to:
+        example:
+        - user@example.com
+        items:
+          type: string
+        type: array
+      token:
+        example: a1b2c3d4e5f6g7h8i9j0
+        type: string
+    required:
+    - email
+    - firstName
+    - subject
+    - to
+    - token
+    type: object
   requests.RefreshRequest:
     properties:
       token:
@@ -995,6 +1071,93 @@ definitions:
     - newPassword
     - oldPassword
     - userId
+    type: object
+  requests.SendHTMLEmailRequest:
+    description: Send HTML email request payload
+    properties:
+      fromEmail:
+        example: no-reply@dockmaster.com
+        type: string
+      fromName:
+        example: Dockmaster
+        type: string
+      htmlContent:
+        example: <h1>Hello World</h1><p>This is a test email.</p>
+        type: string
+      plainText:
+        example: Hello World. This is a test email.
+        type: string
+      subject:
+        example: Welcome to Dockmaster
+        type: string
+      to:
+        example:
+        - user@example.com
+        items:
+          type: string
+        type: array
+    required:
+    - htmlContent
+    - plainText
+    - subject
+    - to
+    type: object
+  requests.SendSMSRequest:
+    properties:
+      expires_on:
+        type: string
+      from_number:
+        type: string
+      media_urls:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      priority:
+        enum:
+        - Urgent
+        - High
+        - Normal
+        - Low
+        type: string
+      to:
+        items:
+          type: string
+        type: array
+    required:
+    - message
+    - to
+    type: object
+  requests.SendTemplateEmailRequest:
+    description: Send template email request payload
+    properties:
+      fromEmail:
+        example: no-reply@dockmaster.com
+        type: string
+      fromName:
+        example: Dockmaster
+        type: string
+      subject:
+        example: Welcome to Dockmaster
+        type: string
+      templateData:
+        example: '{"name":"John Doe"}'
+        type: string
+      templateName:
+        example: welcome
+        type: string
+      to:
+        example:
+        - user@example.com
+        items:
+          type: string
+        type: array
+    required:
+    - subject
+    - templateData
+    - templateName
+    - to
     type: object
   requests.UpdateAddressRequest:
     properties:
@@ -1212,6 +1375,46 @@ definitions:
         example: Manager
         type: string
     type: object
+  requests.WelcomeEmailRequest:
+    description: Send welcome email request payload
+    properties:
+      companyName:
+        example: Dockmaster
+        type: string
+      firstName:
+        example: John
+        type: string
+      fromEmail:
+        example: no-reply@dockmaster.com
+        type: string
+      fromName:
+        example: Dockmaster
+        type: string
+      loginUrl:
+        example: https://app.dockmaster.com/login
+        type: string
+      subject:
+        example: Welcome to Dockmaster
+        type: string
+      supportUrl:
+        example: https://support.dockmaster.com
+        type: string
+      to:
+        example:
+        - user@example.com
+        items:
+          type: string
+        type: array
+      username:
+        example: john.doe
+        type: string
+    required:
+    - firstName
+    - loginUrl
+    - subject
+    - to
+    - username
+    type: object
   responses.AddressResponse:
     description: Address response model
     properties:
@@ -1260,6 +1463,25 @@ definitions:
       perPage:
         type: integer
       total:
+        type: integer
+    type: object
+  responses.BatchSMSSendResponse:
+    properties:
+      batch_id:
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/responses.SMSStatusDetails'
+        type: array
+      failure_count:
+        type: integer
+      message:
+        type: string
+      success:
+        type: boolean
+      success_count:
+        type: integer
+      total_count:
         type: integer
     type: object
   responses.CustomerListResponse:
@@ -1383,6 +1605,35 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.DMESysIDResponse'
+    type: object
+  responses.EmailSendResponse:
+    description: Email send response
+    properties:
+      currentPage:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.EmailSendResponseData'
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  responses.EmailSendResponseData:
+    properties:
+      accepted:
+        description: Whether the email was accepted for delivery
+        type: boolean
+      message:
+        description: Status message
+        type: string
+      taskId:
+        description: Task ID for tracking
+        type: string
     type: object
   responses.Error:
     description: Error response structure with optional validation details
@@ -1659,6 +1910,30 @@ definitions:
         $ref: '#/definitions/models.Permissions'
       updatedAt:
         example: "2023-01-02T00:00:00Z"
+        type: string
+    type: object
+  responses.SMSSendResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+      task_id:
+        type: string
+    type: object
+  responses.SMSStatusDetails:
+    properties:
+      error:
+        type: string
+      id:
+        type: string
+      message_id:
+        type: string
+      recipient:
+        type: string
+      segment_count:
+        type: integer
+      status:
         type: string
     type: object
   responses.UserListResponse:
@@ -2611,6 +2886,126 @@ paths:
       summary: Get DME System ID by system identifier
       tags:
       - DME System IDs
+  /email/password-reset:
+    post:
+      consumes:
+      - application/json
+      description: Send a password reset email using the predefined template
+      parameters:
+      - description: Password reset email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.PasswordResetEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send password reset email
+      tags:
+      - Email
+  /email/send-html:
+    post:
+      consumes:
+      - application/json
+      description: Send an email with HTML content
+      parameters:
+      - description: Email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendHTMLEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send HTML email
+      tags:
+      - Email
+  /email/send-template:
+    post:
+      consumes:
+      - application/json
+      description: Send an email using a SendGrid dynamic template
+      parameters:
+      - description: Email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendTemplateEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send template email
+      tags:
+      - Email
+  /email/welcome:
+    post:
+      consumes:
+      - application/json
+      description: Send a welcome email using the predefined template
+      parameters:
+      - description: Welcome email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WelcomeEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send welcome email
+      tags:
+      - Email
   /health:
     get:
       consumes:
@@ -3552,6 +3947,66 @@ paths:
       summary: Get role by name
       tags:
       - Role
+  /sms/send:
+    post:
+      consumes:
+      - application/json
+      description: Send SMS message to one or more recipients
+      parameters:
+      - description: SMS details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendSMSRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SMS accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.SMSSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send SMS
+      tags:
+      - SMS
+  /sms/send-batch:
+    post:
+      consumes:
+      - application/json
+      description: Send multiple SMS messages in a batch
+      parameters:
+      - description: Batch SMS details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BatchSMSRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Batch SMS accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.BatchSMSSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send batch SMS
+      tags:
+      - SMS
   /user:
     post:
       consumes:

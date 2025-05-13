@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"math/rand"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
@@ -51,4 +52,14 @@ func IsPasswordInHistory(newPassword string, historyHashes []string) (bool, erro
 		}
 	}
 	return false, nil
+}
+
+// RandomString generates a random string of length n
+func RandomString(n int) string {
+	b := make([]byte, n)
+	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }

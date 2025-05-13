@@ -249,7 +249,7 @@ func RunProdSeed() {
 				log.Fatalf("failed to encrypt password: %v", err)
 			}
 			user, err = q.CreateUser(ctx, sqlc.CreateUserParams{
-				Username:       "admin",
+				Username:       "admin" + u.RandomString(6),
 				FirstName:      "Andrew",
 				LastName:       "Sameh",
 				Email:          cfg.App.AdminEmail,

@@ -6,6 +6,8 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
+	"github.com/dockworks/dm-web-backend/pkg/telgorithm"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/labstack/echo/v4"
 )
@@ -18,6 +20,8 @@ type Server struct {
 	S3Service    *s3.S3Service
 	ImageService *s3.ImageService
 	DME          *dme.Client
+	SendGrid     *sendgrid.Client
+	Telgorithm   *telgorithm.Client
 }
 
 func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
@@ -42,6 +46,8 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 		S3Service:    s3Service,
 		ImageService: imageService,
 		DME:          dme.NewClientFromConfig(cfg, logger, dbConn),
+		SendGrid:     sendgrid.NewClient(cfg),
+		Telgorithm:   telgorithm.NewClient(cfg),
 	}
 }
 
