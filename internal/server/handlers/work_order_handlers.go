@@ -253,3 +253,85 @@ func (h *WorkOrderHandler) CreateWorkOrder(c echo.Context) error {
 	response := responses.ConvertWorkOrder(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary Update work order
+// @Description Updates an existing work order
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param workOrder body requests.WorkOrderUpdateRequest true "Work Order information"
+// @Success 200 {object} responses.WorkOrderResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/update [post]
+func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.WorkOrderUpdateRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	marinaIDStr := claims.MarinaId
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Convert the operation codes to the right format
+	operationCodes := make([]map[string]interface{}, len(req.OperationCodes))
+	for i, op := range req.OperationCodes {
+		// Convert struct to map
+		opBytes, err := json.Marshal(op)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Failed to marshal operation code").JSON(c)
+		}
+
+		var opMap map[string]interface{}
+		if err := json.Unmarshal(opBytes, &opMap); err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Failed to unmarshal operation code").JSON(c)
+		}
+
+		operationCodes[i] = opMap
+	}
+
+	// Create a map with all the work order data
+	// Directly map all fields without conditionals, just like in CreateWorkOrder
+	workOrderData := map[string]interface{}{
+		"woId":            req.WoId,
+		"clerkId":         req.ClerkId,
+		"custId":          req.CustId,
+		"boatId":          req.BoatId,
+		"boatName":        req.BoatName,
+		"customerPhone":   req.CustomerPhone,
+		"customerEmail":   req.CustomerEmail,
+		"comments":        req.Comments,
+		"locationCode":    req.LocationCode,
+		"estCompDate":     req.EstCompDate,
+		"estStartDate":    req.EstStartDate,
+		"custPromiseDate": req.CustPromiseDate,
+		"categoryCode":    req.CategoryCode,
+		"title":           req.Title,
+		"operationCodes":  operationCodes,
+	}
+
+	dmeResponse, err := h.server.DME.UpdateWorkOrder(ctx, workOrderData, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to update work order",
+			zap.Error(err),
+			zap.String("workOrderId", req.WoId),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrder(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}

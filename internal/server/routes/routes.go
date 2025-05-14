@@ -212,5 +212,6 @@ func RegisterRoutes(s *s.Server) {
 	workOrders.GET("/list", workOrderHandler.ListWorkOrdersByPage)
 	workOrders.GET("/retrieve", workOrderHandler.RetrieveWorkOrder)
 	workOrders.GET("/search", workOrderHandler.SearchWorkOrders)
+	workOrders.POST("/update", workOrderHandler.UpdateWorkOrder)
 	workOrders.POST("/create", workOrderHandler.CreateWorkOrder)
 }

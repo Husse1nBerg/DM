@@ -1742,6 +1742,43 @@ definitions:
     - custId
     - title
     type: object
+  requests.WorkOrderUpdateRequest:
+    properties:
+      boatId:
+        type: string
+      boatName:
+        type: string
+      categoryCode:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      custId:
+        type: string
+      custPromiseDate:
+        type: string
+      customerEmail:
+        type: string
+      customerPhone:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      locationCode:
+        type: string
+      operationCodes:
+        items:
+          $ref: '#/definitions/requests.OperationCode'
+        type: array
+      title:
+        type: string
+      woId:
+        type: string
+    required:
+    - woId
+    type: object
   responses.AddressResponse:
     description: Address response model
     properties:
@@ -5755,6 +5792,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search work orders
+      tags:
+      - WorkOrders
+  /work-orders/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates an existing work order
+      parameters:
+      - description: Work Order information
+        in: body
+        name: workOrder
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update work order
       tags:
       - WorkOrders
 securityDefinitions:

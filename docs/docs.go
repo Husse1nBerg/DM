@@ -5049,6 +5049,52 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/work-orders/update": {
+            "post": {
+                "description": "Updates an existing work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Update work order",
+                "parameters": [
+                    {
+                        "description": "Work Order information",
+                        "name": "workOrder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -7538,6 +7584,62 @@ const docTemplate = `{
             "required": [
                 "custId",
                 "title"
+            ],
+            "properties": {
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "custId": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operationCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.OperationCode"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "woId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.WorkOrderUpdateRequest": {
+            "type": "object",
+            "required": [
+                "woId"
             ],
             "properties": {
                 "boatId": {
