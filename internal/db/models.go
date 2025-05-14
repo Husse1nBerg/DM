@@ -72,6 +72,16 @@ type Marina struct {
 	SystemID       *string
 }
 
+type MarinaGallery struct {
+	ID          uuid.UUID
+	MarinaID    uuid.UUID
+	ImageUrl    string
+	Description *string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	DeletedAt   pgtype.Timestamp
+}
+
 type Organization struct {
 	ID        uuid.UUID
 	Email     string
@@ -147,4 +157,17 @@ type UserMarina struct {
 	UserID     uuid.UUID
 	MarinaID   uuid.UUID
 	AssignedAt pgtype.Timestamp
+}
+
+type VesselGallery struct {
+	ID          uuid.UUID
+	MarinaID    uuid.UUID
+	CustomerID  string
+	VesselID    string
+	ImageUrl    string
+	Description *string
+	Main        *bool
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	DeletedAt   pgtype.Timestamp
 }

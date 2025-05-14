@@ -119,6 +119,74 @@ definitions:
       description:
         type: string
     type: object
+  dme.BoatSearch:
+    properties:
+      arrivalDate:
+        type: string
+      boatId:
+        type: string
+      boatName:
+        type: string
+      departureDate:
+        type: string
+      ownerName:
+        type: string
+    type: object
+  dme.BoatUpdate:
+    properties:
+      beam:
+        type: string
+      color:
+        type: string
+      draft:
+        type: string
+      height:
+        type: string
+      hin:
+        type: string
+      id:
+        type: string
+      insuranceCompany:
+        type: string
+      insuranceExpDate:
+        type: string
+      loa:
+        type: string
+      lwl:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      motors:
+        items:
+          $ref: '#/definitions/dme.Motor'
+        type: array
+      name:
+        type: string
+      registration:
+        type: string
+      slip:
+        $ref: '#/definitions/dme.Slip'
+      slipId:
+        type: string
+      summerSlip:
+        type: string
+      trailerLocation:
+        type: string
+      trailerMake:
+        type: string
+      trailerModel:
+        type: string
+      trailerRegistration:
+        type: string
+      trailerSerial:
+        type: string
+      winterSlip:
+        type: string
+      year:
+        type: string
+    type: object
   dme.CategoryCode:
     properties:
       desc:
@@ -450,7 +518,7 @@ definitions:
         type: boolean
       id:
         type: string
-      lastModifiedDate:
+      lastModifedDate:
         type: string
       length:
         type: string
@@ -629,41 +697,57 @@ definitions:
     - marinaId
     - userId
     type: object
-  requests.BatchSMSMessageRequest:
+  requests.BoatCreateRequest:
     properties:
-      expires_on:
+      beam:
         type: string
-      media_urls:
-        items:
-          type: string
-        type: array
-      message:
+      color:
         type: string
-      priority:
-        enum:
-        - Urgent
-        - High
-        - Normal
-        - Low
+      draft:
         type: string
-      to:
-        items:
-          type: string
-        type: array
+      height:
+        type: string
+      hin:
+        type: string
+      insuranceCompany:
+        type: string
+      insuranceExpDate:
+        type: string
+      loa:
+        type: string
+      lwl:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      name:
+        type: string
+      ownerId:
+        type: string
+      registration:
+        type: string
+      slipId:
+        type: string
+      summerSlip:
+        type: string
+      trailerLocation:
+        type: string
+      trailerMake:
+        type: string
+      trailerModel:
+        type: string
+      trailerRegistration:
+        type: string
+      trailerSerial:
+        type: string
+      winterSlip:
+        type: string
+      year:
+        type: string
     required:
-    - message
-    - to
-    type: object
-  requests.BatchSMSRequest:
-    properties:
-      from_number:
-        type: string
-      messages:
-        items:
-          $ref: '#/definitions/requests.BatchSMSMessageRequest'
-        type: array
-    required:
-    - messages
+    - name
+    - ownerId
     type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
@@ -1668,6 +1752,26 @@ definitions:
         example: Login successful
         type: string
     type: object
+  responses.MarinaGalleryItemResponse:
+    description: Marina gallery item data including image URL and description
+    properties:
+      createdAt:
+        type: string
+      description:
+        example: Beautiful view of the marina at sunset
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      imageUrl:
+        example: /images/marinas/sunset_view.jpg
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updatedAt:
+        type: string
+    type: object
   responses.MarinaListResponse:
     properties:
       currentPage:
@@ -2041,6 +2145,36 @@ definitions:
         example: invalid_value
         type: string
     type: object
+  responses.VesselGalleryItemResponse:
+    description: Vessel gallery item data including image URL, description, and main
+      image flag
+    properties:
+      boatId:
+        example: BOAT123456
+        type: string
+      createdAt:
+        type: string
+      customerId:
+        example: CUST123456
+        type: string
+      description:
+        example: Port side view of the yacht
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      imageUrl:
+        example: /images/vessels/yacht_port_side.jpg
+        type: string
+      main:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updatedAt:
+        type: string
+    type: object
 info:
   contact: {}
   description: This is a API Server.
@@ -2234,6 +2368,195 @@ paths:
       summary: Refresh access token
       tags:
       - Authentication
+  /boats/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new boat
+      parameters:
+      - description: Boat information
+        in: body
+        name: boat
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BoatCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create boat
+      tags:
+      - Boats
+  /boats/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves boats associated with a customer
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boats for customer
+      tags:
+      - Boats
+  /boats/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of boats
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List boats by page
+      tags:
+      - Boats
+  /boats/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a boat by its ID
+      parameters:
+      - description: Boat ID
+        in: query
+        name: BoatId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boat by ID
+      tags:
+      - Boats
+  /boats/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for boats based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search boats
+      tags:
+      - Boats
+  /boats/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates a boat's information
+      parameters:
+      - description: Boat information
+        in: body
+        name: boat
+        required: true
+        schema:
+          $ref: '#/definitions/dme.BoatUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update boat
+      tags:
+      - Boats
   /customers/create:
     post:
       consumes:
@@ -2886,126 +3209,472 @@ paths:
       summary: Get DME System ID by system identifier
       tags:
       - DME System IDs
-  /email/password-reset:
+  /gallery/boat:
     post:
       consumes:
-      - application/json
-      description: Send a password reset email using the predefined template
+      - multipart/form-data
+      description: Creates a new gallery item for a vessel
       parameters:
-      - description: Password reset email details
-        in: body
-        name: params
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
         required: true
-        schema:
-          $ref: '#/definitions/requests.PasswordResetEmailRequest'
+        type: string
+      - description: Customer ID
+        in: formData
+        name: customerId
+        required: true
+        type: string
+      - description: Boat ID
+        in: formData
+        name: boatId
+        required: true
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Whether this is the main image
+        in: formData
+        name: main
+        type: boolean
+      - description: Image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create vessel gallery item
+      tags:
+      - Vessel Gallery
+  /gallery/boat/{boatId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all gallery items for a vessel
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      - description: Boat ID
+        in: path
+        name: boatId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Email accepted for delivery
+          description: OK
           schema:
-            $ref: '#/definitions/responses.EmailSendResponse'
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.VesselGalleryItemResponse'
+                    type: array
+                type: object
+            type: array
         "400":
-          description: Validation error
+          description: Bad Request
           schema:
-            $ref: '#/definitions/responses.Error'
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
         "500":
-          description: Server error
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Send password reset email
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get vessel gallery
       tags:
-      - Email
-  /email/send-html:
-    post:
+      - Vessel Gallery
+  /gallery/boat/item/{id}:
+    delete:
       consumes:
       - application/json
-      description: Send an email with HTML content
+      description: Deletes a vessel gallery item
       parameters:
-      - description: Email details
-        in: body
-        name: params
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/requests.SendHTMLEmailRequest'
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Email accepted for delivery
+          description: OK
           schema:
-            $ref: '#/definitions/responses.EmailSendResponse'
+            $ref: '#/definitions/responses.BaseResponse'
         "400":
-          description: Validation error
+          description: Bad Request
           schema:
-            $ref: '#/definitions/responses.Error'
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
         "500":
-          description: Server error
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Send HTML email
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete vessel gallery item
       tags:
-      - Email
-  /email/send-template:
-    post:
+      - Vessel Gallery
+    get:
       consumes:
       - application/json
-      description: Send an email using a SendGrid dynamic template
+      description: Retrieves a specific vessel gallery item by ID
       parameters:
-      - description: Email details
-        in: body
-        name: params
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/requests.SendTemplateEmailRequest'
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Email accepted for delivery
+          description: OK
           schema:
-            $ref: '#/definitions/responses.EmailSendResponse'
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
         "400":
-          description: Validation error
+          description: Bad Request
           schema:
-            $ref: '#/definitions/responses.Error'
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
         "500":
-          description: Server error
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Send template email
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get vessel gallery item
       tags:
-      - Email
-  /email/welcome:
-    post:
+      - Vessel Gallery
+    put:
       consumes:
-      - application/json
-      description: Send a welcome email using the predefined template
+      - multipart/form-data
+      description: Updates a vessel gallery item
       parameters:
-      - description: Welcome email details
-        in: body
-        name: params
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/requests.WelcomeEmailRequest'
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Whether this is the main image
+        in: formData
+        name: main
+        type: boolean
+      - description: Image file
+        in: formData
+        name: image
+        type: file
       produces:
       - application/json
       responses:
         "200":
-          description: Email accepted for delivery
+          description: OK
           schema:
-            $ref: '#/definitions/responses.EmailSendResponse'
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
         "400":
-          description: Validation error
+          description: Bad Request
           schema:
-            $ref: '#/definitions/responses.Error'
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
         "500":
-          description: Server error
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Send welcome email
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update vessel gallery item
       tags:
-      - Email
+      - Vessel Gallery
+  /gallery/marina:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new gallery item for a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create marina gallery item
+      tags:
+      - Marina Gallery
+  /gallery/marina/{marinaId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all gallery items for a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina gallery
+      tags:
+      - Marina Gallery
+  /gallery/marina/item/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a marina gallery item
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete marina gallery item
+      tags:
+      - Marina Gallery
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific gallery item by ID
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina gallery item
+      tags:
+      - Marina Gallery
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates a marina gallery item
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina gallery item
+      tags:
+      - Marina Gallery
   /health:
     get:
       consumes:

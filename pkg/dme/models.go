@@ -202,6 +202,14 @@ type WaitListEntry struct {
 // BOAT MODELS
 //
 
+// BoatList represents a paginated list of boats
+type BoatList struct {
+	Content     []Boat `json:"content"`
+	CurrentPage int    `json:"currentPage"`
+	MaxPages    int    `json:"maxPages"`
+	PageSize    int    `json:"pageSize"`
+}
+
 // Motor represents motor information
 type Motor struct {
 	Number    int     `json:"number"`
@@ -256,22 +264,22 @@ type OperationHistory struct {
 
 // Slip represents slip information
 type Slip struct {
-	ID               string `json:"id"`
-	Description      string `json:"description"`
-	Type             string `json:"type"`
-	Location         string `json:"location"`
-	Length           string `json:"length"`
-	Width            string `json:"width"`
-	Draft            string `json:"draft"`
-	TieOff           string `json:"tieOff"`
-	LastModifiedDate string `json:"lastModifiedDate"`
-	Water            bool   `json:"water"`
-	Electric         bool   `json:"electric"`
-	Phone            bool   `json:"phone"`
-	CableTV          bool   `json:"cableTv"`
-	Transient        bool   `json:"transient"`
-	Linear           bool   `json:"linear"`
-	Unusable         bool   `json:"unusable"`
+	ID              string `json:"id"`
+	Description     string `json:"description"`
+	Type            string `json:"type"`
+	Location        string `json:"location"`
+	Length          string `json:"length"`
+	Width           string `json:"width"`
+	Draft           string `json:"draft"`
+	TieOff          string `json:"tieOff"`
+	LastModifedDate string `json:"lastModifedDate"`
+	Water           bool   `json:"water"`
+	Electric        bool   `json:"electric"`
+	Phone           bool   `json:"phone"`
+	CableTV         bool   `json:"cableTv"`
+	Transient       bool   `json:"transient"`
+	Linear          bool   `json:"linear"`
+	Unusable        bool   `json:"unusable"`
 }
 
 // Boat represents boat detail information
@@ -369,6 +377,19 @@ type BoatCreate struct {
 	SlipID              string  `json:"slipId"`
 	Slip                Slip    `json:"slip"`
 	Motors              []Motor `json:"motors"`
+}
+
+type BoatCreateUpdateResponse struct {
+	BoatID string `json:"boatID"`
+}
+
+// BoatSearch represents search results for boats
+type BoatSearch struct {
+	BoatID        string `json:"boatId"`
+	Name          string `json:"boatName"`
+	OwnerName     string `json:"ownerName"`
+	ArrivalDate   string `json:"arrivalDate"`
+	DepartureDate string `json:"departureDate"`
 }
 
 //

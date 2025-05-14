@@ -39,8 +39,10 @@ func RegisterRoutes(s *s.Server) {
 	customerHandler := h.NewCustomerHandler(s)
 	emailHandler := h.NewEmailHandler(s, s.Config)
 	smsHandler := h.NewSMSHandler(s, s.Config)
+	boatHandler := h.NewBoatHandler(s)
+	galleryHandler := h.NewGalleryHandler(s)
 
-	// Middlewares
+  // Middlewares
 	s.Echo.Use(middleware.RequestID())
 	s.Echo.Use(echozap.ZapLogger(s.Logger.DesugarZap))
 	s.Echo.Use(middleware.CORSWithConfig(s.Config.Server.CORSConfig))
@@ -179,4 +181,27 @@ func RegisterRoutes(s *s.Server) {
 	sms := protected.Group("/sms")
 	sms.POST("/send", smsHandler.SendSMS)
 	sms.POST("/send-batch", smsHandler.SendBatchSMS)
+
+	// Boat routes
+	boats := protected.Group("/boats")
+	boats.GET("/list", boatHandler.ListBoatsByPage)
+	boats.GET("/retrieve", boatHandler.RetrieveBoat)
+	boats.GET("/customer", boatHandler.RetrieveBoatsForCustomer)
+	boats.GET("/search", boatHandler.SearchBoats)
+	boats.POST("/update", boatHandler.UpdateBoat)
+	boats.POST("/create", boatHandler.CreateBoat)
+
+	// Gallery routes
+	gallery := protected.Group("/gallery")
+	gallery.POST("/marina", galleryHandler.CreateMarinaGalleryItem)
+	gallery.GET("/marina/:marinaId", galleryHandler.GetMarinaGallery)
+	gallery.GET("/marina/item/:id", galleryHandler.GetMarinaGalleryItem)
+	gallery.PUT("/marina/item/:id", galleryHandler.UpdateMarinaGalleryItem)
+	gallery.DELETE("/marina/item/:id", galleryHandler.DeleteMarinaGalleryItem)
+
+	gallery.POST("/boat", galleryHandler.CreateVesselGalleryItem)
+	gallery.GET("/boat/:boatId", galleryHandler.GetVesselGallery)
+	gallery.GET("/boat/item/:id", galleryHandler.GetVesselGalleryItem)
+	gallery.PUT("/boat/item/:id", galleryHandler.UpdateVesselGalleryItem)
+	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
 }
