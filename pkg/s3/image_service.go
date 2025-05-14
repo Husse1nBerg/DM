@@ -11,9 +11,11 @@ import (
 type ImageType string
 
 const (
-	UserImageType         ImageType = "users"
-	MarinaImageType       ImageType = "marinas"
-	OrganizationImageType ImageType = "organizations"
+	UserImageType          ImageType = "users"
+	MarinaImageType        ImageType = "marinas"
+	OrganizationImageType  ImageType = "organizations"
+	MarinaGalleryImageType ImageType = "marina_gallery"
+	VesselGalleryImageType ImageType = "vessel_gallery"
 )
 
 // ImageService provides methods for handling image uploads
