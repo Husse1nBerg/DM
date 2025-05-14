@@ -29,6 +29,19 @@ definitions:
       slipBoatOrLongest:
         type: string
     type: object
+  dme.BillingData:
+    properties:
+      amountBilled:
+        type: number
+      billingDate:
+        type: string
+      environmentCharges:
+        type: number
+      otherCharges:
+        type: number
+      salesTax:
+        type: number
+    type: object
   dme.Boat:
     properties:
       beam:
@@ -482,6 +495,71 @@ definitions:
       year:
         type: string
     type: object
+  dme.Operation:
+    properties:
+      category:
+        type: string
+      estCompleteDate:
+        type: string
+      estStartDate:
+        type: string
+      estimatedCharges:
+        type: number
+      flatRateAmount:
+        type: number
+      flatRatePerFootMethod:
+        type: string
+      flatRatePerFootRate:
+        type: number
+      forecastedLaborCharges:
+        type: number
+      forecastedLaborHours:
+        type: number
+      forecastedPartsCharges:
+        type: number
+      id:
+        type: string
+      isOpcodeApproved:
+        type: boolean
+      laborBilled:
+        type: number
+      longDesc:
+        type: string
+      opcode:
+        type: string
+      opcodeDesc:
+        type: string
+      reqCompDate:
+        type: string
+      status:
+        type: string
+      techDesc:
+        type: string
+      totalBillCodes:
+        type: number
+      totalCharges:
+        type: number
+      totalEquipment:
+        type: number
+      totalFreight:
+        type: number
+      totalLabor:
+        type: number
+      totalLaborHours:
+        type: number
+      totalMileage:
+        type: number
+      totalMiscSupply:
+        type: number
+      totalParts:
+        type: number
+      totalSublet:
+        type: number
+      totalToComplete:
+        type: number
+      type:
+        type: string
+    type: object
   dme.OperationHistory:
     properties:
       code:
@@ -558,6 +636,122 @@ definitions:
       id:
         type: string
       waitListName:
+        type: string
+    type: object
+  dme.WorkOrder:
+    properties:
+      billingData:
+        items:
+          $ref: '#/definitions/dme.BillingData'
+        type: array
+      boatId:
+        type: string
+      boatLength:
+        type: string
+      boatMake:
+        type: string
+      boatModel:
+        type: string
+      boatName:
+        type: string
+      boatYear:
+        type: string
+      category:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      creationDate:
+        type: string
+      customerID:
+        type: string
+      customerName:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      id:
+        type: string
+      isEstimate:
+        type: boolean
+      lastModDate:
+        type: string
+      lastModTime:
+        type: string
+      locationCode:
+        type: string
+      operations:
+        items:
+          $ref: '#/definitions/dme.Operation'
+        type: array
+      promisedDate:
+        type: string
+      riggingId:
+        type: string
+      riggingType:
+        type: string
+      startDate:
+        type: string
+      status:
+        type: string
+      taxSchema:
+        type: string
+      title:
+        type: string
+      totalBillCodes:
+        type: number
+      totalEquipment:
+        type: number
+      totalForecastedHours:
+        type: number
+      totalForecastedLabor:
+        type: number
+      totalForecastedParts:
+        type: number
+      totalFreight:
+        type: number
+      totalFreightCost:
+        type: number
+      totalLabor:
+        type: number
+      totalLaborCost:
+        type: number
+      totalLaborHours:
+        type: number
+      totalMileage:
+        type: number
+      totalMiscSupply:
+        type: number
+      totalParts:
+        type: number
+      totalPartsCost:
+        type: number
+      totalSublet:
+        type: number
+      totalSubletCost:
+        type: number
+      totalWOCharges:
+        type: number
+      type:
+        type: string
+    type: object
+  dme.WorkOrderSearch:
+    properties:
+      boat:
+        type: string
+      customer:
+        type: string
+      id:
+        type: string
+      locationCode:
+        type: string
+      openDate:
+        type: string
+      status:
+        type: string
+      type:
         type: string
     type: object
   handlers.HealthResponse:
@@ -1138,6 +1332,61 @@ definitions:
     - email
     - password
     type: object
+  requests.OperationCode:
+    properties:
+      approved:
+        type: boolean
+      categoryCode:
+        type: string
+      custPromiseDate:
+        type: string
+      desc:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      estimatedBillCodes:
+        type: number
+      estimatedEquipment:
+        type: number
+      estimatedFreight:
+        type: number
+      estimatedLabor:
+        type: number
+      estimatedLaborHours:
+        type: number
+      estimatedMileage:
+        type: number
+      estimatedMiscSupply:
+        type: number
+      estimatedParts:
+        type: number
+      estimatedSublet:
+        type: number
+      flatRateAmount:
+        type: number
+      flatRatePerFootMethod:
+        type: string
+      flatRatePerFootRate:
+        type: number
+      forecastedLaborCharges:
+        type: number
+      forecastedLaborHours:
+        type: number
+      forecastedPartsCharges:
+        type: number
+      laborFinished:
+        type: boolean
+      longDesc:
+        type: string
+      opcode:
+        type: string
+      standardHours:
+        type: number
+      techDesc:
+        type: string
+    type: object
   requests.RefreshRequest:
     properties:
       token:
@@ -1454,6 +1703,44 @@ definitions:
       title:
         example: Manager
         type: string
+    type: object
+  requests.WorkOrderCreateRequest:
+    properties:
+      boatId:
+        type: string
+      boatName:
+        type: string
+      categoryCode:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      custId:
+        type: string
+      custPromiseDate:
+        type: string
+      customerEmail:
+        type: string
+      customerPhone:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      locationCode:
+        type: string
+      operationCodes:
+        items:
+          $ref: '#/definitions/requests.OperationCode'
+        type: array
+      title:
+        type: string
+      woId:
+        type: string
+    required:
+    - custId
+    - title
     type: object
   responses.AddressResponse:
     description: Address response model
@@ -2172,6 +2459,36 @@ definitions:
         type: string
       updatedAt:
         type: string
+  responses.WorkOrderListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrder'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.WorkOrderResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.WorkOrder'
+    type: object
+  responses.WorkOrderSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderSearch'
+        type: array
     type: object
 info:
   contact: {}
@@ -5310,6 +5627,136 @@ paths:
       summary: Get users by role
       tags:
       - User
+  /work-orders/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new work order
+      parameters:
+      - description: Work Order information
+        in: body
+        name: workOrder
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create work order
+      tags:
+      - WorkOrders
+  /work-orders/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of work orders
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List work orders by page
+      tags:
+      - WorkOrders
+  /work-orders/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a work order by its ID
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WorkOrderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order by ID
+      tags:
+      - WorkOrders
+  /work-orders/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for work orders based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search work orders
+      tags:
+      - WorkOrders
 securityDefinitions:
   ApiKeyAuth:
     in: header

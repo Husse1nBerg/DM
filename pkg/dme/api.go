@@ -434,3 +434,168 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 // 	}
 // 	return result, nil
 // }
+
+// -----
+// Work Order API
+// -----
+
+// ListWorkOrders retrieves a full list of work orders
+func (c *Client) ListWorkOrders(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
+	var result WorkOrderList
+
+	endpoint := fmt.Sprintf("/Service/WorkOrders/ListNewOrChanged?Page=%d&PageSize=%d", page, pageSize)
+	err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get work orders list: %w", err)
+	}
+	return &result, nil
+}
+
+// WorkOrderRetrieve retrieves work order information
+func (c *Client) WorkOrderRetrieve(ctx context.Context, workOrderID string, detail bool, organizationID uuid.UUID, systemID string) (*WorkOrder, error) {
+	var result WorkOrder
+
+	credential, err := c.db.Queries().GetDMECredentialsByOrgID(ctx, organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get DME credential: %w", err)
+	}
+
+	var endpoint string
+	if credential.IsOldApi != nil && *credential.IsOldApi {
+		endpoint = fmt.Sprintf("/Service/WorkOrders/Retrieve/%s", workOrderID)
+	} else {
+		endpoint = fmt.Sprintf("/Service/WorkOrders/Retrieve?Id=%s&Detail=%t", workOrderID, detail)
+	}
+
+	err = c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order information: %w", err)
+	}
+
+	return &result, nil
+}
+
+// WorkOrderSearch searches for work orders
+func (c *Client) WorkOrderSearch(ctx context.Context, searchTerm string, directHit string, organizationID uuid.UUID, systemID string) (*[]WorkOrderSearch, error) {
+	var result []WorkOrderSearch
+	credential, err := c.db.Queries().GetDMECredentialsByOrgID(ctx, organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get DME credential: %w", err)
+	}
+
+	if credential.IsOldApi != nil && *credential.IsOldApi {
+		payload := map[string]interface{}{
+			"SearchString": searchTerm,
+			"DirectHit":    directHit,
+		}
+		endpoint := "/Service/WorkOrders/Search"
+		err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, payload, &result, organizationID, systemID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to search work orders: %w", err)
+		}
+	} else {
+		endpoint := fmt.Sprintf("/Service/WorkOrders/Search?SearchString=%s&DirectHit=%s", searchTerm, directHit)
+		err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to search work orders: %w", err)
+		}
+	}
+
+	return &result, nil
+}
+
+// ListWorkOrdersForCustomer lists work orders for a specific customer
+func (c *Client) ListWorkOrdersForCustomer(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) (*WorkOrderListShort, error) {
+	var result WorkOrderListShort
+	endpoint := fmt.Sprintf("/Service/WorkOrders/ListForCustomer?CustId=%s", customerID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list work orders for customer: %w", err)
+	}
+
+	return &result, nil
+}
+
+// CreateWorkOrder creates a new work order
+func (c *Client) CreateWorkOrder(ctx context.Context, workOrderData map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrder, error) {
+	var result WorkOrderCreateResponse
+	endpoint := "/Service/WorkOrders/Update"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		workOrderData,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create work order: %w", err)
+	}
+
+	// Extract the work order ID from the response
+	workOrderID := result.WoId
+	if workOrderID == "" {
+		return nil, fmt.Errorf("failed to get work order ID from response")
+	}
+
+	// Retrieve the created work order
+	createdWorkOrder, err := c.WorkOrderRetrieve(ctx, workOrderID, false, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve created work order: %w", err)
+	}
+
+	return createdWorkOrder, nil
+}
+
+// UpdateWorkOrder updates an existing work order
+func (c *Client) UpdateWorkOrder(ctx context.Context, workOrderData map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrder, error) {
+	var result WorkOrderCreateResponse
+	endpoint := "/Service/WorkOrders/Update"
+
+	// Ensure the work order ID is present
+	workOrderID, ok := workOrderData["woId"].(string)
+	if !ok || workOrderID == "" {
+		return nil, fmt.Errorf("work order ID must be provided when updating")
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		workOrderData,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update work order: %w", err)
+	}
+
+	// Extract the work order ID from the response
+	updatedID := result.WoId
+	if updatedID == "" {
+		return nil, fmt.Errorf("failed to get work order ID from response")
+	}
+
+	// Retrieve the updated work order
+	updatedWorkOrder, err := c.WorkOrderRetrieve(ctx, updatedID, false, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve updated work order: %w", err)
+	}
+
+	return updatedWorkOrder, nil
+}

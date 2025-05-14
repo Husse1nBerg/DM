@@ -579,3 +579,40 @@ type Location struct {
 	BillToFax      string `json:"billToFax"`
 	DMPayClientID  string `json:"dmPayClientId"`
 }
+
+// WorkOrderList represents a paginated list of work orders
+type WorkOrderList struct {
+	Content     []WorkOrder `json:"content"`
+	CurrentPage int         `json:"currentPage"`
+	MaxPages    int         `json:"maxPages"`
+	PageSize    int         `json:"pageSize"`
+}
+
+// WorkOrder represents a full work order
+type WorkOrder = WorkOrderFull
+
+// WorkOrderSearch represents a work order search result
+type WorkOrderSearch struct {
+	ID           string `json:"id"`
+	Customer     string `json:"customer"`
+	Boat         string `json:"boat"`
+	OpenDate     string `json:"openDate"`
+	Type         string `json:"type"`
+	Status       string `json:"status"`
+	LocationCode string `json:"locationCode"`
+}
+
+// WorkOrderListShort represents a paginated list of work order short information
+type WorkOrderListShort struct {
+	Content     []WorkOrderShort `json:"content"`
+	CurrentPage int              `json:"currentPage"`
+	MaxPages    int              `json:"maxPages"`
+	PageSize    int              `json:"pageSize"`
+}
+
+// WorkOrderCreateResponse represents the response from creating or updating a work order
+type WorkOrderCreateResponse struct {
+	WoId       string   `json:"woId"`
+	Operations []string `json:"operations"`
+	Result     string   `json:"result"`
+}
