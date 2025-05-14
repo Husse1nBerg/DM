@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -505,9 +506,26 @@ func (c *Client) WorkOrderSearch(ctx context.Context, searchTerm string, directH
 }
 
 // ListWorkOrdersForCustomer lists work orders for a specific customer
-func (c *Client) ListWorkOrdersForCustomer(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) (*WorkOrderListShort, error) {
-	var result WorkOrderListShort
-	endpoint := fmt.Sprintf("/Service/WorkOrders/ListForCustomer?CustId=%s", customerID)
+func (c *Client) ListWorkOrdersForCustomer(ctx context.Context, customerID string, status string, locationCodeList string, organizationID uuid.UUID, systemID string) ([]WorkOrderShort, error) {
+	var result []WorkOrderShort
+
+	// Build the query parameters
+	var queryParams []string
+
+	// Required parameter
+	queryParams = append(queryParams, fmt.Sprintf("CustId=%s", customerID))
+
+	// Optional parameters
+	if status != "" {
+		queryParams = append(queryParams, fmt.Sprintf("Status=%s", status))
+	}
+
+	if locationCodeList != "" {
+		queryParams = append(queryParams, fmt.Sprintf("LocationCodeList=%s", locationCodeList))
+	}
+
+	// Construct the endpoint with query parameters
+	endpoint := fmt.Sprintf("/Service/WorkOrders/ListForCustomer?%s", strings.Join(queryParams, "&"))
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -523,7 +541,7 @@ func (c *Client) ListWorkOrdersForCustomer(ctx context.Context, customerID strin
 		return nil, fmt.Errorf("failed to list work orders for customer: %w", err)
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // CreateWorkOrder creates a new work order

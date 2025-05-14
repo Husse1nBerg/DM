@@ -754,6 +754,23 @@ definitions:
       type:
         type: string
     type: object
+  dme.WorkOrderShort:
+    properties:
+      boat:
+        type: string
+      customer:
+        type: string
+      id:
+        type: string
+      locationCode:
+        type: string
+      openDate:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
   handlers.HealthResponse:
     properties:
       data:
@@ -2525,6 +2542,13 @@ definitions:
       data:
         items:
           $ref: '#/definitions/dme.WorkOrderSearch'
+        type: array
+    type: object
+  responses.WorkOrderShortListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderShort'
         type: array
     type: object
 info:
@@ -5692,6 +5716,43 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Create work order
+      tags:
+      - WorkOrders
+  /work-orders/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of work orders for a specific customer
+      parameters:
+      - description: Customer ID
+        in: query
+        name: custId
+        required: true
+        type: string
+      - description: Status (O for Open, C for Closed, blank for All)
+        in: query
+        name: status
+        type: string
+      - description: Comma delimited list of location codes
+        in: query
+        name: locationCodeList
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderShortListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List work orders for customer
       tags:
       - WorkOrders
   /work-orders/list:

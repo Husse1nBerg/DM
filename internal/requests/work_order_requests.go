@@ -85,3 +85,10 @@ type WorkOrderUpdateRequest struct {
 	Title           string          `json:"title"`
 	OperationCodes  []OperationCode `json:"operationCodes"`
 }
+
+// WorkOrdersForCustomerRequest represents a request to list work orders for a specific customer
+type WorkOrdersForCustomerRequest struct {
+	CustId           string `query:"custId" validate:"required"`
+	Status           string `query:"status"`
+	LocationCodeList string `query:"locationCodeList"`
+}

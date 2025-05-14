@@ -4901,6 +4901,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/customer": {
+            "get": {
+                "description": "Retrieves a list of work orders for a specific customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "List work orders for customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "custId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Status (O for Open, C for Closed, blank for All)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma delimited list of location codes",
+                        "name": "locationCodeList",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderShortListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/list": {
             "get": {
                 "description": "Retrieves a paginated list of work orders",
@@ -6215,6 +6271,32 @@ const docTemplate = `{
             }
         },
         "dme.WorkOrderSearch": {
+            "type": "object",
+            "properties": {
+                "boat": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "openDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderShort": {
             "type": "object",
             "properties": {
                 "boat": {
@@ -8742,6 +8824,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dme.WorkOrderSearch"
+                    }
+                }
+            }
+        },
+        "responses.WorkOrderShortListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderShort"
                     }
                 }
             }

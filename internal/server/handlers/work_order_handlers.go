@@ -335,3 +335,52 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 	response := responses.ConvertWorkOrder(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary List work orders for customer
+// @Description Retrieves a list of work orders for a specific customer
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param custId query string true "Customer ID"
+// @Param status query string false "Status (O for Open, C for Closed, blank for All)"
+// @Param locationCodeList query string false "Comma delimited list of location codes"
+// @Success 200 {object} responses.WorkOrderShortListResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/customer [get]
+func (h *WorkOrderHandler) ListWorkOrdersForCustomer(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrdersForCustomerRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	marinaIDStr := claims.MarinaId
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	dmeResponse, err := h.server.DME.ListWorkOrdersForCustomer(ctx, req.CustId, req.Status, req.LocationCodeList, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to list work orders for customer",
+			zap.Error(err),
+			zap.String("customerId", req.CustId),
+			zap.String("status", req.Status),
+			zap.String("locationCodeList", req.LocationCodeList))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Convert DME response to API response
+	response := responses.ConvertWorkOrderShortList(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
