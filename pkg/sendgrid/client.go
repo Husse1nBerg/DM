@@ -175,69 +175,6 @@ func (c *Client) SendTemplateByName(name string, to []string, subject string, te
 	return taskID, resultChan, nil
 }
 
-// SendWelcomeEmail sends a welcome email using the welcome template
-func (c *Client) SendWelcomeEmail(to []string, subject string, data WelcomeTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
-	templateID, ok := c.config.TemplatesMap["welcome"]
-	if !ok {
-		return uuid.Nil, nil, errors.New("welcome template not found in configuration")
-	}
-
-	// Convert the strongly typed data to a map
-	templateData := map[string]interface{}{
-		"first_name":   data.FirstName,
-		"username":     data.Username,
-		"login_url":    data.LoginURL,
-		"company_name": data.CompanyName,
-		"support_url":  data.SupportURL,
-	}
-
-	email := &TemplateEmail{
-		EmailData: EmailData{
-			To:        to,
-			Subject:   subject,
-			FromEmail: c.config.FromEmail,
-			FromName:  c.config.FromName,
-		},
-		TemplateID:   templateID,
-		TemplateData: templateData,
-	}
-
-	taskID, resultChan := c.SendTemplateEmail(email)
-	return taskID, resultChan, nil
-}
-
-// SendPasswordResetEmail sends a password reset email using the password reset template
-func (c *Client) SendPasswordResetEmail(to []string, subject string, data PasswordResetTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
-	templateID, ok := c.config.TemplatesMap["password_reset"]
-	if !ok {
-		return uuid.Nil, nil, errors.New("password reset template not found in configuration")
-	}
-
-	// Convert the strongly typed data to a map
-	templateData := map[string]interface{}{
-		"first_name":   data.FirstName,
-		"reset_url":    data.ResetURL,
-		"token":        data.Token,
-		"email":        data.Email,
-		"expires_in":   data.ExpiresIn,
-		"company_name": data.CompanyName,
-	}
-
-	email := &TemplateEmail{
-		EmailData: EmailData{
-			To:        to,
-			Subject:   subject,
-			FromEmail: c.config.FromEmail,
-			FromName:  c.config.FromName,
-		},
-		TemplateID:   templateID,
-		TemplateData: templateData,
-	}
-
-	taskID, resultChan := c.SendTemplateEmail(email)
-	return taskID, resultChan, nil
-}
-
 // sendHTMLEmailSync sends an HTML email synchronously
 func (c *Client) sendHTMLEmailSync(email *HTMLEmail) error {
 	message := mail.NewV3Mail()
@@ -305,4 +242,64 @@ func (c *Client) sendTemplateEmailSync(email *TemplateEmail) error {
 	}
 
 	return nil
+}
+
+// SendWelcomeEmail sends a welcome email using the welcome template
+func (c *Client) SendWelcomeEmail(to []string, subject string, data WelcomeTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["welcome"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("welcome template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"user_name":        data.UserName,
+		"home_url":         data.HomeURL,
+		"business_name":    data.BusinessName,
+		"customer_logo":    data.CustomerLogo,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
+// SendPasswordResetEmail sends a password reset email using the password reset template
+func (c *Client) SendPasswordResetEmail(to []string, subject string, data PasswordResetTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["password_reset"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("password reset template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"user_name":        data.UserName,
+		"reset_url":        data.ResetURL,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
 }

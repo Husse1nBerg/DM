@@ -1105,7 +1105,7 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 	sgClient := g.server.SendGrid
 
 	// Build the reset URL
-	baseURL := "https://app.dockmaster.com" // Default URL
+	baseURL := g.server.Config.App.FrontendBaseURL // Default URL
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s&email=%s",
 		baseURL,
 		token,
@@ -1113,12 +1113,9 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 
 	// Create template data
 	templateData := sendgrid.PasswordResetTemplateData{
-		FirstName:   user.FirstName,
-		ResetURL:    resetURL,
-		Token:       token,
-		Email:       user.Email,
-		ExpiresIn:   "24 hours",
-		CompanyName: "Dockmaster",
+		UserName:        user.FirstName + " " + user.LastName,
+		ResetURL:        resetURL,
+		TermsConditions: baseURL + "/terms-conditions",
 	}
 
 	// Send email using specialized password reset method

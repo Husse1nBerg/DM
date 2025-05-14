@@ -174,8 +174,6 @@ func RegisterRoutes(s *s.Server) {
 	emails := protected.Group("/email")
 	emails.POST("/send-html", emailHandler.SendHTMLEmail)
 	emails.POST("/send-template", emailHandler.SendTemplateEmail)
-	emails.POST("/welcome", emailHandler.SendWelcomeEmail)
-	emails.POST("/password-reset", emailHandler.SendPasswordResetEmail)
 
 	// SMS routes
 	sms := protected.Group("/sms")

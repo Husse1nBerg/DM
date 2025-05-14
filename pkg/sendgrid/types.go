@@ -36,19 +36,16 @@ type TemplateEmail struct {
 
 // WelcomeTemplateData contains specific fields for the welcome email template
 type WelcomeTemplateData struct {
-	FirstName   string `json:"first_name"`   // User's first name
-	Username    string `json:"username"`     // User's username for login
-	LoginURL    string `json:"login_url"`    // URL for the login page
-	CompanyName string `json:"company_name"` // Organization/company name
-	SupportURL  string `json:"support_url"`  // URL for support/help pages
+	UserName        string `json:"user_name"`        // User's username for login
+	HomeURL         string `json:"home_url"`         // URL for the login page
+	BusinessName    string `json:"business_name"`    // Organization/company name
+	CustomerLogo    string `json:"customer_logo"`    // URL for the customer logo
+	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 }
 
 // PasswordResetTemplateData contains specific fields for the password reset template
 type PasswordResetTemplateData struct {
-	FirstName   string `json:"first_name"`   // User's first name
-	ResetURL    string `json:"reset_url"`    // URL with token for password reset
-	Token       string `json:"token"`        // Reset token
-	Email       string `json:"email"`        // User's email
-	ExpiresIn   string `json:"expires_in"`   // Expiration time (e.g., "24 hours")
-	CompanyName string `json:"company_name"` // Organization/company name
+	UserName        string `json:"user_name"`        // User's username for login
+	ResetURL        string `json:"reset_url"`        // URL for the login page
+	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 }
