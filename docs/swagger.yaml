@@ -2581,6 +2581,7 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
   responses.WorkOrderCompletedResponse:
     properties:
       data:

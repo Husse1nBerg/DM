@@ -9060,6 +9060,9 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
         "responses.WorkOrderCompletedResponse": {
             "type": "object",
             "properties": {
