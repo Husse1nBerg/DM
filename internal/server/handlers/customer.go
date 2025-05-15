@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
+	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
@@ -355,5 +358,104 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 	}
 
 	response := responses.ConvertCustomer(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Get customer settings
+// @Description Retrieves settings for a customer, creates with defaults if not found
+// @Tags Customers
+// @Accept json
+// @Produce json
+// @Param CustomerId query string true "Customer ID"
+// @Success 200 {object} responses.CustomerSettingsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /customers/settings [get]
+func (h *CustomerHandler) GetCustomerSettings(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.CustomerSettingsRetrieveRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Try to get existing settings
+	settings, err := h.server.DB.Queries().GetCustomerSettings(ctx, db.GetCustomerSettingsParams{
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	})
+
+	// If not found, create with default values
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Default value for enable_portal is false
+			defaultEnablePortal := false
+			settings, err = h.server.DB.Queries().CreateCustomerSettings(ctx, db.CreateCustomerSettingsParams{
+				MarinaID:     req.MarinaID,
+				CustomerID:   req.CustomerID,
+				EnablePortal: &defaultEnablePortal,
+			})
+			if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to create customer settings",
+					zap.Error(err),
+					zap.String("customerId", req.CustomerID),
+					zap.String("marinaId", req.MarinaID.String()))
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create customer settings").JSON(c)
+			}
+		} else {
+			h.server.Logger.DesugarZap.Error("Failed to get customer settings",
+				zap.Error(err),
+				zap.String("customerId", req.CustomerID),
+				zap.String("marinaId", req.MarinaID.String()))
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get customer settings").JSON(c)
+		}
+	}
+
+	// Convert settings to response format
+	response := responses.ConvertCustomerSettings(settings)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Update customer settings
+// @Description Updates settings for a customer
+// @Tags Customers
+// @Accept json
+// @Produce json
+// @Param settings body requests.CustomerSettingsUpdateRequest true "Customer settings"
+// @Success 200 {object} responses.CustomerSettingsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /customers/settings [post]
+func (h *CustomerHandler) UpdateCustomerSettings(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.CustomerSettingsUpdateRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Use UpsertCustomerSettings to create or update
+	settings, err := h.server.DB.Queries().UpsertCustomerSettings(ctx, db.UpsertCustomerSettingsParams{
+		MarinaID:     req.MarinaID,
+		CustomerID:   req.CustomerID,
+		EnablePortal: req.EnablePortal,
+	})
+
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to update customer settings",
+			zap.Error(err),
+			zap.String("customerId", req.CustomerID),
+			zap.String("marinaId", req.MarinaID.String()))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update customer settings").JSON(c)
+	}
+
+	// Convert settings to response format
+	response := responses.ConvertCustomerSettings(settings)
 	return c.JSON(http.StatusOK, response)
 }

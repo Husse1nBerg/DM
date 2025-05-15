@@ -42,7 +42,7 @@ func RegisterRoutes(s *s.Server) {
 	boatHandler := h.NewBoatHandler(s)
 	galleryHandler := h.NewGalleryHandler(s)
 
-  // Middlewares
+	// Middlewares
 	s.Echo.Use(middleware.RequestID())
 	s.Echo.Use(echozap.ZapLogger(s.Logger.DesugarZap))
 	s.Echo.Use(middleware.CORSWithConfig(s.Config.Server.CORSConfig))
@@ -171,6 +171,8 @@ func RegisterRoutes(s *s.Server) {
 	customers.GET("/search", customerHandler.SearchCustomers)
 	customers.POST("/update", customerHandler.UpdateCustomer)
 	customers.POST("/create", customerHandler.CreateCustomer)
+	customers.GET("/settings", customerHandler.GetCustomerSettings)
+	customers.POST("/settings", customerHandler.UpdateCustomerSettings)
 
 	// Email routes
 	emails := protected.Group("/email")

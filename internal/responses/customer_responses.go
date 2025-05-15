@@ -1,7 +1,9 @@
 package responses
 
 import (
+	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
+	"github.com/google/uuid"
 )
 
 // CustomerListShortResponse represents a paginated list of customers
@@ -30,6 +32,27 @@ type CustomerSearchResponse struct {
 // CustomerResponse represents a single customer response
 type CustomerResponse struct {
 	Data dme.Customer `json:"data"`
+}
+
+// CustomerSettingsResponse represents customer settings response
+type CustomerSettingsResponse struct {
+	MarinaID     uuid.UUID `json:"marinaId"`
+	CustomerID   string    `json:"customerId"`
+	EnablePortal bool      `json:"enablePortal"`
+}
+
+// ConvertCustomerSettings converts DB CustomerSetting to CustomerSettingsResponse
+func ConvertCustomerSettings(settings db.CustomerSetting) *CustomerSettingsResponse {
+	enablePortal := false
+	if settings.EnablePortal != nil {
+		enablePortal = *settings.EnablePortal
+	}
+
+	return &CustomerSettingsResponse{
+		MarinaID:     settings.MarinaID,
+		CustomerID:   settings.CustomerID,
+		EnablePortal: enablePortal,
+	}
 }
 
 // ConvertCustomerListShort converts DME CustomerListShort to CustomerListShortResponse
