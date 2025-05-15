@@ -1609,6 +1609,8 @@ definitions:
     properties:
       customerId:
         type: string
+      customerUserId:
+        type: string
       enablePortal:
         type: boolean
       marinaId:

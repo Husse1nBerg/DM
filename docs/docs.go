@@ -7184,6 +7184,9 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string"
                 },
+                "customerUserId": {
+                    "type": "string"
+                },
                 "enablePortal": {
                     "type": "boolean"
                 },

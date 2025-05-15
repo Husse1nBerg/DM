@@ -36,9 +36,10 @@ type CustomerResponse struct {
 
 // CustomerSettingsResponse represents customer settings response
 type CustomerSettingsResponse struct {
-	MarinaID     uuid.UUID `json:"marinaId"`
-	CustomerID   string    `json:"customerId"`
-	EnablePortal bool      `json:"enablePortal"`
+	MarinaID       uuid.UUID `json:"marinaId"`
+	CustomerID     string    `json:"customerId"`
+	EnablePortal   bool      `json:"enablePortal"`
+	CustomerUserID *string   `json:"customerUserId"`
 }
 
 // ConvertCustomerSettings converts DB CustomerSetting to CustomerSettingsResponse
@@ -47,11 +48,16 @@ func ConvertCustomerSettings(settings db.CustomerSetting) *CustomerSettingsRespo
 	if settings.EnablePortal != nil {
 		enablePortal = *settings.EnablePortal
 	}
+	customerUserID := ""
+	if settings.CustomerUserID != uuid.Nil {
+		customerUserID = settings.CustomerUserID.String()
+	}
 
 	return &CustomerSettingsResponse{
-		MarinaID:     settings.MarinaID,
-		CustomerID:   settings.CustomerID,
-		EnablePortal: enablePortal,
+		MarinaID:       settings.MarinaID,
+		CustomerID:     settings.CustomerID,
+		EnablePortal:   enablePortal,
+		CustomerUserID: &customerUserID,
 	}
 }
 
