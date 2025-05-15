@@ -214,6 +214,7 @@ func RegisterRoutes(s *s.Server) {
 	workOrders.GET("/search", workOrderHandler.SearchWorkOrders)
 	workOrders.GET("/customer", workOrderHandler.ListWorkOrdersForCustomer)
 	workOrders.GET("/operations", workOrderHandler.RetrieveWorkOrderOperations)
+	workOrders.GET("/completed", workOrderHandler.RetrieveCompletedWorkOrders)
 	workOrders.POST("/update", workOrderHandler.UpdateWorkOrder)
 	workOrders.POST("/create", workOrderHandler.CreateWorkOrder)
 }

@@ -639,3 +639,25 @@ func (c *Client) RetrieveWorkOrderOperations(ctx context.Context, organizationID
 
 	return result, nil
 }
+
+// RetrieveCompletedWorkOrders retrieves work orders completed on a specific date
+func (c *Client) RetrieveCompletedWorkOrders(ctx context.Context, completeDate string, organizationID uuid.UUID, systemID string) ([]WorkOrder, error) {
+	var result []WorkOrder
+	endpoint := fmt.Sprintf("/Service/WorkOrders/RetrieveCompleted?CompleteDate=%s", completeDate)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve completed work orders: %w", err)
+	}
+
+	return result, nil
+}

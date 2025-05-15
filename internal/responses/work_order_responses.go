@@ -42,6 +42,11 @@ type WorkOrderOperationsResponse struct {
 	Data []dme.WorkOrderOperation `json:"data"`
 }
 
+// WorkOrderCompletedResponse represents a list of completed work orders
+type WorkOrderCompletedResponse struct {
+	Data []dme.WorkOrder `json:"data"`
+}
+
 // ConvertWorkOrderListShort converts DME WorkOrderListShort to WorkOrderListShortResponse
 func ConvertWorkOrderListShort(dmeResponse *dme.WorkOrderListShort) *WorkOrderListShortResponse {
 	return &WorkOrderListShortResponse{
@@ -88,6 +93,13 @@ func ConvertWorkOrderShortList(dmeResponse []dme.WorkOrderShort) *WorkOrderShort
 // ConvertWorkOrderOperations converts a slice of WorkOrderOperation to WorkOrderOperationsResponse
 func ConvertWorkOrderOperations(dmeResponse []dme.WorkOrderOperation) *WorkOrderOperationsResponse {
 	return &WorkOrderOperationsResponse{
+		Data: dmeResponse,
+	}
+}
+
+// ConvertCompletedWorkOrders converts a slice of WorkOrder to WorkOrderCompletedResponse
+func ConvertCompletedWorkOrders(dmeResponse []dme.WorkOrder) *WorkOrderCompletedResponse {
+	return &WorkOrderCompletedResponse{
 		Data: dmeResponse,
 	}
 }

@@ -4855,6 +4855,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/completed": {
+            "get": {
+                "description": "Retrieves work orders completed on a specific date",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve completed work orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Completion date (format: YYYY-MM-DD)",
+                        "name": "CompleteDate",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderCompletedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/create": {
             "post": {
                 "description": "Creates a new work order",
@@ -8900,6 +8944,17 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+        "responses.WorkOrderCompletedResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrder"
+                    }
+                }
+            }
+        },
         "responses.WorkOrderListResponse": {
             "type": "object",
             "properties": {

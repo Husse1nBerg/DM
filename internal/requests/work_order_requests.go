@@ -92,3 +92,8 @@ type WorkOrdersForCustomerRequest struct {
 	Status           string `query:"status"`
 	LocationCodeList string `query:"locationCodeList"`
 }
+
+// WorkOrderCompletedRequest represents a request to retrieve completed work orders
+type WorkOrderCompletedRequest struct {
+	CompleteDate string `query:"CompleteDate" validate:"required"`
+}

@@ -419,3 +419,48 @@ func (h *WorkOrderHandler) RetrieveWorkOrderOperations(c echo.Context) error {
 	response := responses.ConvertWorkOrderOperations(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary Retrieve completed work orders
+// @Description Retrieves work orders completed on a specific date
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param CompleteDate query string true "Completion date (format: YYYY-MM-DD)"
+// @Success 200 {object} responses.WorkOrderCompletedResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/completed [get]
+func (h *WorkOrderHandler) RetrieveCompletedWorkOrders(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrderCompletedRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	marinaIDStr := claims.MarinaId
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	dmeResponse, err := h.server.DME.RetrieveCompletedWorkOrders(ctx, req.CompleteDate, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve completed work orders",
+			zap.Error(err),
+			zap.String("completeDate", req.CompleteDate))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Convert DME response to API response
+	response := responses.ConvertCompletedWorkOrders(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
