@@ -23,6 +23,17 @@ type Address struct {
 	DeletedAt  pgtype.Timestamp
 }
 
+type CustomerSetting struct {
+	ID             uuid.UUID
+	MarinaID       uuid.UUID
+	CustomerUserID uuid.UUID
+	CustomerID     string
+	EnablePortal   *bool
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
 type DmeCredential struct {
 	ID             uuid.UUID
 	OrganizationID uuid.UUID

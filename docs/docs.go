@@ -837,6 +837,94 @@ const docTemplate = `{
                 }
             }
         },
+        "/customers/settings": {
+            "get": {
+                "description": "Retrieves settings for a customer, creates with defaults if not found",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Get customer settings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Updates settings for a customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Update customer settings",
+                "parameters": [
+                    {
+                        "description": "Customer settings",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CustomerSettingsUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/customers/update": {
             "post": {
                 "description": "Updates a customer's information",
@@ -1564,6 +1652,98 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/email/send-html": {
+            "post": {
+                "description": "Send an email with HTML content",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Email"
+                ],
+                "summary": "Send HTML email",
+                "parameters": [
+                    {
+                        "description": "Email details",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SendHTMLEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email accepted for delivery",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EmailSendResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/email/send-template": {
+            "post": {
+                "description": "Send an email using a SendGrid dynamic template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Email"
+                ],
+                "summary": "Send template email",
+                "parameters": [
+                    {
+                        "description": "Email details",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SendTemplateEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email accepted for delivery",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EmailSendResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -2316,190 +2496,6 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/email/password-reset": {
-            "post": {
-                "description": "Send a password reset email using the predefined template",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Email"
-                ],
-                "summary": "Send password reset email",
-                "parameters": [
-                    {
-                        "description": "Password reset email details",
-                        "name": "params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.PasswordResetEmailRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Email accepted for delivery",
-                        "schema": {
-                            "$ref": "#/definitions/responses.EmailSendResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/email/send-html": {
-            "post": {
-                "description": "Send an email with HTML content",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Email"
-                ],
-                "summary": "Send HTML email",
-                "parameters": [
-                    {
-                        "description": "Email details",
-                        "name": "params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SendHTMLEmailRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Email accepted for delivery",
-                        "schema": {
-                            "$ref": "#/definitions/responses.EmailSendResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/email/send-template": {
-            "post": {
-                "description": "Send an email using a SendGrid dynamic template",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Email"
-                ],
-                "summary": "Send template email",
-                "parameters": [
-                    {
-                        "description": "Email details",
-                        "name": "params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SendTemplateEmailRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Email accepted for delivery",
-                        "schema": {
-                            "$ref": "#/definitions/responses.EmailSendResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/email/welcome": {
-            "post": {
-                "description": "Send a welcome email using the predefined template",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Email"
-                ],
-                "summary": "Send welcome email",
-                "parameters": [
-                    {
-                        "description": "Welcome email details",
-                        "name": "params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.WelcomeEmailRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Email accepted for delivery",
-                        "schema": {
-                            "$ref": "#/definitions/responses.EmailSendResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
                         }
                     }
                 }
@@ -5903,6 +5899,59 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.BatchSMSMessageRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "to"
+            ],
+            "properties": {
+                "expires_on": {
+                    "type": "string"
+                },
+                "media_urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": [
+                        "Urgent",
+                        "High",
+                        "Normal",
+                        "Low"
+                    ]
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "requests.BatchSMSRequest": {
+            "type": "object",
+            "required": [
+                "messages"
+            ],
+            "properties": {
+                "from_number": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.BatchSMSMessageRequest"
+                    }
+                }
+            }
+        },
         "requests.BoatCreateRequest": {
             "type": "object",
             "required": [
@@ -6413,6 +6462,24 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CustomerSettingsUpdateRequest": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "marinaId"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "enablePortal": {
+                    "type": "boolean"
+                },
+                "marinaId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
@@ -6453,60 +6520,6 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 12,
                     "example": "Pa$$w0rd123"
-                }
-            }
-        },
-        "requests.PasswordResetEmailRequest": {
-            "description": "Send password reset email request payload",
-            "type": "object",
-            "required": [
-                "email",
-                "firstName",
-                "subject",
-                "to",
-                "token"
-            ],
-            "properties": {
-                "companyName": {
-                    "type": "string",
-                    "example": "Dockmaster"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
-                "expiresIn": {
-                    "type": "string",
-                    "example": "24 hours"
-                },
-                "firstName": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "fromEmail": {
-                    "type": "string",
-                    "example": "no-reply@dockmaster.com"
-                },
-                "fromName": {
-                    "type": "string",
-                    "example": "Dockmaster"
-                },
-                "subject": {
-                    "type": "string",
-                    "example": "Reset Your Password"
-                },
-                "to": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "user@example.com"
-                    ]
-                },
-                "token": {
-                    "type": "string",
-                    "example": "a1b2c3d4e5f6g7h8i9j0"
                 }
             }
         },
@@ -6556,14 +6569,6 @@ const docTemplate = `{
                 "to"
             ],
             "properties": {
-                "fromEmail": {
-                    "type": "string",
-                    "example": "no-reply@dockmaster.com"
-                },
-                "fromName": {
-                    "type": "string",
-                    "example": "Dockmaster"
-                },
                 "htmlContent": {
                     "type": "string",
                     "example": "\u003ch1\u003eHello World\u003c/h1\u003e\u003cp\u003eThis is a test email.\u003c/p\u003e"
@@ -6636,14 +6641,6 @@ const docTemplate = `{
                 "to"
             ],
             "properties": {
-                "fromEmail": {
-                    "type": "string",
-                    "example": "no-reply@dockmaster.com"
-                },
-                "fromName": {
-                    "type": "string",
-                    "example": "Dockmaster"
-                },
                 "subject": {
                     "type": "string",
                     "example": "Welcome to Dockmaster"
@@ -6965,60 +6962,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.WelcomeEmailRequest": {
-            "description": "Send welcome email request payload",
-            "type": "object",
-            "required": [
-                "firstName",
-                "loginUrl",
-                "subject",
-                "to",
-                "username"
-            ],
-            "properties": {
-                "companyName": {
-                    "type": "string",
-                    "example": "Dockmaster"
-                },
-                "firstName": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "fromEmail": {
-                    "type": "string",
-                    "example": "no-reply@dockmaster.com"
-                },
-                "fromName": {
-                    "type": "string",
-                    "example": "Dockmaster"
-                },
-                "loginUrl": {
-                    "type": "string",
-                    "example": "https://app.dockmaster.com/login"
-                },
-                "subject": {
-                    "type": "string",
-                    "example": "Welcome to Dockmaster"
-                },
-                "supportUrl": {
-                    "type": "string",
-                    "example": "https://support.dockmaster.com"
-                },
-                "to": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "user@example.com"
-                    ]
-                },
-                "username": {
-                    "type": "string",
-                    "example": "john.doe"
-                }
-            }
-        },
         "responses.AddressResponse": {
             "description": "Address response model",
             "type": "object",
@@ -7083,6 +7026,35 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.BatchSMSSendResponse": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.SMSStatusDetails"
+                    }
+                },
+                "failure_count": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "success_count": {
+                    "type": "integer"
+                },
+                "total_count": {
                     "type": "integer"
                 }
             }
@@ -7203,6 +7175,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.CustomerSearch"
                     }
+                }
+            }
+        },
+        "responses.CustomerSettingsResponse": {
+            "type": "object",
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "customerUserId": {
+                    "type": "string"
+                },
+                "enablePortal": {
+                    "type": "boolean"
+                },
+                "marinaId": {
+                    "type": "string"
                 }
             }
         },

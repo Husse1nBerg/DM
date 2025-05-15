@@ -1,5 +1,7 @@
 package requests
 
+import "github.com/google/uuid"
+
 // CustomerListRequest represents a request to list customers by page
 type CustomerListRequest struct {
 	Page     int `query:"page" validate:"required,min=1"`
@@ -50,4 +52,17 @@ type CustomerCreateRequest struct {
 	CompanyName               string `json:"companyName"`
 	ShipmentMethod            string `json:"shipmentMethod"`
 	ShipmentMethodDescription string `json:"shipmentMethodDescription"`
+}
+
+// CustomerSettingsRetrieveRequest represents a request to retrieve customer settings
+type CustomerSettingsRetrieveRequest struct {
+	MarinaID   uuid.UUID `query:"MarinaId" validate:"required"`
+	CustomerID string    `query:"CustomerId" validate:"required"`
+}
+
+// CustomerSettingsUpdateRequest represents a request to update customer settings
+type CustomerSettingsUpdateRequest struct {
+	MarinaID     uuid.UUID `json:"marinaId" validate:"required"`
+	CustomerID   string    `json:"customerId" validate:"required"`
+	EnablePortal *bool     `json:"enablePortal"`
 }

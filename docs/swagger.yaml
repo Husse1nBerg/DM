@@ -697,6 +697,42 @@ definitions:
     - marinaId
     - userId
     type: object
+  requests.BatchSMSMessageRequest:
+    properties:
+      expires_on:
+        type: string
+      media_urls:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      priority:
+        enum:
+        - Urgent
+        - High
+        - Normal
+        - Low
+        type: string
+      to:
+        items:
+          type: string
+        type: array
+    required:
+    - message
+    - to
+    type: object
+  requests.BatchSMSRequest:
+    properties:
+      from_number:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/requests.BatchSMSMessageRequest'
+        type: array
+    required:
+    - messages
+    type: object
   requests.BoatCreateRequest:
     properties:
       beam:
@@ -1060,6 +1096,18 @@ definitions:
     required:
     - lastName
     type: object
+  requests.CustomerSettingsUpdateRequest:
+    properties:
+      customerId:
+        type: string
+      enablePortal:
+        type: boolean
+      marinaId:
+        type: string
+    required:
+    - customerId
+    - marinaId
+    type: object
   requests.ForgotPasswordRequest:
     description: Forgot password request payload
     properties:
@@ -1090,46 +1138,6 @@ definitions:
     - email
     - password
     type: object
-  requests.PasswordResetEmailRequest:
-    description: Send password reset email request payload
-    properties:
-      companyName:
-        example: Dockmaster
-        type: string
-      email:
-        example: john.doe@example.com
-        type: string
-      expiresIn:
-        example: 24 hours
-        type: string
-      firstName:
-        example: John
-        type: string
-      fromEmail:
-        example: no-reply@dockmaster.com
-        type: string
-      fromName:
-        example: Dockmaster
-        type: string
-      subject:
-        example: Reset Your Password
-        type: string
-      to:
-        example:
-        - user@example.com
-        items:
-          type: string
-        type: array
-      token:
-        example: a1b2c3d4e5f6g7h8i9j0
-        type: string
-    required:
-    - email
-    - firstName
-    - subject
-    - to
-    - token
-    type: object
   requests.RefreshRequest:
     properties:
       token:
@@ -1159,12 +1167,6 @@ definitions:
   requests.SendHTMLEmailRequest:
     description: Send HTML email request payload
     properties:
-      fromEmail:
-        example: no-reply@dockmaster.com
-        type: string
-      fromName:
-        example: Dockmaster
-        type: string
       htmlContent:
         example: <h1>Hello World</h1><p>This is a test email.</p>
         type: string
@@ -1216,12 +1218,6 @@ definitions:
   requests.SendTemplateEmailRequest:
     description: Send template email request payload
     properties:
-      fromEmail:
-        example: no-reply@dockmaster.com
-        type: string
-      fromName:
-        example: Dockmaster
-        type: string
       subject:
         example: Welcome to Dockmaster
         type: string
@@ -1459,46 +1455,6 @@ definitions:
         example: Manager
         type: string
     type: object
-  requests.WelcomeEmailRequest:
-    description: Send welcome email request payload
-    properties:
-      companyName:
-        example: Dockmaster
-        type: string
-      firstName:
-        example: John
-        type: string
-      fromEmail:
-        example: no-reply@dockmaster.com
-        type: string
-      fromName:
-        example: Dockmaster
-        type: string
-      loginUrl:
-        example: https://app.dockmaster.com/login
-        type: string
-      subject:
-        example: Welcome to Dockmaster
-        type: string
-      supportUrl:
-        example: https://support.dockmaster.com
-        type: string
-      to:
-        example:
-        - user@example.com
-        items:
-          type: string
-        type: array
-      username:
-        example: john.doe
-        type: string
-    required:
-    - firstName
-    - loginUrl
-    - subject
-    - to
-    - username
-    type: object
   responses.AddressResponse:
     description: Address response model
     properties:
@@ -1568,6 +1524,37 @@ definitions:
       total_count:
         type: integer
     type: object
+  responses.BoatListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.Boat'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.BoatResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.Boat'
+    type: object
+  responses.BoatSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.BoatSearch'
+        type: array
+    type: object
   responses.CustomerListResponse:
     properties:
       currentPage:
@@ -1617,6 +1604,17 @@ definitions:
         items:
           $ref: '#/definitions/dme.CustomerSearch'
         type: array
+    type: object
+  responses.CustomerSettingsResponse:
+    properties:
+      customerId:
+        type: string
+      customerUserId:
+        type: string
+      enablePortal:
+        type: boolean
+      marinaId:
+        type: string
     type: object
   responses.DMECredentialResponse:
     description: DME API credentials used for integration
@@ -2724,6 +2722,65 @@ paths:
       summary: Search customers
       tags:
       - Customers
+  /customers/settings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves settings for a customer, creates with defaults if not
+        found
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get customer settings
+      tags:
+      - Customers
+    post:
+      consumes:
+      - application/json
+      description: Updates settings for a customer
+      parameters:
+      - description: Customer settings
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CustomerSettingsUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update customer settings
+      tags:
+      - Customers
   /customers/update:
     post:
       consumes:
@@ -3209,6 +3266,66 @@ paths:
       summary: Get DME System ID by system identifier
       tags:
       - DME System IDs
+  /email/send-html:
+    post:
+      consumes:
+      - application/json
+      description: Send an email with HTML content
+      parameters:
+      - description: Email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendHTMLEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send HTML email
+      tags:
+      - Email
+  /email/send-template:
+    post:
+      consumes:
+      - application/json
+      description: Send an email using a SendGrid dynamic template
+      parameters:
+      - description: Email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendTemplateEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send template email
+      tags:
+      - Email
   /gallery/boat:
     post:
       consumes:
