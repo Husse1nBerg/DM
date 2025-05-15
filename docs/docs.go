@@ -5011,6 +5011,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/operations": {
+            "get": {
+                "description": "Retrieves available operation codes for work orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order operations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderOperationsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/retrieve": {
             "get": {
                 "description": "Retrieves a work order by its ID",
@@ -6266,6 +6301,89 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderOperation": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "boolean"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "laborFinished": {
+                    "type": "boolean"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
+                },
+                "techDesc": {
                     "type": "string"
                 }
             }
@@ -8806,6 +8924,17 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "responses.WorkOrderOperationsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
                 }
             }
         },

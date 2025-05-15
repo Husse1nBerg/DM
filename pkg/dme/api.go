@@ -617,3 +617,25 @@ func (c *Client) UpdateWorkOrder(ctx context.Context, workOrderData map[string]i
 
 	return updatedWorkOrder, nil
 }
+
+// RetrieveWorkOrderOperations retrieves available operations for work orders
+func (c *Client) RetrieveWorkOrderOperations(ctx context.Context, organizationID uuid.UUID, systemID string) ([]WorkOrderOperation, error) {
+	var result []WorkOrderOperation
+	endpoint := "/Service/WorkOrders/RetrieveOperations"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order operations: %w", err)
+	}
+
+	return result, nil
+}

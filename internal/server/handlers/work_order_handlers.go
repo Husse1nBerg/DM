@@ -384,3 +384,38 @@ func (h *WorkOrderHandler) ListWorkOrdersForCustomer(c echo.Context) error {
 	response := responses.ConvertWorkOrderShortList(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary Retrieve work order operations
+// @Description Retrieves available operation codes for work orders
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.WorkOrderOperationsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/operations [get]
+func (h *WorkOrderHandler) RetrieveWorkOrderOperations(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	marinaIDStr := claims.MarinaId
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	dmeResponse, err := h.server.DME.RetrieveWorkOrderOperations(ctx, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order operations",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Convert DME response to API response
+	response := responses.ConvertWorkOrderOperations(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
