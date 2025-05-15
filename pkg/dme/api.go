@@ -688,3 +688,36 @@ func (c *Client) CreateWorkOrderFromEstimate(ctx context.Context, estimateId str
 
 	return &result, nil
 }
+
+// DeleteOperationResponse represents the response from deleting an operation
+type DeleteOperationResponse struct {
+	Result  string `json:"result"`
+	Message string `json:"message"`
+}
+
+// DeleteWorkOrderOperation deletes an operation from a work order
+func (c *Client) DeleteWorkOrderOperation(ctx context.Context, workOrderId string, operationCode string, organizationID uuid.UUID, systemID string) (*DeleteOperationResponse, error) {
+	var result DeleteOperationResponse
+
+	// Build the endpoint with query parameters directly
+	endpoint := fmt.Sprintf("/Service/WorkOrders/DeleteOperation?WorkOrder=%s&Operation=%s",
+		workOrderId, operationCode)
+
+	// Make the request with POST method and query params in URL
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		nil, // No body payload
+		&result,
+		organizationID,
+		systemID,
+		nil, // No additional params needed since they're in the URL
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete work order operation: %w", err)
+	}
+
+	return &result, nil
+}

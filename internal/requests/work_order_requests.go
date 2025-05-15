@@ -104,3 +104,9 @@ type WorkOrderCreateFromEstimateRequest struct {
 	WithDetail        bool   `json:"WithDetail" default:"false"`
 	WithUnapprovedOps bool   `json:"WithUnapprovedOps" default:"false"`
 }
+
+// WorkOrderDeleteOperationRequest represents a request to delete an operation from a work order
+type WorkOrderDeleteOperationRequest struct {
+	WorkOrder string `query:"WorkOrder" validate:"required"`
+	Operation string `query:"Operation" validate:"required"`
+}

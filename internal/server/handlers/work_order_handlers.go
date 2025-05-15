@@ -508,3 +508,50 @@ func (h *WorkOrderHandler) CreateWorkOrderFromEstimate(c echo.Context) error {
 	// Return the response directly
 	return c.JSON(http.StatusOK, dmeResponse)
 }
+
+// @Summary Delete work order operation
+// @Description Deletes an operation from a work order
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param WorkOrder query string true "Work Order ID"
+// @Param Operation query string true "Operation Code to delete"
+// @Success 200 {object} responses.WorkOrderDeleteOperationResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/delete-operation [post]
+func (h *WorkOrderHandler) DeleteWorkOrderOperation(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrderDeleteOperationRequest)
+
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	marinaIDStr := claims.MarinaId
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	dmeResponse, err := h.server.DME.DeleteWorkOrderOperation(ctx, req.WorkOrder, req.Operation, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to delete work order operation",
+			zap.Error(err),
+			zap.String("workOrderId", req.WorkOrder),
+			zap.String("operationCode", req.Operation))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Return the response directly
+	return c.JSON(http.StatusOK, dmeResponse)
+}

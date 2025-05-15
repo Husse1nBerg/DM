@@ -54,6 +54,21 @@ type WorkOrderCreateResponse struct {
 	Result     string   `json:"result"`
 }
 
+// WorkOrderDeleteOperationResponse represents the response from deleting a work order operation
+type WorkOrderDeleteOperationResponse struct {
+	Result  string `json:"result"`
+	Message string `json:"message"`
+}
+
+// swag:response WorkOrderRetrieveResponse
+type WorkOrderRetrieveResponse = WorkOrderResponse
+
+// swag:response WorkOrderCreateFromEstimateResponse
+type WorkOrderCreateFromEstimateResponse = WorkOrderCreateResponse
+
+// swag:response WorkOrderDeleteOperationResponse
+type WorkOrderDeleteOperationResponseSwagger = WorkOrderDeleteOperationResponse
+
 // ConvertWorkOrderListShort converts DME WorkOrderListShort to WorkOrderListShortResponse
 func ConvertWorkOrderListShort(dmeResponse *dme.WorkOrderListShort) *WorkOrderListShortResponse {
 	return &WorkOrderListShortResponse{
@@ -110,9 +125,3 @@ func ConvertCompletedWorkOrders(dmeResponse []dme.WorkOrder) *WorkOrderCompleted
 		Data: dmeResponse,
 	}
 }
-
-// swag:response WorkOrderRetrieveResponse
-type WorkOrderRetrieveResponse = WorkOrderResponse
-
-// swag:response WorkOrderCreateFromEstimateResponse
-type WorkOrderCreateFromEstimateResponse = WorkOrderCreateResponse

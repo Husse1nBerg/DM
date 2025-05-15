@@ -2599,6 +2599,13 @@ definitions:
       woId:
         type: string
     type: object
+  responses.WorkOrderDeleteOperationResponse:
+    properties:
+      message:
+        type: string
+      result:
+        type: string
+    type: object
   responses.WorkOrderListResponse:
     properties:
       currentPage:
@@ -5905,6 +5912,40 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: List work orders for customer
+      tags:
+      - WorkOrders
+  /work-orders/delete-operation:
+    post:
+      consumes:
+      - application/json
+      description: Deletes an operation from a work order
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WorkOrder
+        required: true
+        type: string
+      - description: Operation Code to delete
+        in: query
+        name: Operation
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderDeleteOperationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete work order operation
       tags:
       - WorkOrders
   /work-orders/list:
