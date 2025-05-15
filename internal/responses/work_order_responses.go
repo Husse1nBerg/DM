@@ -47,6 +47,13 @@ type WorkOrderCompletedResponse struct {
 	Data []dme.WorkOrder `json:"data"`
 }
 
+// WorkOrderCreateResponse represents the response when creating a work order
+type WorkOrderCreateResponse struct {
+	WoId       string   `json:"woId"`
+	Operations []string `json:"operations"`
+	Result     string   `json:"result"`
+}
+
 // ConvertWorkOrderListShort converts DME WorkOrderListShort to WorkOrderListShortResponse
 func ConvertWorkOrderListShort(dmeResponse *dme.WorkOrderListShort) *WorkOrderListShortResponse {
 	return &WorkOrderListShortResponse{
@@ -106,3 +113,6 @@ func ConvertCompletedWorkOrders(dmeResponse []dme.WorkOrder) *WorkOrderCompleted
 
 // swag:response WorkOrderRetrieveResponse
 type WorkOrderRetrieveResponse = WorkOrderResponse
+
+// swag:response WorkOrderCreateFromEstimateResponse
+type WorkOrderCreateFromEstimateResponse = WorkOrderCreateResponse

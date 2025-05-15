@@ -217,4 +217,5 @@ func RegisterRoutes(s *s.Server) {
 	workOrders.GET("/completed", workOrderHandler.RetrieveCompletedWorkOrders)
 	workOrders.POST("/update", workOrderHandler.UpdateWorkOrder)
 	workOrders.POST("/create", workOrderHandler.CreateWorkOrder)
+	workOrders.POST("/create-from-estimate", workOrderHandler.CreateWorkOrderFromEstimate)
 }

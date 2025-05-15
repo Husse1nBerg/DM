@@ -464,3 +464,47 @@ func (h *WorkOrderHandler) RetrieveCompletedWorkOrders(c echo.Context) error {
 	response := responses.ConvertCompletedWorkOrders(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary Create work order from estimate
+// @Description Creates a new work order from an existing estimate
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param workOrder body requests.WorkOrderCreateFromEstimateRequest true "Estimate information"
+// @Success 200 {object} responses.WorkOrderCreateResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/create-from-estimate [post]
+func (h *WorkOrderHandler) CreateWorkOrderFromEstimate(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.WorkOrderCreateFromEstimateRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	marinaIDStr := claims.MarinaId
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	dmeResponse, err := h.server.DME.CreateWorkOrderFromEstimate(ctx, req.EstimateId, req.WithDetail, req.WithUnapprovedOps, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to create work order from estimate",
+			zap.Error(err),
+			zap.String("estimateId", req.EstimateId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Return the response directly
+	return c.JSON(http.StatusOK, dmeResponse)
+}

@@ -4945,6 +4945,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/create-from-estimate": {
+            "post": {
+                "description": "Creates a new work order from an existing estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Create work order from estimate",
+                "parameters": [
+                    {
+                        "description": "Estimate information",
+                        "name": "workOrder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderCreateFromEstimateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderCreateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/customer": {
             "get": {
                 "description": "Retrieves a list of work orders for a specific customer",
@@ -7823,6 +7869,25 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.WorkOrderCreateFromEstimateRequest": {
+            "type": "object",
+            "required": [
+                "EstimateId"
+            ],
+            "properties": {
+                "EstimateId": {
+                    "type": "string"
+                },
+                "WithDetail": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "WithUnapprovedOps": {
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
         "requests.WorkOrderCreateRequest": {
             "type": "object",
             "required": [
@@ -8952,6 +9017,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.WorkOrder"
                     }
+                }
+            }
+        },
+        "responses.WorkOrderCreateResponse": {
+            "type": "object",
+            "properties": {
+                "operations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "result": {
+                    "type": "string"
+                },
+                "woId": {
+                    "type": "string"
                 }
             }
         },

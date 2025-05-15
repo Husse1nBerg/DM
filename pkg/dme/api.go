@@ -661,3 +661,30 @@ func (c *Client) RetrieveCompletedWorkOrders(ctx context.Context, completeDate s
 
 	return result, nil
 }
+
+// CreateWorkOrderFromEstimate creates a new work order from an existing estimate
+func (c *Client) CreateWorkOrderFromEstimate(ctx context.Context, estimateId string, withDetail bool, withUnapprovedOps bool, organizationID uuid.UUID, systemID string) (*WorkOrderCreateResponse, error) {
+	var result WorkOrderCreateResponse
+
+	// Build the endpoint with query parameters directly
+	endpoint := fmt.Sprintf("/Service/WorkOrders/CreateFromEstimate?EstimateId=%s&WithDetail=%t&WithUnapprovedOps=%t",
+		estimateId, withDetail, withUnapprovedOps)
+
+	// Make the request with POST method and query params in URL
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		nil, // No body payload
+		&result,
+		organizationID,
+		systemID,
+		nil, // No additional params needed since they're in the URL
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create work order from estimate: %w", err)
+	}
+
+	return &result, nil
+}

@@ -1776,6 +1776,19 @@ definitions:
         example: Manager
         type: string
     type: object
+  requests.WorkOrderCreateFromEstimateRequest:
+    properties:
+      EstimateId:
+        type: string
+      WithDetail:
+        default: false
+        type: boolean
+      WithUnapprovedOps:
+        default: false
+        type: boolean
+    required:
+    - EstimateId
+    type: object
   requests.WorkOrderCreateRequest:
     properties:
       boatId:
@@ -2574,6 +2587,17 @@ definitions:
         items:
           $ref: '#/definitions/dme.WorkOrder'
         type: array
+    type: object
+  responses.WorkOrderCreateResponse:
+    properties:
+      operations:
+        items:
+          type: string
+        type: array
+      result:
+        type: string
+      woId:
+        type: string
     type: object
   responses.WorkOrderListResponse:
     properties:
@@ -5814,6 +5838,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Create work order
+      tags:
+      - WorkOrders
+  /work-orders/create-from-estimate:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new work order from an existing estimate
+      parameters:
+      - description: Estimate information
+        in: body
+        name: workOrder
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderCreateFromEstimateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderCreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create work order from estimate
       tags:
       - WorkOrders
   /work-orders/customer:

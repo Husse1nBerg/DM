@@ -97,3 +97,10 @@ type WorkOrdersForCustomerRequest struct {
 type WorkOrderCompletedRequest struct {
 	CompleteDate string `query:"CompleteDate" validate:"required"`
 }
+
+// WorkOrderCreateFromEstimateRequest represents a request to create a work order from an existing estimate
+type WorkOrderCreateFromEstimateRequest struct {
+	EstimateId        string `json:"EstimateId" validate:"required"`
+	WithDetail        bool   `json:"WithDetail" default:"false"`
+	WithUnapprovedOps bool   `json:"WithUnapprovedOps" default:"false"`
+}
