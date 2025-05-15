@@ -37,9 +37,12 @@ func RegisterRoutes(s *s.Server) {
 	dmeCredentialHandler := h.NewDMECredentialHandler(s)
 	dmeSysIDHandler := h.NewDMESysIDHandler(s)
 	customerHandler := h.NewCustomerHandler(s)
+	emailHandler := h.NewEmailHandler(s, s.Config)
+	smsHandler := h.NewSMSHandler(s, s.Config)
 	boatHandler := h.NewBoatHandler(s)
 	galleryHandler := h.NewGalleryHandler(s)
-	// Middlewares
+
+  // Middlewares
 	s.Echo.Use(middleware.RequestID())
 	s.Echo.Use(echozap.ZapLogger(s.Logger.DesugarZap))
 	s.Echo.Use(middleware.CORSWithConfig(s.Config.Server.CORSConfig))
@@ -168,6 +171,16 @@ func RegisterRoutes(s *s.Server) {
 	customers.GET("/search", customerHandler.SearchCustomers)
 	customers.POST("/update", customerHandler.UpdateCustomer)
 	customers.POST("/create", customerHandler.CreateCustomer)
+
+	// Email routes
+	emails := protected.Group("/email")
+	emails.POST("/send-html", emailHandler.SendHTMLEmail)
+	emails.POST("/send-template", emailHandler.SendTemplateEmail)
+
+	// SMS routes
+	sms := protected.Group("/sms")
+	sms.POST("/send", smsHandler.SendSMS)
+	sms.POST("/send-batch", smsHandler.SendBatchSMS)
 
 	// Boat routes
 	boats := protected.Group("/boats")

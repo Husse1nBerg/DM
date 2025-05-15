@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -1098,26 +1100,53 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
 	}
 
-	// TODO: Send email with recovery link
-	// In a real implementation, you would send an email here with a link containing the token
-	// For example: https://yourdomain.com/reset-password?token=xyz&email=user@example.com
-	logger.LogWithFields(
-		fmt.Sprintf("Password recovery token generated for user %s: %s", user.Email, token),
-		c.Response().Header().Get(echo.HeaderXRequestID),
-		"password_recovery",
-	)
+	// Initialize the SendGrid client if we have API key
+	// Create a SendGrid client
+	sgClient := g.server.SendGrid
 
-	// FOR DEVELOPMENT ONLY: Return token in response
-	// In production, this should be removed and replaced with email delivery
-	type devResponse struct {
-		Message string `json:"message"`
-		Token   string `json:"token,omitempty"` // Only for development
-		Email   string `json:"email,omitempty"` // Only for development
+	// Build the reset URL
+	baseURL := g.server.Config.App.FrontendBaseURL // Default URL
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s&email=%s",
+		baseURL,
+		token,
+		url.QueryEscape(user.Email))
+
+	// Create template data
+	templateData := sendgrid.PasswordResetTemplateData{
+		UserName:        user.FirstName + " " + user.LastName,
+		ResetURL:        resetURL,
+		TermsConditions: baseURL + "/terms-conditions",
 	}
 
-	return c.JSON(http.StatusOK, devResponse{
-		Message: "If your email is registered, you will receive password recovery instructions",
-		Token:   token,
-		Email:   user.Email,
-	})
+	// Send email using specialized password reset method
+	taskID, resultChan, err := sgClient.SendPasswordResetEmail(
+		[]string{user.Email},
+		"Reset Your Password",
+		templateData,
+	)
+
+	if err != nil {
+		logger.Zap.Errorw("Failed to send password reset email", "error", err)
+	} else {
+		logger.Zap.Infow("Password reset email queued",
+			"email", user.Email,
+			"task_id", taskID.String())
+
+		// Log the email attempt (non-blocking)
+		go func() {
+			result := <-resultChan
+			if result.Status == sendgrid.StatusSent {
+				logger.Zap.Infow("Password reset email sent successfully",
+					"email", user.Email,
+					"task_id", result.ID.String())
+			} else {
+				logger.Zap.Errorw("Failed to send password reset email",
+					"email", user.Email,
+					"task_id", result.ID.String(),
+					"error", result.Error)
+			}
+		}()
+	}
+
+	return responses.NewMessageResponse(http.StatusOK, "If your email is registered, you will receive password recovery instructions").JSON(c)
 }
