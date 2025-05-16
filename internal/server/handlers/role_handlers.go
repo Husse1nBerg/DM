@@ -115,10 +115,11 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 	// Create the role
 	queries := g.server.DB.Queries()
 	params := db.CreateRoleParams{
-		Name:        req.Name,
-		Description: req.Description,
-		Permissions: permissionsBytes,
-		IsActive:    &isActive,
+		Name:           req.Name,
+		Description:    req.Description,
+		Permissions:    permissionsBytes,
+		IsActive:       &isActive,
+		IsCustomerRole: req.IsCustomerRole,
 	}
 
 	role, err := queries.CreateRole(c.Request().Context(), params)
@@ -208,7 +209,7 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 	description := existingRole.Description
 	isActive := existingRole.IsActive
 	permissionsBytes := existingRole.Permissions
-
+	isCustomerRole := existingRole.IsCustomerRole
 	// Update fields if provided
 	if req.Name != nil {
 		// Check if the new name already exists for another role
@@ -230,6 +231,10 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		isActive = req.IsActive
 	}
 
+	if req.IsCustomerRole != nil {
+		isCustomerRole = req.IsCustomerRole
+	}
+
 	if req.Permissions != nil {
 		var convErr error
 		permissionsBytes, convErr = req.Permissions.ToBytes()
@@ -241,11 +246,12 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 
 	// Prepare update parameters
 	updateParams := db.UpdateRoleParams{
-		ID:          roleID,
-		Name:        name,
-		Description: description,
-		Permissions: permissionsBytes,
-		IsActive:    isActive,
+		ID:             roleID,
+		Name:           name,
+		Description:    description,
+		Permissions:    permissionsBytes,
+		IsActive:       isActive,
+		IsCustomerRole: isCustomerRole,
 	}
 
 	// Log the update operation
@@ -254,7 +260,8 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		"name", name,
 		"description_provided", req.Description != nil,
 		"permissions_provided", req.Permissions != nil,
-		"is_active_provided", req.IsActive != nil)
+		"is_active_provided", req.IsActive != nil,
+		"is_customer_role_provided", req.IsCustomerRole != nil)
 
 	// Update the role
 	updatedRole, err := queries.UpdateRole(c.Request().Context(), updateParams)

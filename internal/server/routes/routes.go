@@ -86,6 +86,7 @@ func RegisterRoutes(s *s.Server) {
 	users.PUT("/:userId", userHandler.UpdateUserHandler)
 	users.DELETE("/:userId", userHandler.DeleteUserHandler)
 	users.POST("/reset-password", userHandler.ResetPassword)
+	users.POST("/customer-portal", userHandler.CreateCustomerUserHandler)
 
 	// Password recovery (public endpoints)
 	base.POST("/user/forgot-password", userHandler.ForgotPassword)

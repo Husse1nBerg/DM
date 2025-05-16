@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"strings"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -42,4 +44,10 @@ func GetFullImageURL(imagePath *string) *string {
 	}
 
 	return imageService.GetFullImageURL(imagePath)
+}
+
+func GenerateUsername(firstName string) string {
+	// Generate a random string of 6 characters
+	randomString := uuid.New().String()[:6]
+	return strings.ToLower(firstName + randomString)
 }

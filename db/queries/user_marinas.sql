@@ -1,6 +1,6 @@
 -- name: AssignUserToMarina :exec
-INSERT INTO user_marinas (user_id, marina_id)
-VALUES ($1, $2) ON CONFLICT DO NOTHING;
+INSERT INTO user_marinas (user_id, marina_id, customer_id)
+VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;
 -- name: UnassignUserFromMarina :exec
 DELETE FROM user_marinas
 WHERE user_id = $1
@@ -33,3 +33,17 @@ WHERE um.marina_id = $1
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
 LIMIT $2 OFFSET $3;
+-- name: CustomerMarinaUser :one
+SELECT u.*
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE um.marina_id = $1
+    AND um.customer_id = $2
+    AND u.deleted_at IS NULL;
+-- name: UserCanAccessMarina :one
+SELECT EXISTS (
+    SELECT 1
+    FROM user_marinas um
+    WHERE um.user_id = $1
+        AND um.marina_id = $2
+) AS can_access;

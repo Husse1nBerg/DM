@@ -82,10 +82,11 @@ func RunProdSeed() {
 
 	// Seed Roles with new permission structure
 	roles := []struct {
-		name        string
-		description string
-		permissions *models.Permissions
-		isActive    bool
+		name           string
+		description    string
+		permissions    *models.Permissions
+		isActive       bool
+		isCustomerRole bool
 	}{
 		{
 			name:        "superuser",
@@ -106,7 +107,8 @@ func RunProdSeed() {
 				ReadSettings:        true,
 				WriteSettings:       true,
 			},
-			isActive: true,
+			isActive:       true,
+			isCustomerRole: false,
 		},
 		{
 			name:        "org_admin",
@@ -127,7 +129,8 @@ func RunProdSeed() {
 				ReadSettings:        true,
 				WriteSettings:       true,
 			},
-			isActive: true,
+			isActive:       true,
+			isCustomerRole: false,
 		},
 		{
 			name:        "marina_admin",
@@ -148,7 +151,8 @@ func RunProdSeed() {
 				ReadSettings:        true,
 				WriteSettings:       true,
 			},
-			isActive: true,
+			isActive:       true,
+			isCustomerRole: false,
 		},
 		{
 			name:        "staff",
@@ -169,7 +173,8 @@ func RunProdSeed() {
 				ReadSettings:        true,
 				WriteSettings:       false,
 			},
-			isActive: true,
+			isActive:       true,
+			isCustomerRole: false,
 		},
 		{
 			name:        "viewer",
@@ -190,7 +195,30 @@ func RunProdSeed() {
 				ReadSettings:        true,
 				WriteSettings:       false,
 			},
-			isActive: true,
+			isActive:       true,
+			isCustomerRole: false,
+		},
+		{
+			name:        "customer_user",
+			description: "Customer User",
+			permissions: &models.Permissions{
+				ReadUsers:           false,
+				WriteUsers:          false,
+				DeleteUsers:         false,
+				ReadOrganizations:   false,
+				WriteOrganizations:  false,
+				DeleteOrganizations: false,
+				ReadMarinas:         false,
+				WriteMarinas:        false,
+				DeleteMarinas:       false,
+				ReadRoles:           false,
+				WriteRoles:          false,
+				DeleteRoles:         false,
+				ReadSettings:        false,
+				WriteSettings:       false,
+			},
+			isActive:       true,
+			isCustomerRole: true,
 		},
 	}
 
@@ -206,10 +234,11 @@ func RunProdSeed() {
 			if err == pgx.ErrNoRows {
 				// Create new role if doesn't exist
 				_, err = q.CreateRole(ctx, sqlc.CreateRoleParams{
-					Name:        r.name,
-					Description: u.Pointer(r.description),
-					Permissions: permBytes,
-					IsActive:    u.Pointer(r.isActive),
+					Name:           r.name,
+					Description:    u.Pointer(r.description),
+					Permissions:    permBytes,
+					IsActive:       u.Pointer(r.isActive),
+					IsCustomerRole: u.Pointer(r.isCustomerRole),
 				})
 				if err != nil {
 					log.Fatalf("failed to create role %s: %v", r.name, err)
@@ -221,11 +250,12 @@ func RunProdSeed() {
 		} else {
 			// Update existing role with new permissions
 			_, err = q.UpdateRole(ctx, sqlc.UpdateRoleParams{
-				ID:          existingRole.ID,
-				Name:        r.name,
-				Description: u.Pointer(r.description),
-				Permissions: permBytes,
-				IsActive:    u.Pointer(r.isActive),
+				ID:             existingRole.ID,
+				Name:           r.name,
+				Description:    u.Pointer(r.description),
+				Permissions:    permBytes,
+				IsActive:       u.Pointer(r.isActive),
+				IsCustomerRole: u.Pointer(r.isCustomerRole),
 			})
 			if err != nil {
 				log.Fatalf("failed to update role %s: %v", r.name, err)
