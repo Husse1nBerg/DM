@@ -23,6 +23,19 @@ type Address struct {
 	DeletedAt  pgtype.Timestamp
 }
 
+type Contact struct {
+	ID          uuid.UUID
+	MarinaID    uuid.UUID
+	Type        string
+	Name        string
+	Description *string
+	Email       *string
+	Phone       *string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	DeletedAt   pgtype.Timestamp
+}
+
 type CustomerSetting struct {
 	ID             uuid.UUID
 	MarinaID       uuid.UUID

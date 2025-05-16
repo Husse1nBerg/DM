@@ -42,6 +42,7 @@ func RegisterRoutes(s *s.Server) {
 	boatHandler := h.NewBoatHandler(s)
 	galleryHandler := h.NewGalleryHandler(s)
 	workOrderHandler := h.NewWorkOrderHandler(s)
+	contactHandler := h.NewContactHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -135,6 +136,10 @@ func RegisterRoutes(s *s.Server) {
 	marinas.PUT("/:id", marinaHandler.UpdateMarina)
 	marinas.PUT("/:id/with-address", marinaHandler.UpdateMarinaWithAddress)
 	marinas.DELETE("/:id", marinaHandler.DeleteMarina)
+	marinas.GET("/:id/contacts", contactHandler.ListContacts)
+	marinas.POST("/:id/contacts", contactHandler.CreateContact)
+	marinas.PUT("/:id/contacts/:contactId", contactHandler.UpdateContact)
+	marinas.DELETE("/:id/contacts/:contactId", contactHandler.DeleteContact)
 
 	// Address routes
 	addresses := protected.Group("/addresses")
