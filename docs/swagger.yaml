@@ -2186,8 +2186,6 @@ definitions:
     properties:
       customerId:
         type: string
-      customerUserId:
-        type: string
       enablePortal:
         type: boolean
       marinaId:
@@ -5773,6 +5771,52 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create user
+      tags:
+      - User
+  /user/customer-portal/{customerId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all users in a specific customer
+      parameters:
+      - description: Customer ID
+        in: path
+        name: customerId
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of users in the marina for this  customer
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get users by customer ID
       tags:
       - User
   /user/forgot-password:

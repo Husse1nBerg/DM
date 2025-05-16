@@ -224,3 +224,20 @@ WHERE is_customer = TRUE
     AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
+-- name: GetMarinaCustomerUsersByCustomerID :many
+SELECT *
+FROM users
+WHERE is_customer = TRUE
+    AND marina_id = $1
+    AND customer_id = $2
+    AND deleted_at IS NULL
+ORDER BY created_at DESC;
+-- name: GetMarinaCustomerUserByCustomerIDPaginated :many
+SELECT *
+FROM users
+WHERE is_customer = TRUE
+    AND marina_id = $1
+    AND customer_id = $2
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $4;

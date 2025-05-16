@@ -467,6 +467,76 @@ func (q *Queries) GetAllUsersPaginated(ctx context.Context, arg GetAllUsersPagin
 	return items, nil
 }
 
+const getMarinaCustomerUserByCustomerIDPaginated = `-- name: GetMarinaCustomerUserByCustomerIDPaginated :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+FROM users
+WHERE is_customer = TRUE
+    AND marina_id = $1
+    AND customer_id = $2
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type GetMarinaCustomerUserByCustomerIDPaginatedParams struct {
+	MarinaID   uuid.UUID
+	CustomerID *string
+	Limit      int32
+	Offset     int32
+}
+
+func (q *Queries) GetMarinaCustomerUserByCustomerIDPaginated(ctx context.Context, arg GetMarinaCustomerUserByCustomerIDPaginatedParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getMarinaCustomerUserByCustomerIDPaginated,
+		arg.MarinaID,
+		arg.CustomerID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Modules,
+			&i.Permissions,
+			&i.CustomerID,
+			&i.IsCustomer,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMarinaCustomerUsers = `-- name: GetMarinaCustomerUsers :many
 SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
 FROM users
@@ -477,6 +547,68 @@ WHERE marina_id = $1
 
 func (q *Queries) GetMarinaCustomerUsers(ctx context.Context, marinaID uuid.UUID) ([]User, error) {
 	rows, err := q.db.Query(ctx, getMarinaCustomerUsers, marinaID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Modules,
+			&i.Permissions,
+			&i.CustomerID,
+			&i.IsCustomer,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinaCustomerUsersByCustomerID = `-- name: GetMarinaCustomerUsersByCustomerID :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+FROM users
+WHERE is_customer = TRUE
+    AND marina_id = $1
+    AND customer_id = $2
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+`
+
+type GetMarinaCustomerUsersByCustomerIDParams struct {
+	MarinaID   uuid.UUID
+	CustomerID *string
+}
+
+func (q *Queries) GetMarinaCustomerUsersByCustomerID(ctx context.Context, arg GetMarinaCustomerUsersByCustomerIDParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getMarinaCustomerUsersByCustomerID, arg.MarinaID, arg.CustomerID)
 	if err != nil {
 		return nil, err
 	}

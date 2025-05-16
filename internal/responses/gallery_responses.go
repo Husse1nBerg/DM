@@ -72,18 +72,18 @@ func NewVesselGalleryItemResponseSuccess(item db.VesselGallery) BaseResponse {
 
 // NewMarinaGalleryResponseSuccess creates a successful response with a list of marina gallery items
 func NewMarinaGalleryResponseSuccess(items []db.MarinaGallery) BaseResponse {
-	var response []MarinaGalleryItemResponse
-	for _, item := range items {
-		response = append(response, ConvertMarinaGalleryItemToResponse(item))
+	response := make([]MarinaGalleryItemResponse, len(items))
+	for i, item := range items {
+		response[i] = ConvertMarinaGalleryItemToResponse(item)
 	}
 	return NewSuccessResponse(response)
 }
 
 // NewVesselGalleryResponseSuccess creates a successful response with a list of vessel gallery items
 func NewVesselGalleryResponseSuccess(items []db.VesselGallery) BaseResponse {
-	var response []VesselGalleryItemResponse
-	for _, item := range items {
-		response = append(response, ConvertVesselGalleryItemToResponse(item))
+	response := make([]VesselGalleryItemResponse, len(items))
+	for i, item := range items {
+		response[i] = ConvertVesselGalleryItemToResponse(item)
 	}
 	return NewSuccessResponse(response)
 }
