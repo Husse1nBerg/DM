@@ -1072,6 +1072,14 @@ definitions:
     - newPassword
     - token
     type: object
+  requests.ContactType:
+    enum:
+    - phone
+    - email
+    type: string
+    x-enum-varnames:
+    - ContactTypePhone
+    - ContactTypeEmail
   requests.CreateAddressRequest:
     properties:
       city:
@@ -1095,6 +1103,26 @@ definitions:
       street:
         example: 123 Main St
         type: string
+    type: object
+  requests.CreateContactRequest:
+    properties:
+      description:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/requests.ContactType'
+        enum:
+        - phone
+        - email
+    required:
+    - name
+    - type
     type: object
   requests.CreateCustomerUserRequest:
     properties:
@@ -1651,6 +1679,26 @@ definitions:
         example: 123 Main St
         type: string
     type: object
+  requests.UpdateContactRequest:
+    properties:
+      description:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/requests.ContactType'
+        enum:
+        - phone
+        - email
+    required:
+    - name
+    - type
+    type: object
   requests.UpdateDMECredentialRequest:
     properties:
       accessToken:
@@ -2033,6 +2081,56 @@ definitions:
         items:
           $ref: '#/definitions/dme.BoatSearch'
         type: array
+    type: object
+  responses.ContactListResponse:
+    description: Contact list response model
+    properties:
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.ContactResponse'
+        type: array
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  responses.ContactResponse:
+    description: Contact response model
+    properties:
+      createdAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Primary emergency contact
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      marinaId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: John Doe
+        type: string
+      phone:
+        example: +1-555-123-4567
+        type: string
+      type:
+        example: EMERGENCY
+        type: string
+      updatedAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
     type: object
   responses.CustomerListResponse:
     properties:
@@ -4365,6 +4463,164 @@ paths:
       summary: Health check
       tags:
       - Generic
+  /marina/{marinaId}/contacts:
+    get:
+      consumes:
+      - application/json
+      description: Lists all contacts for a marina, optionally filtered by type
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact type (phone or email)
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ContactListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List contacts
+      tags:
+      - Contacts
+    post:
+      consumes:
+      - application/json
+      description: Creates a new contact for a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact details
+        in: body
+        name: contact
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateContactRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.ContactResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create contact
+      tags:
+      - Contacts
+  /marina/{marinaId}/contacts/{contactId}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes a contact
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact ID
+        format: uuid
+        in: path
+        name: contactId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete contact
+      tags:
+      - Contacts
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing contact
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact ID
+        format: uuid
+        in: path
+        name: contactId
+        required: true
+        type: string
+      - description: Contact details
+        in: body
+        name: contact
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateContactRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ContactResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update contact
+      tags:
+      - Contacts
   /marinas:
     get:
       consumes:
