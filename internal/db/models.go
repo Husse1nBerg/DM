@@ -127,14 +127,15 @@ type PasswordRecovery struct {
 }
 
 type Role struct {
-	ID          uuid.UUID
-	Name        string
-	Description *string
-	Permissions []byte
-	IsActive    *bool
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
-	DeletedAt   pgtype.Timestamp
+	ID             uuid.UUID
+	Name           string
+	Description    *string
+	Permissions    []byte
+	IsActive       *bool
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+	IsCustomerRole *bool
 }
 
 type User struct {
@@ -162,12 +163,15 @@ type User struct {
 	DeletedAt           pgtype.Timestamp
 	Modules             []byte
 	Permissions         []byte
+	CustomerID          *string
+	IsCustomer          *bool
 }
 
 type UserMarina struct {
 	UserID     uuid.UUID
 	MarinaID   uuid.UUID
 	AssignedAt pgtype.Timestamp
+	CustomerID *string
 }
 
 type VesselGallery struct {

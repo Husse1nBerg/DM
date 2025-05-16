@@ -104,31 +104,70 @@ func (q *Queries) UpdateCustomerSettings(ctx context.Context, arg UpdateCustomer
 	return i, err
 }
 
+const updateCustomerSettingsCustomerUserID = `-- name: UpdateCustomerSettingsCustomerUserID :one
+UPDATE customer_settings
+SET customer_user_id = $3,
+    updated_at = CURRENT_TIMESTAMP
+WHERE marina_id = $1 AND customer_id = $2
+RETURNING id, marina_id, customer_user_id, customer_id, enable_portal, created_at, updated_at, deleted_at
+`
+
+type UpdateCustomerSettingsCustomerUserIDParams struct {
+	MarinaID       uuid.UUID
+	CustomerID     string
+	CustomerUserID uuid.UUID
+}
+
+func (q *Queries) UpdateCustomerSettingsCustomerUserID(ctx context.Context, arg UpdateCustomerSettingsCustomerUserIDParams) (CustomerSetting, error) {
+	row := q.db.QueryRow(ctx, updateCustomerSettingsCustomerUserID, arg.MarinaID, arg.CustomerID, arg.CustomerUserID)
+	var i CustomerSetting
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.CustomerUserID,
+		&i.CustomerID,
+		&i.EnablePortal,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const upsertCustomerSettings = `-- name: UpsertCustomerSettings :one
 INSERT INTO customer_settings (
     marina_id,
     customer_id,
+    customer_user_id,
     enable_portal
 )
 VALUES (
     $1,
     $2,
-    $3
+    $3,
+    $4
 )
 ON CONFLICT (marina_id, customer_id) DO UPDATE
 SET enable_portal = EXCLUDED.enable_portal,
+    customer_user_id = EXCLUDED.customer_user_id,
     updated_at = CURRENT_TIMESTAMP
 RETURNING id, marina_id, customer_user_id, customer_id, enable_portal, created_at, updated_at, deleted_at
 `
 
 type UpsertCustomerSettingsParams struct {
-	MarinaID     uuid.UUID
-	CustomerID   string
-	EnablePortal *bool
+	MarinaID       uuid.UUID
+	CustomerID     string
+	CustomerUserID uuid.UUID
+	EnablePortal   *bool
 }
 
 func (q *Queries) UpsertCustomerSettings(ctx context.Context, arg UpsertCustomerSettingsParams) (CustomerSetting, error) {
-	row := q.db.QueryRow(ctx, upsertCustomerSettings, arg.MarinaID, arg.CustomerID, arg.EnablePortal)
+	row := q.db.QueryRow(ctx, upsertCustomerSettings,
+		arg.MarinaID,
+		arg.CustomerID,
+		arg.CustomerUserID,
+		arg.EnablePortal,
+	)
 	var i CustomerSetting
 	err := row.Scan(
 		&i.ID,

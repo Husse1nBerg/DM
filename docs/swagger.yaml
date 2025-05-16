@@ -687,6 +687,9 @@ definitions:
     type: object
   requests.AssignUserToMarinaRequest:
     properties:
+      customerId:
+        example: "1234567890"
+        type: string
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
@@ -826,6 +829,68 @@ definitions:
       street:
         example: 123 Main St
         type: string
+    type: object
+  requests.CreateCustomerUserRequest:
+    properties:
+      customerId:
+        example: "1234567890"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      image:
+        example: /images/profiles/johndoe.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isCustomer:
+        example: false
+        type: boolean
+      isSuperuser:
+        example: false
+        type: boolean
+      lastName:
+        example: Doe
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      modules:
+        $ref: '#/definitions/models.Modules'
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      password:
+        example: SecureP@ssw0rd
+        minLength: 12
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
+      phone:
+        example: "+15551234567"
+        type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      title:
+        example: Manager
+        type: string
+      username:
+        example: johndoe
+        type: string
+    required:
+    - customerId
+    - email
+    - firstName
+    - lastName
+    - marinaId
+    - organizationId
+    - password
+    - roleId
     type: object
   requests.CreateDMECredentialRequest:
     properties:
@@ -968,6 +1033,9 @@ definitions:
       isActive:
         example: true
         type: boolean
+      isCustomerRole:
+        example: false
+        type: boolean
       name:
         example: Admin
         type: string
@@ -1031,7 +1099,6 @@ definitions:
     - organizationId
     - password
     - roleId
-    - username
     type: object
   requests.CustomerCreateRequest:
     properties:
@@ -1407,6 +1474,9 @@ definitions:
         type: string
       isActive:
         example: true
+        type: boolean
+      isCustomerRole:
+        example: false
         type: boolean
       name:
         example: Admin
@@ -2005,6 +2075,9 @@ definitions:
       isActive:
         example: true
         type: boolean
+      isCustomerRole:
+        example: false
+        type: boolean
       name:
         example: Admin
         type: string
@@ -2062,6 +2135,9 @@ definitions:
     properties:
       createdAt:
         type: string
+      customerId:
+        example: "1234567890"
+        type: string
       email:
         example: john.doe@example.com
         type: string
@@ -2081,6 +2157,9 @@ definitions:
         type: string
       isActive:
         example: true
+        type: boolean
+      isCustomer:
+        example: false
         type: boolean
       isSuperuser:
         example: false
@@ -4927,6 +5006,38 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update user
+      tags:
+      - User
+  /user/customer-portal:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateCustomerUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create user
       tags:
       - User
   /user/forgot-password:

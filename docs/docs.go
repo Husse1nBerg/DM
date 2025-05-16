@@ -4104,6 +4104,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/customer-portal": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create user",
+                "parameters": [
+                    {
+                        "description": "User information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateCustomerUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created user",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/forgot-password": {
             "post": {
                 "description": "Initiate password recovery process",
@@ -5889,6 +5940,10 @@ const docTemplate = `{
                 "userId"
             ],
             "properties": {
+                "customerId": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
@@ -6084,6 +6139,88 @@ const docTemplate = `{
                 "street": {
                     "type": "string",
                     "example": "123 Main St"
+                }
+            }
+        },
+        "requests.CreateCustomerUserRequest": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "email",
+                "firstName",
+                "lastName",
+                "marinaId",
+                "organizationId",
+                "password",
+                "roleId"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "firstName": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/profiles/johndoe.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isCustomer": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "isSuperuser": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "example": "SecureP@ssw0rd"
+                },
+                "permissions": {
+                    "$ref": "#/definitions/models.Permissions"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "roleId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Manager"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "johndoe"
                 }
             }
         },
@@ -6284,6 +6421,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "isCustomerRole": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "name": {
                     "type": "string",
                     "example": "Admin"
@@ -6302,8 +6443,7 @@ const docTemplate = `{
                 "marinaId",
                 "organizationId",
                 "password",
-                "roleId",
-                "username"
+                "roleId"
             ],
             "properties": {
                 "email": {
@@ -6896,6 +7036,10 @@ const docTemplate = `{
                 "isActive": {
                     "type": "boolean",
                     "example": true
+                },
+                "isCustomerRole": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "name": {
                     "type": "string",
@@ -7736,6 +7880,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "isCustomerRole": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "name": {
                     "type": "string",
                     "example": "Admin"
@@ -7820,6 +7968,10 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "customerId": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
                 "email": {
                     "type": "string",
                     "example": "john.doe@example.com"
@@ -7846,6 +7998,10 @@ const docTemplate = `{
                 "isActive": {
                     "type": "boolean",
                     "example": true
+                },
+                "isCustomer": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "isSuperuser": {
                     "type": "boolean",

@@ -13,18 +13,20 @@ type RoleIDParam struct {
 
 // CreateRoleRequest represents the required parameters to create a new role
 type CreateRoleRequest struct {
-	Name        string              `json:"name" validate:"required" example:"Admin"`
-	Description *string             `json:"description,omitempty" example:"Administrator role with full access"`
-	Permissions *models.Permissions `json:"permissions" validate:"required"`
-	IsActive    *bool               `json:"isActive,omitempty" example:"true"`
+	Name           string              `json:"name" validate:"required" example:"Admin"`
+	Description    *string             `json:"description,omitempty" example:"Administrator role with full access"`
+	Permissions    *models.Permissions `json:"permissions" validate:"required"`
+	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
+	IsCustomerRole *bool               `json:"isCustomerRole,omitempty" example:"false"`
 }
 
 // UpdateRoleRequest represents the parameters that can be updated for a role
 type UpdateRoleRequest struct {
-	Name        *string             `json:"name,omitempty" example:"Admin"`
-	Description *string             `json:"description,omitempty" example:"Administrator role with full access"`
-	Permissions *models.Permissions `json:"permissions,omitempty"`
-	IsActive    *bool               `json:"isActive,omitempty" example:"true"`
+	Name           *string             `json:"name,omitempty" example:"Admin"`
+	Description    *string             `json:"description,omitempty" example:"Administrator role with full access"`
+	Permissions    *models.Permissions `json:"permissions,omitempty"`
+	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
+	IsCustomerRole *bool               `json:"isCustomerRole,omitempty" example:"false"`
 }
 
 // Validate performs custom validation on the create role request
