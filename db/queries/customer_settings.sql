@@ -27,23 +27,14 @@ RETURNING *;
 INSERT INTO customer_settings (
     marina_id,
     customer_id,
-    customer_user_id,
     enable_portal
 )
 VALUES (
     $1,
     $2,
-    $3,
-    $4
+    $3
 )
 ON CONFLICT (marina_id, customer_id) DO UPDATE
 SET enable_portal = EXCLUDED.enable_portal,
-    customer_user_id = EXCLUDED.customer_user_id,
     updated_at = CURRENT_TIMESTAMP
-RETURNING *;
--- name: UpdateCustomerSettingsCustomerUserID :one
-UPDATE customer_settings
-SET customer_user_id = $3,
-    updated_at = CURRENT_TIMESTAMP
-WHERE marina_id = $1 AND customer_id = $2
 RETURNING *;

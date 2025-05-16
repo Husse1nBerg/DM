@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -460,41 +459,51 @@ func (h *CustomerHandler) UpdateCustomerSettings(c echo.Context) error {
 
 	// Use UpsertCustomerSettings to create or update
 	settings, err := queries.UpsertCustomerSettings(ctx, db.UpsertCustomerSettingsParams{
-		MarinaID:       customerSettings.MarinaID,
-		CustomerID:     customerSettings.CustomerID,
-		EnablePortal:   enablePortal,
-		CustomerUserID: customerSettings.CustomerUserID,
+		MarinaID:     customerSettings.MarinaID,
+		CustomerID:   customerSettings.CustomerID,
+		EnablePortal: enablePortal,
 	})
-
-	if settings.CustomerUserID != uuid.Nil {
-		activateUser := settings.EnablePortal
-		if *activateUser {
-			_, err := h.server.DB.Queries().ActivateUser(ctx, settings.CustomerUserID)
-			if err != nil {
-				h.server.Logger.DesugarZap.Error("Failed to activate customer user",
-					zap.Error(err),
-					zap.String("customerId", req.CustomerID),
-					zap.String("marinaId", req.MarinaID.String()))
-				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to activate customer user").JSON(c)
-			}
-		} else {
-			_, err := h.server.DB.Queries().DeactivateUser(ctx, settings.CustomerUserID)
-			if err != nil {
-				h.server.Logger.DesugarZap.Error("Failed to deactivate customer user",
-					zap.Error(err),
-					zap.String("customerId", req.CustomerID),
-					zap.String("marinaId", req.MarinaID.String()))
-				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to deactivate customer user").JSON(c)
-			}
-		}
-	}
-
 	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to update customer settings",
+		h.server.Logger.DesugarZap.Error("Failed to upsert customer settings",
 			zap.Error(err),
 			zap.String("customerId", req.CustomerID),
 			zap.String("marinaId", req.MarinaID.String()))
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update customer settings").JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to upsert customer settings").JSON(c)
+	}
+	customerUsers, err := queries.GetMarinaCustomerUsersByCustomerID(ctx, db.GetMarinaCustomerUsersByCustomerIDParams{
+		MarinaID:   settings.MarinaID,
+		CustomerID: &settings.CustomerID,
+	})
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to get customer users",
+			zap.Error(err),
+			zap.String("customerId", req.CustomerID),
+			zap.String("marinaId", req.MarinaID.String()))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get customer users").JSON(c)
+	}
+	if len(customerUsers) > 0 {
+		activateUser := settings.EnablePortal
+		for _, customerUser := range customerUsers {
+			if *activateUser {
+				_, err := h.server.DB.Queries().ActivateUser(ctx, customerUser.ID)
+				if err != nil {
+					h.server.Logger.DesugarZap.Error("Failed to activate customer user",
+						zap.Error(err),
+						zap.String("customerId", req.CustomerID),
+						zap.String("marinaId", req.MarinaID.String()))
+					return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to activate customer user").JSON(c)
+				}
+			} else {
+				_, err := h.server.DB.Queries().DeactivateUser(ctx, customerUser.ID)
+				if err != nil {
+					h.server.Logger.DesugarZap.Error("Failed to deactivate customer user",
+						zap.Error(err),
+						zap.String("customerId", req.CustomerID),
+						zap.String("marinaId", req.MarinaID.String()))
+					return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to deactivate customer user").JSON(c)
+				}
+			}
+		}
 	}
 
 	// Convert settings to response format

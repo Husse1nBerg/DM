@@ -584,10 +584,9 @@ func (g *UserHandler) AssignUserToMarinaHandler(c echo.Context) error {
 	}
 
 	queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
-		MarinaID:       req.MarinaID,
-		CustomerID:     *req.CustomerID,
-		CustomerUserID: user.ID,
-		EnablePortal:   utils.Pointer(true),
+		MarinaID:     req.MarinaID,
+		CustomerID:   *req.CustomerID,
+		EnablePortal: utils.Pointer(true),
 	})
 
 	return c.NoContent(http.StatusNoContent)
@@ -1285,15 +1284,6 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 
 	queries := g.server.DB.Queries()
 
-	// Check if the user already exists
-	_, err := queries.CustomerMarinaUser(c.Request().Context(), db.CustomerMarinaUserParams{
-		MarinaID:   req.MarinaID,
-		CustomerID: req.CustomerID,
-	})
-	if err == nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Customer User already exists with this marina and customer Id").JSON(c)
-	}
-
 	// Check if the role is a customer role
 	role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
 	if err != nil {
@@ -1425,10 +1415,9 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 
 	// Update customer settings
 	_, err = queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
-		MarinaID:       req.MarinaID,
-		CustomerID:     *req.CustomerID,
-		CustomerUserID: user.ID,
-		EnablePortal:   utils.Pointer(true),
+		MarinaID:     req.MarinaID,
+		CustomerID:   *req.CustomerID,
+		EnablePortal: utils.Pointer(true),
 	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
@@ -1436,4 +1425,68 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 
 	response := responses.NewUserResponseSuccess(user)
 	return c.JSON(http.StatusCreated, response)
+}
+
+// GetUsersByCustomerIDHandler gets users by customer ID
+//
+//	@Summary		Get users by customer ID
+//	@Description	Get all users in a specific customer
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			customerId	path		string	true	"Customer ID"
+//	@Param			marinaId	query		string	true	"Marina ID"
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
+//	@Success		200			{object}	responses.UserListResponse "Paginated list of users in the marina for this  customer"
+//	@Failure		400			{object}	responses.Error "Bad request"
+//	@Failure		500			{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//		@Router			/user/customer-portal/{customerId} [get]
+func (g *UserHandler) GetUsersByCustomerIDHandler(c echo.Context) error {
+	// Parse marina ID
+	customerIDStr := c.Param("customerId")
+	if customerIDStr == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Customer ID is required").JSON(c)
+	}
+	customerID := &customerIDStr
+	marinaIDStr := c.QueryParam("marinaId")
+	marinaID, err := uuid.Parse(marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina ID (UUID) is required").JSON(c)
+	}
+
+	// Parse pagination params
+	pagination := new(requests.PaginationQuery)
+	if err := c.Bind(pagination); err != nil {
+		pagination.Page = 1
+		pagination.PageSize = 10
+	}
+
+	queries := g.server.DB.Queries()
+
+	// Get paginated users by marina
+	params := db.GetMarinaCustomerUserByCustomerIDPaginatedParams{
+		MarinaID:   marinaID,
+		CustomerID: customerID,
+		Limit:      pagination.PageSize,
+		Offset:     (pagination.Page - 1) * pagination.PageSize,
+	}
+	users, err := queries.GetMarinaCustomerUserByCustomerIDPaginated(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Get total count for pagination
+	allUsers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
+		MarinaID:   marinaID,
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUsers))
+
+	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
 }
