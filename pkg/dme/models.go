@@ -579,3 +579,70 @@ type Location struct {
 	BillToFax      string `json:"billToFax"`
 	DMPayClientID  string `json:"dmPayClientId"`
 }
+
+// WorkOrderList represents a paginated list of work orders
+type WorkOrderList struct {
+	Content     []WorkOrder `json:"content"`
+	CurrentPage int         `json:"currentPage"`
+	MaxPages    int         `json:"maxPages"`
+	PageSize    int         `json:"pageSize"`
+}
+
+// WorkOrder represents a full work order
+type WorkOrder = WorkOrderFull
+
+// WorkOrderSearch represents a work order search result
+type WorkOrderSearch struct {
+	ID           string `json:"id"`
+	Customer     string `json:"customer"`
+	Boat         string `json:"boat"`
+	OpenDate     string `json:"openDate"`
+	Type         string `json:"type"`
+	Status       string `json:"status"`
+	LocationCode string `json:"locationCode"`
+}
+
+// WorkOrderListShort represents a paginated list of work order short information
+type WorkOrderListShort struct {
+	Content     []WorkOrderShort `json:"content"`
+	CurrentPage int              `json:"currentPage"`
+	MaxPages    int              `json:"maxPages"`
+	PageSize    int              `json:"pageSize"`
+}
+
+// WorkOrderCreateResponse represents the response from creating or updating a work order
+type WorkOrderCreateResponse struct {
+	WoId       string   `json:"woId"`
+	Operations []string `json:"operations"`
+	Result     string   `json:"result"`
+}
+
+// WorkOrderOperation represents a work order operation retrieved from the API
+type WorkOrderOperation struct {
+	Opcode                 string  `json:"opcode"`
+	Desc                   string  `json:"desc"`
+	LongDesc               string  `json:"longDesc"`
+	TechDesc               string  `json:"techDesc"`
+	CategoryCode           string  `json:"categoryCode"`
+	EstimatedParts         float64 `json:"estimatedParts"`
+	EstimatedLabor         float64 `json:"estimatedLabor"`
+	EstimatedLaborHours    float64 `json:"estimatedLaborHours"`
+	EstimatedFreight       float64 `json:"estimatedFreight"`
+	EstimatedEquipment     float64 `json:"estimatedEquipment"`
+	EstimatedSublet        float64 `json:"estimatedSublet"`
+	EstimatedMileage       float64 `json:"estimatedMileage"`
+	EstimatedMiscSupply    float64 `json:"estimatedMiscSupply"`
+	EstimatedBillCodes     float64 `json:"estimatedBillCodes"`
+	Approved               bool    `json:"approved"`
+	FlatRateAmount         float64 `json:"flatRateAmount"`
+	FlatRatePerFootRate    float64 `json:"flatRatePerFootRate"`
+	FlatRatePerFootMethod  string  `json:"flatRatePerFootMethod"`
+	LaborFinished          bool    `json:"laborFinished"`
+	StandardHours          float64 `json:"standardHours"`
+	EstCompDate            string  `json:"estCompDate"`
+	EstStartDate           string  `json:"estStartDate"`
+	CustPromiseDate        string  `json:"custPromiseDate"`
+	ForecastedPartsCharges float64 `json:"forecastedPartsCharges"`
+	ForecastedLaborCharges float64 `json:"forecastedLaborCharges"`
+	ForecastedLaborHours   float64 `json:"forecastedLaborHours"`
+}
