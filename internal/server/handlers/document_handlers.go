@@ -158,10 +158,10 @@ func (h *DocumentHandler) CustomerGetDocumentsByEntity(c echo.Context) error {
 	return responses.NewDocumentsResponseSuccess(documents).JSON(c)
 }
 
-// UploadDocument creates a new document for a vessel entity
+// UploadDocument creates a new document for a boat entity
 //
 //	@Summary		Upload document
-//	@Description	Creates a new document for a vessel
+//	@Description	Creates a new document for a boat
 //	@Tags			Documents
 //	@Accept			multipart/form-data
 //	@Produce		json
@@ -173,8 +173,8 @@ func (h *DocumentHandler) CustomerGetDocumentsByEntity(c echo.Context) error {
 //	@Failure		404			{object}	responses.BaseResponse
 //	@Failure		500			{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
-//	@Router			/documents/vessel [post]
-func (h *DocumentHandler) VesselUploadDocument(c echo.Context) error {
+//	@Router			/documents/boat [post]
+func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	// Parse marina ID from form
 	marinaIDStr := c.FormValue("marinaId")
 	h.server.Logger.Zap.Info("Received marinaId from form",
@@ -196,7 +196,7 @@ func (h *DocumentHandler) VesselUploadDocument(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
 	}
 
-	entityType := "vessel"
+	entityType := "boat"
 	entityID := c.FormValue("entityId")
 
 	if entityID == "" {
@@ -256,10 +256,10 @@ func (h *DocumentHandler) VesselUploadDocument(c echo.Context) error {
 	return response.JSON(c)
 }
 
-// GetDocumentsByEntity retrieves all documents for a vessel entity
+// GetDocumentsByEntity retrieves all documents for a boat entity
 //
-//	@Summary		Get vessel documents
-//	@Description	Retrieves all documents for a vessel entity
+//	@Summary		Get boat documents
+//	@Description	Retrieves all documents for a boat entity
 //	@Tags			Documents
 //	@Accept			json
 //	@Produce		json
@@ -270,8 +270,8 @@ func (h *DocumentHandler) VesselUploadDocument(c echo.Context) error {
 //	@Failure		404			{object}	responses.BaseResponse
 //	@Failure		500			{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
-//	@Router			/documents/vessel [get]
-func (h *DocumentHandler) VesselGetDocumentsByEntity(c echo.Context) error {
+//	@Router			/documents/boat [get]
+func (h *DocumentHandler) BoatGetDocumentsByEntity(c echo.Context) error {
 	// Parse marina ID from query
 	marinaIDStr := c.QueryParam("marinaId")
 	marinaID, err := uuid.Parse(marinaIDStr)
@@ -280,7 +280,7 @@ func (h *DocumentHandler) VesselGetDocumentsByEntity(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
 	}
 
-	entityType := "vessel"
+	entityType := "boat"
 	entityID := c.QueryParam("entityId")
 
 	if entityID == "" {

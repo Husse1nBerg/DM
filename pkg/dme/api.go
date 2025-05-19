@@ -183,7 +183,7 @@ func (c *Client) CreateCustomer(ctx context.Context, customer *CustomerCreate, o
 // -----
 
 // BoatsList retrieves a list of boats
-func (c *Client) BoatsList(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) ([]Boat, error) {
+func (c *Client) BoatsList(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*BoatList, error) {
 	var result BoatList
 	endpoint := fmt.Sprintf("/Boats/ListNewOrChanged?Page=%d&PageSize=%d", page, pageSize)
 
@@ -201,7 +201,7 @@ func (c *Client) BoatsList(ctx context.Context, page int, pageSize int, organiza
 		return nil, fmt.Errorf("failed to list boats: %w", err)
 	}
 
-	return result.Content, nil
+	return &result, nil
 }
 
 // RetrieveBoatByID retrieves a boat by its ID
