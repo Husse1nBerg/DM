@@ -49,3 +49,11 @@ type PasswordResetTemplateData struct {
 	ResetURL        string `json:"reset_url"`        // URL for the login page
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 }
+
+// MessageTemplateData contains specific fields for the message template
+type MessageTemplateData struct {
+	Content         string `json:"content"`          // Message content
+	Recipient       string `json:"recipient"`        // Recipient name
+	Sender          string `json:"sender"`           // Sender name
+	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+}

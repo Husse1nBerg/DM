@@ -43,6 +43,7 @@ func RegisterRoutes(s *s.Server) {
 	galleryHandler := h.NewGalleryHandler(s)
 	workOrderHandler := h.NewWorkOrderHandler(s)
 	contactHandler := h.NewContactHandler(s)
+	messageHandler := h.NewMessageHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -214,6 +215,7 @@ func RegisterRoutes(s *s.Server) {
 	gallery.GET("/boat/item/:id", galleryHandler.GetVesselGalleryItem)
 	gallery.PUT("/boat/item/:id", galleryHandler.UpdateVesselGalleryItem)
 	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
+
 	// Work Order routes
 	workOrders := protected.Group("/work-orders")
 	workOrders.GET("/list", workOrderHandler.ListWorkOrdersByPage)
@@ -226,4 +228,11 @@ func RegisterRoutes(s *s.Server) {
 	workOrders.POST("/create", workOrderHandler.CreateWorkOrder)
 	workOrders.POST("/create-from-estimate", workOrderHandler.CreateWorkOrderFromEstimate)
 	workOrders.POST("/delete-operation", workOrderHandler.DeleteWorkOrderOperation)
+
+	// Message routes
+	messages := protected.Group("/message")
+	messages.POST("/customer", messageHandler.CreateMessageHandler)
+	messages.POST("/marina", messageHandler.CreateMessageMarinaHandler)
+	messages.GET("/marina", messageHandler.ListMessagesMarinaHandler)
+	messages.GET("/customer", messageHandler.ListMessagesCustomerHandler)
 }
