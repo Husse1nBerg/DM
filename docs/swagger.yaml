@@ -1287,6 +1287,35 @@ definitions:
     - name
     - organizationId
     type: object
+  requests.CreateMessageRequest:
+    properties:
+      body:
+        type: string
+      contact:
+        type: string
+      customerId:
+        type: string
+      marinaId:
+        type: string
+      recipient:
+        type: string
+      sender:
+        type: string
+      type:
+        enum:
+        - email
+        - sms
+        - internal
+        type: string
+    required:
+    - body
+    - contact
+    - customerId
+    - marinaId
+    - recipient
+    - sender
+    - type
+    type: object
   requests.CreateOrganizationRequest:
     properties:
       address:
@@ -2521,6 +2550,70 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.MarinaWithAddressResponse'
+    type: object
+  responses.MessageListResponse:
+    description: Paginated list of messages
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.MessageResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.MessageResponse:
+    description: Message data including customer, type, direction, and status information
+    properties:
+      body:
+        example: Your reservation has been confirmed
+        type: string
+      contact:
+        example: jane@example.com
+        type: string
+      createdAt:
+        type: string
+      customerId:
+        example: CUST123
+        type: string
+      direction:
+        example: to_customer
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      recipient:
+        example: Jane Smith
+        type: string
+      sender:
+        example: John Doe
+        type: string
+      status:
+        example: sent
+        type: string
+      type:
+        example: email
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.MessageResponseWrapper:
+    description: Wrapper for a single message response
+    properties:
+      data:
+        $ref: '#/definitions/responses.MessageResponse'
     type: object
   responses.OrganizationResponse:
     properties:
@@ -5438,6 +5531,205 @@ paths:
       summary: Get user marinas
       tags:
       - Marinas
+  /message/customer:
+    get:
+      consumes:
+      - application/json
+      description: Get messages of type email or sms for a marina and customer
+      parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of customer messages
+          schema:
+            $ref: '#/definitions/responses.MessageListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List customer messages
+      tags:
+      - Message
+    post:
+      consumes:
+      - application/json
+      description: Create a new message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create message
+      tags:
+      - Message
+  /message/get:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific message by ID
+      parameters:
+      - description: Message ID
+        in: query
+        name: messageId
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message details
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get message
+      tags:
+      - Message
+  /message/marina:
+    get:
+      consumes:
+      - application/json
+      description: Get messages for a marina and customer
+      parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of messages
+          schema:
+            $ref: '#/definitions/responses.MessageListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List messages
+      tags:
+      - Message
+    post:
+      consumes:
+      - application/json
+      description: Create a new message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create message
+      tags:
+      - Message
   /organizations:
     get:
       consumes:
