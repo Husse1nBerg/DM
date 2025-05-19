@@ -9,7 +9,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-var imageService *s3.ImageService
+var (
+	imageService    *s3.ImageService
+	documentService *s3.DocumentService
+)
 
 // Now returns the current time as a pgtype.Timestamp UTC.
 func PgTimeNow() pgtype.Timestamp {
@@ -37,6 +40,11 @@ func SetImageService(service *s3.ImageService) {
 	imageService = service
 }
 
+// SetDocumentService sets the document service for use in response formatting
+func SetDocumentService(service *s3.DocumentService) {
+	documentService = service
+}
+
 // GetFullImageURL converts an image path to a full URL using the image service
 func GetFullImageURL(imagePath *string) *string {
 	if imageService == nil || imagePath == nil || *imagePath == "" {
@@ -44,6 +52,15 @@ func GetFullImageURL(imagePath *string) *string {
 	}
 
 	return imageService.GetFullImageURL(imagePath)
+}
+
+// GetFullDocumentURL converts a document path to a full URL
+func GetFullDocumentURL(docPath *string) *string {
+	if documentService == nil || docPath == nil || *docPath == "" {
+		return docPath
+	}
+
+	return documentService.GetFullDocumentURL(docPath)
 }
 
 func GenerateUsername(firstName string) string {
