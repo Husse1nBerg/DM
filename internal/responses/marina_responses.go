@@ -29,6 +29,7 @@ type MarinaResponse struct {
 	CreatedAt      *time.Time           `json:"createdAt,omitempty"`
 	UpdatedAt      *time.Time           `json:"updatedAt,omitempty"`
 	AddressID      uuid.UUID            `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	SystemID       *string              `json:"systemId,omitempty" example:"SYS123456"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -61,13 +62,14 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		Currency:       marina.Currency,
 		WorkingHours:   workingHours,
 		Website:        marina.Website,
-		Image:          marina.Image,
+		Image:          utils.GetFullImageURL(marina.Image),
 		MaxUsers:       marina.MaxUsers,
 		IsActive:       marina.IsActive,
 		IsTest:         marina.IsTest,
 		CreatedAt:      utils.PgTimeToTimePtr(marina.CreatedAt),
 		UpdatedAt:      utils.PgTimeToTimePtr(marina.UpdatedAt),
 		AddressID:      marina.AddressID,
+		SystemID:       marina.SystemID,
 	}
 }
 

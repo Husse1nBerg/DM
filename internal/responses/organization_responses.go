@@ -46,7 +46,7 @@ func ConvertOrganizationToResponse(org db.Organization) OrganizationResponse {
 		ID:        org.ID,
 		Email:     org.Email,
 		Name:      org.Name,
-		Image:     org.Image,
+		Image:     utils.GetFullImageURL(org.Image),
 		Website:   org.Website,
 		Country:   org.Country,
 		Phone:     org.Phone,

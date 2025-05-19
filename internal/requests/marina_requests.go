@@ -22,6 +22,7 @@ type CreateMarinaRequest struct {
 	IsActive       *bool                 `json:"isActive,omitempty" example:"true"`
 	IsTest         *bool                 `json:"isTest,omitempty" example:"false"`
 	Address        *CreateAddressRequest `json:"address,omitempty"`
+	SystemID       *string               `json:"systemId,omitempty" example:"SYS123456"`
 }
 
 // UpdateMarinaRequest represents the parameters that can be updated for a marina
@@ -39,6 +40,7 @@ type UpdateMarinaRequest struct {
 	IsActive     *bool                 `json:"isActive,omitempty" example:"true"`
 	IsTest       *bool                 `json:"isTest,omitempty" example:"false"`
 	Address      *UpdateAddressRequest `json:"address,omitempty"`
+	SystemID     *string               `json:"systemId,omitempty" example:"SYS123456"`
 }
 
 // Validate performs custom validation on the create marina request

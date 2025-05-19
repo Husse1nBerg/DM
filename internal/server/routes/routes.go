@@ -34,6 +34,17 @@ func RegisterRoutes(s *s.Server) {
 	addressHandler := h.NewAddressHandler(s)
 	marinaHandler := h.NewMarinaHandler(s)
 	roleHandler := h.NewRoleHandler(s)
+	dmeCredentialHandler := h.NewDMECredentialHandler(s)
+	dmeSysIDHandler := h.NewDMESysIDHandler(s)
+	customerHandler := h.NewCustomerHandler(s)
+	emailHandler := h.NewEmailHandler(s, s.Config)
+	smsHandler := h.NewSMSHandler(s, s.Config)
+	boatHandler := h.NewBoatHandler(s)
+	galleryHandler := h.NewGalleryHandler(s)
+	workOrderHandler := h.NewWorkOrderHandler(s)
+	contactHandler := h.NewContactHandler(s)
+	messageHandler := h.NewMessageHandler(s)
+	documentHandler := h.NewDocumentHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -78,6 +89,8 @@ func RegisterRoutes(s *s.Server) {
 	users.PUT("/:userId", userHandler.UpdateUserHandler)
 	users.DELETE("/:userId", userHandler.DeleteUserHandler)
 	users.POST("/reset-password", userHandler.ResetPassword)
+	users.POST("/customer-portal", userHandler.CreateCustomerUserHandler)
+	users.GET("/customer-portal/:customerId", userHandler.GetUsersByCustomerIDHandler)
 
 	// Password recovery (public endpoints)
 	base.POST("/user/forgot-password", userHandler.ForgotPassword)
@@ -119,15 +132,119 @@ func RegisterRoutes(s *s.Server) {
 	marinas.GET("", marinaHandler.GetMarinasPaginated)
 	marinas.GET("/by-email", marinaHandler.GetMarinaByEmail)
 	marinas.GET("/organization/:organizationId", marinaHandler.GetMarinasByOrganization)
+	marinas.GET("/user/:userId", marinaHandler.GetUserMarinas)
+	marinas.GET("/user", marinaHandler.GetMyUserMarinas)
 	marinas.GET("/:id", marinaHandler.GetMarinaByID)
 	marinas.GET("/:id/with-address", marinaHandler.GetMarinaWithAddress)
 	marinas.PUT("/:id", marinaHandler.UpdateMarina)
 	marinas.PUT("/:id/with-address", marinaHandler.UpdateMarinaWithAddress)
 	marinas.DELETE("/:id", marinaHandler.DeleteMarina)
+	marinas.GET("/:id/contacts", contactHandler.ListContacts)
+	marinas.POST("/:id/contacts", contactHandler.CreateContact)
+	marinas.PUT("/:id/contacts/:contactId", contactHandler.UpdateContact)
+	marinas.DELETE("/:id/contacts/:contactId", contactHandler.DeleteContact)
 
 	// Address routes
 	addresses := protected.Group("/addresses")
 	addresses.POST("", addressHandler.CreateAddress)
 	addresses.GET("/:id", addressHandler.GetAddressById)
 	addresses.PUT("/:id", addressHandler.UpdateAddress)
+
+	// DME routes
+	dme := protected.Group("/dme")
+
+	// DME Credentials routes
+	credGroup := dme.Group("/credentials")
+	credGroup.POST("", dmeCredentialHandler.CreateDMECredential)
+	credGroup.GET("/organization/:organizationId", dmeCredentialHandler.GetDMECredentialByOrgID)
+	credGroup.PUT("/organization/:organizationId", dmeCredentialHandler.UpdateDMECredential)
+	credGroup.DELETE("/organization/:organizationId", dmeCredentialHandler.DeleteDMECredential)
+
+	// DME System ID routes
+	sysidGroup := dme.Group("/sysids")
+	sysidGroup.POST("", dmeSysIDHandler.CreateDMESysID)
+	sysidGroup.GET("", dmeSysIDHandler.ListDMESysIDs)
+	sysidGroup.GET("/:id", dmeSysIDHandler.GetDMESysIDByID)
+	sysidGroup.PUT("/:id", dmeSysIDHandler.UpdateDMESysID)
+	sysidGroup.DELETE("/:id", dmeSysIDHandler.DeleteDMESysID)
+	sysidGroup.GET("/system/:systemId", dmeSysIDHandler.GetDMESysIDBySystemID)
+	sysidGroup.GET("/organization/:organizationId", dmeSysIDHandler.GetDMESysIDsByOrgID)
+	sysidGroup.GET("/marina/:marinaId", dmeSysIDHandler.GetDMESysIDByMarinaID)
+	sysidGroup.PATCH("/:id/link", dmeSysIDHandler.LinkDMESysIDToMarina)
+	sysidGroup.PATCH("/:id/unlink", dmeSysIDHandler.UnlinkDMESysIDFromMarina)
+
+	// Customer routes
+	customers := protected.Group("/customers")
+	customers.GET("/list", customerHandler.ListCustomersByPage)
+	customers.GET("/list-short", customerHandler.ListCustomersShortByPage)
+	customers.GET("/retrieve", customerHandler.RetrieveCustomer)
+	customers.GET("/search", customerHandler.SearchCustomers)
+	customers.POST("/update", customerHandler.UpdateCustomer)
+	customers.POST("/create", customerHandler.CreateCustomer)
+	customers.GET("/settings", customerHandler.GetCustomerSettings)
+	customers.POST("/settings", customerHandler.UpdateCustomerSettings)
+
+	// Email routes
+	emails := protected.Group("/email")
+	emails.POST("/send-html", emailHandler.SendHTMLEmail)
+	emails.POST("/send-template", emailHandler.SendTemplateEmail)
+
+	// SMS routes
+	sms := protected.Group("/sms")
+	sms.POST("/send", smsHandler.SendSMS)
+	sms.POST("/send-batch", smsHandler.SendBatchSMS)
+
+	// Boat routes
+	boats := protected.Group("/boats")
+	boats.GET("/list", boatHandler.ListBoatsByPage)
+	boats.GET("/retrieve", boatHandler.RetrieveBoat)
+	boats.GET("/customer", boatHandler.RetrieveBoatsForCustomer)
+	boats.GET("/search", boatHandler.SearchBoats)
+	boats.POST("/update", boatHandler.UpdateBoat)
+	boats.POST("/create", boatHandler.CreateBoat)
+
+	// Gallery routes
+	gallery := protected.Group("/gallery")
+	gallery.POST("/marina", galleryHandler.CreateMarinaGalleryItem)
+	gallery.GET("/marina/:marinaId", galleryHandler.GetMarinaGallery)
+	gallery.GET("/marina/item/:id", galleryHandler.GetMarinaGalleryItem)
+	gallery.PUT("/marina/item/:id", galleryHandler.UpdateMarinaGalleryItem)
+	gallery.DELETE("/marina/item/:id", galleryHandler.DeleteMarinaGalleryItem)
+
+	gallery.POST("/boat", galleryHandler.CreateVesselGalleryItem)
+	gallery.GET("/boat/:boatId", galleryHandler.GetVesselGallery)
+	gallery.GET("/boat/item/:id", galleryHandler.GetVesselGalleryItem)
+	gallery.PUT("/boat/item/:id", galleryHandler.UpdateVesselGalleryItem)
+	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
+
+	// Document routes
+	documents := protected.Group("/documents")
+	documents.POST("/customer", documentHandler.CustomerUploadDocument)
+	documents.GET("/customer", documentHandler.CustomerGetDocumentsByEntity)
+	documents.POST("/boat", documentHandler.BoatUploadDocument)
+	documents.GET("/boat", documentHandler.BoatGetDocumentsByEntity)
+	documents.POST("/user", documentHandler.UserUploadDocument)
+	documents.GET("/user", documentHandler.UserGetDocumentsByEntity)
+	documents.GET("/:id", documentHandler.GetDocument)
+	documents.DELETE("/:id", documentHandler.DeleteDocument)
+
+	// Work Order routes
+	workOrders := protected.Group("/work-orders")
+	workOrders.GET("/list", workOrderHandler.ListWorkOrdersByPage)
+	workOrders.GET("/retrieve", workOrderHandler.RetrieveWorkOrder)
+	workOrders.GET("/search", workOrderHandler.SearchWorkOrders)
+	workOrders.GET("/customer", workOrderHandler.ListWorkOrdersForCustomer)
+	workOrders.GET("/operations", workOrderHandler.RetrieveWorkOrderOperations)
+	workOrders.GET("/completed", workOrderHandler.RetrieveCompletedWorkOrders)
+	workOrders.POST("/update", workOrderHandler.UpdateWorkOrder)
+	workOrders.POST("/create", workOrderHandler.CreateWorkOrder)
+	workOrders.POST("/create-from-estimate", workOrderHandler.CreateWorkOrderFromEstimate)
+	workOrders.POST("/delete-operation", workOrderHandler.DeleteWorkOrderOperation)
+
+	// Message routes
+	messages := protected.Group("/message")
+	messages.POST("/customer", messageHandler.CreateMessageHandler)
+	messages.POST("/marina", messageHandler.CreateMessageMarinaHandler)
+	messages.GET("/marina", messageHandler.ListMessagesMarinaHandler)
+	messages.GET("/customer", messageHandler.ListMessagesCustomerHandler)
 }

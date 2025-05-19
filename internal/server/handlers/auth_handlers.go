@@ -66,6 +66,11 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid credentials").JSON(c)
 	}
 
+	if user.IsActive == nil || !*user.IsActive {
+		logger.Zap.Info("login failed: account is not active", c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusForbidden, "Account is not active").JSON(c)
+	}
+
 	// Check if account is locked
 	now := time.Now().UTC()
 

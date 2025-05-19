@@ -2,12 +2,17 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
+	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -366,93 +371,169 @@ func (h *MarinaHandler) GetMarinasByOrganization(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/marinas/{id} [put]
 func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
+	// Parse and validate marina ID
+	marinaIDStr := c.Param("id")
+	marinaID, err := uuid.Parse(marinaIDStr)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
+		h.server.Logger.Zap.Error("Error parsing marina ID", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
 	}
 
-	// Check if marina exists and get current values
-	currentMarina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), id)
+	// Get existing marina to update
+	queries := h.server.DB.Queries()
+	marina, err := queries.GetMarinaByID(c.Request().Context(), marinaID)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
+		h.server.Logger.Zap.Error("Error fetching marina", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 
-	var req requests.UpdateMarinaRequest
-	if err := c.Bind(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	// Check if this is a multipart form (which would include a file upload)
+	contentType := c.Request().Header.Get("Content-Type")
+	isMultipart := strings.HasPrefix(contentType, "multipart/form-data")
+
+	// Initialize update parameters with current values
+	updateParams := db.UpdateMarinaParams{
+		ID:           marinaID,
+		Name:         marina.Name,
+		Email:        marina.Email,
+		Location:     marina.Location,
+		Phone:        marina.Phone,
+		Country:      marina.Country,
+		Currency:     marina.Currency,
+		WorkingHours: marina.WorkingHours,
+		Website:      marina.Website,
+		Image:        marina.Image,
+		MaxUsers:     marina.MaxUsers,
+		IsActive:     marina.IsActive,
+		IsTest:       marina.IsTest,
+		AddressID:    marina.AddressID,
 	}
 
-	if err := c.Validate(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-	}
+	if isMultipart {
+		// Check if there's an image file in the form
+		file, header, err := c.Request().FormFile("image")
+		if err == nil {
+			defer file.Close()
 
-	// Build update params with current values that will be overridden
-	params := db.UpdateMarinaParams{
-		ID:           id,
-		Name:         currentMarina.Name,
-		Email:        currentMarina.Email,
-		Location:     currentMarina.Location,
-		Phone:        currentMarina.Phone,
-		Country:      currentMarina.Country,
-		Currency:     currentMarina.Currency,
-		WorkingHours: currentMarina.WorkingHours,
-		Website:      currentMarina.Website,
-		Image:        currentMarina.Image,
-		MaxUsers:     currentMarina.MaxUsers,
-		IsActive:     currentMarina.IsActive,
-		IsTest:       currentMarina.IsTest,
-		AddressID:    currentMarina.AddressID,
-	}
+			// Upload the image to S3
+			imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.MarinaImageType)
+			if err != nil {
+				h.server.Logger.Zap.Error("Error uploading marina image to S3", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
+			}
 
-	// Update only fields that are provided
-	if req.Name != nil {
-		params.Name = *req.Name
-	}
-	if req.Email != nil {
-		params.Email = *req.Email
-	}
-	if req.Location != nil {
-		params.Location = req.Location
-	}
-	if req.Phone != nil {
-		params.Phone = req.Phone
-	}
-	if req.Country != nil {
-		params.Country = req.Country
-	}
-	if req.Currency != nil {
-		params.Currency = req.Currency
-	}
-	if req.WorkingHours != nil {
-		// Convert WorkingHours struct to []byte for database storage
-		workingHoursBytes, err := req.WorkingHours.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid working hours format").JSON(c)
+			// Update the image path
+			updateParams.Image = &imagePath
 		}
-		params.WorkingHours = workingHoursBytes
-	}
-	if req.Website != nil {
-		params.Website = req.Website
-	}
-	if req.Image != nil {
-		params.Image = req.Image
-	}
-	if req.MaxUsers != nil {
-		params.MaxUsers = req.MaxUsers
-	}
-	if req.IsActive != nil {
-		params.IsActive = req.IsActive
-	}
-	if req.IsTest != nil {
-		params.IsTest = req.IsTest
+
+		// Parse other form fields
+		if name := c.FormValue("name"); name != "" {
+			updateParams.Name = name
+		}
+		if email := c.FormValue("email"); email != "" {
+			updateParams.Email = email
+		}
+		if location := c.FormValue("location"); location != "" {
+			updateParams.Location = &location
+		}
+		if phone := c.FormValue("phone"); phone != "" {
+			updateParams.Phone = &phone
+		}
+		if country := c.FormValue("country"); country != "" {
+			updateParams.Country = &country
+		}
+		if currency := c.FormValue("currency"); currency != "" {
+			updateParams.Currency = &currency
+		}
+		if website := c.FormValue("website"); website != "" {
+			updateParams.Website = &website
+		}
+		// Parse numeric fields
+		if maxUsersStr := c.FormValue("maxUsers"); maxUsersStr != "" {
+			if maxUsers, err := strconv.ParseInt(maxUsersStr, 10, 32); err == nil {
+				maxUsersInt32 := int32(maxUsers)
+				updateParams.MaxUsers = &maxUsersInt32
+			}
+		}
+		// Parse boolean fields
+		if isActiveStr := c.FormValue("isActive"); isActiveStr != "" {
+			isActive := isActiveStr == "true"
+			updateParams.IsActive = &isActive
+		}
+		if isTestStr := c.FormValue("isTest"); isTestStr != "" {
+			isTest := isTestStr == "true"
+			updateParams.IsTest = &isTest
+		}
+		if systemID := c.FormValue("systemID"); systemID != "" {
+			updateParams.SystemID = &systemID
+		}
+	} else {
+		// Parse and validate the JSON request body
+		req := new(requests.UpdateMarinaRequest)
+		if err := c.Bind(req); err != nil {
+			h.server.Logger.Zap.Error("Error binding request", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Error parsing request").JSON(c)
+		}
+		if err := c.Validate(req); err != nil {
+			h.server.Logger.Zap.Error("Error validating request", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+		}
+
+		// Update fields if provided in request
+		if req.Name != nil {
+			updateParams.Name = *req.Name
+		}
+		if req.Email != nil {
+			updateParams.Email = *req.Email
+		}
+		if req.Location != nil {
+			updateParams.Location = req.Location
+		}
+		if req.Phone != nil {
+			updateParams.Phone = req.Phone
+		}
+		if req.Country != nil {
+			updateParams.Country = req.Country
+		}
+		if req.Currency != nil {
+			updateParams.Currency = req.Currency
+		}
+		if req.WorkingHours != nil {
+			workingHoursBytes, err := req.WorkingHours.ToBytes()
+			if err != nil {
+				h.server.Logger.Zap.Error("Error serializing working hours", err)
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid working hours format").JSON(c)
+			}
+			updateParams.WorkingHours = workingHoursBytes
+		}
+		if req.Website != nil {
+			updateParams.Website = req.Website
+		}
+		if req.Image != nil {
+			updateParams.Image = req.Image
+		}
+		if req.MaxUsers != nil {
+			updateParams.MaxUsers = req.MaxUsers
+		}
+		if req.IsActive != nil {
+			updateParams.IsActive = req.IsActive
+		}
+		if req.IsTest != nil {
+			updateParams.IsTest = req.IsTest
+		}
+		if req.SystemID != nil {
+			updateParams.SystemID = req.SystemID
+		}
 	}
 
-	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
+	// Update marina in database
+	updatedMarina, err := queries.UpdateMarina(c.Request().Context(), updateParams)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		h.server.Logger.Zap.Error("Error updating marina", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating marina").JSON(c)
 	}
 
+	// Return updated marina
 	return responses.NewMarinaResponseSuccess(updatedMarina).JSON(c)
 }
 
@@ -509,6 +590,7 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		IsActive:     currentMarina.IsActive,
 		IsTest:       currentMarina.IsTest,
 		AddressID:    currentMarina.AddressID,
+		SystemID:     currentMarina.SystemID,
 	}
 
 	// Update only fields that are provided
@@ -552,6 +634,9 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 	}
 	if req.IsTest != nil {
 		params.IsTest = req.IsTest
+	}
+	if req.SystemID != nil {
+		params.SystemID = req.SystemID
 	}
 
 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
@@ -652,3 +737,167 @@ func (h *MarinaHandler) DeleteMarina(c echo.Context) error {
 
 	return responses.NewMessageResponse(http.StatusOK, "Marina successfully deleted").JSON(c)
 }
+
+// GetUserMarinas retrieves marinas associated with a user with pagination
+//
+//	@Summary		Get user marinas
+//	@Description	Retrieves marinas associated with a specific user with pagination support
+//	@Tags			Marinas
+//	@Accept			json
+//	@Produce		json
+//	@Param			userId		path		string	true	"User ID"	Format(uuid)
+//	@Success		200			{array}		responses.MarinaListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		404			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/marinas/user/{userId} [get]
+func (h *MarinaHandler) GetUserMarinas(c echo.Context) error {
+	userIDStr := c.Param("userId")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid user ID").JSON(c)
+	}
+
+	// Get all marinas for this user to calculate total
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUserMarinas))
+
+	if total == 0 {
+		// Return empty response if no marinas found
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
+	}
+
+	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
+}
+
+// GetMyUserMarinas retrieves marinas associated with the current user
+//
+//	@Summary		Get my user marinas
+//	@Description	Retrieves marinas associated with the current authenticated user
+//	@Tags			Marinas
+//	@Accept			json
+//	@Produce		json
+//	@Success		200			{array}		responses.MarinaListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/marinas/user [get]
+func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
+	// Get user ID from the token
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+
+	// Get all marinas for this user to calculate total
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUserMarinas))
+
+	if total == 0 {
+		// Return empty response if no marinas found
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
+	}
+
+	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
+}
+
+// func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
+// 	idStr := c.Param("id")
+// 	id, err := uuid.Parse(idStr)
+// 	if err != nil {
+// 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
+// 	}
+
+// 	// Check if marina exists and get current values
+// 	currentMarina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), id)
+// 	if err != nil {
+// 		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
+// 	}
+
+// 	var req requests.UpdateMarinaRequest
+// 	if err := c.Bind(&req); err != nil {
+// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+// 	}
+
+// 	if err := c.Validate(&req); err != nil {
+// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+// 	}
+
+// 	// Build update params with current values that will be overridden
+// 	params := db.UpdateMarinaParams{
+// 		ID:           id,
+// 		Name:         currentMarina.Name,
+// 		Email:        currentMarina.Email,
+// 		Location:     currentMarina.Location,
+// 		Phone:        currentMarina.Phone,
+// 		Country:      currentMarina.Country,
+// 		Currency:     currentMarina.Currency,
+// 		WorkingHours: currentMarina.WorkingHours,
+// 		Website:      currentMarina.Website,
+// 		Image:        currentMarina.Image,
+// 		MaxUsers:     currentMarina.MaxUsers,
+// 		IsActive:     currentMarina.IsActive,
+// 		IsTest:       currentMarina.IsTest,
+// 		AddressID:    currentMarina.AddressID,
+// 		SystemID:     currentMarina.SystemID,
+// 	}
+
+// 	// Update only fields that are provided
+// 	if req.Name != nil {
+// 		params.Name = *req.Name
+// 	}
+// 	if req.Email != nil {
+// 		params.Email = *req.Email
+// 	}
+// 	if req.Location != nil {
+// 		params.Location = req.Location
+// 	}
+// 	if req.Phone != nil {
+// 		params.Phone = req.Phone
+// 	}
+// 	if req.Country != nil {
+// 		params.Country = req.Country
+// 	}
+// 	if req.Currency != nil {
+// 		params.Currency = req.Currency
+// 	}
+// 	if req.WorkingHours != nil {
+// 		// Convert WorkingHours struct to []byte for database storage
+// 		workingHoursBytes, err := req.WorkingHours.ToBytes()
+// 		if err != nil {
+// 			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid working hours format").JSON(c)
+// 		}
+// 		params.WorkingHours = workingHoursBytes
+// 	}
+// 	if req.Website != nil {
+// 		params.Website = req.Website
+// 	}
+// 	if req.Image != nil {
+// 		params.Image = req.Image
+// 	}
+// 	if req.MaxUsers != nil {
+// 		params.MaxUsers = req.MaxUsers
+// 	}
+// 	if req.IsActive != nil {
+// 		params.IsActive = req.IsActive
+// 	}
+// 	if req.IsTest != nil {
+// 		params.IsTest = req.IsTest
+// 	}
+// 	if req.SystemID != nil {
+// 		params.SystemID = req.SystemID
+// 	}
+
+// 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
+// 	if err != nil {
+// 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+// 	}
+
+// 	return responses.NewMarinaResponseSuccess(updatedMarina).JSON(c)
+// }

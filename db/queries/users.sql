@@ -150,3 +150,94 @@ RETURNING *;
 UPDATE users
 SET deleted_at = CURRENT_TIMESTAMP
 WHERE id = $1;
+-- name: CreateCustomerUser :one
+INSERT INTO users (
+        username,
+        first_name,
+        last_name,
+        email,
+        email_verified,
+        phone,
+        title,
+        image,
+        password_hash,
+        last_login,
+        failed_login_attempts,
+        locked_until,
+        last_password_reset,
+        organization_id,
+        marina_id,
+        role_id,
+        customer_id,
+        is_customer,
+        is_superuser,
+        is_active,
+        modules,
+        permissions
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14,
+        $15,
+        $16,
+        $17,
+        $18,
+        $19,
+        $20,
+        $21,
+        $22
+    )
+RETURNING *;
+-- name: ActivateUser :one
+UPDATE users
+SET is_active = TRUE
+WHERE id = $1
+RETURNING *;
+-- name: DeactivateUser :one
+UPDATE users
+SET is_active = FALSE
+WHERE id = $1
+RETURNING *;
+-- name: GetMarinaCustomerUsers :many
+SELECT *
+FROM users
+WHERE marina_id = $1
+    AND is_customer = TRUE
+    AND deleted_at IS NULL;
+-- name: GetMarinaCustomerUsersPaginated :many
+SELECT *
+FROM users
+WHERE is_customer = TRUE
+    AND marina_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: GetMarinaCustomerUsersByCustomerID :many
+SELECT *
+FROM users
+WHERE is_customer = TRUE
+    AND marina_id = $1
+    AND customer_id = $2
+    AND deleted_at IS NULL
+ORDER BY created_at DESC;
+-- name: GetMarinaCustomerUserByCustomerIDPaginated :many
+SELECT *
+FROM users
+WHERE is_customer = TRUE
+    AND marina_id = $1
+    AND customer_id = $2
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $4;

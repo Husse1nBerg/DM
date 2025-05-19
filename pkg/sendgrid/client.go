@@ -1,0 +1,335 @@
+package sendgrid
+
+import (
+	"errors"
+	"time"
+
+	"github.com/dockworks/dm-web-backend/internal/config"
+	"github.com/dockworks/dm-web-backend/pkg/logger"
+	"github.com/google/uuid"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
+)
+
+// Client provides an interface to SendGrid email service
+type Client struct {
+	client      *sendgrid.Client
+	config      config.SendGridConfig
+	logger      *logger.Logger
+	workerQueue chan emailTask
+}
+
+type emailTask struct {
+	ID         uuid.UUID
+	TaskType   string // "html" or "template"
+	HTMLEmail  *HTMLEmail
+	TmplEmail  *TemplateEmail
+	ResultChan chan<- EmailStatus
+}
+
+const (
+	// Status constants
+	StatusPending = "pending"
+	StatusSent    = "sent"
+	StatusFailed  = "failed"
+
+	// Task types
+	TaskTypeHTML     = "html"
+	TaskTypeTemplate = "template"
+
+	// Worker configuration
+	workerPoolSize = 5
+	queueSize      = 100
+)
+
+// NewClient creates a new SendGrid client
+func NewClient(cfg *config.Config) *Client {
+	client := sendgrid.NewSendClient(cfg.SendGrid.APIKey)
+
+	sgClient := &Client{
+		client:      client,
+		config:      cfg.SendGrid,
+		logger:      &logger.ZLogger,
+		workerQueue: make(chan emailTask, queueSize),
+	}
+
+	// Start worker pool
+	for i := 0; i < workerPoolSize; i++ {
+		go sgClient.worker(i)
+	}
+
+	return sgClient
+}
+
+// worker processes email tasks from the queue
+func (c *Client) worker(id int) {
+	c.logger.Zap.Infow("Starting SendGrid worker", "worker_id", id)
+
+	for task := range c.workerQueue {
+		status := EmailStatus{
+			ID:        task.ID,
+			Status:    StatusPending,
+			Timestamp: time.Now().Unix(),
+		}
+
+		var err error
+		if task.TaskType == TaskTypeHTML && task.HTMLEmail != nil {
+			err = c.sendHTMLEmailSync(task.HTMLEmail)
+		} else if task.TaskType == TaskTypeTemplate && task.TmplEmail != nil {
+			err = c.sendTemplateEmailSync(task.TmplEmail)
+		} else {
+			err = errors.New("invalid task type or missing email data")
+		}
+
+		if err != nil {
+			status.Status = StatusFailed
+			status.Error = err.Error()
+			c.logger.Zap.Errorw("Failed to send email",
+				"error", err,
+				"task_id", task.ID.String(),
+				"task_type", task.TaskType)
+		} else {
+			status.Status = StatusSent
+			c.logger.Zap.Infow("Email sent successfully",
+				"task_id", task.ID.String(),
+				"task_type", task.TaskType)
+		}
+
+		// Send status on result channel if available
+		if task.ResultChan != nil {
+			task.ResultChan <- status
+			close(task.ResultChan)
+		}
+	}
+}
+
+// SendHTMLEmail queues an HTML email to be sent asynchronously
+func (c *Client) SendHTMLEmail(email *HTMLEmail) (uuid.UUID, <-chan EmailStatus) {
+	// Set default sender if not provided
+	if email.FromEmail == "" {
+		email.FromEmail = c.config.FromEmail
+	}
+	if email.FromName == "" {
+		email.FromName = c.config.FromName
+	}
+
+	taskID := uuid.New()
+	resultChan := make(chan EmailStatus, 1)
+
+	task := emailTask{
+		ID:         taskID,
+		TaskType:   TaskTypeHTML,
+		HTMLEmail:  email,
+		ResultChan: resultChan,
+	}
+
+	// Queue the task
+	c.workerQueue <- task
+	return taskID, resultChan
+}
+
+// SendTemplateEmail queues a template email to be sent asynchronously
+func (c *Client) SendTemplateEmail(email *TemplateEmail) (uuid.UUID, <-chan EmailStatus) {
+	// Set default sender if not provided
+	if email.FromEmail == "" {
+		email.FromEmail = c.config.FromEmail
+	}
+	if email.FromName == "" {
+		email.FromName = c.config.FromName
+	}
+
+	taskID := uuid.New()
+	resultChan := make(chan EmailStatus, 1)
+
+	task := emailTask{
+		ID:         taskID,
+		TaskType:   TaskTypeTemplate,
+		TmplEmail:  email,
+		ResultChan: resultChan,
+	}
+
+	// Queue the task
+	c.workerQueue <- task
+	return taskID, resultChan
+}
+
+// SendTemplateByName sends an email using a named template from the configuration
+func (c *Client) SendTemplateByName(name string, to []string, subject string, templateData map[string]interface{}) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap[name]
+	if !ok {
+		return uuid.Nil, nil, errors.New("template not found in configuration")
+	}
+
+	email := &TemplateEmail{
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
+// sendHTMLEmailSync sends an HTML email synchronously
+func (c *Client) sendHTMLEmailSync(email *HTMLEmail) error {
+	message := mail.NewV3Mail()
+
+	from := mail.NewEmail(email.FromName, email.FromEmail)
+	message.SetFrom(from)
+
+	message.Subject = email.Subject
+
+	// Add content
+	p := mail.NewContent("text/plain", email.PlainText)
+	h := mail.NewContent("text/html", email.HTMLContent)
+	message.AddContent(p, h)
+
+	// Add recipients
+	personalization := mail.NewPersonalization()
+	for _, recipient := range email.To {
+		personalization.AddTos(mail.NewEmail("", recipient))
+	}
+	message.AddPersonalizations(personalization)
+
+	// Send the email
+	response, err := c.client.Send(message)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode >= 400 {
+		return errors.New(response.Body)
+	}
+
+	return nil
+}
+
+// sendTemplateEmailSync sends a template email synchronously
+func (c *Client) sendTemplateEmailSync(email *TemplateEmail) error {
+	message := mail.NewV3Mail()
+
+	from := mail.NewEmail(email.FromName, email.FromEmail)
+	message.SetFrom(from)
+
+	message.SetTemplateID(email.TemplateID)
+
+	// Add recipients and template data
+	personalization := mail.NewPersonalization()
+	for _, recipient := range email.To {
+		personalization.AddTos(mail.NewEmail("", recipient))
+	}
+
+	// Add dynamic template data
+	if email.TemplateData != nil {
+		personalization.DynamicTemplateData = email.TemplateData
+	}
+
+	message.AddPersonalizations(personalization)
+
+	// Send the email
+	response, err := c.client.Send(message)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode >= 400 {
+		return errors.New(response.Body)
+	}
+
+	return nil
+}
+
+// SendWelcomeEmail sends a welcome email using the welcome template
+func (c *Client) SendWelcomeEmail(to []string, subject string, data WelcomeTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["welcome"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("welcome template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"user_name":        data.UserName,
+		"home_url":         data.HomeURL,
+		"business_name":    data.BusinessName,
+		"customer_logo":    data.CustomerLogo,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
+// SendPasswordResetEmail sends a password reset email using the password reset template
+func (c *Client) SendPasswordResetEmail(to []string, subject string, data PasswordResetTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["password_reset"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("password reset template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"user_name":        data.UserName,
+		"reset_url":        data.ResetURL,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
+// SendMessageEmail sends a message email using the message template
+func (c *Client) SendMessageEmail(to []string, subject string, data MessageTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["message"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("message template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"content":          data.Content,
+		"recipient":        data.Recipient,
+		"sender":           data.Sender,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}

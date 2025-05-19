@@ -9,11 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "Andrew Sameh",
-            "url": "https://andrewsam.xyz",
-            "email": "g.andrewsameh@gmail.com"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -307,6 +303,2809 @@ const docTemplate = `{
                 }
             }
         },
+        "/boats/create": {
+            "post": {
+                "description": "Creates a new boat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "Create boat",
+                "parameters": [
+                    {
+                        "description": "Boat information",
+                        "name": "boat",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.BoatCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BoatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boats/customer": {
+            "get": {
+                "description": "Retrieves boats associated with a customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "Retrieve boats for customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BoatSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boats/list": {
+            "get": {
+                "description": "Retrieves a paginated list of boats",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "List boats by page",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BoatListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boats/retrieve": {
+            "get": {
+                "description": "Retrieves a boat by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "Retrieve boat by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Boat ID",
+                        "name": "BoatId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BoatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boats/search": {
+            "get": {
+                "description": "Searches for boats based on search string",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "Search boats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search string",
+                        "name": "SearchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Direct hit search",
+                        "name": "DirectHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BoatSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boats/update": {
+            "post": {
+                "description": "Updates a boat's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "Update boat",
+                "parameters": [
+                    {
+                        "description": "Boat information",
+                        "name": "boat",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dme.BoatUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BoatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/create": {
+            "post": {
+                "description": "Creates a new customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Create customer",
+                "parameters": [
+                    {
+                        "description": "Customer information",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CustomerCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/list": {
+            "get": {
+                "description": "Retrieves a paginated list of customers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "List customers by page",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/list-short": {
+            "get": {
+                "description": "Retrieves a paginated short list of customers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "List customers short",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerListShortResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/retrieve": {
+            "get": {
+                "description": "Retrieves a customer by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Retrieve customer by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/search": {
+            "get": {
+                "description": "Searches for customers based on search string",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Search customers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search string",
+                        "name": "SearchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Direct hit search",
+                        "name": "DirectHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/settings": {
+            "get": {
+                "description": "Retrieves settings for a customer, creates with defaults if not found",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Get customer settings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Updates settings for a customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Update customer settings",
+                "parameters": [
+                    {
+                        "description": "Customer settings",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CustomerSettingsUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/update": {
+            "post": {
+                "description": "Updates a customer's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Update customer",
+                "parameters": [
+                    {
+                        "description": "Customer information",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dme.CustomerUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/credentials": {
+            "post": {
+                "description": "Create new DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Create DME credentials",
+                "parameters": [
+                    {
+                        "description": "Create DME credential request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateDMECredentialRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/credentials/organization/{organizationId}": {
+            "get": {
+                "description": "Get DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Get DME credentials by organization ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Update DME credentials",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update DME credential request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateDMECredentialRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Soft delete DME API credentials for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME Credentials"
+                ],
+                "summary": "Delete DME credentials",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids": {
+            "get": {
+                "description": "Get a list of all DME System IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "List all DME System IDs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDListResponseWrapper"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new DME System ID for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Create DME System ID",
+                "parameters": [
+                    {
+                        "description": "Create DME System ID request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateDMESysIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/marina/{marinaId}": {
+            "get": {
+                "description": "Get DME System ID linked to a specific marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System ID by marina ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/organization/{organizationId}": {
+            "get": {
+                "description": "Get all DME System IDs for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System IDs by organization ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDListResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/system/{systemId}": {
+            "get": {
+                "description": "Get DME System ID by its external system identifier",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System ID by system identifier",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System identifier",
+                        "name": "systemId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/{id}": {
+            "get": {
+                "description": "Get DME System ID by its unique identifier",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Get DME System ID by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a DME System ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Update DME System ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update DME System ID request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateDMESysIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Soft delete a DME System ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Delete DME System ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/{id}/link": {
+            "patch": {
+                "description": "Link a DME System ID to a specific marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Link DME System ID to marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Link DME System ID request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.LinkDMESysIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dme/sysids/{id}/unlink": {
+            "patch": {
+                "description": "Remove the link between a DME System ID and a marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DME System IDs"
+                ],
+                "summary": "Unlink DME System ID from marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DME System ID identifier",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/boat": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all documents for a boat entity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get boat documents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new document for a boat",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/customer": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all documents for a customer entity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get customer documents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new document for a customer",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/user": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all documents for a user entity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get user documents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new document for a user",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a specific document by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes a document",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Delete document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/email/send-html": {
+            "post": {
+                "description": "Send an email with HTML content",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Email"
+                ],
+                "summary": "Send HTML email",
+                "parameters": [
+                    {
+                        "description": "Email details",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SendHTMLEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email accepted for delivery",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EmailSendResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/email/send-template": {
+            "post": {
+                "description": "Send an email using a SendGrid dynamic template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Email"
+                ],
+                "summary": "Send template email",
+                "parameters": [
+                    {
+                        "description": "Email details",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SendTemplateEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email accepted for delivery",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EmailSendResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/gallery/boat": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new gallery item for a vessel",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vessel Gallery"
+                ],
+                "summary": "Create vessel gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Boat ID",
+                        "name": "boatId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Whether this is the main image",
+                        "name": "main",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gallery/boat/item/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a specific vessel gallery item by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vessel Gallery"
+                ],
+                "summary": "Get vessel gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Gallery Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates a vessel gallery item",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vessel Gallery"
+                ],
+                "summary": "Update vessel gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Gallery Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Whether this is the main image",
+                        "name": "main",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "image",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes a vessel gallery item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vessel Gallery"
+                ],
+                "summary": "Delete vessel gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Gallery Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gallery/boat/{boatId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all gallery items for a vessel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vessel Gallery"
+                ],
+                "summary": "Get vessel gallery",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Boat ID",
+                        "name": "boatId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gallery/marina": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new gallery item for a marina",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marina Gallery"
+                ],
+                "summary": "Create marina gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gallery/marina/item/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a specific gallery item by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marina Gallery"
+                ],
+                "summary": "Get marina gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Gallery Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates a marina gallery item",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marina Gallery"
+                ],
+                "summary": "Update marina gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Gallery Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "image",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes a marina gallery item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marina Gallery"
+                ],
+                "summary": "Delete marina gallery item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Gallery Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gallery/marina/{marinaId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all gallery items for a marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marina Gallery"
+                ],
+                "summary": "Get marina gallery",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Checks the health of the server",
@@ -325,6 +3124,248 @@ const docTemplate = `{
                         "description": "Health status information",
                         "schema": {
                             "$ref": "#/definitions/handlers.HealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina/{marinaId}/contacts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Lists all contacts for a marina, optionally filtered by type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "List contacts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Contact type (phone or email)",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ContactListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new contact for a marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Create contact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Contact details",
+                        "name": "contact",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateContactRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ContactResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina/{marinaId}/contacts/{contactId}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing contact",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Update contact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Contact ID",
+                        "name": "contactId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Contact details",
+                        "name": "contact",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateContactRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ContactResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Soft deletes a contact",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Delete contact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Contact ID",
+                        "name": "contactId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
                         }
                     }
                 }
@@ -533,6 +3574,108 @@ const docTemplate = `{
                         "description": "Page size",
                         "name": "pageSize",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MarinaListResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/user": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas associated with the current authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get my user marinas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.MarinaListResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/user/{userId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas associated with a specific user with pagination support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get user marinas",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -853,6 +3996,313 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/message/customer": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get messages of type email or sms for a marina and customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "List customer messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of customer messages",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Create message",
+                "parameters": [
+                    {
+                        "description": "Message information",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/message/get": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a specific message by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Get message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "messageId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message details",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/message/marina": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get messages for a marina and customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "List messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of messages",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Create message",
+                "parameters": [
+                    {
+                        "description": "Message information",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
                         }
                     }
                 }
@@ -1665,6 +5115,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/sms/send": {
+            "post": {
+                "description": "Send SMS message to one or more recipients",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SMS"
+                ],
+                "summary": "Send SMS",
+                "parameters": [
+                    {
+                        "description": "SMS details",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SendSMSRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SMS accepted for delivery",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SMSSendResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sms/send-batch": {
+            "post": {
+                "description": "Send multiple SMS messages in a batch",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SMS"
+                ],
+                "summary": "Send batch SMS",
+                "parameters": [
+                    {
+                        "description": "Batch SMS details",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.BatchSMSRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Batch SMS accepted for delivery",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BatchSMSSendResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user": {
             "post": {
                 "security": [
@@ -1699,6 +5241,127 @@ const docTemplate = `{
                         "description": "Created user",
                         "schema": {
                             "$ref": "#/definitions/responses.UserResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/customer-portal": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create user",
+                "parameters": [
+                    {
+                        "description": "User information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateCustomerUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created user",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/customer-portal/{customerId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all users in a specific customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get users by customer ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of users in the marina for this  customer",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserListResponse"
                         }
                     },
                     "400": {
@@ -2466,9 +6129,1733 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/work-orders/completed": {
+            "get": {
+                "description": "Retrieves work orders completed on a specific date",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve completed work orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Completion date (format: YYYY-MM-DD)",
+                        "name": "CompleteDate",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderCompletedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/create": {
+            "post": {
+                "description": "Creates a new work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Create work order",
+                "parameters": [
+                    {
+                        "description": "Work Order information",
+                        "name": "workOrder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/create-from-estimate": {
+            "post": {
+                "description": "Creates a new work order from an existing estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Create work order from estimate",
+                "parameters": [
+                    {
+                        "description": "Estimate information",
+                        "name": "workOrder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderCreateFromEstimateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderCreateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/customer": {
+            "get": {
+                "description": "Retrieves a list of work orders for a specific customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "List work orders for customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "custId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Status (O for Open, C for Closed, blank for All)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma delimited list of location codes",
+                        "name": "locationCodeList",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderShortListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/delete-operation": {
+            "post": {
+                "description": "Deletes an operation from a work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Delete work order operation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "WorkOrder",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code to delete",
+                        "name": "Operation",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderDeleteOperationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/list": {
+            "get": {
+                "description": "Retrieves a paginated list of work orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "List work orders by page",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/operations": {
+            "get": {
+                "description": "Retrieves available operation codes for work orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order operations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderOperationsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/retrieve": {
+            "get": {
+                "description": "Retrieves a work order by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "WorkOrderId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/search": {
+            "get": {
+                "description": "Searches for work orders based on search string",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Search work orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search string",
+                        "name": "SearchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Direct hit search",
+                        "name": "DirectHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/update": {
+            "post": {
+                "description": "Updates an existing work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Update work order",
+                "parameters": [
+                    {
+                        "description": "Work Order information",
+                        "name": "workOrder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dme.BillingCode": {
+            "type": "object",
+            "properties": {
+                "cycle": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "departmentDesc": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lengthAreaOrCubicFeet": {
+                    "type": "string"
+                },
+                "loaLwlOrSpar": {
+                    "type": "string"
+                },
+                "overrideRate": {
+                    "type": "number"
+                },
+                "perFoot": {
+                    "type": "boolean"
+                },
+                "proRated": {
+                    "type": "boolean"
+                },
+                "rates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Rate"
+                    }
+                },
+                "slipBoatOrLongest": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BillingData": {
+            "type": "object",
+            "properties": {
+                "amountBilled": {
+                    "type": "number"
+                },
+                "billingDate": {
+                    "type": "string"
+                },
+                "environmentCharges": {
+                    "type": "number"
+                },
+                "otherCharges": {
+                    "type": "number"
+                },
+                "salesTax": {
+                    "type": "number"
+                }
+            }
+        },
+        "dme.Boat": {
+            "type": "object",
+            "properties": {
+                "beam": {
+                    "type": "string"
+                },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Motor"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "ownerIntegrationId": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/dme.Slip"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatDescriptionCode": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatSearch": {
+            "type": "object",
+            "properties": {
+                "arrivalDate": {
+                    "type": "string"
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "departureDate": {
+                    "type": "string"
+                },
+                "ownerName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatUpdate": {
+            "type": "object",
+            "properties": {
+                "beam": {
+                    "type": "string"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Motor"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/dme.Slip"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CategoryCode": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomInformation": {
+            "type": "object",
+            "properties": {
+                "fieldName": {
+                    "type": "string"
+                },
+                "fieldValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Customer": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "allowBackOrders": {
+                    "type": "boolean"
+                },
+                "allowTransactions": {
+                    "type": "boolean"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "balance": {
+                    "type": "number"
+                },
+                "boats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Boat"
+                    }
+                },
+                "categoryCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CategoryCode"
+                    }
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "creditLimit": {
+                    "type": "number"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "inactiveDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "invoices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.InvoiceDetailed"
+                    }
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "noCcSurcharge": {
+                    "type": "boolean"
+                },
+                "paymentTermsCode": {
+                    "type": "string"
+                },
+                "paymentTermsCodeDescription": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "poRequired": {
+                    "type": "boolean"
+                },
+                "priceColumn": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "sendMassEmail": {
+                    "type": "boolean"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "taxId": {
+                    "type": "string"
+                },
+                "taxIdState": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "waitListEntries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WaitListEntry"
+                    }
+                },
+                "webId": {
+                    "type": "string"
+                },
+                "webPassword": {
+                    "type": "string"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerSearch": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "customerID": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerShort": {
+            "type": "object",
+            "properties": {
+                "companyName": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerUpdate": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Installment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.InvoiceDetailed": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "installments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Installment"
+                    }
+                },
+                "invoiceAmount": {
+                    "type": "number"
+                },
+                "invoiceBalance": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "unappliedPayment": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dme.Motor": {
+            "type": "object",
+            "properties": {
+                "drive": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "transomId": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Operation": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "estCompleteDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedCharges": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isOpcodeApproved": {
+                    "type": "boolean"
+                },
+                "laborBilled": {
+                    "type": "number"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "opcodeDesc": {
+                    "type": "string"
+                },
+                "reqCompDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "techDesc": {
+                    "type": "string"
+                },
+                "totalBillCodes": {
+                    "type": "number"
+                },
+                "totalCharges": {
+                    "type": "number"
+                },
+                "totalEquipment": {
+                    "type": "number"
+                },
+                "totalFreight": {
+                    "type": "number"
+                },
+                "totalLabor": {
+                    "type": "number"
+                },
+                "totalLaborHours": {
+                    "type": "number"
+                },
+                "totalMileage": {
+                    "type": "number"
+                },
+                "totalMiscSupply": {
+                    "type": "number"
+                },
+                "totalParts": {
+                    "type": "number"
+                },
+                "totalSublet": {
+                    "type": "number"
+                },
+                "totalToComplete": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.OperationHistory": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "operationCharges": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "workOrder": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Rate": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                },
+                "startDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Slip": {
+            "type": "object",
+            "properties": {
+                "cableTv": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "electric": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModifedDate": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "string"
+                },
+                "linear": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "boolean"
+                },
+                "tieOff": {
+                    "type": "string"
+                },
+                "transient": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "unusable": {
+                    "type": "boolean"
+                },
+                "water": {
+                    "type": "boolean"
+                },
+                "width": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WaitListEntry": {
+            "type": "object",
+            "properties": {
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "entryDate": {
+                    "type": "string"
+                },
+                "entryNumber": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "waitListName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrder": {
+            "type": "object",
+            "properties": {
+                "billingData": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingData"
+                    }
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatLength": {
+                    "type": "string"
+                },
+                "boatMake": {
+                    "type": "string"
+                },
+                "boatModel": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "boatYear": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "customerID": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEstimate": {
+                    "type": "boolean"
+                },
+                "lastModDate": {
+                    "type": "string"
+                },
+                "lastModTime": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Operation"
+                    }
+                },
+                "promisedDate": {
+                    "type": "string"
+                },
+                "riggingId": {
+                    "type": "string"
+                },
+                "riggingType": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalBillCodes": {
+                    "type": "number"
+                },
+                "totalEquipment": {
+                    "type": "number"
+                },
+                "totalForecastedHours": {
+                    "type": "number"
+                },
+                "totalForecastedLabor": {
+                    "type": "number"
+                },
+                "totalForecastedParts": {
+                    "type": "number"
+                },
+                "totalFreight": {
+                    "type": "number"
+                },
+                "totalFreightCost": {
+                    "type": "number"
+                },
+                "totalLabor": {
+                    "type": "number"
+                },
+                "totalLaborCost": {
+                    "type": "number"
+                },
+                "totalLaborHours": {
+                    "type": "number"
+                },
+                "totalMileage": {
+                    "type": "number"
+                },
+                "totalMiscSupply": {
+                    "type": "number"
+                },
+                "totalParts": {
+                    "type": "number"
+                },
+                "totalPartsCost": {
+                    "type": "number"
+                },
+                "totalSublet": {
+                    "type": "number"
+                },
+                "totalSubletCost": {
+                    "type": "number"
+                },
+                "totalWOCharges": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderOperation": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "boolean"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "laborFinished": {
+                    "type": "boolean"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
+                },
+                "techDesc": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderSearch": {
+            "type": "object",
+            "properties": {
+                "boat": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "openDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderShort": {
+            "type": "object",
+            "properties": {
+                "boat": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "openDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.HealthResponse": {
             "type": "object",
             "properties": {
@@ -2652,6 +8039,10 @@ const docTemplate = `{
                 "userId"
             ],
             "properties": {
+                "customerId": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
@@ -2659,6 +8050,137 @@ const docTemplate = `{
                 "userId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "requests.BatchSMSMessageRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "to"
+            ],
+            "properties": {
+                "expires_on": {
+                    "type": "string"
+                },
+                "media_urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": [
+                        "Urgent",
+                        "High",
+                        "Normal",
+                        "Low"
+                    ]
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "requests.BatchSMSRequest": {
+            "type": "object",
+            "required": [
+                "messages"
+            ],
+            "properties": {
+                "from_number": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.BatchSMSMessageRequest"
+                    }
+                }
+            }
+        },
+        "requests.BoatCreateRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "ownerId"
+            ],
+            "properties": {
+                "beam": {
+                    "type": "string"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
                 }
             }
         },
@@ -2685,6 +8207,17 @@ const docTemplate = `{
                     "example": "recovery-token-123"
                 }
             }
+        },
+        "requests.ContactType": {
+            "type": "string",
+            "enum": [
+                "phone",
+                "email"
+            ],
+            "x-enum-varnames": [
+                "ContactTypePhone",
+                "ContactTypeEmail"
+            ]
         },
         "requests.CreateAddressRequest": {
             "type": "object",
@@ -2716,6 +8249,190 @@ const docTemplate = `{
                 "street": {
                     "type": "string",
                     "example": "123 Main St"
+                }
+            }
+        },
+        "requests.CreateContactRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "phone",
+                        "email"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/requests.ContactType"
+                        }
+                    ]
+                }
+            }
+        },
+        "requests.CreateCustomerUserRequest": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "email",
+                "firstName",
+                "lastName",
+                "marinaId",
+                "organizationId",
+                "password",
+                "roleId"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "firstName": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/profiles/johndoe.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isCustomer": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "isSuperuser": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "example": "SecureP@ssw0rd"
+                },
+                "permissions": {
+                    "$ref": "#/definitions/models.Permissions"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "roleId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Manager"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                }
+            }
+        },
+        "requests.CreateDMECredentialRequest": {
+            "type": "object",
+            "required": [
+                "organizationId",
+                "username"
+            ],
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "expiryDate": {
+                    "type": "string"
+                },
+                "isOldApi": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "secure_password"
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "username": {
+                    "type": "string",
+                    "example": "api_user"
+                }
+            }
+        },
+        "requests.CreateDMESysIDRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "organizationId",
+                "systemId"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Primary production environment for marina operations"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Production System"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
                 }
             }
         },
@@ -2774,12 +8491,56 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+15551234567"
                 },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                },
                 "website": {
                     "type": "string",
                     "example": "https://harborbay.com"
                 },
                 "workingHours": {
                     "$ref": "#/definitions/models.WorkingHours"
+                }
+            }
+        },
+        "requests.CreateMessageRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "contact",
+                "customerId",
+                "marinaId",
+                "recipient",
+                "sender",
+                "type"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "recipient": {
+                    "type": "string"
+                },
+                "sender": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "email",
+                        "sms",
+                        "internal"
+                    ]
                 }
             }
         },
@@ -2842,6 +8603,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "isCustomerRole": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "name": {
                     "type": "string",
                     "example": "Admin"
@@ -2860,8 +8625,7 @@ const docTemplate = `{
                 "marinaId",
                 "organizationId",
                 "password",
-                "roleId",
-                "username"
+                "roleId"
             ],
             "properties": {
                 "email": {
@@ -2925,6 +8689,119 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CustomerCreateRequest": {
+            "type": "object",
+            "required": [
+                "lastName"
+            ],
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.CustomerSettingsUpdateRequest": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "marinaId"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "enablePortal": {
+                    "type": "boolean"
+                },
+                "marinaId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
@@ -2935,6 +8812,18 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "john.doe@example.com"
+                }
+            }
+        },
+        "requests.LinkDMESysIDRequest": {
+            "type": "object",
+            "required": [
+                "marinaId"
+            ],
+            "properties": {
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
                 }
             }
         },
@@ -2953,6 +8842,89 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 12,
                     "example": "Pa$$w0rd123"
+                }
+            }
+        },
+        "requests.OperationCode": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "boolean"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "laborFinished": {
+                    "type": "boolean"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
+                },
+                "techDesc": {
+                    "type": "string"
                 }
             }
         },
@@ -2992,6 +8964,111 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.SendHTMLEmailRequest": {
+            "description": "Send HTML email request payload",
+            "type": "object",
+            "required": [
+                "htmlContent",
+                "plainText",
+                "subject",
+                "to"
+            ],
+            "properties": {
+                "htmlContent": {
+                    "type": "string",
+                    "example": "\u003ch1\u003eHello World\u003c/h1\u003e\u003cp\u003eThis is a test email.\u003c/p\u003e"
+                },
+                "plainText": {
+                    "type": "string",
+                    "example": "Hello World. This is a test email."
+                },
+                "subject": {
+                    "type": "string",
+                    "example": "Welcome to Dockmaster"
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "user@example.com"
+                    ]
+                }
+            }
+        },
+        "requests.SendSMSRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "to"
+            ],
+            "properties": {
+                "expires_on": {
+                    "type": "string"
+                },
+                "from_number": {
+                    "type": "string"
+                },
+                "media_urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": [
+                        "Urgent",
+                        "High",
+                        "Normal",
+                        "Low"
+                    ]
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "requests.SendTemplateEmailRequest": {
+            "description": "Send template email request payload",
+            "type": "object",
+            "required": [
+                "subject",
+                "templateData",
+                "templateName",
+                "to"
+            ],
+            "properties": {
+                "subject": {
+                    "type": "string",
+                    "example": "Welcome to Dockmaster"
+                },
+                "templateData": {
+                    "type": "string",
+                    "example": "{\"name\":\"John Doe\"}"
+                },
+                "templateName": {
+                    "type": "string",
+                    "example": "welcome"
+                },
+                "to": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "user@example.com"
+                    ]
+                }
+            }
+        },
         "requests.UpdateAddressRequest": {
             "type": "object",
             "properties": {
@@ -3022,6 +9099,91 @@ const docTemplate = `{
                 "street": {
                     "type": "string",
                     "example": "123 Main St"
+                }
+            }
+        },
+        "requests.UpdateContactRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "phone",
+                        "email"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/requests.ContactType"
+                        }
+                    ]
+                }
+            }
+        },
+        "requests.UpdateDMECredentialRequest": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "expiryDate": {
+                    "type": "string"
+                },
+                "isOldApi": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "password": {
+                    "type": "string",
+                    "example": "secure_password"
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "username": {
+                    "type": "string",
+                    "example": "api_user"
+                }
+            }
+        },
+        "requests.UpdateDMESysIDRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Primary production environment for marina operations"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Production System"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
                 }
             }
         },
@@ -3070,6 +9232,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
                 },
                 "website": {
                     "type": "string",
@@ -3168,6 +9334,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "isCustomerRole": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "name": {
                     "type": "string",
                     "example": "Admin"
@@ -3230,6 +9400,138 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                }
+            }
+        },
+        "requests.WorkOrderCreateFromEstimateRequest": {
+            "type": "object",
+            "required": [
+                "EstimateId"
+            ],
+            "properties": {
+                "EstimateId": {
+                    "type": "string"
+                },
+                "WithDetail": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "WithUnapprovedOps": {
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "requests.WorkOrderCreateRequest": {
+            "type": "object",
+            "required": [
+                "custId",
+                "title"
+            ],
+            "properties": {
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "custId": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operationCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.OperationCode"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "woId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.WorkOrderUpdateRequest": {
+            "type": "object",
+            "required": [
+                "woId"
+            ],
+            "properties": {
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "custId": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operationCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.OperationCode"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "woId": {
+                    "type": "string"
                 }
             }
         },
@@ -3301,6 +9603,430 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.BatchSMSSendResponse": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.SMSStatusDetails"
+                    }
+                },
+                "failure_count": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "success_count": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.BoatListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Boat"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "responses.BoatResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.Boat"
+                }
+            }
+        },
+        "responses.BoatSearchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatSearch"
+                    }
+                }
+            }
+        },
+        "responses.ContactListResponse": {
+            "description": "Contact list response model",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ContactResponse"
+                    }
+                },
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ContactResponse": {
+            "description": "Contact response model",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Primary emergency contact"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1-555-123-4567"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "EMERGENCY"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                }
+            }
+        },
+        "responses.CustomerListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Customer"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "responses.CustomerListShortResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerShort"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "responses.CustomerResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.Customer"
+                }
+            }
+        },
+        "responses.CustomerSearchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerSearch"
+                    }
+                }
+            }
+        },
+        "responses.CustomerSettingsResponse": {
+            "type": "object",
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "enablePortal": {
+                    "type": "boolean"
+                },
+                "marinaId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.DMECredentialResponse": {
+            "description": "DME API credentials used for integration",
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "expiryDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOldApi": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "refreshToken": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "api_user"
+                }
+            }
+        },
+        "responses.DMECredentialResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.DMECredentialResponse"
+                }
+            }
+        },
+        "responses.DMESysIDListResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.DMESysIDResponse"
+                    }
+                }
+            }
+        },
+        "responses.DMESysIDResponse": {
+            "description": "DME System IDs used for marina integration",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Primary production environment"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Production System"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.DMESysIDResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.DMESysIDResponse"
+                }
+            }
+        },
+        "responses.DocumentResponse": {
+            "description": "Document data including file path, file type, and size",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "entityId": {
+                    "type": "string",
+                    "example": "0000000000"
+                },
+                "entityType": {
+                    "type": "string",
+                    "example": "customer"
+                },
+                "fileName": {
+                    "type": "string",
+                    "example": "contract.pdf"
+                },
+                "filePath": {
+                    "type": "string",
+                    "example": "/documents/customers/550e8400-e29b-41d4-a716-446655440002/contract.pdf"
+                },
+                "fileSize": {
+                    "type": "integer",
+                    "example": 1024
+                },
+                "fileType": {
+                    "type": "string",
+                    "example": "application/pdf"
+                },
+                "fileUrl": {
+                    "type": "string",
+                    "example": "https://example.com/documents/customers/550e8400-e29b-41d4-a716-446655440002/contract.pdf"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.EmailSendResponse": {
+            "description": "Email send response",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/responses.EmailSendResponseData"
+                },
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.EmailSendResponseData": {
+            "type": "object",
+            "properties": {
+                "accepted": {
+                    "description": "Whether the email was accepted for delivery",
+                    "type": "boolean"
+                },
+                "message": {
+                    "description": "Status message",
+                    "type": "string"
+                },
+                "taskId": {
+                    "description": "Task ID for tracking",
+                    "type": "string"
+                }
+            }
+        },
         "responses.Error": {
             "description": "Error response structure with optional validation details",
             "type": "object",
@@ -3344,6 +10070,34 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Login successful"
+                }
+            }
+        },
+        "responses.MarinaGalleryItemResponse": {
+            "description": "Marina gallery item data including image URL and description",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Beautiful view of the marina at sunset"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "example": "/images/marinas/sunset_view.jpg"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -3433,6 +10187,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+15551234567"
                 },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -3515,6 +10273,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+15551234567"
                 },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS123456"
+                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -3532,6 +10294,95 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.MarinaWithAddressResponse"
+                }
+            }
+        },
+        "responses.MessageListResponse": {
+            "description": "Paginated list of messages",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MessageResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "responses.MessageResponse": {
+            "description": "Message data including customer, type, direction, and status information",
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "example": "Your reservation has been confirmed"
+                },
+                "contact": {
+                    "type": "string",
+                    "example": "jane@example.com"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string",
+                    "example": "CUST123"
+                },
+                "direction": {
+                    "type": "string",
+                    "example": "to_customer"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "recipient": {
+                    "type": "string",
+                    "example": "Jane Smith"
+                },
+                "sender": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "sent"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "email"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MessageResponseWrapper": {
+            "description": "Wrapper for a single message response",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.MessageResponse"
                 }
             }
         },
@@ -3661,6 +10512,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "isCustomerRole": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "name": {
                     "type": "string",
                     "example": "Admin"
@@ -3671,6 +10526,43 @@ const docTemplate = `{
                 "updatedAt": {
                     "type": "string",
                     "example": "2023-01-02T00:00:00Z"
+                }
+            }
+        },
+        "responses.SMSSendResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "task_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SMSStatusDetails": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "recipient": {
+                    "type": "string"
+                },
+                "segment_count": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -3708,6 +10600,10 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "customerId": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
                 "email": {
                     "type": "string",
                     "example": "john.doe@example.com"
@@ -3734,6 +10630,10 @@ const docTemplate = `{
                 "isActive": {
                     "type": "boolean",
                     "example": true
+                },
+                "isCustomer": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "isSuperuser": {
                     "type": "boolean",
@@ -3818,6 +10718,153 @@ const docTemplate = `{
                 "value": {
                     "type": "string",
                     "example": "invalid_value"
+                }
+            }
+        },
+        "responses.VesselGalleryItemResponse": {
+            "description": "Vessel gallery item data including image URL, description, and main image flag",
+            "type": "object",
+            "properties": {
+                "boatId": {
+                    "type": "string",
+                    "example": "BOAT123456"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string",
+                    "example": "CUST123456"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Port side view of the yacht"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "example": "/images/vessels/yacht_port_side.jpg"
+                },
+                "main": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkOrderCompletedResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrder"
+                    }
+                }
+            }
+        },
+        "responses.WorkOrderCreateResponse": {
+            "type": "object",
+            "properties": {
+                "operations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "result": {
+                    "type": "string"
+                },
+                "woId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkOrderDeleteOperationResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkOrderListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrder"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "responses.WorkOrderOperationsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                }
+            }
+        },
+        "responses.WorkOrderResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.WorkOrder"
+                }
+            }
+        },
+        "responses.WorkOrderSearchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderSearch"
+                    }
+                }
+            }
+        },
+        "responses.WorkOrderShortListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderShort"
+                    }
                 }
             }
         }

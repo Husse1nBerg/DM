@@ -28,6 +28,8 @@ type UserResponse struct {
 	OrganizationID      uuid.UUID           `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
 	MarinaID            uuid.UUID           `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
 	RoleID              uuid.UUID           `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	CustomerID          *string             `json:"customerId,omitempty" example:"1234567890"`
+	IsCustomer          *bool               `json:"isCustomer,omitempty" example:"false"`
 	IsSuperuser         *bool               `json:"isSuperuser,omitempty" example:"false"`
 	IsActive            *bool               `json:"isActive,omitempty" example:"true"`
 	CreatedAt           *time.Time          `json:"createdAt,omitempty"`
@@ -63,7 +65,7 @@ func NewUserResponse(user db.User) UserResponse {
 		EmailVerified:       utils.PgTimeToTimePtr(user.EmailVerified),
 		Phone:               user.Phone,
 		Title:               user.Title,
-		Image:               user.Image,
+		Image:               utils.GetFullImageURL(user.Image),
 		LastLogin:           utils.PgTimeToTimePtr(user.LastLogin),
 		FailedLoginAttempts: user.FailedLoginAttempts,
 		LockedUntil:         utils.PgTimeToTimePtr(user.LockedUntil),
@@ -71,6 +73,8 @@ func NewUserResponse(user db.User) UserResponse {
 		OrganizationID:      user.OrganizationID,
 		MarinaID:            user.MarinaID,
 		RoleID:              user.RoleID,
+		CustomerID:          user.CustomerID,
+		IsCustomer:          user.IsCustomer,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
 		CreatedAt:           utils.PgTimeToTimePtr(user.CreatedAt),

@@ -8,7 +8,7 @@ import (
 
 // CreateUserRequest represents the required parameters to create a new user
 type CreateUserRequest struct {
-	Username       string              `json:"username" validate:"required" example:"johndoe"`
+	Username       string              `json:"username" example:"johndoe"`
 	FirstName      string              `json:"firstName" validate:"required" example:"John"`
 	LastName       string              `json:"lastName" validate:"required" example:"Doe"`
 	Email          string              `json:"email" validate:"required,email" example:"john.doe@example.com"`
@@ -19,6 +19,26 @@ type CreateUserRequest struct {
 	OrganizationID uuid.UUID           `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
 	MarinaID       uuid.UUID           `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
 	RoleID         uuid.UUID           `json:"roleId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
+	IsSuperuser    *bool               `json:"isSuperuser,omitempty" example:"false"`
+	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
+	Permissions    *models.Permissions `json:"permissions,omitempty"`
+	Modules        *models.Modules     `json:"modules,omitempty"`
+}
+
+type CreateCustomerUserRequest struct {
+	Username       string              `json:"username" example:"johndoe"`
+	FirstName      string              `json:"firstName" validate:"required" example:"John"`
+	LastName       string              `json:"lastName" validate:"required" example:"Doe"`
+	Email          string              `json:"email" validate:"required,email" example:"john.doe@example.com"`
+	Phone          *string             `json:"phone,omitempty" example:"+15551234567"`
+	Title          *string             `json:"title,omitempty" example:"Manager"`
+	Image          *string             `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
+	Password       string              `json:"password" validate:"required,min=12,letters,number,specialchar" example:"SecureP@ssw0rd"`
+	OrganizationID uuid.UUID           `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID       uuid.UUID           `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
+	RoleID         uuid.UUID           `json:"roleId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
+	CustomerID     *string             `json:"customerId,omitempty" validate:"required" example:"1234567890"`
+	IsCustomer     *bool               `json:"isCustomer,omitempty" example:"false"`
 	IsSuperuser    *bool               `json:"isSuperuser,omitempty" example:"false"`
 	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
 	Permissions    *models.Permissions `json:"permissions,omitempty"`
@@ -49,12 +69,19 @@ type UserIDParam struct {
 
 // AssignUserToMarinaRequest represents the parameters to assign a user to a marina
 type AssignUserToMarinaRequest struct {
-	UserID   uuid.UUID `json:"userId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
-	MarinaID uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
+	UserID     uuid.UUID `json:"userId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
+	MarinaID   uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
+	CustomerID *string   `json:"customerId,omitempty" example:"1234567890"`
 }
 
 // Validate performs custom validation on the request
 func (r *CreateUserRequest) Validate() error {
+	validate := validator.New()
+	return validate.Struct(r)
+}
+
+// Validate performs custom validation on the request
+func (r *CreateCustomerUserRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)
 }

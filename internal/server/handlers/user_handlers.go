@@ -3,6 +3,8 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -10,6 +12,8 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
+	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -96,6 +100,44 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	// Create the user
 	queries := g.server.DB.Queries()
 
+	// Check if the role exists
+	_, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
+	// Check if the marina and organization exist and linked
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina not found").JSON(c)
+	}
+
+	organization, err := queries.GetOrganizationByID(c.Request().Context(), req.OrganizationID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Organization not found").JSON(c)
+	}
+
+	if marina.OrganizationID != organization.ID {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
+	}
+
+	// Check if the email is already taken
+	_, err = queries.GetUserByEmail(c.Request().Context(), req.Email)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+	}
+	username := req.Username
+	if username == "" {
+		username = utils.GenerateUsername(req.FirstName)
+	}
+
+	// Check if the username is already taken
+	_, err = queries.GetUserByUsername(c.Request().Context(), username)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Username already taken").JSON(c)
+	}
+
+	// Create the user
 	// Hash the password
 	passwordHash, err := utils.HashPassword(req.Password)
 	if err != nil {
@@ -146,7 +188,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	}
 
 	params := db.CreateUserParams{
-		Username:            req.Username,
+		Username:            username,
 		FirstName:           req.FirstName,
 		LastName:            req.LastName,
 		Email:               req.Email,
@@ -170,6 +212,15 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
+	assignUserToMarina := db.AssignUserToMarinaParams{
+		UserID:   user.ID,
+		MarinaID: req.MarinaID,
+	}
+
+	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
 	response := responses.NewUserResponseSuccess(user)
 	return c.JSON(http.StatusCreated, response)
 }
@@ -511,16 +562,32 @@ func (g *UserHandler) AssignUserToMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	queries := g.server.DB.Queries()
+	user, err := queries.GetUserByID(c.Request().Context(), req.UserID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	if *user.IsCustomer && req.CustomerID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Customer User must have a customer ID").JSON(c)
+	}
+
 	params := db.AssignUserToMarinaParams{
 		UserID:   req.UserID,
 		MarinaID: req.MarinaID,
 	}
-
-	queries := g.server.DB.Queries()
-	err := queries.AssignUserToMarina(c.Request().Context(), params)
+	if *user.IsCustomer && req.CustomerID != nil {
+		params.CustomerID = req.CustomerID
+	}
+	err = queries.AssignUserToMarina(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
+
+	queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
+		MarinaID:     req.MarinaID,
+		CustomerID:   *req.CustomerID,
+		EnablePortal: utils.Pointer(true),
+	})
 
 	return c.NoContent(http.StatusNoContent)
 }
@@ -595,23 +662,16 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		"Method", c.Request().Method,
 		"URL", c.Request().URL.String())
 
-	// Parse and validate the request body
-	req := new(requests.UpdateUserRequest)
-	if err := c.Bind(req); err != nil {
-		g.server.Logger.Zap.Error("Error binding request body", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, "Error parsing request: "+err.Error()).JSON(c)
-	}
-	if err := c.Validate(req); err != nil {
-		g.server.Logger.Zap.Error("Error validating request body", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-	}
-
 	// Get current user data to update only changed fields
 	queries := g.server.DB.Queries()
 	currentUser, err := queries.GetUserByID(c.Request().Context(), userID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusNotFound, err).JSON(c)
 	}
+
+	// Check if this is a multipart form (which would include a file upload)
+	contentType := c.Request().Header.Get("Content-Type")
+	isMultipart := strings.HasPrefix(contentType, "multipart/form-data")
 
 	// Build update params with current values that will be overridden if provided
 	updateParams := db.UpdateUserParams{
@@ -636,63 +696,182 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		Permissions:         currentUser.Permissions,
 	}
 
-	// Update only the fields that were provided in the request
-	if req.FirstName != nil {
-		updateParams.FirstName = *req.FirstName
-	}
-	if req.LastName != nil {
-		updateParams.LastName = *req.LastName
-	}
-	if req.Email != nil {
-		updateParams.Email = *req.Email
-	}
-	if req.Phone != nil {
-		updateParams.Phone = req.Phone
-	}
-	if req.Title != nil {
-		updateParams.Title = req.Title
-	}
-	if req.Image != nil {
-		updateParams.Image = req.Image
-	}
-	if req.Password != nil {
-		// Use helper function to hash password and update timestamp
-		passwordHash, lastPasswordReset, err := utils.UpdatePasswordFields(*req.Password)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
-		}
-		updateParams.PasswordHash = passwordHash
-		updateParams.LastPasswordReset = lastPasswordReset
-	}
-	if req.MarinaID != nil {
-		updateParams.MarinaID = *req.MarinaID
-	}
-	if req.RoleID != nil {
-		updateParams.RoleID = *req.RoleID
-	}
-	if req.IsSuperuser != nil {
-		updateParams.IsSuperuser = req.IsSuperuser
-	}
-	if req.IsActive != nil {
-		updateParams.IsActive = req.IsActive
-	}
+	// Handle image upload if this is a multipart request
+	if isMultipart {
+		// Check if there's an image file in the form
+		file, header, err := c.Request().FormFile("image")
+		if err == nil {
+			defer file.Close()
 
-	// Update permissions if provided
-	if req.Permissions != nil {
-		permissionsBytes, err := req.Permissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-		}
-		updateParams.Permissions = permissionsBytes
-	}
+			// Upload the image to S3
+			imagePath, err := g.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.UserImageType)
+			if err != nil {
+				g.server.Logger.Zap.Error("Error uploading user image to S3", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
+			}
 
-	// Update modules if provided
-	if req.Modules != nil {
-		modulesBytes, err := req.Modules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+			// Update the image path
+			updateParams.Image = &imagePath
 		}
-		updateParams.Modules = modulesBytes
+		// Check if they want to change the marina, validate if the user got access to the new marina
+		if marinaIDStr := c.FormValue("marinaId"); marinaIDStr != "" {
+			if marinaID, err := uuid.Parse(marinaIDStr); err == nil {
+				marina, err := queries.GetMarinaByID(c.Request().Context(), marinaID)
+				if err != nil {
+					return responses.NewErrorResponse(http.StatusBadRequest, "Marina not found").JSON(c)
+				}
+				organization, err := queries.GetOrganizationByID(c.Request().Context(), marina.OrganizationID)
+				if err != nil {
+					return responses.NewErrorResponse(http.StatusBadRequest, "Organization not found").JSON(c)
+				}
+				if organization.ID != currentUser.OrganizationID {
+					return responses.NewErrorResponse(http.StatusBadRequest, "User does not have access to this marina").JSON(c)
+				}
+				_, err = queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+					UserID:   userID,
+					MarinaID: marinaID,
+				})
+				if err != nil {
+					return responses.NewErrorResponse(http.StatusBadRequest, "User does not have access to this marina").JSON(c)
+				}
+			}
+		}
+		// Process other form fields regardless of whether an image was uploaded
+		if firstName := c.FormValue("firstName"); firstName != "" {
+			updateParams.FirstName = firstName
+		}
+		if lastName := c.FormValue("lastName"); lastName != "" {
+			updateParams.LastName = lastName
+		}
+		if email := c.FormValue("email"); email != "" {
+			updateParams.Email = email
+		}
+		if phone := c.FormValue("phone"); phone != "" {
+			updateParams.Phone = &phone
+		}
+		if title := c.FormValue("title"); title != "" {
+			updateParams.Title = &title
+		}
+		if password := c.FormValue("password"); password != "" {
+			// Use helper function to hash password and update timestamp
+			passwordHash, lastPasswordReset, err := utils.UpdatePasswordFields(password)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
+			}
+			updateParams.PasswordHash = passwordHash
+			updateParams.LastPasswordReset = lastPasswordReset
+		}
+		// Handle boolean and UUID fields
+		if isActive := c.FormValue("isActive"); isActive != "" {
+			active := isActive == "true"
+			updateParams.IsActive = &active
+		}
+		if isSuperuser := c.FormValue("isSuperuser"); isSuperuser != "" {
+			superuser := isSuperuser == "true"
+			updateParams.IsSuperuser = &superuser
+		}
+		if marinaIDStr := c.FormValue("marinaId"); marinaIDStr != "" {
+			if marinaID, err := uuid.Parse(marinaIDStr); err == nil {
+				updateParams.MarinaID = marinaID
+			}
+		}
+		if roleIDStr := c.FormValue("roleId"); roleIDStr != "" {
+			if roleID, err := uuid.Parse(roleIDStr); err == nil {
+				updateParams.RoleID = roleID
+			}
+		}
+	} else {
+		// Parse and validate the JSON request body
+		req := new(requests.UpdateUserRequest)
+		if err := c.Bind(req); err != nil {
+			g.server.Logger.Zap.Error("Error binding request body", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Error parsing request: "+err.Error()).JSON(c)
+		}
+		if err := c.Validate(req); err != nil {
+			g.server.Logger.Zap.Error("Error validating request body", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+		}
+
+		// Check if they want to change the marina, validate if the user got access to the new marina
+		if req.MarinaID != nil {
+			marina, err := queries.GetMarinaByID(c.Request().Context(), *req.MarinaID)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Marina not found").JSON(c)
+			}
+			organization, err := queries.GetOrganizationByID(c.Request().Context(), marina.OrganizationID)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Organization not found").JSON(c)
+			}
+			if organization.ID != currentUser.OrganizationID {
+				return responses.NewErrorResponse(http.StatusBadRequest, "User does not have access to this marina").JSON(c)
+			}
+			_, err = queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+				UserID:   userID,
+				MarinaID: *req.MarinaID,
+			})
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "User does not have access to this marina").JSON(c)
+			}
+		}
+
+		// Update only the fields that were provided in the request
+		if req.FirstName != nil {
+			updateParams.FirstName = *req.FirstName
+		}
+		if req.LastName != nil {
+			updateParams.LastName = *req.LastName
+		}
+		if req.Email != nil {
+			updateParams.Email = *req.Email
+		}
+		if req.Phone != nil {
+			updateParams.Phone = req.Phone
+		}
+		if req.Title != nil {
+			updateParams.Title = req.Title
+		}
+		if req.Image != nil {
+			updateParams.Image = req.Image
+		}
+		if req.Password != nil {
+			// Use helper function to hash password and update timestamp
+			passwordHash, lastPasswordReset, err := utils.UpdatePasswordFields(*req.Password)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
+			}
+			updateParams.PasswordHash = passwordHash
+			updateParams.LastPasswordReset = lastPasswordReset
+		}
+		if req.MarinaID != nil {
+			updateParams.MarinaID = *req.MarinaID
+		}
+		if req.RoleID != nil {
+			updateParams.RoleID = *req.RoleID
+		}
+		if req.IsSuperuser != nil {
+			updateParams.IsSuperuser = req.IsSuperuser
+		}
+		if req.IsActive != nil {
+			updateParams.IsActive = req.IsActive
+		}
+
+		// Update permissions if provided
+		if req.Permissions != nil {
+			permissionsBytes, err := req.Permissions.ToBytes()
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
+			}
+			updateParams.Permissions = permissionsBytes
+		}
+
+		// Update modules if provided
+		if req.Modules != nil {
+			modulesBytes, err := req.Modules.ToBytes()
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+			}
+			updateParams.Modules = modulesBytes
+		}
 	}
 
 	// Perform update
@@ -1028,26 +1207,286 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
 	}
 
-	// TODO: Send email with recovery link
-	// In a real implementation, you would send an email here with a link containing the token
-	// For example: https://yourdomain.com/reset-password?token=xyz&email=user@example.com
-	logger.LogWithFields(
-		fmt.Sprintf("Password recovery token generated for user %s: %s", user.Email, token),
-		c.Response().Header().Get(echo.HeaderXRequestID),
-		"password_recovery",
-	)
+	// Initialize the SendGrid client if we have API key
+	// Create a SendGrid client
+	sgClient := g.server.SendGrid
 
-	// FOR DEVELOPMENT ONLY: Return token in response
-	// In production, this should be removed and replaced with email delivery
-	type devResponse struct {
-		Message string `json:"message"`
-		Token   string `json:"token,omitempty"` // Only for development
-		Email   string `json:"email,omitempty"` // Only for development
+	// Build the reset URL
+	baseURL := g.server.Config.App.FrontendBaseURL // Default URL
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s&email=%s",
+		baseURL,
+		token,
+		url.QueryEscape(user.Email))
+
+	// Create template data
+	templateData := sendgrid.PasswordResetTemplateData{
+		UserName:        user.FirstName + " " + user.LastName,
+		ResetURL:        resetURL,
+		TermsConditions: baseURL + "/terms-conditions",
 	}
 
-	return c.JSON(http.StatusOK, devResponse{
-		Message: "If your email is registered, you will receive password recovery instructions",
-		Token:   token,
-		Email:   user.Email,
+	// Send email using specialized password reset method
+	taskID, resultChan, err := sgClient.SendPasswordResetEmail(
+		[]string{user.Email},
+		"Reset Your Password",
+		templateData,
+	)
+
+	if err != nil {
+		logger.Zap.Errorw("Failed to send password reset email", "error", err)
+	} else {
+		logger.Zap.Infow("Password reset email queued",
+			"email", user.Email,
+			"task_id", taskID.String())
+
+		// Log the email attempt (non-blocking)
+		go func() {
+			result := <-resultChan
+			if result.Status == sendgrid.StatusSent {
+				logger.Zap.Infow("Password reset email sent successfully",
+					"email", user.Email,
+					"task_id", result.ID.String())
+			} else {
+				logger.Zap.Errorw("Failed to send password reset email",
+					"email", user.Email,
+					"task_id", result.ID.String(),
+					"error", result.Error)
+			}
+		}()
+	}
+
+	return responses.NewMessageResponse(http.StatusOK, "If your email is registered, you will receive password recovery instructions").JSON(c)
+}
+
+// CreateUserHandler creates a new user
+//
+//	@Summary		Create user
+//	@Description	Create a new user
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		requests.CreateCustomerUserRequest	true	"User information"
+//	@Success		201		{object}	responses.UserResponseWrapper "Created user"
+//	@Failure		400		{object}	responses.Error "Bad request"
+//	@Failure		500		{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/user/customer-portal [post]
+func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
+	// Parse and validate the request body
+	req := new(requests.CreateCustomerUserRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	queries := g.server.DB.Queries()
+
+	// Check if the role is a customer role
+	role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
+	if !*role.IsCustomerRole {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role is not a customer role").JSON(c)
+	}
+
+	// Check if the marina and organization exist and linked
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina not found").JSON(c)
+	}
+
+	organization, err := queries.GetOrganizationByID(c.Request().Context(), req.OrganizationID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Organization not found").JSON(c)
+	}
+
+	if marina.OrganizationID != organization.ID {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
+	}
+
+	// Check if the email is already taken
+	_, err = queries.GetUserByEmail(c.Request().Context(), req.Email)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+	}
+	username := req.Username
+	if username == "" {
+		username = utils.GenerateUsername(req.FirstName)
+	}
+
+	// Check if the username is already taken
+	_, err = queries.GetUserByUsername(c.Request().Context(), username)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Username already taken").JSON(c)
+	}
+
+	// Create the user
+	// Hash the password
+	passwordHash, err := utils.HashPassword(req.Password)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password").JSON(c)
+	}
+
+	// Set default values for nullable fields if not provided
+	failedLoginAttempts := int32(0)
+	isActive := true
+	isSuperuser := false
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+	if req.IsSuperuser != nil {
+		isSuperuser = *req.IsSuperuser
+	}
+
+	// Convert permissions and modules to bytes
+	var permissionsBytes, modulesBytes []byte
+
+	// Use provided permissions or default from role
+	if req.Permissions != nil {
+		var err error
+		permissionsBytes, err = req.Permissions.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
+		}
+	} else {
+		// Set default permissions based on the role
+		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		permissionsBytes = role.Permissions
+	}
+
+	// Use provided modules or default read-only modules
+	if req.Modules != nil {
+		var err error
+		modulesBytes, err = req.Modules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+		}
+	} else {
+		// Set default read-only modules if not provided
+		defaultModules := models.ReadOnlyModules()
+		modulesBytes, _ = defaultModules.ToBytes()
+	}
+
+	params := db.CreateCustomerUserParams{
+		Username:            username,
+		FirstName:           req.FirstName,
+		LastName:            req.LastName,
+		Email:               req.Email,
+		Phone:               req.Phone,
+		Title:               req.Title,
+		Image:               req.Image,
+		PasswordHash:        passwordHash,
+		FailedLoginAttempts: &failedLoginAttempts,
+		LastPasswordReset:   utils.PgTimeNow(),
+		OrganizationID:      req.OrganizationID,
+		MarinaID:            req.MarinaID,
+		RoleID:              req.RoleID,
+		CustomerID:          req.CustomerID,
+		IsCustomer:          utils.Pointer(true),
+		IsSuperuser:         &isSuperuser,
+		IsActive:            &isActive,
+		Modules:             modulesBytes,
+		Permissions:         permissionsBytes,
+	}
+
+	user, err := queries.CreateCustomerUser(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	assignUserToMarina := db.AssignUserToMarinaParams{
+		UserID:     user.ID,
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	}
+
+	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Update customer settings
+	_, err = queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
+		MarinaID:     req.MarinaID,
+		CustomerID:   *req.CustomerID,
+		EnablePortal: utils.Pointer(true),
 	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.NewUserResponseSuccess(user)
+	return c.JSON(http.StatusCreated, response)
+}
+
+// GetUsersByCustomerIDHandler gets users by customer ID
+//
+//	@Summary		Get users by customer ID
+//	@Description	Get all users in a specific customer
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			customerId	path		string	true	"Customer ID"
+//	@Param			marinaId	query		string	true	"Marina ID"
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
+//	@Success		200			{object}	responses.UserListResponse "Paginated list of users in the marina for this  customer"
+//	@Failure		400			{object}	responses.Error "Bad request"
+//	@Failure		500			{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//		@Router			/user/customer-portal/{customerId} [get]
+func (g *UserHandler) GetUsersByCustomerIDHandler(c echo.Context) error {
+	// Parse marina ID
+	customerIDStr := c.Param("customerId")
+	if customerIDStr == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Customer ID is required").JSON(c)
+	}
+	customerID := &customerIDStr
+	marinaIDStr := c.QueryParam("marinaId")
+	marinaID, err := uuid.Parse(marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina ID (UUID) is required").JSON(c)
+	}
+
+	// Parse pagination params
+	pagination := new(requests.PaginationQuery)
+	if err := c.Bind(pagination); err != nil {
+		pagination.Page = 1
+		pagination.PageSize = 10
+	}
+
+	queries := g.server.DB.Queries()
+
+	// Get paginated users by marina
+	params := db.GetMarinaCustomerUserByCustomerIDPaginatedParams{
+		MarinaID:   marinaID,
+		CustomerID: customerID,
+		Limit:      pagination.PageSize,
+		Offset:     (pagination.Page - 1) * pagination.PageSize,
+	}
+	users, err := queries.GetMarinaCustomerUserByCustomerIDPaginated(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Get total count for pagination
+	allUsers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
+		MarinaID:   marinaID,
+		CustomerID: customerID,
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total := int64(len(allUsers))
+
+	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
 }
