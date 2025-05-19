@@ -3994,6 +3994,313 @@
                 }
             }
         },
+        "/message/customer": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get messages of type email or sms for a marina and customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "List customer messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of customer messages",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Create message",
+                "parameters": [
+                    {
+                        "description": "Message information",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/message/get": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a specific message by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Get message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "messageId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message details",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/message/marina": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get messages for a marina and customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "List messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of messages",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Create message",
+                "parameters": [
+                    {
+                        "description": "Message information",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/organizations": {
             "get": {
                 "security": [
@@ -8190,6 +8497,46 @@
                 }
             }
         },
+        "requests.CreateMessageRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "contact",
+                "customerId",
+                "marinaId",
+                "recipient",
+                "sender",
+                "type"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "recipient": {
+                    "type": "string"
+                },
+                "sender": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "email",
+                        "sms",
+                        "internal"
+                    ]
+                }
+            }
+        },
         "requests.CreateOrganizationRequest": {
             "type": "object",
             "required": [
@@ -9940,6 +10287,95 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.MarinaWithAddressResponse"
+                }
+            }
+        },
+        "responses.MessageListResponse": {
+            "description": "Paginated list of messages",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MessageResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "responses.MessageResponse": {
+            "description": "Message data including customer, type, direction, and status information",
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "example": "Your reservation has been confirmed"
+                },
+                "contact": {
+                    "type": "string",
+                    "example": "jane@example.com"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string",
+                    "example": "CUST123"
+                },
+                "direction": {
+                    "type": "string",
+                    "example": "to_customer"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "recipient": {
+                    "type": "string",
+                    "example": "Jane Smith"
+                },
+                "sender": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "sent"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "email"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.MessageResponseWrapper": {
+            "description": "Wrapper for a single message response",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.MessageResponse"
                 }
             }
         },
