@@ -13,41 +13,56 @@ import (
 )
 
 type Server struct {
-	Echo         *echo.Echo
-	Config       *config.Config
-	DB           db.DBService
-	Logger       *logger.Logger
-	S3Service    *s3.S3Service
-	ImageService *s3.ImageService
-	DME          *dme.Client
-	SendGrid     *sendgrid.Client
-	Telgorithm   *telgorithm.Client
+	Echo            *echo.Echo
+	Config          *config.Config
+	DB              db.DBService
+	Logger          *logger.Logger
+	S3Service       *s3.S3Service
+	DocumentService *s3.S3Service
+	ImageService    *s3.ImageService
+	DocURLService   *s3.DocumentService
+	DME             *dme.Client
+	SendGrid        *sendgrid.Client
+	Telgorithm      *telgorithm.Client
 }
 
 func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 	dbConn := db.NewConnection(&cfg.DB)
-	// Initialize S3 service
+
+	// Initialize S3 service for images
 	s3Service, err := s3.NewS3Service(cfg.S3)
 	if err != nil {
 		logger.Zap.Error("Failed to initialize S3 service", err, "initialization")
 	}
 
+	// Initialize document storage service
+	documentService, err := s3.NewS3Service(cfg.DocumentStorage)
+	if err != nil {
+		logger.Zap.Error("Failed to initialize document storage service", err, "initialization")
+	}
+
 	// Initialize image service with S3 and BaseURL from config
 	imageService := s3.NewImageService(s3Service, cfg.S3.BaseURL)
 
+	// Initialize document URL service with document storage and BaseURL from config
+	docURLService := s3.NewDocumentService(documentService, cfg.DocumentStorage.BaseURL)
+
 	// Set the image service in the responses package
 	utils.SetImageService(imageService)
+	utils.SetDocumentService(docURLService)
 
 	return &Server{
-		Config:       cfg,
-		Echo:         echo.New(),
-		DB:           dbConn,
-		Logger:       logger,
-		S3Service:    s3Service,
-		ImageService: imageService,
-		DME:          dme.NewClientFromConfig(cfg, logger, dbConn),
-		SendGrid:     sendgrid.NewClient(cfg),
-		Telgorithm:   telgorithm.NewClient(cfg),
+		Config:          cfg,
+		Echo:            echo.New(),
+		DB:              dbConn,
+		Logger:          logger,
+		S3Service:       s3Service,
+		DocumentService: documentService,
+		ImageService:    imageService,
+		DocURLService:   docURLService,
+		DME:             dme.NewClientFromConfig(cfg, logger, dbConn),
+		SendGrid:        sendgrid.NewClient(cfg),
+		Telgorithm:      telgorithm.NewClient(cfg),
 	}
 }
 

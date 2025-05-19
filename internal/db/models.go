@@ -73,6 +73,19 @@ type DmeSysid struct {
 	DeletedAt      pgtype.Timestamp
 }
 
+type Document struct {
+	ID         uuid.UUID
+	MarinaID   uuid.UUID
+	EntityType string
+	EntityID   string
+	FileName   string
+	FileType   string
+	FilePath   string
+	FileSize   int64
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
+}
+
 type Marina struct {
 	ID             uuid.UUID
 	OrganizationID uuid.UUID

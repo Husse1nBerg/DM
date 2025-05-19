@@ -44,6 +44,7 @@ func RegisterRoutes(s *s.Server) {
 	workOrderHandler := h.NewWorkOrderHandler(s)
 	contactHandler := h.NewContactHandler(s)
 	messageHandler := h.NewMessageHandler(s)
+	documentHandler := h.NewDocumentHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -215,6 +216,18 @@ func RegisterRoutes(s *s.Server) {
 	gallery.GET("/boat/item/:id", galleryHandler.GetVesselGalleryItem)
 	gallery.PUT("/boat/item/:id", galleryHandler.UpdateVesselGalleryItem)
 	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
+
+
+	// Document routes
+	documents := protected.Group("/documents")
+	documents.POST("/customer", documentHandler.CustomerUploadDocument)
+	documents.GET("/customer", documentHandler.CustomerGetDocumentsByEntity)
+	documents.POST("/vessel", documentHandler.VesselUploadDocument)
+	documents.GET("/vessel", documentHandler.VesselGetDocumentsByEntity)
+	documents.POST("/user", documentHandler.UserUploadDocument)
+	documents.GET("/user", documentHandler.UserGetDocumentsByEntity)
+	documents.GET("/:id", documentHandler.GetDocument)
+	documents.DELETE("/:id", documentHandler.DeleteDocument)
 
 	// Work Order routes
 	workOrders := protected.Group("/work-orders")
