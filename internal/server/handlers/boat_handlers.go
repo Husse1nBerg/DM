@@ -69,18 +69,8 @@ func (h *BoatHandler) ListBoatsByPage(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Get total count estimate
-	totalPages := 1
-	if len(dmeResponse) == req.PageSize {
-		// If we got a full page, assume there's at least one more page
-		totalPages = req.Page + 1
-	} else if len(dmeResponse) == 0 && req.Page > 1 {
-		// If current page is empty but we're past page 1, use previous page as max
-		totalPages = req.Page - 1
-	}
-
 	// Convert response to API response format
-	response := responses.ConvertBoatList(dmeResponse, req.Page, req.PageSize, totalPages)
+	response := responses.ConvertBoatList(dmeResponse.Content, dmeResponse.CurrentPage, dmeResponse.MaxPages, dmeResponse.PageSize)
 	return c.JSON(http.StatusOK, response)
 }
 
