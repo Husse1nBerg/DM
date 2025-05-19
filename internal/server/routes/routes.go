@@ -217,13 +217,12 @@ func RegisterRoutes(s *s.Server) {
 	gallery.PUT("/boat/item/:id", galleryHandler.UpdateVesselGalleryItem)
 	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
 
-
 	// Document routes
 	documents := protected.Group("/documents")
 	documents.POST("/customer", documentHandler.CustomerUploadDocument)
 	documents.GET("/customer", documentHandler.CustomerGetDocumentsByEntity)
-	documents.POST("/vessel", documentHandler.VesselUploadDocument)
-	documents.GET("/vessel", documentHandler.VesselGetDocumentsByEntity)
+	documents.POST("/boat", documentHandler.BoatUploadDocument)
+	documents.GET("/boat", documentHandler.BoatGetDocumentsByEntity)
 	documents.POST("/user", documentHandler.UserUploadDocument)
 	documents.GET("/user", documentHandler.UserGetDocumentsByEntity)
 	documents.GET("/:id", documentHandler.GetDocument)

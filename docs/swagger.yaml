@@ -4124,6 +4124,106 @@ paths:
       summary: Get document
       tags:
       - Documents
+  /documents/boat:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all documents for a boat entity
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.DocumentResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get boat documents
+      tags:
+      - Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new document for a boat
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: formData
+        name: entityId
+        required: true
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload document
+      tags:
+      - Documents
   /documents/customer:
     get:
       consumes:
@@ -4278,106 +4378,6 @@ paths:
       consumes:
       - multipart/form-data
       description: Creates a new document for a user
-      parameters:
-      - description: Marina ID
-        format: uuid
-        in: formData
-        name: marinaId
-        required: true
-        type: string
-      - description: Entity ID
-        in: formData
-        name: entityId
-        required: true
-        type: string
-      - description: Document file
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/responses.DocumentResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Upload document
-      tags:
-      - Documents
-  /documents/vessel:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves all documents for a vessel entity
-      parameters:
-      - description: Marina ID
-        format: uuid
-        in: query
-        name: marinaId
-        required: true
-        type: string
-      - description: Entity ID
-        in: query
-        name: entityId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              allOf:
-              - $ref: '#/definitions/responses.BaseResponse'
-              - properties:
-                  data:
-                    items:
-                      $ref: '#/definitions/responses.DocumentResponse'
-                    type: array
-                type: object
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get vessel documents
-      tags:
-      - Documents
-    post:
-      consumes:
-      - multipart/form-data
-      description: Creates a new document for a vessel
       parameters:
       - description: Marina ID
         format: uuid
