@@ -118,6 +118,22 @@ type MarinaGallery struct {
 	DeletedAt   pgtype.Timestamp
 }
 
+type Message struct {
+	ID         uuid.UUID
+	MarinaID   uuid.UUID
+	CustomerID string
+	Type       string
+	Direction  string
+	Body       string
+	Sender     string
+	Recipient  string
+	Contact    string
+	Status     string
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
+	DeletedAt  pgtype.Timestamp
+}
+
 type Organization struct {
 	ID        uuid.UUID
 	Email     string

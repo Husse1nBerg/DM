@@ -43,6 +43,7 @@ func RegisterRoutes(s *s.Server) {
 	galleryHandler := h.NewGalleryHandler(s)
 	workOrderHandler := h.NewWorkOrderHandler(s)
 	contactHandler := h.NewContactHandler(s)
+	messageHandler := h.NewMessageHandler(s)
 	documentHandler := h.NewDocumentHandler(s)
 
 	// Middlewares
@@ -216,17 +217,15 @@ func RegisterRoutes(s *s.Server) {
 	gallery.PUT("/boat/item/:id", galleryHandler.UpdateVesselGalleryItem)
 	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
 
+
 	// Document routes
 	documents := protected.Group("/documents")
 	documents.POST("/customer", documentHandler.CustomerUploadDocument)
 	documents.GET("/customer", documentHandler.CustomerGetDocumentsByEntity)
-
 	documents.POST("/vessel", documentHandler.VesselUploadDocument)
 	documents.GET("/vessel", documentHandler.VesselGetDocumentsByEntity)
-
 	documents.POST("/user", documentHandler.UserUploadDocument)
 	documents.GET("/user", documentHandler.UserGetDocumentsByEntity)
-
 	documents.GET("/:id", documentHandler.GetDocument)
 	documents.DELETE("/:id", documentHandler.DeleteDocument)
 
@@ -242,4 +241,11 @@ func RegisterRoutes(s *s.Server) {
 	workOrders.POST("/create", workOrderHandler.CreateWorkOrder)
 	workOrders.POST("/create-from-estimate", workOrderHandler.CreateWorkOrderFromEstimate)
 	workOrders.POST("/delete-operation", workOrderHandler.DeleteWorkOrderOperation)
+
+	// Message routes
+	messages := protected.Group("/message")
+	messages.POST("/customer", messageHandler.CreateMessageHandler)
+	messages.POST("/marina", messageHandler.CreateMessageMarinaHandler)
+	messages.GET("/marina", messageHandler.ListMessagesMarinaHandler)
+	messages.GET("/customer", messageHandler.ListMessagesCustomerHandler)
 }

@@ -303,3 +303,33 @@ func (c *Client) SendPasswordResetEmail(to []string, subject string, data Passwo
 	taskID, resultChan := c.SendTemplateEmail(email)
 	return taskID, resultChan, nil
 }
+
+// SendMessageEmail sends a message email using the message template
+func (c *Client) SendMessageEmail(to []string, subject string, data MessageTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["message"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("message template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"content":          data.Content,
+		"recipient":        data.Recipient,
+		"sender":           data.Sender,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
