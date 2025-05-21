@@ -21,11 +21,12 @@ INSERT INTO messages (
     sender,
     recipient,
     contact,
-    status
+    status,
+    pinned
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
-RETURNING id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, created_at, updated_at, deleted_at
+RETURNING id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
 `
 
 type CreateMessageParams struct {
@@ -38,6 +39,7 @@ type CreateMessageParams struct {
 	Recipient  string
 	Contact    string
 	Status     string
+	Pinned     bool
 }
 
 func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
@@ -51,6 +53,7 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		arg.Recipient,
 		arg.Contact,
 		arg.Status,
+		arg.Pinned,
 	)
 	var i Message
 	err := row.Scan(
@@ -64,6 +67,7 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		&i.Recipient,
 		&i.Contact,
 		&i.Status,
+		&i.Pinned,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -91,7 +95,7 @@ func (q *Queries) DeleteMessage(ctx context.Context, arg DeleteMessageParams) er
 }
 
 const getMessageByID = `-- name: GetMessageByID :one
-SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, created_at, updated_at, deleted_at
+SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
 FROM messages
 WHERE id = $1
 AND marina_id = $2
@@ -119,6 +123,7 @@ func (q *Queries) GetMessageByID(ctx context.Context, arg GetMessageByIDParams) 
 		&i.Recipient,
 		&i.Contact,
 		&i.Status,
+		&i.Pinned,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -127,12 +132,12 @@ func (q *Queries) GetMessageByID(ctx context.Context, arg GetMessageByIDParams) 
 }
 
 const listMessages = `-- name: ListMessages :many
-SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, created_at, updated_at, deleted_at
+SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
 FROM messages
 WHERE marina_id = $1
 AND customer_id = $2
 AND deleted_at IS NULL
-ORDER BY created_at DESC
+ORDER BY pinned DESC, created_at DESC
 LIMIT $3
 OFFSET $4
 `
@@ -169,6 +174,7 @@ func (q *Queries) ListMessages(ctx context.Context, arg ListMessagesParams) ([]M
 			&i.Recipient,
 			&i.Contact,
 			&i.Status,
+			&i.Pinned,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -184,12 +190,12 @@ func (q *Queries) ListMessages(ctx context.Context, arg ListMessagesParams) ([]M
 }
 
 const listMessagesAll = `-- name: ListMessagesAll :many
-SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, created_at, updated_at, deleted_at
+SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
 FROM messages
 WHERE marina_id = $1
 AND customer_id = $2
 AND deleted_at IS NULL
-ORDER BY created_at DESC
+ORDER BY pinned DESC, created_at DESC
 `
 
 type ListMessagesAllParams struct {
@@ -217,6 +223,7 @@ func (q *Queries) ListMessagesAll(ctx context.Context, arg ListMessagesAllParams
 			&i.Recipient,
 			&i.Contact,
 			&i.Status,
+			&i.Pinned,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -232,13 +239,13 @@ func (q *Queries) ListMessagesAll(ctx context.Context, arg ListMessagesAllParams
 }
 
 const listMessagesByCustomer = `-- name: ListMessagesByCustomer :many
-SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, created_at, updated_at, deleted_at
+SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
 FROM messages
 WHERE marina_id = $1
 AND customer_id = $2
 AND type IN ('email', 'sms')
 AND deleted_at IS NULL
-ORDER BY created_at DESC
+ORDER BY pinned DESC, created_at DESC
 LIMIT $3
 OFFSET $4
 `
@@ -275,6 +282,7 @@ func (q *Queries) ListMessagesByCustomer(ctx context.Context, arg ListMessagesBy
 			&i.Recipient,
 			&i.Contact,
 			&i.Status,
+			&i.Pinned,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -290,13 +298,13 @@ func (q *Queries) ListMessagesByCustomer(ctx context.Context, arg ListMessagesBy
 }
 
 const listMessagesByCustomerAll = `-- name: ListMessagesByCustomerAll :many
-SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, created_at, updated_at, deleted_at
+SELECT id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
 FROM messages
 WHERE marina_id = $1
 AND customer_id = $2
 AND type IN ('email', 'sms')
 AND deleted_at IS NULL
-ORDER BY created_at DESC
+ORDER BY pinned DESC, created_at DESC
 `
 
 type ListMessagesByCustomerAllParams struct {
@@ -324,6 +332,7 @@ func (q *Queries) ListMessagesByCustomerAll(ctx context.Context, arg ListMessage
 			&i.Recipient,
 			&i.Contact,
 			&i.Status,
+			&i.Pinned,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -336,6 +345,54 @@ func (q *Queries) ListMessagesByCustomerAll(ctx context.Context, arg ListMessage
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateMessage = `-- name: UpdateMessage :one
+UPDATE messages
+SET body = $1,
+    pinned = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $3
+AND marina_id = $4
+AND customer_id = $5
+AND deleted_at IS NULL
+RETURNING id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
+`
+
+type UpdateMessageParams struct {
+	Body       string
+	Pinned     bool
+	ID         uuid.UUID
+	MarinaID   uuid.UUID
+	CustomerID string
+}
+
+func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (Message, error) {
+	row := q.db.QueryRow(ctx, updateMessage,
+		arg.Body,
+		arg.Pinned,
+		arg.ID,
+		arg.MarinaID,
+		arg.CustomerID,
+	)
+	var i Message
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.CustomerID,
+		&i.Type,
+		&i.Direction,
+		&i.Body,
+		&i.Sender,
+		&i.Recipient,
+		&i.Contact,
+		&i.Status,
+		&i.Pinned,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
 }
 
 const updateMessageStatus = `-- name: UpdateMessageStatus :exec
@@ -351,5 +408,26 @@ type UpdateMessageStatusParams struct {
 
 func (q *Queries) UpdateMessageStatus(ctx context.Context, arg UpdateMessageStatusParams) error {
 	_, err := q.db.Exec(ctx, updateMessageStatus, arg.Status, arg.ID)
+	return err
+}
+
+const updateOtherMessagesPinnedStatus = `-- name: UpdateOtherMessagesPinnedStatus :exec
+UPDATE messages
+SET pinned = false,
+    updated_at = CURRENT_TIMESTAMP
+WHERE marina_id = $1
+AND customer_id = $2
+AND id != $3
+AND deleted_at IS NULL
+`
+
+type UpdateOtherMessagesPinnedStatusParams struct {
+	MarinaID   uuid.UUID
+	CustomerID string
+	ID         uuid.UUID
+}
+
+func (q *Queries) UpdateOtherMessagesPinnedStatus(ctx context.Context, arg UpdateOtherMessagesPinnedStatusParams) error {
+	_, err := q.db.Exec(ctx, updateOtherMessagesPinnedStatus, arg.MarinaID, arg.CustomerID, arg.ID)
 	return err
 }
