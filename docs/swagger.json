@@ -4188,7 +4188,7 @@
                     {
                         "type": "string",
                         "description": "Message ID",
-                        "name": "messageId",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -4257,7 +4257,7 @@
                     {
                         "type": "string",
                         "description": "Message ID",
-                        "name": "messageId",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -4498,7 +4498,7 @@
                     {
                         "type": "string",
                         "description": "Message ID",
-                        "name": "messageId",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -9379,8 +9379,8 @@
             "required": [
                 "body",
                 "customerId",
-                "marinaId",
-                "messageId"
+                "id",
+                "marinaId"
             ],
             "properties": {
                 "body": {
@@ -9389,10 +9389,10 @@
                 "customerId": {
                     "type": "string"
                 },
-                "marinaId": {
+                "id": {
                     "type": "string"
                 },
-                "messageId": {
+                "marinaId": {
                     "type": "string"
                 },
                 "pinned": {
@@ -9458,8 +9458,8 @@
             "required": [
                 "body",
                 "customerId",
-                "marinaId",
-                "messageId"
+                "id",
+                "marinaId"
             ],
             "properties": {
                 "body": {
@@ -9468,10 +9468,10 @@
                 "customerId": {
                     "type": "string"
                 },
-                "marinaId": {
+                "id": {
                     "type": "string"
                 },
-                "messageId": {
+                "marinaId": {
                     "type": "string"
                 },
                 "pinned": {

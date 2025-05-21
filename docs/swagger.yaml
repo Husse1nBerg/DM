@@ -1736,17 +1736,17 @@ definitions:
         type: string
       customerId:
         type: string
-      marinaId:
+      id:
         type: string
-      messageId:
+      marinaId:
         type: string
       pinned:
         type: boolean
     required:
     - body
     - customerId
+    - id
     - marinaId
-    - messageId
     type: object
   requests.UpdateDMECredentialRequest:
     properties:
@@ -1792,17 +1792,17 @@ definitions:
         type: string
       customerId:
         type: string
-      marinaId:
+      id:
         type: string
-      messageId:
+      marinaId:
         type: string
       pinned:
         type: boolean
     required:
     - body
     - customerId
+    - id
     - marinaId
-    - messageId
     type: object
   requests.UpdateMarinaRequest:
     properties:
@@ -5580,7 +5580,7 @@ paths:
       parameters:
       - description: Message ID
         in: query
-        name: messageId
+        name: id
         required: true
         type: string
       - description: Marina ID
@@ -5736,7 +5736,7 @@ paths:
       parameters:
       - description: Message ID
         in: query
-        name: messageId
+        name: id
         required: true
         type: string
       - description: Marina ID
@@ -5781,7 +5781,7 @@ paths:
       parameters:
       - description: Message ID
         in: query
-        name: messageId
+        name: id
         required: true
         type: string
       - description: Marina ID

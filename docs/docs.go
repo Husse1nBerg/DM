@@ -4195,7 +4195,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Message ID",
-                        "name": "messageId",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -4264,7 +4264,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Message ID",
-                        "name": "messageId",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -4505,7 +4505,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Message ID",
-                        "name": "messageId",
+                        "name": "id",
                         "in": "query",
                         "required": true
                     },
@@ -9386,8 +9386,8 @@ const docTemplate = `{
             "required": [
                 "body",
                 "customerId",
-                "marinaId",
-                "messageId"
+                "id",
+                "marinaId"
             ],
             "properties": {
                 "body": {
@@ -9396,10 +9396,10 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string"
                 },
-                "marinaId": {
+                "id": {
                     "type": "string"
                 },
-                "messageId": {
+                "marinaId": {
                     "type": "string"
                 },
                 "pinned": {
@@ -9465,8 +9465,8 @@ const docTemplate = `{
             "required": [
                 "body",
                 "customerId",
-                "marinaId",
-                "messageId"
+                "id",
+                "marinaId"
             ],
             "properties": {
                 "body": {
@@ -9475,10 +9475,10 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string"
                 },
-                "marinaId": {
+                "id": {
                     "type": "string"
                 },
-                "messageId": {
+                "marinaId": {
                     "type": "string"
                 },
                 "pinned": {

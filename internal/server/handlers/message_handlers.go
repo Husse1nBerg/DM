@@ -469,7 +469,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 //	@Tags			Message
 //	@Accept			json
 //	@Produce		json
-//	@Param			messageId	query		string	true	"Message ID"
+//	@Param			id	query		string	true	"Message ID"
 //	@Param			marinaId	query		string	true	"Marina ID"
 //	@Param			customerId	query		string	true	"Customer ID"
 //	@Success		200		{object}	responses.MessageResponseWrapper "Message details"
@@ -502,7 +502,7 @@ func (h *MessageHandler) GetMessageByIDHandler(c echo.Context) error {
 
 	// Get the message
 	params := db.GetMessageByIDParams{
-		ID:         req.MessageID,
+		ID:         req.ID,
 		MarinaID:   marinaID,
 		CustomerID: req.CustomerID,
 	}
@@ -549,7 +549,7 @@ func (h *MessageHandler) UpdateCustomerMessageHandler(c echo.Context) error {
 	params := db.UpdateMessageParams{
 		Body:       req.Body,
 		Pinned:     req.Pinned,
-		ID:         req.MessageID,
+		ID:         req.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
 	}
@@ -610,7 +610,7 @@ func (h *MessageHandler) UpdateMarinaMessageHandler(c echo.Context) error {
 	params := db.UpdateMessageParams{
 		Body:       req.Body,
 		Pinned:     req.Pinned,
-		ID:         req.MessageID,
+		ID:         req.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
 	}
@@ -645,7 +645,7 @@ func (h *MessageHandler) UpdateMarinaMessageHandler(c echo.Context) error {
 //	@Tags			Message
 //	@Accept			json
 //	@Produce		json
-//	@Param			messageId	query		string	true	"Message ID"
+//	@Param			id	query		string	true	"Message ID"
 //	@Param			marinaId	query		string	true	"Marina ID"
 //	@Param			customerId	query		string	true	"Customer ID"
 //	@Success		200		{object}	responses.MessageResponseWrapper "Message deleted"
@@ -669,7 +669,7 @@ func (h *MessageHandler) DeleteCustomerMessageHandler(c echo.Context) error {
 
 	// First check if message exists
 	params := db.GetMessageByIDParams{
-		ID:         req.MessageID,
+		ID:         req.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
 	}
@@ -681,7 +681,7 @@ func (h *MessageHandler) DeleteCustomerMessageHandler(c echo.Context) error {
 
 	// Delete the message
 	deleteParams := db.DeleteMessageParams{
-		ID:         req.MessageID,
+		ID:         req.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
 	}
@@ -701,7 +701,7 @@ func (h *MessageHandler) DeleteCustomerMessageHandler(c echo.Context) error {
 //	@Tags			Message
 //	@Accept			json
 //	@Produce		json
-//	@Param			messageId	query		string	true	"Message ID"
+//	@Param			id	query		string	true	"Message ID"
 //	@Param			marinaId	query		string	true	"Marina ID"
 //	@Param			customerId	query		string	true	"Customer ID"
 //	@Success		200		{object}	responses.MessageResponseWrapper "Message deleted"
@@ -725,7 +725,7 @@ func (h *MessageHandler) DeleteMarinaMessageHandler(c echo.Context) error {
 
 	// First check if message exists
 	params := db.GetMessageByIDParams{
-		ID:         req.MessageID,
+		ID:         req.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
 	}
@@ -737,7 +737,7 @@ func (h *MessageHandler) DeleteMarinaMessageHandler(c echo.Context) error {
 
 	// Delete the message
 	deleteParams := db.DeleteMessageParams{
-		ID:         req.MessageID,
+		ID:         req.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
 	}
