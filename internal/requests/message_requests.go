@@ -6,7 +6,7 @@ import (
 
 // MessageIDParam is used to validate message ID in URL parameters
 type MessageIDParam struct {
-	MessageID uuid.UUID `query:"messageId" validate:"required"`
+	ID uuid.UUID `query:"id" validate:"required"`
 }
 
 // ListMessagesRequest is used to validate list messages request parameters
@@ -37,16 +37,9 @@ type CreateMessageRequest struct {
 	Pinned     bool      `json:"pinned"`
 }
 
-// DeleteMessageRequest is used to validate delete message request parameters
-type DeleteMessageRequest struct {
-	MessageID  uuid.UUID `query:"messageId" validate:"required"`
-	MarinaID   uuid.UUID `query:"marinaId" validate:"required"`
-	CustomerID string    `query:"customerId" validate:"required"`
-}
-
 // UpdateCustomerMessageRequest is used to validate update customer message request body
 type UpdateCustomerMessageRequest struct {
-	MessageID  uuid.UUID `json:"messageId" validate:"required"`
+	ID         uuid.UUID `json:"id" validate:"required"`
 	MarinaID   uuid.UUID `json:"marinaId" validate:"required"`
 	CustomerID string    `json:"customerId" validate:"required"`
 	Body       string    `json:"body" validate:"required"`
@@ -55,7 +48,7 @@ type UpdateCustomerMessageRequest struct {
 
 // UpdateMarinaMessageRequest is used to validate update marina message request body
 type UpdateMarinaMessageRequest struct {
-	MessageID  uuid.UUID `json:"messageId" validate:"required"`
+	ID         uuid.UUID `json:"id" validate:"required"`
 	MarinaID   uuid.UUID `json:"marinaId" validate:"required"`
 	CustomerID string    `json:"customerId" validate:"required"`
 	Body       string    `json:"body" validate:"required"`
@@ -64,14 +57,14 @@ type UpdateMarinaMessageRequest struct {
 
 // DeleteCustomerMessageRequest is used to validate delete customer message request parameters
 type DeleteCustomerMessageRequest struct {
-	MessageID  uuid.UUID `query:"messageId" validate:"required"`
+	ID         uuid.UUID `query:"id" validate:"required"`
 	MarinaID   uuid.UUID `query:"marinaId" validate:"required"`
 	CustomerID string    `query:"customerId" validate:"required"`
 }
 
 // DeleteMarinaMessageRequest is used to validate delete marina message request parameters
 type DeleteMarinaMessageRequest struct {
-	MessageID  uuid.UUID `query:"messageId" validate:"required"`
+	ID         uuid.UUID `query:"id" validate:"required"`
 	MarinaID   uuid.UUID `query:"marinaId" validate:"required"`
 	CustomerID string    `query:"customerId" validate:"required"`
 }
