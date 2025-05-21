@@ -81,3 +81,14 @@ WHERE marina_id = $1
 AND customer_id = $2
 AND id != $3
 AND deleted_at IS NULL;
+
+-- name: UpdateMessage :one
+UPDATE messages
+SET body = $1,
+    pinned = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $3
+AND marina_id = $4
+AND customer_id = $5
+AND deleted_at IS NULL
+RETURNING *;

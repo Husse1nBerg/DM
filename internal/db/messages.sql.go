@@ -347,6 +347,54 @@ func (q *Queries) ListMessagesByCustomerAll(ctx context.Context, arg ListMessage
 	return items, nil
 }
 
+const updateMessage = `-- name: UpdateMessage :one
+UPDATE messages
+SET body = $1,
+    pinned = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $3
+AND marina_id = $4
+AND customer_id = $5
+AND deleted_at IS NULL
+RETURNING id, marina_id, customer_id, type, direction, body, sender, recipient, contact, status, pinned, created_at, updated_at, deleted_at
+`
+
+type UpdateMessageParams struct {
+	Body       string
+	Pinned     bool
+	ID         uuid.UUID
+	MarinaID   uuid.UUID
+	CustomerID string
+}
+
+func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (Message, error) {
+	row := q.db.QueryRow(ctx, updateMessage,
+		arg.Body,
+		arg.Pinned,
+		arg.ID,
+		arg.MarinaID,
+		arg.CustomerID,
+	)
+	var i Message
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.CustomerID,
+		&i.Type,
+		&i.Direction,
+		&i.Body,
+		&i.Sender,
+		&i.Recipient,
+		&i.Contact,
+		&i.Status,
+		&i.Pinned,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const updateMessageStatus = `-- name: UpdateMessageStatus :exec
 UPDATE messages
 SET status = $1, updated_at = CURRENT_TIMESTAMP
