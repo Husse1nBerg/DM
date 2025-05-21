@@ -4070,6 +4070,61 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update an existing customer message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Update customer message",
+                "parameters": [
+                    {
+                        "description": "Message information",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateCustomerMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -4107,6 +4162,73 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete an existing customer message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Delete customer message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "messageId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message deleted",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -4258,6 +4380,61 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update an existing marina message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Update marina message",
+                "parameters": [
+                    {
+                        "description": "Message information",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateMarinaMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -4295,6 +4472,73 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete an existing marina message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Delete marina message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "messageId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message deleted",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Message not found",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -9137,6 +9381,32 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.UpdateCustomerMessageRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "customerId",
+                "marinaId",
+                "messageId"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "messageId": {
+                    "type": "string"
+                },
+                "pinned": {
+                    "type": "boolean"
+                }
+            }
+        },
         "requests.UpdateDMECredentialRequest": {
             "type": "object",
             "properties": {
@@ -9187,6 +9457,32 @@ const docTemplate = `{
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                }
+            }
+        },
+        "requests.UpdateMarinaMessageRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "customerId",
+                "marinaId",
+                "messageId"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "messageId": {
+                    "type": "string"
+                },
+                "pinned": {
+                    "type": "boolean"
                 }
             }
         },

@@ -247,4 +247,10 @@ func RegisterRoutes(s *s.Server) {
 	messages.POST("/marina", messageHandler.CreateMessageMarinaHandler)
 	messages.GET("/marina", messageHandler.ListMessagesMarinaHandler)
 	messages.GET("/customer", messageHandler.ListMessagesCustomerHandler)
+	messages.GET("/get", messageHandler.GetMessageByIDHandler)
+	messages.PUT("/customer", messageHandler.UpdateCustomerMessageHandler)
+	messages.PUT("/marina", messageHandler.UpdateMarinaMessageHandler)
+	messages.DELETE("/customer", messageHandler.DeleteCustomerMessageHandler)
+	messages.DELETE("/marina", messageHandler.DeleteMarinaMessageHandler)
+
 }

@@ -515,3 +515,237 @@ func (h *MessageHandler) GetMessageByIDHandler(c echo.Context) error {
 	response := responses.NewMessageResponseSuccess(message)
 	return response.JSON(c)
 }
+
+// UpdateCustomerMessageHandler updates a customer message
+//
+//	@Summary		Update customer message
+//	@Description	Update an existing customer message
+//	@Tags			Message
+//	@Accept			json
+//	@Produce		json
+//	@Param			message	body		requests.UpdateCustomerMessageRequest	true	"Message information"
+//	@Success		200		{object}	responses.MessageResponseWrapper "Updated message"
+//	@Failure		400		{object}	responses.Error "Bad request"
+//	@Failure		404		{object}	responses.Error "Message not found"
+//	@Failure		500		{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/message/customer [put]
+func (h *MessageHandler) UpdateCustomerMessageHandler(c echo.Context) error {
+	// Parse and validate request
+	logger := h.server.Logger
+
+	req := new(requests.UpdateCustomerMessageRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	queries := h.server.DB.Queries()
+
+	// Update the message
+	params := db.UpdateMessageParams{
+		Body:       req.Body,
+		Pinned:     req.Pinned,
+		ID:         req.MessageID,
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	}
+
+	message, err := queries.UpdateMessage(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusNotFound, "Message not found").JSON(c)
+	}
+
+	// If the message is pinned, update other messages' pinned status
+	if req.Pinned {
+		err = queries.UpdateOtherMessagesPinnedStatus(c.Request().Context(), db.UpdateOtherMessagesPinnedStatusParams{
+			MarinaID:   req.MarinaID,
+			CustomerID: req.CustomerID,
+			ID:         message.ID,
+		})
+		if err != nil {
+			logger.Zap.Errorw("Failed to update other messages' pinned status",
+				"message_id", message.ID,
+				"error", err)
+		}
+	}
+
+	response := responses.NewMessageResponseSuccess(message)
+	return response.JSON(c)
+}
+
+// UpdateMarinaMessageHandler updates a marina message
+//
+//	@Summary		Update marina message
+//	@Description	Update an existing marina message
+//	@Tags			Message
+//	@Accept			json
+//	@Produce		json
+//	@Param			message	body		requests.UpdateMarinaMessageRequest	true	"Message information"
+//	@Success		200		{object}	responses.MessageResponseWrapper "Updated message"
+//	@Failure		400		{object}	responses.Error "Bad request"
+//	@Failure		404		{object}	responses.Error "Message not found"
+//	@Failure		500		{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/message/marina [put]
+func (h *MessageHandler) UpdateMarinaMessageHandler(c echo.Context) error {
+	// Parse and validate request
+	logger := h.server.Logger
+
+	req := new(requests.UpdateMarinaMessageRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	queries := h.server.DB.Queries()
+
+	// Update the message
+	params := db.UpdateMessageParams{
+		Body:       req.Body,
+		Pinned:     req.Pinned,
+		ID:         req.MessageID,
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	}
+
+	message, err := queries.UpdateMessage(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusNotFound, "Message not found").JSON(c)
+	}
+
+	// If the message is pinned, update other messages' pinned status
+	if req.Pinned {
+		err = queries.UpdateOtherMessagesPinnedStatus(c.Request().Context(), db.UpdateOtherMessagesPinnedStatusParams{
+			MarinaID:   req.MarinaID,
+			CustomerID: req.CustomerID,
+			ID:         message.ID,
+		})
+		if err != nil {
+			logger.Zap.Errorw("Failed to update other messages' pinned status",
+				"message_id", message.ID,
+				"error", err)
+		}
+	}
+
+	response := responses.NewMessageResponseSuccess(message)
+	return response.JSON(c)
+}
+
+// DeleteCustomerMessageHandler deletes a customer message
+//
+//	@Summary		Delete customer message
+//	@Description	Delete an existing customer message
+//	@Tags			Message
+//	@Accept			json
+//	@Produce		json
+//	@Param			messageId	query		string	true	"Message ID"
+//	@Param			marinaId	query		string	true	"Marina ID"
+//	@Param			customerId	query		string	true	"Customer ID"
+//	@Success		200		{object}	responses.MessageResponseWrapper "Message deleted"
+//	@Failure		400		{object}	responses.Error "Bad request"
+//	@Failure		404		{object}	responses.Error "Message not found"
+//	@Failure		500		{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/message/customer [delete]
+func (h *MessageHandler) DeleteCustomerMessageHandler(c echo.Context) error {
+	// Parse and validate request
+	req := new(requests.DeleteCustomerMessageRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	queries := h.server.DB.Queries()
+
+	// First check if message exists
+	params := db.GetMessageByIDParams{
+		ID:         req.MessageID,
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	}
+
+	_, err := queries.GetMessageByID(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusNotFound, "Message not found").JSON(c)
+	}
+
+	// Delete the message
+	deleteParams := db.DeleteMessageParams{
+		ID:         req.MessageID,
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	}
+
+	err = queries.DeleteMessage(c.Request().Context(), deleteParams)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+// DeleteMarinaMessageHandler deletes a marina message
+//
+//	@Summary		Delete marina message
+//	@Description	Delete an existing marina message
+//	@Tags			Message
+//	@Accept			json
+//	@Produce		json
+//	@Param			messageId	query		string	true	"Message ID"
+//	@Param			marinaId	query		string	true	"Marina ID"
+//	@Param			customerId	query		string	true	"Customer ID"
+//	@Success		200		{object}	responses.MessageResponseWrapper "Message deleted"
+//	@Failure		400		{object}	responses.Error "Bad request"
+//	@Failure		404		{object}	responses.Error "Message not found"
+//	@Failure		500		{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/message/marina [delete]
+func (h *MessageHandler) DeleteMarinaMessageHandler(c echo.Context) error {
+	// Parse and validate request
+	req := new(requests.DeleteMarinaMessageRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	queries := h.server.DB.Queries()
+
+	// First check if message exists
+	params := db.GetMessageByIDParams{
+		ID:         req.MessageID,
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	}
+
+	_, err := queries.GetMessageByID(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusNotFound, "Message not found").JSON(c)
+	}
+
+	// Delete the message
+	deleteParams := db.DeleteMessageParams{
+		ID:         req.MessageID,
+		MarinaID:   req.MarinaID,
+		CustomerID: req.CustomerID,
+	}
+
+	err = queries.DeleteMessage(c.Request().Context(), deleteParams)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.NoContent(http.StatusOK)
+}

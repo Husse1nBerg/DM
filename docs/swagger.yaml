@@ -1730,6 +1730,24 @@ definitions:
     - name
     - type
     type: object
+  requests.UpdateCustomerMessageRequest:
+    properties:
+      body:
+        type: string
+      customerId:
+        type: string
+      marinaId:
+        type: string
+      messageId:
+        type: string
+      pinned:
+        type: boolean
+    required:
+    - body
+    - customerId
+    - marinaId
+    - messageId
+    type: object
   requests.UpdateDMECredentialRequest:
     properties:
       accessToken:
@@ -1767,6 +1785,24 @@ definitions:
       systemId:
         example: SYS123456
         type: string
+    type: object
+  requests.UpdateMarinaMessageRequest:
+    properties:
+      body:
+        type: string
+      customerId:
+        type: string
+      marinaId:
+        type: string
+      messageId:
+        type: string
+      pinned:
+        type: boolean
+    required:
+    - body
+    - customerId
+    - marinaId
+    - messageId
     type: object
   requests.UpdateMarinaRequest:
     properties:
@@ -5537,6 +5573,50 @@ paths:
       tags:
       - Marinas
   /message/customer:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing customer message
+      parameters:
+      - description: Message ID
+        in: query
+        name: messageId
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message deleted
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete customer message
+      tags:
+      - Message
     get:
       consumes:
       - application/json
@@ -5613,6 +5693,41 @@ paths:
       summary: Create message
       tags:
       - Message
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateCustomerMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update customer message
+      tags:
+      - Message
   /message/get:
     get:
       consumes:
@@ -5659,6 +5774,50 @@ paths:
       tags:
       - Message
   /message/marina:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing marina message
+      parameters:
+      - description: Message ID
+        in: query
+        name: messageId
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message deleted
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete marina message
+      tags:
+      - Message
     get:
       consumes:
       - application/json
@@ -5733,6 +5892,41 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create message
+      tags:
+      - Message
+    put:
+      consumes:
+      - application/json
+      description: Update an existing marina message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateMarinaMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina message
       tags:
       - Message
   /organizations:
