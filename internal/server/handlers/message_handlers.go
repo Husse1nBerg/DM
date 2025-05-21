@@ -212,6 +212,20 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
+	// If the message is pinned, update other messages' pinned status
+	if req.Pinned {
+		err = queries.UpdateOtherMessagesPinnedStatus(c.Request().Context(), db.UpdateOtherMessagesPinnedStatusParams{
+			MarinaID:   req.MarinaID,
+			CustomerID: req.CustomerID,
+			ID:         message.ID,
+		})
+		if err != nil {
+			logger.Zap.Errorw("Failed to update other messages' pinned status",
+				"message_id", message.ID,
+				"error", err)
+		}
+	}
+
 	// Create email data
 	email := sendgrid.MessageTemplateData{
 		Content:   req.Body,
@@ -322,6 +336,20 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	message, err := queries.CreateMessage(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// If the message is pinned, update other messages' pinned status
+	if req.Pinned {
+		err = queries.UpdateOtherMessagesPinnedStatus(c.Request().Context(), db.UpdateOtherMessagesPinnedStatusParams{
+			MarinaID:   req.MarinaID,
+			CustomerID: req.CustomerID,
+			ID:         message.ID,
+		})
+		if err != nil {
+			logger.Zap.Errorw("Failed to update other messages' pinned status",
+				"message_id", message.ID,
+				"error", err)
+		}
 	}
 
 	if req.Type == "sms" {

@@ -72,3 +72,12 @@ SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 AND marina_id = $2
 AND customer_id = $3;
+
+-- name: UpdateOtherMessagesPinnedStatus :exec
+UPDATE messages
+SET pinned = false,
+    updated_at = CURRENT_TIMESTAMP
+WHERE marina_id = $1
+AND customer_id = $2
+AND id != $3
+AND deleted_at IS NULL;

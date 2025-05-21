@@ -362,3 +362,24 @@ func (q *Queries) UpdateMessageStatus(ctx context.Context, arg UpdateMessageStat
 	_, err := q.db.Exec(ctx, updateMessageStatus, arg.Status, arg.ID)
 	return err
 }
+
+const updateOtherMessagesPinnedStatus = `-- name: UpdateOtherMessagesPinnedStatus :exec
+UPDATE messages
+SET pinned = false,
+    updated_at = CURRENT_TIMESTAMP
+WHERE marina_id = $1
+AND customer_id = $2
+AND id != $3
+AND deleted_at IS NULL
+`
+
+type UpdateOtherMessagesPinnedStatusParams struct {
+	MarinaID   uuid.UUID
+	CustomerID string
+	ID         uuid.UUID
+}
+
+func (q *Queries) UpdateOtherMessagesPinnedStatus(ctx context.Context, arg UpdateOtherMessagesPinnedStatusParams) error {
+	_, err := q.db.Exec(ctx, updateOtherMessagesPinnedStatus, arg.MarinaID, arg.CustomerID, arg.ID)
+	return err
+}
