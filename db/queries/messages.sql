@@ -4,7 +4,7 @@ FROM messages
 WHERE marina_id = $1
 AND customer_id = $2
 AND deleted_at IS NULL
-ORDER BY created_at DESC
+ORDER BY pinned DESC, created_at DESC
 LIMIT $3
 OFFSET $4;
 
@@ -14,7 +14,7 @@ FROM messages
 WHERE marina_id = $1
 AND customer_id = $2
 AND deleted_at IS NULL
-ORDER BY created_at DESC;
+ORDER BY pinned DESC, created_at DESC;
 
 -- name: ListMessagesByCustomer :many
 SELECT *
@@ -23,7 +23,7 @@ WHERE marina_id = $1
 AND customer_id = $2
 AND type IN ('email', 'sms')
 AND deleted_at IS NULL
-ORDER BY created_at DESC
+ORDER BY pinned DESC, created_at DESC
 LIMIT $3
 OFFSET $4;
 
@@ -34,7 +34,7 @@ WHERE marina_id = $1
 AND customer_id = $2
 AND type IN ('email', 'sms')
 AND deleted_at IS NULL
-ORDER BY created_at DESC;
+ORDER BY pinned DESC, created_at DESC;
 
 -- name: CreateMessage :one
 INSERT INTO messages (
@@ -46,9 +46,10 @@ INSERT INTO messages (
     sender,
     recipient,
     contact,
-    status
+    status,
+    pinned
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 )
 RETURNING *;
 
@@ -71,3 +72,12 @@ SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 AND marina_id = $2
 AND customer_id = $3;
+
+-- name: UpdateOtherMessagesPinnedStatus :exec
+UPDATE messages
+SET pinned = false,
+    updated_at = CURRENT_TIMESTAMP
+WHERE marina_id = $1
+AND customer_id = $2
+AND id != $3
+AND deleted_at IS NULL;

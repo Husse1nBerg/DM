@@ -14,6 +14,7 @@ type ListMessagesRequest struct {
 	PaginationQuery
 	MarinaID   uuid.UUID `query:"marinaId" validate:"required"`
 	CustomerID string    `query:"customerId" validate:"required"`
+	Pinned     *bool     `query:"pinned"`
 }
 
 // ListMessagesByCustomerRequest is used to validate list messages by customer request parameters
@@ -21,6 +22,7 @@ type ListMessagesByCustomerRequest struct {
 	PaginationQuery
 	MarinaID   uuid.UUID `query:"marinaId" validate:"required"`
 	CustomerID string    `query:"customerId" validate:"required"`
+	Pinned     *bool     `query:"pinned"`
 }
 
 // CreateMessageRequest is used to validate create message request body
@@ -32,6 +34,7 @@ type CreateMessageRequest struct {
 	Sender     string    `json:"sender" validate:"required"`
 	Recipient  string    `json:"recipient" validate:"required"`
 	Contact    string    `json:"contact" validate:"required"`
+	Pinned     bool      `json:"pinned"`
 }
 
 // DeleteMessageRequest is used to validate delete message request parameters

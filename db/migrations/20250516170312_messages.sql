@@ -11,6 +11,7 @@ CREATE TABLE messages (
     recipient TEXT NOT NULL, -- Receiver Name or Internal
     contact TEXT NOT NULL, -- the phone number or the email address or internal
     status TEXT NOT NULL, -- pending, sent, failed
+    pinned BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP,
     deleted_at TIMESTAMP

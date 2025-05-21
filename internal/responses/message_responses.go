@@ -22,6 +22,7 @@ type MessageResponse struct {
 	Recipient  string     `json:"recipient" example:"Jane Smith"`
 	Contact    string     `json:"contact" example:"jane@example.com"`
 	Status     string     `json:"status" example:"sent"`
+	Pinned     bool       `json:"pinned" example:"false"`
 	CreatedAt  time.Time  `json:"createdAt"`
 	UpdatedAt  *time.Time `json:"updatedAt,omitempty"`
 }
@@ -66,6 +67,7 @@ func MessageDBToResponse(message db.Message) MessageResponse {
 		Recipient:  message.Recipient,
 		Contact:    message.Contact,
 		Status:     message.Status,
+		Pinned:     message.Pinned,
 		CreatedAt:  message.CreatedAt.Time,
 		UpdatedAt:  updatedAt,
 	}

@@ -1297,6 +1297,8 @@ definitions:
         type: string
       marinaId:
         type: string
+      pinned:
+        type: boolean
       recipient:
         type: string
       sender:
@@ -2594,6 +2596,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      pinned:
+        example: false
+        type: boolean
       recipient:
         example: Jane Smith
         type: string
