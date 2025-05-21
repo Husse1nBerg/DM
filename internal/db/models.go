@@ -129,6 +129,7 @@ type Message struct {
 	Recipient  string
 	Contact    string
 	Status     string
+	Pinned     bool
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
 	DeletedAt  pgtype.Timestamp

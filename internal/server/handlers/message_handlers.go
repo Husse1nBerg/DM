@@ -204,6 +204,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Recipient:  req.Recipient,
 		Contact:    req.Contact,
 		Status:     "pending",
+		Pinned:     req.Pinned,
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
@@ -315,6 +316,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		Recipient:  req.Recipient,
 		Contact:    req.Contact,
 		Status:     "pending",
+		Pinned:     req.Pinned,
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)

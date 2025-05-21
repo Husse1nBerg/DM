@@ -8528,6 +8528,9 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string"
                 },
+                "pinned": {
+                    "type": "boolean"
+                },
                 "recipient": {
                     "type": "string"
                 },
@@ -10355,6 +10358,10 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "pinned": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "recipient": {
                     "type": "string",
