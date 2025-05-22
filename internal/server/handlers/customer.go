@@ -321,6 +321,7 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 		Name:                      req.Name,
 		FirstName:                 req.FirstName,
 		LastName:                  req.LastName,
+		Email:                     req.Email,
 		Address1:                  req.Address1,
 		Address2:                  req.Address2,
 		Address3:                  req.Address3,

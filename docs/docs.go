@@ -7474,6 +7474,9 @@ const docTemplate = `{
                 "country": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "emergencyContact": {
                     "type": "string"
                 },
@@ -8991,6 +8994,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "country": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "emergencyContact": {

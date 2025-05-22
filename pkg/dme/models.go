@@ -121,6 +121,7 @@ type CustomerUpdate struct {
 	Name                      string `json:"name"`
 	FirstName                 string `json:"firstName"`
 	LastName                  string `json:"lastName"`
+	Email                     string `json:"email"`
 	Address1                  string `json:"address1"`
 	Address2                  string `json:"address2"`
 	Address3                  string `json:"address3"`
@@ -154,6 +155,7 @@ type CustomerCreate struct {
 	Name                      string `json:"name"`
 	FirstName                 string `json:"firstName"`
 	LastName                  string `json:"lastName"`
+	Email                     string `json:"email"`
 	Address1                  string `json:"address1"`
 	Address2                  string `json:"address2"`
 	Address3                  string `json:"address3"`

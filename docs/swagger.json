@@ -7467,6 +7467,9 @@
                 "country": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "emergencyContact": {
                     "type": "string"
                 },
@@ -8984,6 +8987,9 @@
                     "type": "string"
                 },
                 "country": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "emergencyContact": {
