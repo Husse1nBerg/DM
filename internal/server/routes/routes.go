@@ -45,6 +45,7 @@ func RegisterRoutes(s *s.Server) {
 	contactHandler := h.NewContactHandler(s)
 	messageHandler := h.NewMessageHandler(s)
 	documentHandler := h.NewDocumentHandler(s)
+	inviteHandler := h.NewInviteHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -69,6 +70,11 @@ func RegisterRoutes(s *s.Server) {
 	auth := base.Group("/auth")
 	auth.POST("/login", authHandler.Login)
 	auth.POST("/refresh", authHandler.RefreshToken)
+
+	// Invite routes (public endpoints)
+	invite := base.Group("/invite")
+	invite.GET("/confirm", inviteHandler.ConfirmToken)
+	invite.POST("/accept", inviteHandler.AcceptInvitation)
 
 	protected := base.Group("")
 	// Configure middleware with the custom claims type
@@ -192,7 +198,6 @@ func RegisterRoutes(s *s.Server) {
 	// SMS routes
 	sms := protected.Group("/sms")
 	sms.POST("/send", smsHandler.SendSMS)
-	sms.POST("/send-batch", smsHandler.SendBatchSMS)
 
 	// Boat routes
 	boats := protected.Group("/boats")

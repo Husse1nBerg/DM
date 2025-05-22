@@ -283,7 +283,7 @@ func RunProdSeed() {
 				FirstName:      "Andrew",
 				LastName:       "Sameh",
 				Email:          cfg.App.AdminEmail,
-				PasswordHash:   string(encryptedPassword),
+				PasswordHash:   u.Pointer(string(encryptedPassword)),
 				OrganizationID: org.ID,
 				RoleID:         role.ID,
 				MarinaID:       marina.ID,

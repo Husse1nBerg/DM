@@ -57,3 +57,10 @@ type MessageTemplateData struct {
 	Sender          string `json:"sender"`           // Sender name
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 }
+
+// InviteTemplateData contains specific fields for the invite template
+type InviteTemplateData struct {
+	UserName        string `json:"user_name"`        // User's username for login
+	InviteURL       string `json:"invite_url"`       // URL for the invite
+	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+}

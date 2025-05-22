@@ -195,7 +195,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		Phone:               req.Phone,
 		Title:               req.Title,
 		Image:               req.Image,
-		PasswordHash:        passwordHash,
+		PasswordHash:        utils.Pointer(passwordHash),
 		FailedLoginAttempts: &failedLoginAttempts,
 		LastPasswordReset:   utils.PgTimeNow(),
 		OrganizationID:      req.OrganizationID,
@@ -758,7 +758,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
 			}
-			updateParams.PasswordHash = passwordHash
+			updateParams.PasswordHash = utils.Pointer(passwordHash)
 			updateParams.LastPasswordReset = lastPasswordReset
 		}
 		// Handle boolean and UUID fields
@@ -839,7 +839,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
 			}
-			updateParams.PasswordHash = passwordHash
+			updateParams.PasswordHash = utils.Pointer(passwordHash)
 			updateParams.LastPasswordReset = lastPasswordReset
 		}
 		if req.MarinaID != nil {
@@ -921,7 +921,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 	}
 
 	// Verify current password
-	if err := utils.VerifyPassword(user.PasswordHash, resetRequest.OldPassword); err != nil {
+	if err := utils.VerifyPassword(*user.PasswordHash, resetRequest.OldPassword); err != nil {
 		logger.Zap.Info("password reset failed: invalid current password", c.Response().Header().Get(echo.HeaderXRequestID))
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid current password").JSON(c)
 	}
@@ -939,7 +939,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 
 	// Create a slice of password hashes from the history
 	historyHashes := make([]string, 0, len(passwordHistory)+1)
-	historyHashes = append(historyHashes, user.PasswordHash)  // Add current password to history
+	historyHashes = append(historyHashes, *user.PasswordHash) // Add current password to history
 	historyHashes = append(historyHashes, passwordHistory...) // Add previous password hashes
 
 	// Check if new password matches any of the last 4 passwords
@@ -963,7 +963,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 	// Add old password to history first
 	_, err = queries.AddPasswordToHistory(c.Request().Context(), db.AddPasswordToHistoryParams{
 		UserID:       user.ID,
-		PasswordHash: user.PasswordHash, // Store the old password that's being replaced
+		PasswordHash: *user.PasswordHash, // Store the old password that's being replaced
 	})
 	if err != nil {
 		logger.Zap.Error("failed to update password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
@@ -980,7 +980,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 		Phone:               user.Phone,
 		Title:               user.Title,
 		Image:               user.Image,
-		PasswordHash:        newPasswordHash,
+		PasswordHash:        &newPasswordHash,
 		LastLogin:           user.LastLogin,
 		FailedLoginAttempts: user.FailedLoginAttempts,
 		LockedUntil:         user.LockedUntil,
@@ -1067,7 +1067,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 
 	// Create a slice of password hashes from the history
 	historyHashes := make([]string, 0, len(passwordHistory)+1)
-	historyHashes = append(historyHashes, user.PasswordHash)  // Add current password to history
+	historyHashes = append(historyHashes, *user.PasswordHash) // Add current password to history
 	historyHashes = append(historyHashes, passwordHistory...) // Add previous password hashes
 
 	// Check if new password matches any of the last 4 passwords
@@ -1091,7 +1091,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 	// Add old password to history first
 	_, err = queries.AddPasswordToHistory(c.Request().Context(), db.AddPasswordToHistoryParams{
 		UserID:       user.ID,
-		PasswordHash: user.PasswordHash, // Store the old password that's being replaced
+		PasswordHash: *user.PasswordHash, // Store the old password that's being replaced
 	})
 	if err != nil {
 		logger.Zap.Error("failed to update password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
@@ -1108,7 +1108,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 		Phone:               user.Phone,
 		Title:               user.Title,
 		Image:               user.Image,
-		PasswordHash:        newPasswordHash,
+		PasswordHash:        &newPasswordHash,
 		LastLogin:           user.LastLogin,
 		FailedLoginAttempts: user.FailedLoginAttempts,
 		LockedUntil:         user.LockedUntil,
@@ -1275,6 +1275,8 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	// Parse and validate the request body
 	req := new(requests.CreateCustomerUserRequest)
+	logger := g.server.Logger
+	cfg := g.server.Config
 	if err := c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
@@ -1325,15 +1327,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Username already taken").JSON(c)
 	}
 
-	// Create the user
-	// Hash the password
-	passwordHash, err := utils.HashPassword(req.Password)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password").JSON(c)
-	}
-
 	// Set default values for nullable fields if not provided
-	failedLoginAttempts := int32(0)
 	isActive := true
 	isSuperuser := false
 	if req.IsActive != nil {
@@ -1376,25 +1370,22 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	}
 
 	params := db.CreateCustomerUserParams{
-		Username:            username,
-		FirstName:           req.FirstName,
-		LastName:            req.LastName,
-		Email:               req.Email,
-		Phone:               req.Phone,
-		Title:               req.Title,
-		Image:               req.Image,
-		PasswordHash:        passwordHash,
-		FailedLoginAttempts: &failedLoginAttempts,
-		LastPasswordReset:   utils.PgTimeNow(),
-		OrganizationID:      req.OrganizationID,
-		MarinaID:            req.MarinaID,
-		RoleID:              req.RoleID,
-		CustomerID:          req.CustomerID,
-		IsCustomer:          utils.Pointer(true),
-		IsSuperuser:         &isSuperuser,
-		IsActive:            &isActive,
-		Modules:             modulesBytes,
-		Permissions:         permissionsBytes,
+		Username:       username,
+		FirstName:      req.FirstName,
+		LastName:       req.LastName,
+		Email:          req.Email,
+		Phone:          req.Phone,
+		Title:          req.Title,
+		Image:          req.Image,
+		OrganizationID: req.OrganizationID,
+		MarinaID:       req.MarinaID,
+		RoleID:         req.RoleID,
+		CustomerID:     req.CustomerID,
+		IsCustomer:     utils.Pointer(true),
+		IsSuperuser:    &isSuperuser,
+		IsActive:       &isActive,
+		Modules:        modulesBytes,
+		Permissions:    permissionsBytes,
 	}
 
 	user, err := queries.CreateCustomerUser(c.Request().Context(), params)
@@ -1421,6 +1412,60 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	token, err := utils.GenerateRandomToken(32)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	_, err = queries.CreateInvite(c.Request().Context(), db.CreateInviteParams{
+		UserID:    user.ID,
+		Email:     user.Email,
+		Token:     token,
+		ExpiresAt: utils.PgTimeNowAdd(240 * time.Hour),
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	inviteURL := fmt.Sprintf("%s/%s?token=%s&email=%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.InvitationRoute,
+		token,
+		url.QueryEscape(user.Email))
+	termsConditionsURL := fmt.Sprintf("%s/%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.TermsConditionsRoute,
+	)
+	templateData := sendgrid.InviteTemplateData{
+		UserName:        user.FirstName,
+		InviteURL:       inviteURL,
+		TermsConditions: termsConditionsURL,
+	}
+	taskID, resultChan, err := g.server.SendGrid.SendInviteEmail(
+		[]string{user.Email},
+		"DockMaster Customer Portal Invite",
+		templateData,
+	)
+	if err != nil {
+		logger.Zap.Errorw("Failed to send invite email", "error", err)
+	} else {
+		logger.Zap.Infow("Invite email queued",
+			"email", user.Email,
+			"task_id", taskID.String())
+
+		// Log the email attempt (non-blocking)
+		go func() {
+			result := <-resultChan
+			if result.Status == sendgrid.StatusSent {
+				logger.Zap.Infow("Invite email sent successfully",
+					"email", user.Email,
+					"task_id", result.ID.String())
+			} else {
+				logger.Zap.Errorw("Failed to send invite email",
+					"email", user.Email,
+					"task_id", result.ID.String(),
+					"error", result.Error)
+			}
+		}()
 	}
 
 	response := responses.NewUserResponseSuccess(user)

@@ -60,6 +60,10 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 
 	user, err := queries.GetUserByEmail(ctx, loginRequest.Email)
+	if user.PasswordHash == nil {
+		logger.Zap.Info("login failed: user didn't create a password yet", err, loginRequest.Email, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusUnauthorized, "User didn't create a password yet").JSON(c)
+	}
 
 	if err != nil {
 		logger.Zap.Info("login failed: user not found ", err, loginRequest.Email, c.Response().Header().Get(echo.HeaderXRequestID))
@@ -80,7 +84,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 
 	// Check password
-	if err := utils.VerifyPassword(user.PasswordHash, loginRequest.Password); err != nil {
+	if err := utils.VerifyPassword(*user.PasswordHash, loginRequest.Password); err != nil {
 		logger.Zap.Info("login failed: invalid password", c.Response().Header().Get(echo.HeaderXRequestID))
 
 		// Increment failed login attempts
