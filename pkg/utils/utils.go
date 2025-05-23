@@ -19,6 +19,10 @@ func PgTimeNow() pgtype.Timestamp {
 	return pgtype.Timestamp{Time: time.Now().UTC(), Valid: true}
 }
 
+func PgTimeNowAdd(duration time.Duration) pgtype.Timestamp {
+	return pgtype.Timestamp{Time: time.Now().UTC().Add(duration), Valid: true}
+}
+
 func PgTimeNowLocal() pgtype.Timestamp {
 	return pgtype.Timestamp{Time: time.Now().Local(), Valid: true}
 }

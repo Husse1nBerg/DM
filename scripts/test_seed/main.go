@@ -217,7 +217,7 @@ func main() {
 					FirstName:      firstNames[i],
 					LastName:       lastNames[i],
 					Email:          emails[i],
-					PasswordHash:   string(testPassword),
+					PasswordHash:   u.Pointer(string(testPassword)),
 					OrganizationID: testOrg.ID,
 					RoleID:         testRoles[roleIndices[i]].ID,
 					IsSuperuser:    u.Pointer(isSuperuser[i]),

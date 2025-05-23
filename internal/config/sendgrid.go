@@ -22,6 +22,7 @@ func LoadSendGridConfig() SendGridConfig {
 	templatesMap["password_reset"] = os.Getenv("SENDGRID_TEMPLATE_PASSWORD_RESET")
 	templatesMap["welcome"] = os.Getenv("SENDGRID_TEMPLATE_WELCOME")
 	templatesMap["message"] = os.Getenv("SENDGRID_TEMPLATE_MESSAGE")
+	templatesMap["invite"] = os.Getenv("SENDGRID_TEMPLATE_INVITE")
 	if templatesMap["message"] == "" {
 		templatesMap["message"] = "d-2a2afe50d47d417c99019692dc20079a"
 	}
@@ -30,6 +31,9 @@ func LoadSendGridConfig() SendGridConfig {
 	}
 	if templatesMap["welcome"] == "" {
 		templatesMap["welcome"] = "d-d823f4dd24504a7a9b3bbd7ae96e4510"
+	}
+	if templatesMap["invite"] == "" {
+		templatesMap["invite"] = "d-c9f51b77474a4d3bbf8e3df07af225a2"
 	}
 
 	return SendGridConfig{

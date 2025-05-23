@@ -185,6 +185,115 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/invite/accept": {
+            "post": {
+                "description": "Accepts an invitation and sets the user's password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Accept an invitation",
+                "parameters": [
+                    {
+                        "description": "Invitation acceptance request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.AcceptInvitationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AcceptInvitationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/invite/confirm": {
+            "get": {
+                "description": "Checks if the provided token is valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Confirm an invitation token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invitation token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ConfirmTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Perform user login",
@@ -5405,52 +5514,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sms/send-batch": {
-            "post": {
-                "description": "Send multiple SMS messages in a batch",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "SMS"
-                ],
-                "summary": "Send batch SMS",
-                "parameters": [
-                    {
-                        "description": "Batch SMS details",
-                        "name": "params",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.BatchSMSRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Batch SMS accepted for delivery",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BatchSMSSendResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/user": {
             "post": {
                 "security": [
@@ -8279,6 +8342,23 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.AcceptInvitationRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "token"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "example": "SecureP@ssw0rd"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.AssignUserToMarinaRequest": {
             "type": "object",
             "required": [
@@ -8297,59 +8377,6 @@ const docTemplate = `{
                 "userId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
-                }
-            }
-        },
-        "requests.BatchSMSMessageRequest": {
-            "type": "object",
-            "required": [
-                "message",
-                "to"
-            ],
-            "properties": {
-                "expires_on": {
-                    "type": "string"
-                },
-                "media_urls": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "string",
-                    "enum": [
-                        "Urgent",
-                        "High",
-                        "Normal",
-                        "Low"
-                    ]
-                },
-                "to": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "requests.BatchSMSRequest": {
-            "type": "object",
-            "required": [
-                "messages"
-            ],
-            "properties": {
-                "from_number": {
-                    "type": "string"
-                },
-                "messages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/requests.BatchSMSMessageRequest"
-                    }
                 }
             }
         },
@@ -8540,7 +8567,6 @@ const docTemplate = `{
                 "lastName",
                 "marinaId",
                 "organizationId",
-                "password",
                 "roleId"
             ],
             "properties": {
@@ -8586,11 +8612,6 @@ const docTemplate = `{
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 12,
-                    "example": "SecureP@ssw0rd"
                 },
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
@@ -9840,6 +9861,27 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.AcceptInvitationResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {},
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "responses.AddressResponse": {
             "description": "Address response model",
             "type": "object",
@@ -9908,35 +9950,6 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BatchSMSSendResponse": {
-            "type": "object",
-            "properties": {
-                "batch_id": {
-                    "type": "string"
-                },
-                "details": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.SMSStatusDetails"
-                    }
-                },
-                "failure_count": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "success_count": {
-                    "type": "integer"
-                },
-                "total_count": {
-                    "type": "integer"
-                }
-            }
-        },
         "responses.BoatListResponse": {
             "type": "object",
             "properties": {
@@ -9980,6 +9993,29 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.BoatSearch"
                     }
+                }
+            }
+        },
+        "responses.ConfirmTokenResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/responses.InviteResponse"
+                },
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -10345,6 +10381,23 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Validation failed"
+                }
+            }
+        },
+        "responses.InviteResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "valid": {
+                    "type": "boolean"
                 }
             }
         },
@@ -10848,29 +10901,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "task_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.SMSStatusDetails": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "message_id": {
-                    "type": "string"
-                },
-                "recipient": {
-                    "type": "string"
-                },
-                "segment_count": {
-                    "type": "integer"
-                },
-                "status": {
                     "type": "string"
                 }
             }

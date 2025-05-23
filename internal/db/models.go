@@ -86,6 +86,16 @@ type Document struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
+type Invite struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Email     string
+	Token     string
+	ExpiresAt pgtype.Timestamp
+	Used      *bool
+	CreatedAt pgtype.Timestamp
+}
+
 type Marina struct {
 	ID             uuid.UUID
 	OrganizationID uuid.UUID
@@ -190,7 +200,7 @@ type User struct {
 	Phone               *string
 	Title               *string
 	Image               *string
-	PasswordHash        string
+	PasswordHash        *string
 	LastLogin           pgtype.Timestamp
 	FailedLoginAttempts *int32
 	LockedUntil         pgtype.Timestamp
@@ -207,6 +217,7 @@ type User struct {
 	Permissions         []byte
 	CustomerID          *string
 	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
 }
 
 type UserMarina struct {

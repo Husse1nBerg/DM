@@ -16,7 +16,7 @@ const activateUser = `-- name: ActivateUser :one
 UPDATE users
 SET is_active = TRUE
 WHERE id = $1
-RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 `
 
 func (q *Queries) ActivateUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -49,6 +49,7 @@ func (q *Queries) ActivateUser(ctx context.Context, id uuid.UUID) (User, error) 
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
@@ -63,7 +64,6 @@ INSERT INTO users (
         phone,
         title,
         image,
-        password_hash,
         last_login,
         failed_login_attempts,
         locked_until,
@@ -99,10 +99,9 @@ VALUES (
         $18,
         $19,
         $20,
-        $21,
-        $22
+        $21
     )
-RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 `
 
 type CreateCustomerUserParams struct {
@@ -114,7 +113,6 @@ type CreateCustomerUserParams struct {
 	Phone               *string
 	Title               *string
 	Image               *string
-	PasswordHash        string
 	LastLogin           pgtype.Timestamp
 	FailedLoginAttempts *int32
 	LockedUntil         pgtype.Timestamp
@@ -140,7 +138,6 @@ func (q *Queries) CreateCustomerUser(ctx context.Context, arg CreateCustomerUser
 		arg.Phone,
 		arg.Title,
 		arg.Image,
-		arg.PasswordHash,
 		arg.LastLogin,
 		arg.FailedLoginAttempts,
 		arg.LockedUntil,
@@ -183,6 +180,7 @@ func (q *Queries) CreateCustomerUser(ctx context.Context, arg CreateCustomerUser
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
@@ -232,7 +230,7 @@ VALUES (
         $19,
         $20
     )
-RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 `
 
 type CreateUserParams struct {
@@ -244,7 +242,7 @@ type CreateUserParams struct {
 	Phone               *string
 	Title               *string
 	Image               *string
-	PasswordHash        string
+	PasswordHash        *string
 	LastLogin           pgtype.Timestamp
 	FailedLoginAttempts *int32
 	LockedUntil         pgtype.Timestamp
@@ -309,6 +307,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
@@ -317,7 +316,7 @@ const deactivateUser = `-- name: DeactivateUser :one
 UPDATE users
 SET is_active = FALSE
 WHERE id = $1
-RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 `
 
 func (q *Queries) DeactivateUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -350,12 +349,13 @@ func (q *Queries) DeactivateUser(ctx context.Context, id uuid.UUID) (User, error
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE deleted_at IS NULL
 `
@@ -396,6 +396,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -408,7 +409,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getAllUsersPaginated = `-- name: GetAllUsersPaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
@@ -456,6 +457,7 @@ func (q *Queries) GetAllUsersPaginated(ctx context.Context, arg GetAllUsersPagin
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -468,7 +470,7 @@ func (q *Queries) GetAllUsersPaginated(ctx context.Context, arg GetAllUsersPagin
 }
 
 const getMarinaCustomerUserByCustomerIDPaginated = `-- name: GetMarinaCustomerUserByCustomerIDPaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE is_customer = TRUE
     AND marina_id = $1
@@ -526,6 +528,7 @@ func (q *Queries) GetMarinaCustomerUserByCustomerIDPaginated(ctx context.Context
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -538,7 +541,7 @@ func (q *Queries) GetMarinaCustomerUserByCustomerIDPaginated(ctx context.Context
 }
 
 const getMarinaCustomerUsers = `-- name: GetMarinaCustomerUsers :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE marina_id = $1
     AND is_customer = TRUE
@@ -581,6 +584,7 @@ func (q *Queries) GetMarinaCustomerUsers(ctx context.Context, marinaID uuid.UUID
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -593,7 +597,7 @@ func (q *Queries) GetMarinaCustomerUsers(ctx context.Context, marinaID uuid.UUID
 }
 
 const getMarinaCustomerUsersByCustomerID = `-- name: GetMarinaCustomerUsersByCustomerID :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE is_customer = TRUE
     AND marina_id = $1
@@ -643,6 +647,7 @@ func (q *Queries) GetMarinaCustomerUsersByCustomerID(ctx context.Context, arg Ge
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -655,7 +660,7 @@ func (q *Queries) GetMarinaCustomerUsersByCustomerID(ctx context.Context, arg Ge
 }
 
 const getMarinaCustomerUsersPaginated = `-- name: GetMarinaCustomerUsersPaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE is_customer = TRUE
     AND marina_id = $1
@@ -706,6 +711,7 @@ func (q *Queries) GetMarinaCustomerUsersPaginated(ctx context.Context, arg GetMa
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -718,7 +724,7 @@ func (q *Queries) GetMarinaCustomerUsersPaginated(ctx context.Context, arg GetMa
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE email = $1
     AND deleted_at IS NULL
@@ -754,12 +760,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
 
 const getUserByEmailAndOrg = `-- name: GetUserByEmailAndOrg :one
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE email = $1
     AND organization_id = $2
@@ -801,12 +808,13 @@ func (q *Queries) GetUserByEmailAndOrg(ctx context.Context, arg GetUserByEmailAn
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE id = $1
     AND deleted_at IS NULL
@@ -842,12 +850,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE username = $1
     AND deleted_at IS NULL
@@ -883,12 +892,13 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
 
 const getUserByUsernameAndOrg = `-- name: GetUserByUsernameAndOrg :one
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE username = $1
     AND organization_id = $2
@@ -930,12 +940,13 @@ func (q *Queries) GetUserByUsernameAndOrg(ctx context.Context, arg GetUserByUser
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }
 
 const getUsersByMarina = `-- name: GetUsersByMarina :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE marina_id = $1
     AND deleted_at IS NULL
@@ -977,6 +988,7 @@ func (q *Queries) GetUsersByMarina(ctx context.Context, marinaID uuid.UUID) ([]U
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -989,7 +1001,7 @@ func (q *Queries) GetUsersByMarina(ctx context.Context, marinaID uuid.UUID) ([]U
 }
 
 const getUsersByMarinaPaginated = `-- name: GetUsersByMarinaPaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE marina_id = $1
     AND deleted_at IS NULL
@@ -1039,6 +1051,7 @@ func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByM
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1051,7 +1064,7 @@ func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByM
 }
 
 const getUsersByOrganization = `-- name: GetUsersByOrganization :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE organization_id = $1
     AND deleted_at IS NULL
@@ -1093,6 +1106,7 @@ func (q *Queries) GetUsersByOrganization(ctx context.Context, organizationID uui
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1105,7 +1119,7 @@ func (q *Queries) GetUsersByOrganization(ctx context.Context, organizationID uui
 }
 
 const getUsersByOrganizationPaginated = `-- name: GetUsersByOrganizationPaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE organization_id = $1
     AND deleted_at IS NULL
@@ -1155,6 +1169,7 @@ func (q *Queries) GetUsersByOrganizationPaginated(ctx context.Context, arg GetUs
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1167,7 +1182,7 @@ func (q *Queries) GetUsersByOrganizationPaginated(ctx context.Context, arg GetUs
 }
 
 const getUsersByRole = `-- name: GetUsersByRole :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE role_id = $1
     AND deleted_at IS NULL
@@ -1209,6 +1224,7 @@ func (q *Queries) GetUsersByRole(ctx context.Context, roleID uuid.UUID) ([]User,
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1221,7 +1237,7 @@ func (q *Queries) GetUsersByRole(ctx context.Context, roleID uuid.UUID) ([]User,
 }
 
 const getUsersByRolePaginated = `-- name: GetUsersByRolePaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE role_id = $1
     AND deleted_at IS NULL
@@ -1271,6 +1287,7 @@ func (q *Queries) GetUsersByRolePaginated(ctx context.Context, arg GetUsersByRol
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1283,7 +1300,7 @@ func (q *Queries) GetUsersByRolePaginated(ctx context.Context, arg GetUsersByRol
 }
 
 const getUsersPaginated = `-- name: GetUsersPaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
@@ -1331,6 +1348,7 @@ func (q *Queries) GetUsersPaginated(ctx context.Context, arg GetUsersPaginatedPa
 			&i.Permissions,
 			&i.CustomerID,
 			&i.IsCustomer,
+			&i.JoinedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1375,7 +1393,7 @@ SET first_name = $2,
     permissions = $19,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 `
 
 type UpdateUserParams struct {
@@ -1387,7 +1405,7 @@ type UpdateUserParams struct {
 	Phone               *string
 	Title               *string
 	Image               *string
-	PasswordHash        string
+	PasswordHash        *string
 	LastLogin           pgtype.Timestamp
 	FailedLoginAttempts *int32
 	LockedUntil         pgtype.Timestamp
@@ -1450,6 +1468,55 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Permissions,
 		&i.CustomerID,
 		&i.IsCustomer,
+		&i.JoinedAt,
+	)
+	return i, err
+}
+
+const updateUserInvite = `-- name: UpdateUserInvite :one
+UPDATE users
+SET password_hash = $2,
+    joined_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
+`
+
+type UpdateUserInviteParams struct {
+	ID           uuid.UUID
+	PasswordHash *string
+}
+
+func (q *Queries) UpdateUserInvite(ctx context.Context, arg UpdateUserInviteParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserInvite, arg.ID, arg.PasswordHash)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.EmailVerified,
+		&i.Phone,
+		&i.Title,
+		&i.Image,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.FailedLoginAttempts,
+		&i.LockedUntil,
+		&i.LastPasswordReset,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.RoleID,
+		&i.IsSuperuser,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Modules,
+		&i.Permissions,
+		&i.CustomerID,
+		&i.IsCustomer,
+		&i.JoinedAt,
 	)
 	return i, err
 }

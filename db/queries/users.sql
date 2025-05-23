@@ -160,7 +160,6 @@ INSERT INTO users (
         phone,
         title,
         image,
-        password_hash,
         last_login,
         failed_login_attempts,
         locked_until,
@@ -196,8 +195,7 @@ VALUES (
         $18,
         $19,
         $20,
-        $21,
-        $22
+        $21
     )
 RETURNING *;
 -- name: ActivateUser :one
@@ -241,3 +239,11 @@ WHERE is_customer = TRUE
     AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT $3 OFFSET $4;
+-- name: UpdateUserInvite :one
+UPDATE users
+SET password_hash = $2,
+    last_password_reset = CURRENT_TIMESTAMP,
+    failed_login_attempts = 0,
+    joined_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;

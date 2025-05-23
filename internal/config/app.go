@@ -5,9 +5,12 @@ import (
 )
 
 type AppConfig struct {
-	AdminEmail      string `mapstructure:"AdminEmail"`
-	AdminPassword   string `mapstructure:"AdminPassword"`
-	FrontendBaseURL string `mapstructure:"FrontendBaseURL"`
+	AdminEmail           string `mapstructure:"AdminEmail"`
+	AdminPassword        string `mapstructure:"AdminPassword"`
+	FrontendBaseURL      string `mapstructure:"FrontendBaseURL"`
+	InvitationRoute      string `mapstructure:"InvitationRoute"`
+	PasswordResetRoute   string `mapstructure:"PasswordResetRoute"`
+	TermsConditionsRoute string `mapstructure:"TermsConditionsRoute"`
 }
 
 func LoadAppConfig() AppConfig {
@@ -17,8 +20,11 @@ func LoadAppConfig() AppConfig {
 	}
 
 	return AppConfig{
-		AdminEmail:      os.Getenv("ADMIN_EMAIL"),
-		AdminPassword:   os.Getenv("ADMIN_PASSWORD"),
-		FrontendBaseURL: frontendBaseURL,
+		AdminEmail:           os.Getenv("ADMIN_EMAIL"),
+		AdminPassword:        os.Getenv("ADMIN_PASSWORD"),
+		FrontendBaseURL:      frontendBaseURL,
+		InvitationRoute:      os.Getenv("INVITATION_ROUTE"),
+		PasswordResetRoute:   os.Getenv("PASSWORD_RESET_ROUTE"),
+		TermsConditionsRoute: os.Getenv("TERMS_CONDITIONS_ROUTE"),
 	}
 }

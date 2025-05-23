@@ -953,6 +953,18 @@ definitions:
         example: 9:00 AM - 5:00 PM
         type: string
     type: object
+  requests.AcceptInvitationRequest:
+    properties:
+      password:
+        example: SecureP@ssw0rd
+        minLength: 12
+        type: string
+      token:
+        type: string
+    required:
+    - password
+    - token
+    type: object
   requests.AssignUserToMarinaRequest:
     properties:
       customerId:
@@ -967,42 +979,6 @@ definitions:
     required:
     - marinaId
     - userId
-    type: object
-  requests.BatchSMSMessageRequest:
-    properties:
-      expires_on:
-        type: string
-      media_urls:
-        items:
-          type: string
-        type: array
-      message:
-        type: string
-      priority:
-        enum:
-        - Urgent
-        - High
-        - Normal
-        - Low
-        type: string
-      to:
-        items:
-          type: string
-        type: array
-    required:
-    - message
-    - to
-    type: object
-  requests.BatchSMSRequest:
-    properties:
-      from_number:
-        type: string
-      messages:
-        items:
-          $ref: '#/definitions/requests.BatchSMSMessageRequest'
-        type: array
-    required:
-    - messages
     type: object
   requests.BoatCreateRequest:
     properties:
@@ -1160,10 +1136,6 @@ definitions:
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
-      password:
-        example: SecureP@ssw0rd
-        minLength: 12
-        type: string
       permissions:
         $ref: '#/definitions/models.Permissions'
       phone:
@@ -1185,7 +1157,6 @@ definitions:
     - lastName
     - marinaId
     - organizationId
-    - password
     - roleId
     type: object
   requests.CreateDMECredentialRequest:
@@ -2053,6 +2024,21 @@ definitions:
     required:
     - woId
     type: object
+  responses.AcceptInvitationResponse:
+    properties:
+      currentPage:
+        type: integer
+      data: {}
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
   responses.AddressResponse:
     description: Address response model
     properties:
@@ -2103,25 +2089,6 @@ definitions:
       total:
         type: integer
     type: object
-  responses.BatchSMSSendResponse:
-    properties:
-      batch_id:
-        type: string
-      details:
-        items:
-          $ref: '#/definitions/responses.SMSStatusDetails'
-        type: array
-      failure_count:
-        type: integer
-      message:
-        type: string
-      success:
-        type: boolean
-      success_count:
-        type: integer
-      total_count:
-        type: integer
-    type: object
   responses.BoatListResponse:
     properties:
       currentPage:
@@ -2152,6 +2119,22 @@ definitions:
         items:
           $ref: '#/definitions/dme.BoatSearch'
         type: array
+    type: object
+  responses.ConfirmTokenResponse:
+    properties:
+      currentPage:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.InviteResponse'
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
     type: object
   responses.ContactListResponse:
     description: Contact list response model
@@ -2408,6 +2391,17 @@ definitions:
       message:
         example: Validation failed
         type: string
+    type: object
+  responses.InviteResponse:
+    properties:
+      email:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      valid:
+        type: boolean
     type: object
   responses.LoginResponse:
     description: Authentication token response containing access token, refresh token
@@ -2774,21 +2768,6 @@ definitions:
       task_id:
         type: string
     type: object
-  responses.SMSStatusDetails:
-    properties:
-      error:
-        type: string
-      id:
-        type: string
-      message_id:
-        type: string
-      recipient:
-        type: string
-      segment_count:
-        type: integer
-      status:
-        type: string
-    type: object
   responses.UserListResponse:
     properties:
       currentPage:
@@ -3115,6 +3094,78 @@ paths:
       summary: Update address
       tags:
       - Addresses
+  /api/v1/invite/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accepts an invitation and sets the user's password
+      parameters:
+      - description: Invitation acceptance request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AcceptInvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AcceptInvitationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Accept an invitation
+      tags:
+      - Invitations
+  /api/v1/invite/confirm:
+    get:
+      consumes:
+      - application/json
+      description: Checks if the provided token is valid
+      parameters:
+      - description: Invitation token
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: User email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ConfirmTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Confirm an invitation token
+      tags:
+      - Invitations
   /auth/login:
     post:
       consumes:
@@ -6479,36 +6530,6 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Send SMS
-      tags:
-      - SMS
-  /sms/send-batch:
-    post:
-      consumes:
-      - application/json
-      description: Send multiple SMS messages in a batch
-      parameters:
-      - description: Batch SMS details
-        in: body
-        name: params
-        required: true
-        schema:
-          $ref: '#/definitions/requests.BatchSMSRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Batch SMS accepted for delivery
-          schema:
-            $ref: '#/definitions/responses.BatchSMSSendResponse'
-        "400":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Server error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Send batch SMS
       tags:
       - SMS
   /user:
