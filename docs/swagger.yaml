@@ -413,6 +413,8 @@ definitions:
         type: string
       country:
         type: string
+      email:
+        type: string
       emergencyContact:
         type: string
       emergencyPhone:
@@ -1460,6 +1462,8 @@ definitions:
       companyName:
         type: string
       country:
+        type: string
+      email:
         type: string
       emergencyContact:
         type: string
