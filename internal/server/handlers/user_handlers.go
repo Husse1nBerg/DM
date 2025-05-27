@@ -121,8 +121,9 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
 	}
 
+	email := utils.LowerCase(req.Email)
 	// Check if the email is already taken
-	_, err = queries.GetUserByEmail(c.Request().Context(), req.Email)
+	_, err = queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
 	}
@@ -191,7 +192,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		Username:            username,
 		FirstName:           req.FirstName,
 		LastName:            req.LastName,
-		Email:               req.Email,
+		Email:               email,
 		Phone:               req.Phone,
 		Title:               req.Title,
 		Image:               req.Image,
@@ -744,7 +745,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			updateParams.LastName = lastName
 		}
 		if email := c.FormValue("email"); email != "" {
-			updateParams.Email = email
+			updateParams.Email = utils.LowerCase(email)
 		}
 		if phone := c.FormValue("phone"); phone != "" {
 			updateParams.Phone = &phone
@@ -822,7 +823,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			updateParams.LastName = *req.LastName
 		}
 		if req.Email != nil {
-			updateParams.Email = *req.Email
+			updateParams.Email = utils.LowerCase(*req.Email)
 		}
 		if req.Phone != nil {
 			updateParams.Phone = req.Phone
@@ -1312,7 +1313,8 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	}
 
 	// Check if the email is already taken
-	_, err = queries.GetUserByEmail(c.Request().Context(), req.Email)
+	email := utils.LowerCase(req.Email)
+	_, err = queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
 	}
@@ -1373,7 +1375,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		Username:       username,
 		FirstName:      req.FirstName,
 		LastName:       req.LastName,
-		Email:          req.Email,
+		Email:          email,
 		Phone:          req.Phone,
 		Title:          req.Title,
 		Image:          req.Image,

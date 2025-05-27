@@ -40,7 +40,7 @@ func (h *InviteHandler) ConfirmToken(c echo.Context) error {
 
 	// Get token and email from query parameters
 	token := c.QueryParam("token")
-	email := c.QueryParam("email")
+	email := utils.LowerCase(c.QueryParam("email"))
 
 	// Validate parameters
 	if token == "" {
