@@ -1476,6 +1476,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 const updateUserInvite = `-- name: UpdateUserInvite :one
 UPDATE users
 SET password_hash = $2,
+    last_password_reset = CURRENT_TIMESTAMP,
+    failed_login_attempts = 0,
     joined_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at

@@ -25,6 +25,8 @@ type HTMLEmail struct {
 	EmailData
 	HTMLContent string // HTML content of the email
 	PlainText   string // Plain text version of the email
+	Subject     string // Subject of the email
+	ReplyTo     string // Reply to email address
 }
 
 // TemplateEmail contains data for sending an email using a SendGrid template
@@ -32,6 +34,8 @@ type TemplateEmail struct {
 	EmailData
 	TemplateID   string                 // SendGrid template ID
 	TemplateData map[string]interface{} // Dynamic template data
+	ReplyTo      string                 // Reply to email address
+	Subject      string                 // Subject of the email
 }
 
 // WelcomeTemplateData contains specific fields for the welcome email template
@@ -55,6 +59,15 @@ type MessageTemplateData struct {
 	Content         string `json:"content"`          // Message content
 	Recipient       string `json:"recipient"`        // Recipient name
 	Sender          string `json:"sender"`           // Sender name
+	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+}
+
+// MessageTemplateData contains specific fields for the message template
+type ExternalMessageTemplateData struct {
+	Content         string `json:"content"`          // Message content
+	Recipient       string `json:"recipient"`        // Recipient name
+	Sender          string `json:"sender"`           // Sender name
+	ReplyTo         string `json:"reply_to"`         // Reply to email address
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 }
 

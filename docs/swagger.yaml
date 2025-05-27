@@ -1088,6 +1088,8 @@ definitions:
         type: string
       email:
         type: string
+      is_cp_contact:
+        type: boolean
       name:
         type: string
       phone:
@@ -1691,6 +1693,8 @@ definitions:
         type: string
       email:
         type: string
+      is_cp_contact:
+        type: boolean
       name:
         type: string
       phone:
@@ -2170,6 +2174,9 @@ definitions:
       id:
         example: 123e4567-e89b-12d3-a456-426614174000
         type: string
+      is_cp_contact:
+        example: false
+        type: boolean
       marinaId:
         example: 123e4567-e89b-12d3-a456-426614174000
         type: string

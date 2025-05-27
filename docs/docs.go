@@ -8539,6 +8539,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "is_cp_contact": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -9389,6 +9392,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "is_cp_contact": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -10065,6 +10071,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "is_cp_contact": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "marinaId": {
                     "type": "string",
