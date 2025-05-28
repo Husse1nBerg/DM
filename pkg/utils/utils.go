@@ -72,3 +72,7 @@ func GenerateUsername(firstName string) string {
 	randomString := uuid.New().String()[:6]
 	return strings.ToLower(firstName + randomString)
 }
+
+func LowerCase(s string) string {
+	return strings.ToLower(s)
+}

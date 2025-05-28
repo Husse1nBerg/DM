@@ -9,6 +9,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -83,7 +84,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	}
 
 	params := db.CreateOrganizationParams{
-		Email:     req.Email,
+		Email:     utils.LowerCase(req.Email),
 		Name:      req.Name,
 		Image:     req.Image,
 		Website:   req.Website,
@@ -290,7 +291,7 @@ func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
 	// Initialize update parameters with current values
 	updateParams := db.UpdateOrganizationParams{
 		ID:        orgID,
-		Email:     org.Email,
+		Email:     utils.LowerCase(org.Email),
 		Name:      org.Name,
 		Image:     org.Image,
 		Website:   org.Website,
@@ -323,7 +324,7 @@ func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
 			updateParams.Name = name
 		}
 		if email := c.FormValue("email"); email != "" {
-			updateParams.Email = email
+			updateParams.Email = utils.LowerCase(email)
 		}
 		if website := c.FormValue("website"); website != "" {
 			updateParams.Website = &website
@@ -357,7 +358,7 @@ func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
 
 		// Update fields if provided in request
 		if req.Email != nil {
-			updateParams.Email = *req.Email
+			updateParams.Email = utils.LowerCase(*req.Email)
 		}
 		if req.Name != nil {
 			updateParams.Name = *req.Name
@@ -446,7 +447,7 @@ func (h *OrganizationHandler) UpdateOrgAddress(c echo.Context) error {
 
 	// Update only organization fields that are provided
 	if req.Email != nil {
-		orgParams.Email = *req.Email
+		orgParams.Email = utils.LowerCase(*req.Email)
 	}
 	if req.Name != nil {
 		orgParams.Name = *req.Name

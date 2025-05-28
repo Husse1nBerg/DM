@@ -12,6 +12,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -117,7 +118,7 @@ func (h *MarinaHandler) CreateMarina(c echo.Context) error {
 	params := db.CreateMarinaParams{
 		OrganizationID: req.OrganizationID,
 		Name:           req.Name,
-		Email:          req.Email,
+		Email:          utils.LowerCase(req.Email),
 		Location:       req.Location,
 		Phone:          req.Phone,
 		Country:        req.Country,
@@ -431,7 +432,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 			updateParams.Name = name
 		}
 		if email := c.FormValue("email"); email != "" {
-			updateParams.Email = email
+			updateParams.Email = utils.LowerCase(email)
 		}
 		if location := c.FormValue("location"); location != "" {
 			updateParams.Location = &location
@@ -484,7 +485,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 			updateParams.Name = *req.Name
 		}
 		if req.Email != nil {
-			updateParams.Email = *req.Email
+			updateParams.Email = utils.LowerCase(*req.Email)
 		}
 		if req.Location != nil {
 			updateParams.Location = req.Location
@@ -598,7 +599,7 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		params.Name = *req.Name
 	}
 	if req.Email != nil {
-		params.Email = *req.Email
+		params.Email = utils.LowerCase(*req.Email)
 	}
 	if req.Location != nil {
 		params.Location = req.Location
