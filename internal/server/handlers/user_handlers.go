@@ -480,9 +480,44 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 		Limit:      pagination.PageSize,
 		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
+	userRows, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Convert rows to User type
+	users := make([]db.User, len(userRows))
+	for i, row := range userRows {
+		users[i] = db.User{
+			ID:                  row.ID,
+			Username:            row.Username,
+			FirstName:           row.FirstName,
+			LastName:            row.LastName,
+			Email:               row.Email,
+			EmailVerified:       row.EmailVerified,
+			Phone:               row.Phone,
+			Title:               row.Title,
+			Image:               row.Image,
+			PasswordHash:        row.PasswordHash,
+			LastLogin:           row.LastLogin,
+			FailedLoginAttempts: row.FailedLoginAttempts,
+			LockedUntil:         row.LockedUntil,
+			LastPasswordReset:   row.LastPasswordReset,
+			OrganizationID:      row.OrganizationID,
+			MarinaID:            row.MarinaID,
+			RoleID:              row.RoleID,
+			RoleName:            row.RoleName,
+			IsSuperuser:         row.IsSuperuser,
+			IsActive:            row.IsActive,
+			CreatedAt:           row.CreatedAt,
+			UpdatedAt:           row.UpdatedAt,
+			DeletedAt:           row.DeletedAt,
+			Modules:             row.Modules,
+			Permissions:         row.Permissions,
+			CustomerID:          row.CustomerID,
+			IsCustomer:          row.IsCustomer,
+			JoinedAt:            row.JoinedAt,
+		}
 	}
 
 	// Get total count for pagination
@@ -547,9 +582,44 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 		Limit:      pagination.PageSize,
 		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
+	userRows, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Convert rows to User type
+	users := make([]db.User, len(userRows))
+	for i, row := range userRows {
+		users[i] = db.User{
+			ID:                  row.ID,
+			Username:            row.Username,
+			FirstName:           row.FirstName,
+			LastName:            row.LastName,
+			Email:               row.Email,
+			EmailVerified:       row.EmailVerified,
+			Phone:               row.Phone,
+			Title:               row.Title,
+			Image:               row.Image,
+			PasswordHash:        row.PasswordHash,
+			LastLogin:           row.LastLogin,
+			FailedLoginAttempts: row.FailedLoginAttempts,
+			LockedUntil:         row.LockedUntil,
+			LastPasswordReset:   row.LastPasswordReset,
+			OrganizationID:      row.OrganizationID,
+			MarinaID:            row.MarinaID,
+			RoleID:              row.RoleID,
+			RoleName:            row.RoleName,
+			IsSuperuser:         row.IsSuperuser,
+			IsActive:            row.IsActive,
+			CreatedAt:           row.CreatedAt,
+			UpdatedAt:           row.UpdatedAt,
+			DeletedAt:           row.DeletedAt,
+			Modules:             row.Modules,
+			Permissions:         row.Permissions,
+			CustomerID:          row.CustomerID,
+			IsCustomer:          row.IsCustomer,
+			JoinedAt:            row.JoinedAt,
+		}
 	}
 
 	// Get total count for pagination

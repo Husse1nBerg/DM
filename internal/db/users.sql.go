@@ -946,11 +946,12 @@ func (q *Queries) GetUserByUsernameAndOrg(ctx context.Context, arg GetUserByUser
 }
 
 const getUsersByMarina = `-- name: GetUsersByMarina :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
-FROM users
-WHERE marina_id = $1
-    AND (is_customer = $2 OR $2 IS NULL)
-    AND deleted_at IS NULL
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
 `
 
 type GetUsersByMarinaParams struct {
@@ -958,15 +959,46 @@ type GetUsersByMarinaParams struct {
 	IsCustomer *bool
 }
 
-func (q *Queries) GetUsersByMarina(ctx context.Context, arg GetUsersByMarinaParams) ([]User, error) {
+type GetUsersByMarinaRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	Modules             []byte
+	Permissions         []byte
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	RoleName            *string
+}
+
+func (q *Queries) GetUsersByMarina(ctx context.Context, arg GetUsersByMarinaParams) ([]GetUsersByMarinaRow, error) {
 	rows, err := q.db.Query(ctx, getUsersByMarina, arg.MarinaID, arg.IsCustomer)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []GetUsersByMarinaRow
 	for rows.Next() {
-		var i User
+		var i GetUsersByMarinaRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
@@ -995,6 +1027,7 @@ func (q *Queries) GetUsersByMarina(ctx context.Context, arg GetUsersByMarinaPara
 			&i.CustomerID,
 			&i.IsCustomer,
 			&i.JoinedAt,
+			&i.RoleName,
 		); err != nil {
 			return nil, err
 		}
@@ -1007,12 +1040,13 @@ func (q *Queries) GetUsersByMarina(ctx context.Context, arg GetUsersByMarinaPara
 }
 
 const getUsersByMarinaPaginated = `-- name: GetUsersByMarinaPaginated :many
-SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
-FROM users
-WHERE marina_id = $1
-    AND (is_customer = $2 OR $2 IS NULL)
-    AND deleted_at IS NULL
-ORDER BY created_at DESC
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
 LIMIT $3 OFFSET $4
 `
 
@@ -1023,7 +1057,38 @@ type GetUsersByMarinaPaginatedParams struct {
 	Offset     int32
 }
 
-func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByMarinaPaginatedParams) ([]User, error) {
+type GetUsersByMarinaPaginatedRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	Modules             []byte
+	Permissions         []byte
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	RoleName            *string
+}
+
+func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByMarinaPaginatedParams) ([]GetUsersByMarinaPaginatedRow, error) {
 	rows, err := q.db.Query(ctx, getUsersByMarinaPaginated,
 		arg.MarinaID,
 		arg.IsCustomer,
@@ -1034,9 +1099,9 @@ func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByM
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []GetUsersByMarinaPaginatedRow
 	for rows.Next() {
-		var i User
+		var i GetUsersByMarinaPaginatedRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
@@ -1065,6 +1130,7 @@ func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByM
 			&i.CustomerID,
 			&i.IsCustomer,
 			&i.JoinedAt,
+			&i.RoleName,
 		); err != nil {
 			return nil, err
 		}

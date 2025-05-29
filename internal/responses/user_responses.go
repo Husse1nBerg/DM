@@ -28,6 +28,7 @@ type UserResponse struct {
 	OrganizationID      uuid.UUID           `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
 	MarinaID            uuid.UUID           `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
 	RoleID              uuid.UUID           `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	RoleName            *string             `json:"roleName,omitempty" example:"Admin"`
 	CustomerID          *string             `json:"customerId,omitempty" example:"1234567890"`
 	IsCustomer          *bool               `json:"isCustomer,omitempty" example:"false"`
 	IsSuperuser         *bool               `json:"isSuperuser,omitempty" example:"false"`
@@ -73,6 +74,7 @@ func NewUserResponse(user db.User) UserResponse {
 		OrganizationID:      user.OrganizationID,
 		MarinaID:            user.MarinaID,
 		RoleID:              user.RoleID,
+		RoleName:            user.RoleName,
 		CustomerID:          user.CustomerID,
 		IsCustomer:          user.IsCustomer,
 		IsSuperuser:         user.IsSuperuser,
