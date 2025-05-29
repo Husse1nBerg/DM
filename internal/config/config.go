@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"os"
 
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/joho/godotenv"
@@ -52,4 +53,13 @@ func New() *Config {
 		SendGrid:        LoadSendGridConfig(),
 		Telgorithm:      LoadTelgorithmConfig(),
 	}
+}
+
+// getEnvOrDefault gets an environment variable or returns a default value
+func EnvOrDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }

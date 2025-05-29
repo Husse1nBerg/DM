@@ -1463,6 +1463,54 @@ definitions:
     required:
     - lastName
     type: object
+  requests.CustomerIntakeRequest:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      cellPhone:
+        type: string
+      city:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      emergencyContact:
+        type: string
+      emergencyPhone:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      marinaId:
+        type: string
+      organizationId:
+        description: Customer fields
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      state:
+        type: string
+      workPhone:
+        type: string
+      zip:
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - marinaId
+    - organizationId
+    type: object
   requests.CustomerSettingsUpdateRequest:
     properties:
       customerId:
@@ -3433,6 +3481,47 @@ paths:
       summary: Update boat
       tags:
       - Boats
+  /customer-intake:
+    post:
+      consumes:
+      - application/json
+      description: Creates a customer in DME and then creates a user for that customer
+        - public endpoint
+      parameters:
+      - description: Organization ID
+        in: header
+        name: Organization-ID
+        required: true
+        type: string
+      - description: Marina ID
+        in: header
+        name: Marina-ID
+        required: true
+        type: string
+      - description: Customer and user information
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CustomerIntakeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user with customer
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Customer intake (public endpoint)
+      tags:
+      - Customers
   /customers/create:
     post:
       consumes:

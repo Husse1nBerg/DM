@@ -67,3 +67,27 @@ type CustomerSettingsUpdateRequest struct {
 	CustomerID   string    `json:"customerId" validate:"required"`
 	EnablePortal *bool     `json:"enablePortal"`
 }
+
+// CustomerIntakeRequest represents a request to create both a customer and user in one operation
+type CustomerIntakeRequest struct {
+	// Customer fields
+	OrganizationID   string `json:"organizationId" validate:"required"`
+	MarinaID         string `json:"marinaId" validate:"required"`
+	FirstName        string `json:"firstName" validate:"required"`
+	LastName         string `json:"lastName" validate:"required"`
+	Email            string `json:"email" validate:"required,email"`
+	Address1         string `json:"address1"`
+	Address2         string `json:"address2"`
+	Address3         string `json:"address3"`
+	City             string `json:"city"`
+	State            string `json:"state"`
+	Zip              string `json:"zip"`
+	Country          string `json:"country"`
+	Phone            string `json:"phone"`
+	WorkPhone        string `json:"workPhone"`
+	CellPhone        string `json:"cellPhone"`
+	EmergencyContact string `json:"emergencyContact"`
+	EmergencyPhone   string `json:"emergencyPhone"`
+	CompanyName      string `json:"companyName"`
+	Password         string `json:"password"`
+}
