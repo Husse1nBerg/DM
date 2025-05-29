@@ -485,41 +485,6 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert rows to User type
-	users := make([]db.User, len(userRows))
-	for i, row := range userRows {
-		users[i] = db.User{
-			ID:                  row.ID,
-			Username:            row.Username,
-			FirstName:           row.FirstName,
-			LastName:            row.LastName,
-			Email:               row.Email,
-			EmailVerified:       row.EmailVerified,
-			Phone:               row.Phone,
-			Title:               row.Title,
-			Image:               row.Image,
-			PasswordHash:        row.PasswordHash,
-			LastLogin:           row.LastLogin,
-			FailedLoginAttempts: row.FailedLoginAttempts,
-			LockedUntil:         row.LockedUntil,
-			LastPasswordReset:   row.LastPasswordReset,
-			OrganizationID:      row.OrganizationID,
-			MarinaID:            row.MarinaID,
-			RoleID:              row.RoleID,
-			RoleName:            row.RoleName,
-			IsSuperuser:         row.IsSuperuser,
-			IsActive:            row.IsActive,
-			CreatedAt:           row.CreatedAt,
-			UpdatedAt:           row.UpdatedAt,
-			DeletedAt:           row.DeletedAt,
-			Modules:             row.Modules,
-			Permissions:         row.Permissions,
-			CustomerID:          row.CustomerID,
-			IsCustomer:          row.IsCustomer,
-			JoinedAt:            row.JoinedAt,
-		}
-	}
-
 	// Get total count for pagination
 	allUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
 		MarinaID:   marinaID,
@@ -530,7 +495,7 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 	}
 	total := int64(len(allUsers))
 
-	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
+	return responses.NewUsersPaginatedResponseFromRows(userRows, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
 // GetMarinaUsersList gets all users associated with a marina through user_marinas
@@ -587,41 +552,6 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert rows to User type
-	users := make([]db.User, len(userRows))
-	for i, row := range userRows {
-		users[i] = db.User{
-			ID:                  row.ID,
-			Username:            row.Username,
-			FirstName:           row.FirstName,
-			LastName:            row.LastName,
-			Email:               row.Email,
-			EmailVerified:       row.EmailVerified,
-			Phone:               row.Phone,
-			Title:               row.Title,
-			Image:               row.Image,
-			PasswordHash:        row.PasswordHash,
-			LastLogin:           row.LastLogin,
-			FailedLoginAttempts: row.FailedLoginAttempts,
-			LockedUntil:         row.LockedUntil,
-			LastPasswordReset:   row.LastPasswordReset,
-			OrganizationID:      row.OrganizationID,
-			MarinaID:            row.MarinaID,
-			RoleID:              row.RoleID,
-			RoleName:            row.RoleName,
-			IsSuperuser:         row.IsSuperuser,
-			IsActive:            row.IsActive,
-			CreatedAt:           row.CreatedAt,
-			UpdatedAt:           row.UpdatedAt,
-			DeletedAt:           row.DeletedAt,
-			Modules:             row.Modules,
-			Permissions:         row.Permissions,
-			CustomerID:          row.CustomerID,
-			IsCustomer:          row.IsCustomer,
-			JoinedAt:            row.JoinedAt,
-		}
-	}
-
 	// Get total count for pagination
 	allUsers, err := queries.GetMarinaUsersList(c.Request().Context(), db.GetMarinaUsersListParams{
 		MarinaID:   marinaID,
@@ -632,7 +562,7 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 	}
 	total := int64(len(allUsers))
 
-	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
+	return responses.NewUsersPaginatedResponseFromMarinaRows(userRows, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
 // AssignUserToMarinaHandler assigns a user to a marina (creates a user_marinas record)

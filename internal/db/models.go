@@ -208,7 +208,6 @@ type User struct {
 	OrganizationID      uuid.UUID
 	MarinaID            uuid.UUID
 	RoleID              uuid.UUID
-	RoleName            *string
 	IsSuperuser         *bool
 	IsActive            *bool
 	CreatedAt           pgtype.Timestamp
