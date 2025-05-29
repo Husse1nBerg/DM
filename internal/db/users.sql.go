@@ -949,11 +949,17 @@ const getUsersByMarina = `-- name: GetUsersByMarina :many
 SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE marina_id = $1
+    AND (is_customer = $2 OR $2 IS NULL)
     AND deleted_at IS NULL
 `
 
-func (q *Queries) GetUsersByMarina(ctx context.Context, marinaID uuid.UUID) ([]User, error) {
-	rows, err := q.db.Query(ctx, getUsersByMarina, marinaID)
+type GetUsersByMarinaParams struct {
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+}
+
+func (q *Queries) GetUsersByMarina(ctx context.Context, arg GetUsersByMarinaParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByMarina, arg.MarinaID, arg.IsCustomer)
 	if err != nil {
 		return nil, err
 	}
@@ -1004,19 +1010,26 @@ const getUsersByMarinaPaginated = `-- name: GetUsersByMarinaPaginated :many
 SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at
 FROM users
 WHERE marina_id = $1
+    AND (is_customer = $2 OR $2 IS NULL)
     AND deleted_at IS NULL
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $4
 `
 
 type GetUsersByMarinaPaginatedParams struct {
-	MarinaID uuid.UUID
-	Limit    int32
-	Offset   int32
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+	Limit      int32
+	Offset     int32
 }
 
 func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByMarinaPaginatedParams) ([]User, error) {
-	rows, err := q.db.Query(ctx, getUsersByMarinaPaginated, arg.MarinaID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, getUsersByMarinaPaginated,
+		arg.MarinaID,
+		arg.IsCustomer,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -1476,6 +1489,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 const updateUserInvite = `-- name: UpdateUserInvite :one
 UPDATE users
 SET password_hash = $2,
+    last_password_reset = CURRENT_TIMESTAMP,
+    failed_login_attempts = 0,
     joined_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, modules, permissions, customer_id, is_customer, joined_at

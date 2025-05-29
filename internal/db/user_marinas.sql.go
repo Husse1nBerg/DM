@@ -81,11 +81,17 @@ SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL
 `
 
-func (q *Queries) GetMarinaUsersList(ctx context.Context, marinaID uuid.UUID) ([]User, error) {
-	rows, err := q.db.Query(ctx, getMarinaUsersList, marinaID)
+type GetMarinaUsersListParams struct {
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+}
+
+func (q *Queries) GetMarinaUsersList(ctx context.Context, arg GetMarinaUsersListParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsersList, arg.MarinaID, arg.IsCustomer)
 	if err != nil {
 		return nil, err
 	}
@@ -137,19 +143,26 @@ SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $4
 `
 
 type GetMarinaUsersListPaginatedParams struct {
-	MarinaID uuid.UUID
-	Limit    int32
-	Offset   int32
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+	Limit      int32
+	Offset     int32
 }
 
 func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarinaUsersListPaginatedParams) ([]User, error) {
-	rows, err := q.db.Query(ctx, getMarinaUsersListPaginated, arg.MarinaID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, getMarinaUsersListPaginated,
+		arg.MarinaID,
+		arg.IsCustomer,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

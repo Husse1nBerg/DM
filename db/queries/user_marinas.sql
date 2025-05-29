@@ -24,15 +24,17 @@ SELECT u.*
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL;
 -- name: GetMarinaUsersListPaginated :many
 SELECT u.*
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
-LIMIT $2 OFFSET $3;
+LIMIT $3 OFFSET $4;
 -- name: CustomerMarinaUser :one
 SELECT u.*
 FROM users u

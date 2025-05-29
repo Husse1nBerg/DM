@@ -102,6 +102,7 @@ WHERE organization_id = $1
 SELECT *
 FROM users
 WHERE marina_id = $1
+    AND (is_customer = $2 OR $2 IS NULL)
     AND deleted_at IS NULL;
 -- name: GetUsersPaginated :many
 SELECT *
@@ -120,9 +121,10 @@ LIMIT $2 OFFSET $3;
 SELECT *
 FROM users
 WHERE marina_id = $1
+    AND (is_customer = $2 OR $2 IS NULL)
     AND deleted_at IS NULL
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+LIMIT $3 OFFSET $4;
 -- name: UpdateUser :one
 UPDATE users
 SET first_name = $2,
