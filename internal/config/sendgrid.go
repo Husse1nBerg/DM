@@ -38,8 +38,8 @@ func LoadSendGridConfig() SendGridConfig {
 
 	return SendGridConfig{
 		APIKey:       os.Getenv("SENDGRID_API_KEY"),
-		FromEmail:    getEnvOrDefault("SENDGRID_FROM_EMAIL", "no-reply@dockmaster.com"),
-		FromName:     getEnvOrDefault("SENDGRID_FROM_NAME", "Dockmaster"),
+		FromEmail:    EnvOrDefault("SENDGRID_FROM_EMAIL", "no-reply@dockmaster.com"),
+		FromName:     EnvOrDefault("SENDGRID_FROM_NAME", "Dockmaster"),
 		TemplatesMap: templatesMap,
 	}
 }

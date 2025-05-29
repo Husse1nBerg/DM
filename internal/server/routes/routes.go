@@ -102,6 +102,9 @@ func RegisterRoutes(s *s.Server) {
 	base.POST("/user/forgot-password", userHandler.ForgotPassword)
 	base.POST("/user/recover-password", userHandler.RecoverPassword)
 
+	// Customer intake (public endpoint)
+	base.POST("/customer-intake", customerHandler.CustomerIntake)
+
 	// User by role, organization, marina
 	users.GET("/role/:roleId", userHandler.GetUsersByRoleHandler)
 	users.GET("/organization/:organizationId", userHandler.GetUsersByOrganizationHandler)
