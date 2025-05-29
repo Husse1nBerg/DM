@@ -99,10 +99,12 @@ FROM users
 WHERE organization_id = $1
     AND deleted_at IS NULL;
 -- name: GetUsersByMarina :many
-SELECT *
-FROM users
-WHERE marina_id = $1
-    AND deleted_at IS NULL;
+SELECT u.*, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL;
 -- name: GetUsersPaginated :many
 SELECT *
 FROM users
@@ -117,12 +119,14 @@ WHERE organization_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 -- name: GetUsersByMarinaPaginated :many
-SELECT *
-FROM users
-WHERE marina_id = $1
-    AND deleted_at IS NULL
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+SELECT u.*, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4;
 -- name: UpdateUser :one
 UPDATE users
 SET first_name = $2,

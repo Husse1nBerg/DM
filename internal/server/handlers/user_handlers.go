@@ -439,6 +439,7 @@ func (g *UserHandler) GetUsersByOrganizationHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	path		string	true	"Marina ID"
+//	@Param			isCustomer	query		bool	false	"Filter by customer status. If not provided, returns all users"	default()
 //	@Param			page		query		int		false	"Page number"	default(1)
 //	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200			{object}	responses.UserListResponse "Paginated list of users in the marina"
@@ -455,6 +456,14 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	// Parse isCustomer parameter
+	isCustomerStr := c.QueryParam("isCustomer")
+	var isCustomer *bool
+	if isCustomerStr != "" {
+		value := isCustomerStr == "true"
+		isCustomer = &value
+	}
+
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -466,17 +475,56 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 
 	// Get paginated users by marina
 	params := db.GetUsersByMarinaPaginatedParams{
-		MarinaID: marinaID,
-		Limit:    pagination.PageSize,
-		Offset:   (pagination.Page - 1) * pagination.PageSize,
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+		Limit:      pagination.PageSize,
+		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
+	userRows, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
+	// Convert rows to User type
+	users := make([]db.User, len(userRows))
+	for i, row := range userRows {
+		users[i] = db.User{
+			ID:                  row.ID,
+			Username:            row.Username,
+			FirstName:           row.FirstName,
+			LastName:            row.LastName,
+			Email:               row.Email,
+			EmailVerified:       row.EmailVerified,
+			Phone:               row.Phone,
+			Title:               row.Title,
+			Image:               row.Image,
+			PasswordHash:        row.PasswordHash,
+			LastLogin:           row.LastLogin,
+			FailedLoginAttempts: row.FailedLoginAttempts,
+			LockedUntil:         row.LockedUntil,
+			LastPasswordReset:   row.LastPasswordReset,
+			OrganizationID:      row.OrganizationID,
+			MarinaID:            row.MarinaID,
+			RoleID:              row.RoleID,
+			RoleName:            row.RoleName,
+			IsSuperuser:         row.IsSuperuser,
+			IsActive:            row.IsActive,
+			CreatedAt:           row.CreatedAt,
+			UpdatedAt:           row.UpdatedAt,
+			DeletedAt:           row.DeletedAt,
+			Modules:             row.Modules,
+			Permissions:         row.Permissions,
+			CustomerID:          row.CustomerID,
+			IsCustomer:          row.IsCustomer,
+			JoinedAt:            row.JoinedAt,
+		}
+	}
+
 	// Get total count for pagination
-	allUsers, err := queries.GetUsersByMarina(c.Request().Context(), marinaID)
+	allUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -493,6 +541,7 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	path		string	true	"Marina ID"
+//	@Param			isCustomer	query		bool	false	"Filter by customer status. If not provided, returns all users"	default()
 //	@Param			page		query		int		false	"Page number"	default(1)
 //	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200			{object}	responses.UserListResponse "List of users assigned to the marina"
@@ -509,6 +558,14 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	// Parse isCustomer parameter
+	isCustomerStr := c.QueryParam("isCustomer")
+	var isCustomer *bool
+	if isCustomerStr != "" {
+		value := isCustomerStr == "true"
+		isCustomer = &value
+	}
+
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -520,17 +577,56 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 
 	// Get paginated marina users list
 	params := db.GetMarinaUsersListPaginatedParams{
-		MarinaID: marinaID,
-		Limit:    pagination.PageSize,
-		Offset:   (pagination.Page - 1) * pagination.PageSize,
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+		Limit:      pagination.PageSize,
+		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
+	userRows, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
+	// Convert rows to User type
+	users := make([]db.User, len(userRows))
+	for i, row := range userRows {
+		users[i] = db.User{
+			ID:                  row.ID,
+			Username:            row.Username,
+			FirstName:           row.FirstName,
+			LastName:            row.LastName,
+			Email:               row.Email,
+			EmailVerified:       row.EmailVerified,
+			Phone:               row.Phone,
+			Title:               row.Title,
+			Image:               row.Image,
+			PasswordHash:        row.PasswordHash,
+			LastLogin:           row.LastLogin,
+			FailedLoginAttempts: row.FailedLoginAttempts,
+			LockedUntil:         row.LockedUntil,
+			LastPasswordReset:   row.LastPasswordReset,
+			OrganizationID:      row.OrganizationID,
+			MarinaID:            row.MarinaID,
+			RoleID:              row.RoleID,
+			RoleName:            row.RoleName,
+			IsSuperuser:         row.IsSuperuser,
+			IsActive:            row.IsActive,
+			CreatedAt:           row.CreatedAt,
+			UpdatedAt:           row.UpdatedAt,
+			DeletedAt:           row.DeletedAt,
+			Modules:             row.Modules,
+			Permissions:         row.Permissions,
+			CustomerID:          row.CustomerID,
+			IsCustomer:          row.IsCustomer,
+			JoinedAt:            row.JoinedAt,
+		}
+	}
+
 	// Get total count for pagination
-	allUsers, err := queries.GetMarinaUsersList(c.Request().Context(), marinaID)
+	allUsers, err := queries.GetMarinaUsersList(c.Request().Context(), db.GetMarinaUsersListParams{
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}

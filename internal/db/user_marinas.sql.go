@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const assignUserToMarina = `-- name: AssignUserToMarina :exec
@@ -77,22 +78,60 @@ func (q *Queries) CustomerMarinaUser(ctx context.Context, arg CustomerMarinaUser
 }
 
 const getMarinaUsersList = `-- name: GetMarinaUsersList :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
+    LEFT JOIN roles r ON u.role_id = r.id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL
 `
 
-func (q *Queries) GetMarinaUsersList(ctx context.Context, marinaID uuid.UUID) ([]User, error) {
-	rows, err := q.db.Query(ctx, getMarinaUsersList, marinaID)
+type GetMarinaUsersListParams struct {
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+}
+
+type GetMarinaUsersListRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	RoleName            *string
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	Modules             []byte
+	Permissions         []byte
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+}
+
+func (q *Queries) GetMarinaUsersList(ctx context.Context, arg GetMarinaUsersListParams) ([]GetMarinaUsersListRow, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsersList, arg.MarinaID, arg.IsCustomer)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []GetMarinaUsersListRow
 	for rows.Next() {
-		var i User
+		var i GetMarinaUsersListRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
@@ -111,6 +150,7 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, marinaID uuid.UUID) ([
 			&i.OrganizationID,
 			&i.MarinaID,
 			&i.RoleID,
+			&i.RoleName,
 			&i.IsSuperuser,
 			&i.IsActive,
 			&i.CreatedAt,
@@ -133,30 +173,69 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, marinaID uuid.UUID) ([
 }
 
 const getMarinaUsersListPaginated = `-- name: GetMarinaUsersListPaginated :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
+    LEFT JOIN roles r ON u.role_id = r.id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $4
 `
 
 type GetMarinaUsersListPaginatedParams struct {
-	MarinaID uuid.UUID
-	Limit    int32
-	Offset   int32
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+	Limit      int32
+	Offset     int32
 }
 
-func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarinaUsersListPaginatedParams) ([]User, error) {
-	rows, err := q.db.Query(ctx, getMarinaUsersListPaginated, arg.MarinaID, arg.Limit, arg.Offset)
+type GetMarinaUsersListPaginatedRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	RoleName            *string
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	Modules             []byte
+	Permissions         []byte
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+}
+
+func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarinaUsersListPaginatedParams) ([]GetMarinaUsersListPaginatedRow, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsersListPaginated,
+		arg.MarinaID,
+		arg.IsCustomer,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []GetMarinaUsersListPaginatedRow
 	for rows.Next() {
-		var i User
+		var i GetMarinaUsersListPaginatedRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
@@ -175,6 +254,7 @@ func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarina
 			&i.OrganizationID,
 			&i.MarinaID,
 			&i.RoleID,
+			&i.RoleName,
 			&i.IsSuperuser,
 			&i.IsActive,
 			&i.CreatedAt,

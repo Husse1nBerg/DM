@@ -2894,6 +2894,9 @@ definitions:
       roleId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
+      roleName:
+        example: Admin
+        type: string
       title:
         example: Manager
         type: string
@@ -6805,6 +6808,10 @@ paths:
         name: marinaId
         required: true
         type: string
+      - description: Filter by customer status. If not provided, returns all users
+        in: query
+        name: isCustomer
+        type: boolean
       - default: 1
         description: Page number
         in: query
@@ -6913,6 +6920,10 @@ paths:
         name: marinaId
         required: true
         type: string
+      - description: Filter by customer status. If not provided, returns all users
+        in: query
+        name: isCustomer
+        type: boolean
       - default: 1
         description: Page number
         in: query

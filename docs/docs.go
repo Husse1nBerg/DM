@@ -5972,6 +5972,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "boolean",
+                        "description": "Filter by customer status. If not provided, returns all users",
+                        "name": "isCustomer",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "default": 1,
                         "description": "Page number",
@@ -6033,6 +6039,12 @@ const docTemplate = `{
                         "name": "marinaId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by customer status. If not provided, returns all users",
+                        "name": "isCustomer",
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -11142,6 +11154,10 @@ const docTemplate = `{
                 "roleId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "roleName": {
+                    "type": "string",
+                    "example": "Admin"
                 },
                 "title": {
                     "type": "string",
