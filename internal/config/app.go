@@ -19,7 +19,7 @@ func LoadAppConfig() AppConfig {
 	invitationRoute := EnvOrDefault("INVITATION_ROUTE", "auth/customer-portal-access")
 	customerIntakeRoute := EnvOrDefault("CUSTOMER_INTAKE_ROUTE", "auth/customer-intake")
 	passwordResetRoute := EnvOrDefault("PASSWORD_RESET_ROUTE", "auth/password-reset")
-	termsConditionsRoute := EnvOrDefault("TERMS_CONDITIONS_ROUTE", "auth/terms-conditions")
+	termsConditionsRoute := EnvOrDefault("TERMS_CONDITIONS_ROUTE", "terms-conditions")
 	if frontendBaseURL == "" {
 		frontendBaseURL = "https://dmweb-dev.dockmaster.com"
 	}
