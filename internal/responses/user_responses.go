@@ -1,9 +1,11 @@
 package responses
 
 import (
+	"context"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
+	"github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
@@ -92,91 +94,137 @@ func NewUserResponse(user db.User) UserResponse {
 	}
 }
 
-func NewUserResponseFromRow(row interface{}) UserResponse {
-	switch r := row.(type) {
-	case db.GetUsersByMarinaPaginatedRow:
-		response := NewUserResponse(db.User{
-			ID:                  r.ID,
-			Username:            r.Username,
-			FirstName:           r.FirstName,
-			LastName:            r.LastName,
-			Email:               r.Email,
-			EmailVerified:       r.EmailVerified,
-			Phone:               r.Phone,
-			Title:               r.Title,
-			Image:               r.Image,
-			PasswordHash:        r.PasswordHash,
-			LastLogin:           r.LastLogin,
-			FailedLoginAttempts: r.FailedLoginAttempts,
-			LockedUntil:         r.LockedUntil,
-			LastPasswordReset:   r.LastPasswordReset,
-			OrganizationID:      r.OrganizationID,
-			MarinaID:            r.MarinaID,
-			RoleID:              r.RoleID,
-			IsSuperuser:         r.IsSuperuser,
-			IsActive:            r.IsActive,
-			CreatedAt:           r.CreatedAt,
-			UpdatedAt:           r.UpdatedAt,
-			DeletedAt:           r.DeletedAt,
-			Modules:             r.Modules,
-			Permissions:         r.Permissions,
-			CustomerID:          r.CustomerID,
-			IsCustomer:          r.IsCustomer,
-			JoinedAt:            r.JoinedAt,
-		})
-		response.RoleName = r.RoleName
-		if r.CustomerName != nil {
-			if customerName, ok := r.CustomerName.(string); ok {
-				response.CustomerName = &customerName
-			}
+func NewUserResponseFromRow(r db.GetUsersByMarinaPaginatedRow, server *server.Server) *UserResponse {
+	// Create instances to fill from DB byte arrays
+	var permissions models.Permissions
+	var modules models.Modules
+
+	// Convert byte arrays to structs
+	if r.Permissions != nil {
+		if err := permissions.FromBytes(r.Permissions); err != nil {
+			// Handle error or set to nil (using default zero values is fine)
 		}
-		return response
-	case db.GetMarinaUsersListPaginatedRow:
-		response := NewUserResponse(db.User{
-			ID:                  r.ID,
-			Username:            r.Username,
-			FirstName:           r.FirstName,
-			LastName:            r.LastName,
-			Email:               r.Email,
-			EmailVerified:       r.EmailVerified,
-			Phone:               r.Phone,
-			Title:               r.Title,
-			Image:               r.Image,
-			PasswordHash:        r.PasswordHash,
-			LastLogin:           r.LastLogin,
-			FailedLoginAttempts: r.FailedLoginAttempts,
-			LockedUntil:         r.LockedUntil,
-			LastPasswordReset:   r.LastPasswordReset,
-			OrganizationID:      r.OrganizationID,
-			MarinaID:            r.MarinaID,
-			RoleID:              r.RoleID,
-			IsSuperuser:         r.IsSuperuser,
-			IsActive:            r.IsActive,
-			CreatedAt:           r.CreatedAt,
-			UpdatedAt:           r.UpdatedAt,
-			DeletedAt:           r.DeletedAt,
-			Modules:             r.Modules,
-			Permissions:         r.Permissions,
-			CustomerID:          r.CustomerID,
-			IsCustomer:          r.IsCustomer,
-			JoinedAt:            r.JoinedAt,
-		})
-		response.RoleName = r.RoleName
-		if r.CustomerName != nil {
-			if customerName, ok := r.CustomerName.(string); ok {
-				response.CustomerName = &customerName
-			}
-		}
-		return response
-	default:
-		return NewUserResponse(r.(db.User))
 	}
+
+	if r.Modules != nil {
+		if err := modules.FromBytes(r.Modules); err != nil {
+			// Handle error or set to nil (using default zero values is fine)
+		}
+	}
+
+	response := &UserResponse{
+		ID:                  r.ID,
+		Username:            r.Username,
+		FirstName:           r.FirstName,
+		LastName:            r.LastName,
+		Email:               r.Email,
+		EmailVerified:       utils.PgTimeToTimePtr(r.EmailVerified),
+		Phone:               r.Phone,
+		Title:               r.Title,
+		Image:               utils.GetFullImageURL(r.Image),
+		LastLogin:           utils.PgTimeToTimePtr(r.LastLogin),
+		FailedLoginAttempts: r.FailedLoginAttempts,
+		LockedUntil:         utils.PgTimeToTimePtr(r.LockedUntil),
+		LastPasswordReset:   utils.PgTimeToTimePtr(r.LastPasswordReset),
+		OrganizationID:      r.OrganizationID,
+		MarinaID:            r.MarinaID,
+		RoleID:              r.RoleID,
+		IsSuperuser:         r.IsSuperuser,
+		IsActive:            r.IsActive,
+		CreatedAt:           utils.PgTimeToTimePtr(r.CreatedAt),
+		UpdatedAt:           utils.PgTimeToTimePtr(r.UpdatedAt),
+		Permissions:         &permissions,
+		Modules:             &modules,
+		CustomerID:          r.CustomerID,
+		IsCustomer:          r.IsCustomer,
+		RoleName:            r.RoleName,
+	}
+
+	// If CustomerID is present, get the customer name from DME
+	if r.CustomerID != nil && server != nil {
+		// Get the marina to get the system ID
+		marina, err := server.DB.Queries().GetMarinaByID(context.Background(), r.MarinaID)
+		if err == nil && marina.SystemID != nil {
+			// Get customer name from DME
+			customer, err := server.DME.CustomerRetrieve(context.Background(), *r.CustomerID, r.OrganizationID, *marina.SystemID)
+			if err == nil {
+				response.CustomerName = &customer.Name
+			}
+		}
+	}
+
+	return response
+}
+
+func NewUserResponseFromMarinaListRow(r db.GetMarinaUsersListPaginatedRow, server *server.Server) *UserResponse {
+	// Create instances to fill from DB byte arrays
+	var permissions models.Permissions
+	var modules models.Modules
+
+	// Convert byte arrays to structs
+	if r.Permissions != nil {
+		if err := permissions.FromBytes(r.Permissions); err != nil {
+			// Handle error or set to nil (using default zero values is fine)
+		}
+	}
+
+	if r.Modules != nil {
+		if err := modules.FromBytes(r.Modules); err != nil {
+			// Handle error or set to nil (using default zero values is fine)
+		}
+	}
+
+	response := &UserResponse{
+		ID:                  r.ID,
+		Username:            r.Username,
+		FirstName:           r.FirstName,
+		LastName:            r.LastName,
+		Email:               r.Email,
+		EmailVerified:       utils.PgTimeToTimePtr(r.EmailVerified),
+		Phone:               r.Phone,
+		Title:               r.Title,
+		Image:               utils.GetFullImageURL(r.Image),
+		LastLogin:           utils.PgTimeToTimePtr(r.LastLogin),
+		FailedLoginAttempts: r.FailedLoginAttempts,
+		LockedUntil:         utils.PgTimeToTimePtr(r.LockedUntil),
+		LastPasswordReset:   utils.PgTimeToTimePtr(r.LastPasswordReset),
+		OrganizationID:      r.OrganizationID,
+		MarinaID:            r.MarinaID,
+		RoleID:              r.RoleID,
+		IsSuperuser:         r.IsSuperuser,
+		IsActive:            r.IsActive,
+		CreatedAt:           utils.PgTimeToTimePtr(r.CreatedAt),
+		UpdatedAt:           utils.PgTimeToTimePtr(r.UpdatedAt),
+		Permissions:         &permissions,
+		Modules:             &modules,
+		CustomerID:          r.CustomerID,
+		IsCustomer:          r.IsCustomer,
+		RoleName:            r.RoleName,
+	}
+
+	// If CustomerID is present, get the customer name from DME
+	if r.CustomerID != nil && server != nil {
+		// Get the marina to get the system ID
+		marina, err := server.DB.Queries().GetMarinaByID(context.Background(), r.MarinaID)
+		if err == nil && marina.SystemID != nil {
+			// Get customer name from DME
+			customer, err := server.DME.CustomerRetrieve(context.Background(), *r.CustomerID, r.OrganizationID, *marina.SystemID)
+			if err == nil {
+				response.CustomerName = &customer.Name
+			}
+		}
+	}
+
+	return response
 }
 
 func NewUsersPaginatedResponseFromRows(users []db.GetUsersByMarinaPaginatedRow, total int64, perPage, page int32) BaseResponse {
 	userResponses := make([]UserResponse, len(users))
 	for i, user := range users {
-		userResponses[i] = NewUserResponseFromRow(user)
+		response := NewUserResponseFromRow(user, nil)
+		if response != nil {
+			userResponses[i] = *response
+		}
 	}
 	return NewPaginatedResponse(userResponses, total, perPage, page)
 }
@@ -184,7 +232,10 @@ func NewUsersPaginatedResponseFromRows(users []db.GetUsersByMarinaPaginatedRow, 
 func NewUsersPaginatedResponseFromMarinaRows(users []db.GetMarinaUsersListPaginatedRow, total int64, perPage, page int32) BaseResponse {
 	userResponses := make([]UserResponse, len(users))
 	for i, user := range users {
-		userResponses[i] = NewUserResponseFromRow(user)
+		response := NewUserResponseFromMarinaListRow(user, nil)
+		if response != nil {
+			userResponses[i] = *response
+		}
 	}
 	return NewPaginatedResponse(userResponses, total, perPage, page)
 }

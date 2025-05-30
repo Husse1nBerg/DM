@@ -119,7 +119,7 @@ WHERE organization_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 -- name: GetUsersByMarinaPaginated :many
-SELECT u.*, r.name as role_name, CONCAT(u.first_name, ' ', u.last_name) as customer_name
+SELECT u.*, r.name as role_name
 FROM users u
 LEFT JOIN roles r ON u.role_id = r.id
 WHERE u.marina_id = $1
@@ -128,7 +128,7 @@ WHERE u.marina_id = $1
 ORDER BY u.created_at DESC
 LIMIT $3 OFFSET $4;
 -- name: GetUsersByMarinaUsersListPaginated :many
-SELECT u.*, r.name as role_name, CONCAT(u.first_name, ' ', u.last_name) as customer_name
+SELECT u.*, r.name as role_name
 FROM users u
 JOIN user_marinas um ON u.id = um.user_id
 LEFT JOIN roles r ON u.role_id = r.id
