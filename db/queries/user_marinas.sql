@@ -28,7 +28,7 @@ WHERE um.marina_id = $1
     AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL;
 -- name: GetMarinaUsersListPaginated :many
-SELECT u.*, r.name as role_name
+SELECT u.*, r.name as role_name, CONCAT(u.first_name, ' ', u.last_name) as customer_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
     LEFT JOIN roles r ON u.role_id = r.id

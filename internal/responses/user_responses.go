@@ -30,6 +30,7 @@ type UserResponse struct {
 	RoleID              uuid.UUID           `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
 	RoleName            *string             `json:"roleName,omitempty" example:"Admin"`
 	CustomerID          *string             `json:"customerId,omitempty" example:"1234567890"`
+	CustomerName        *string             `json:"customerName,omitempty" example:"John's Marina"`
 	IsCustomer          *bool               `json:"isCustomer,omitempty" example:"false"`
 	IsSuperuser         *bool               `json:"isSuperuser,omitempty" example:"false"`
 	IsActive            *bool               `json:"isActive,omitempty" example:"true"`
@@ -37,6 +38,12 @@ type UserResponse struct {
 	UpdatedAt           *time.Time          `json:"updatedAt,omitempty"`
 	Permissions         *models.Permissions `json:"permissions,omitempty"`
 	Modules             *models.Modules     `json:"modules,omitempty"`
+}
+
+// UserWithRole embeds User and adds RoleName field
+type UserWithRole struct {
+	db.User
+	RoleName *string `json:"roleName,omitempty" example:"Admin"`
 }
 
 func NewUserResponse(user db.User) UserResponse {
@@ -74,7 +81,6 @@ func NewUserResponse(user db.User) UserResponse {
 		OrganizationID:      user.OrganizationID,
 		MarinaID:            user.MarinaID,
 		RoleID:              user.RoleID,
-		RoleName:            user.RoleName,
 		CustomerID:          user.CustomerID,
 		IsCustomer:          user.IsCustomer,
 		IsSuperuser:         user.IsSuperuser,
@@ -84,6 +90,103 @@ func NewUserResponse(user db.User) UserResponse {
 		Permissions:         &permissions,
 		Modules:             &modules,
 	}
+}
+
+func NewUserResponseFromRow(row interface{}) UserResponse {
+	switch r := row.(type) {
+	case db.GetUsersByMarinaPaginatedRow:
+		response := NewUserResponse(db.User{
+			ID:                  r.ID,
+			Username:            r.Username,
+			FirstName:           r.FirstName,
+			LastName:            r.LastName,
+			Email:               r.Email,
+			EmailVerified:       r.EmailVerified,
+			Phone:               r.Phone,
+			Title:               r.Title,
+			Image:               r.Image,
+			PasswordHash:        r.PasswordHash,
+			LastLogin:           r.LastLogin,
+			FailedLoginAttempts: r.FailedLoginAttempts,
+			LockedUntil:         r.LockedUntil,
+			LastPasswordReset:   r.LastPasswordReset,
+			OrganizationID:      r.OrganizationID,
+			MarinaID:            r.MarinaID,
+			RoleID:              r.RoleID,
+			IsSuperuser:         r.IsSuperuser,
+			IsActive:            r.IsActive,
+			CreatedAt:           r.CreatedAt,
+			UpdatedAt:           r.UpdatedAt,
+			DeletedAt:           r.DeletedAt,
+			Modules:             r.Modules,
+			Permissions:         r.Permissions,
+			CustomerID:          r.CustomerID,
+			IsCustomer:          r.IsCustomer,
+			JoinedAt:            r.JoinedAt,
+		})
+		response.RoleName = r.RoleName
+		if r.CustomerName != nil {
+			if customerName, ok := r.CustomerName.(string); ok {
+				response.CustomerName = &customerName
+			}
+		}
+		return response
+	case db.GetMarinaUsersListPaginatedRow:
+		response := NewUserResponse(db.User{
+			ID:                  r.ID,
+			Username:            r.Username,
+			FirstName:           r.FirstName,
+			LastName:            r.LastName,
+			Email:               r.Email,
+			EmailVerified:       r.EmailVerified,
+			Phone:               r.Phone,
+			Title:               r.Title,
+			Image:               r.Image,
+			PasswordHash:        r.PasswordHash,
+			LastLogin:           r.LastLogin,
+			FailedLoginAttempts: r.FailedLoginAttempts,
+			LockedUntil:         r.LockedUntil,
+			LastPasswordReset:   r.LastPasswordReset,
+			OrganizationID:      r.OrganizationID,
+			MarinaID:            r.MarinaID,
+			RoleID:              r.RoleID,
+			IsSuperuser:         r.IsSuperuser,
+			IsActive:            r.IsActive,
+			CreatedAt:           r.CreatedAt,
+			UpdatedAt:           r.UpdatedAt,
+			DeletedAt:           r.DeletedAt,
+			Modules:             r.Modules,
+			Permissions:         r.Permissions,
+			CustomerID:          r.CustomerID,
+			IsCustomer:          r.IsCustomer,
+			JoinedAt:            r.JoinedAt,
+		})
+		response.RoleName = r.RoleName
+		if r.CustomerName != nil {
+			if customerName, ok := r.CustomerName.(string); ok {
+				response.CustomerName = &customerName
+			}
+		}
+		return response
+	default:
+		return NewUserResponse(r.(db.User))
+	}
+}
+
+func NewUsersPaginatedResponseFromRows(users []db.GetUsersByMarinaPaginatedRow, total int64, perPage, page int32) BaseResponse {
+	userResponses := make([]UserResponse, len(users))
+	for i, user := range users {
+		userResponses[i] = NewUserResponseFromRow(user)
+	}
+	return NewPaginatedResponse(userResponses, total, perPage, page)
+}
+
+func NewUsersPaginatedResponseFromMarinaRows(users []db.GetMarinaUsersListPaginatedRow, total int64, perPage, page int32) BaseResponse {
+	userResponses := make([]UserResponse, len(users))
+	for i, user := range users {
+		userResponses[i] = NewUserResponseFromRow(user)
+	}
+	return NewPaginatedResponse(userResponses, total, perPage, page)
 }
 
 func NewUserResponseSuccess(user db.User) BaseResponse {

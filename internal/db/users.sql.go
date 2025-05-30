@@ -1040,7 +1040,7 @@ func (q *Queries) GetUsersByMarina(ctx context.Context, arg GetUsersByMarinaPara
 }
 
 const getUsersByMarinaPaginated = `-- name: GetUsersByMarinaPaginated :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name, CONCAT(u.first_name, ' ', u.last_name) as customer_name
 FROM users u
 LEFT JOIN roles r ON u.role_id = r.id
 WHERE u.marina_id = $1
@@ -1086,6 +1086,7 @@ type GetUsersByMarinaPaginatedRow struct {
 	IsCustomer          *bool
 	JoinedAt            pgtype.Timestamp
 	RoleName            *string
+	CustomerName        interface{}
 }
 
 func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByMarinaPaginatedParams) ([]GetUsersByMarinaPaginatedRow, error) {
@@ -1131,6 +1132,113 @@ func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByM
 			&i.IsCustomer,
 			&i.JoinedAt,
 			&i.RoleName,
+			&i.CustomerName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersByMarinaUsersListPaginated = `-- name: GetUsersByMarinaUsersListPaginated :many
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name, CONCAT(u.first_name, ' ', u.last_name) as customer_name
+FROM users u
+JOIN user_marinas um ON u.id = um.user_id
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type GetUsersByMarinaUsersListPaginatedParams struct {
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+	Limit      int32
+	Offset     int32
+}
+
+type GetUsersByMarinaUsersListPaginatedRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	Modules             []byte
+	Permissions         []byte
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	RoleName            *string
+	CustomerName        interface{}
+}
+
+func (q *Queries) GetUsersByMarinaUsersListPaginated(ctx context.Context, arg GetUsersByMarinaUsersListPaginatedParams) ([]GetUsersByMarinaUsersListPaginatedRow, error) {
+	rows, err := q.db.Query(ctx, getUsersByMarinaUsersListPaginated,
+		arg.MarinaID,
+		arg.IsCustomer,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersByMarinaUsersListPaginatedRow
+	for rows.Next() {
+		var i GetUsersByMarinaUsersListPaginatedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Modules,
+			&i.Permissions,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.RoleName,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
