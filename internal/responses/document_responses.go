@@ -49,9 +49,9 @@ func NewDocumentResponseSuccess(doc db.Document) BaseResponse {
 
 // NewDocumentsResponseSuccess creates a successful response with a list of documents
 func NewDocumentsResponseSuccess(docs []db.Document) BaseResponse {
-	var response []DocumentResponse
-	for _, doc := range docs {
-		response = append(response, ConvertDocumentToResponse(doc))
+	documentResponses := make([]DocumentResponse, len(docs))
+	for i, doc := range docs {
+		documentResponses[i] = ConvertDocumentToResponse(doc)
 	}
-	return NewSuccessResponse(response)
+	return NewSuccessResponse(documentResponses)
 }
