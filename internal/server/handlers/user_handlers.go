@@ -495,7 +495,15 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 	}
 	total := int64(len(allUsers))
 
-	return responses.NewUsersPaginatedResponseFromRows(userRows, total, pagination.PageSize, pagination.Page).JSON(c)
+	// Create user responses with server instance for DME client
+	userResponses := make([]responses.UserResponse, len(userRows))
+	for i, user := range userRows {
+		response := responses.NewUserResponseFromRow(user, g.server)
+		if response != nil {
+			userResponses[i] = *response
+		}
+	}
+	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
 // GetMarinaUsersList gets all users associated with a marina through user_marinas
@@ -562,7 +570,15 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 	}
 	total := int64(len(allUsers))
 
-	return responses.NewUsersPaginatedResponseFromMarinaRows(userRows, total, pagination.PageSize, pagination.Page).JSON(c)
+	// Create user responses with server instance for DME client
+	userResponses := make([]responses.UserResponse, len(userRows))
+	for i, user := range userRows {
+		response := responses.NewUserResponseFromMarinaListRow(user, g.server)
+		if response != nil {
+			userResponses[i] = *response
+		}
+	}
+	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
 // AssignUserToMarinaHandler assigns a user to a marina (creates a user_marinas record)

@@ -173,7 +173,7 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, arg GetMarinaUsersList
 }
 
 const getMarinaUsersListPaginated = `-- name: GetMarinaUsersListPaginated :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name, CONCAT(u.first_name, ' ', u.last_name) as customer_name
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
     LEFT JOIN roles r ON u.role_id = r.id
@@ -220,7 +220,6 @@ type GetMarinaUsersListPaginatedRow struct {
 	IsCustomer          *bool
 	JoinedAt            pgtype.Timestamp
 	RoleName            *string
-	CustomerName        interface{}
 }
 
 func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarinaUsersListPaginatedParams) ([]GetMarinaUsersListPaginatedRow, error) {
@@ -266,7 +265,6 @@ func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarina
 			&i.IsCustomer,
 			&i.JoinedAt,
 			&i.RoleName,
-			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
