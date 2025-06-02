@@ -149,8 +149,24 @@ definitions:
     properties:
       beam:
         type: string
+      billingCodes:
+        items:
+          $ref: '#/definitions/dme.BillingCode'
+        type: array
+      boatDescriptionCodes:
+        items:
+          $ref: '#/definitions/dme.BoatDescriptionCode'
+        type: array
       color:
         type: string
+      comments:
+        type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      doNotLaunch:
+        type: boolean
       draft:
         type: string
       height:
@@ -162,6 +178,10 @@ definitions:
       insuranceCompany:
         type: string
       insuranceExpDate:
+        type: string
+      integrationId:
+        type: string
+      lastModified:
         type: string
       loa:
         type: string
@@ -176,6 +196,12 @@ definitions:
           $ref: '#/definitions/dme.Motor'
         type: array
       name:
+        type: string
+      operationsHistory:
+        items:
+          $ref: '#/definitions/dme.OperationHistory'
+        type: array
+      ownerIntegrationId:
         type: string
       registration:
         type: string
@@ -984,8 +1010,24 @@ definitions:
     properties:
       beam:
         type: string
+      billingCodes:
+        items:
+          $ref: '#/definitions/dme.BillingCode'
+        type: array
+      boatDescriptionCodes:
+        items:
+          $ref: '#/definitions/dme.BoatDescriptionCode'
+        type: array
       color:
         type: string
+      comments:
+        type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      doNotLaunch:
+        type: boolean
       draft:
         type: string
       height:
@@ -995,6 +1037,10 @@ definitions:
       insuranceCompany:
         type: string
       insuranceExpDate:
+        type: string
+      integrationId:
+        type: string
+      lastModified:
         type: string
       loa:
         type: string
@@ -1006,7 +1052,13 @@ definitions:
         type: string
       name:
         type: string
+      operationsHistory:
+        items:
+          $ref: '#/definitions/dme.OperationHistory'
+        type: array
       ownerId:
+        type: string
+      ownerIntegrationId:
         type: string
       registration:
         type: string
@@ -2842,6 +2894,9 @@ definitions:
         type: string
       customerId:
         example: "1234567890"
+        type: string
+      customerName:
+        example: John's Marina
         type: string
       email:
         example: john.doe@example.com
@@ -6808,10 +6863,6 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Filter by customer status. If not provided, returns all users
-        in: query
-        name: isCustomer
-        type: boolean
       - default: 1
         description: Page number
         in: query
@@ -6965,6 +7016,10 @@ paths:
         name: marinaId
         required: true
         type: string
+      - description: Filter by customer status. If not provided, returns all users
+        in: query
+        name: isCustomer
+        type: boolean
       - default: 1
         description: Page number
         in: query
