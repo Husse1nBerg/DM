@@ -7210,8 +7210,32 @@ const docTemplate = `{
                 "beam": {
                     "type": "string"
                 },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
                 "color": {
                     "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
                 },
                 "draft": {
                     "type": "string"
@@ -7229,6 +7253,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
                     "type": "string"
                 },
                 "loa": {
@@ -7250,6 +7280,15 @@ const docTemplate = `{
                     }
                 },
                 "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
+                "ownerIntegrationId": {
                     "type": "string"
                 },
                 "registration": {
@@ -8462,8 +8501,32 @@ const docTemplate = `{
                 "beam": {
                     "type": "string"
                 },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
                 "color": {
                     "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
                 },
                 "draft": {
                     "type": "string"
@@ -8478,6 +8541,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
                     "type": "string"
                 },
                 "loa": {
@@ -8495,7 +8564,16 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
                 "ownerId": {
+                    "type": "string"
+                },
+                "ownerIntegrationId": {
                     "type": "string"
                 },
                 "registration": {
@@ -11084,6 +11162,10 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string",
                     "example": "1234567890"
+                },
+                "customerName": {
+                    "type": "string",
+                    "example": "John's Marina"
                 },
                 "email": {
                     "type": "string",
