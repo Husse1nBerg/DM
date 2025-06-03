@@ -97,6 +97,7 @@ func RegisterRoutes(s *s.Server) {
 	users.POST("/reset-password", userHandler.ResetPassword)
 	users.POST("/customer-portal", userHandler.CreateCustomerUserHandler)
 	users.GET("/customer-portal/:customerId", userHandler.GetUsersByCustomerIDHandler)
+	users.POST("/invite", userHandler.CreateUserWithInvitationHandler)
 
 	// Password recovery (public endpoints)
 	base.POST("/user/forgot-password", userHandler.ForgotPassword)

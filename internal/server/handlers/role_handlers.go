@@ -55,7 +55,8 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 	}
 
 	// Get total count for pagination
-	allRoles, err := queries.GetAllRoles(c.Request().Context())
+	// allRoles, err := queries.GetAllRoles(c.Request().Context())
+	allRoles, err := queries.GetAllRolesByTypes(c.Request().Context(), []string{"marina", "customer"})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -91,6 +92,13 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 	// Convert permissions to bytes for database storage
 	var permissionsBytes []byte
 	var err error
+
+	if req.Type == "" {
+		req.Type = "marina"
+	}
+	if req.Type != "marina" && req.Type != "customer" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid role type").JSON(c)
+	}
 
 	if req.Permissions != nil {
 		permissionsBytes, err = req.Permissions.ToBytes()

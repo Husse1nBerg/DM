@@ -87,6 +87,7 @@ func RunProdSeed() {
 		permissions    *models.Permissions
 		isActive       bool
 		isCustomerRole bool
+		roleType       string
 	}{
 		{
 			name:        "superuser",
@@ -109,6 +110,7 @@ func RunProdSeed() {
 			},
 			isActive:       true,
 			isCustomerRole: false,
+			roleType:       "internal",
 		},
 		{
 			name:        "org_admin",
@@ -131,6 +133,7 @@ func RunProdSeed() {
 			},
 			isActive:       true,
 			isCustomerRole: false,
+			roleType:       "marina",
 		},
 		{
 			name:        "marina_admin",
@@ -153,6 +156,7 @@ func RunProdSeed() {
 			},
 			isActive:       true,
 			isCustomerRole: false,
+			roleType:       "marina",
 		},
 		{
 			name:        "staff",
@@ -175,6 +179,7 @@ func RunProdSeed() {
 			},
 			isActive:       true,
 			isCustomerRole: false,
+			roleType:       "marina",
 		},
 		{
 			name:        "viewer",
@@ -197,6 +202,7 @@ func RunProdSeed() {
 			},
 			isActive:       true,
 			isCustomerRole: false,
+			roleType:       "marina",
 		},
 		{
 			name:        "customer_user",
@@ -219,6 +225,7 @@ func RunProdSeed() {
 			},
 			isActive:       true,
 			isCustomerRole: true,
+			roleType:       "customer",
 		},
 	}
 
@@ -239,6 +246,7 @@ func RunProdSeed() {
 					Permissions:    permBytes,
 					IsActive:       u.Pointer(r.isActive),
 					IsCustomerRole: u.Pointer(r.isCustomerRole),
+					Type:           r.roleType,
 				})
 				if err != nil {
 					log.Fatalf("failed to create role %s: %v", r.name, err)
@@ -256,6 +264,7 @@ func RunProdSeed() {
 				Permissions:    permBytes,
 				IsActive:       u.Pointer(r.isActive),
 				IsCustomerRole: u.Pointer(r.isCustomerRole),
+				Type:           r.roleType,
 			})
 			if err != nil {
 				log.Fatalf("failed to update role %s: %v", r.name, err)
@@ -308,86 +317,6 @@ func RunProdSeed() {
 		log.Fatalf("failed to assign user to marina: %v", err)
 	}
 	log.Println("Seed completed successfully")
-
-	// Seed Staff Role if it doesn't exist
-	_, err = q.GetRoleByName(ctx, "staff")
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			// Create staff role
-			staffPermissions := &models.Permissions{
-				ReadUsers:           true,
-				WriteUsers:          false,
-				DeleteUsers:         false,
-				ReadOrganizations:   true,
-				WriteOrganizations:  false,
-				DeleteOrganizations: false,
-				ReadMarinas:         true,
-				WriteMarinas:        true,
-				DeleteMarinas:       false,
-				ReadRoles:           true,
-				WriteRoles:          false,
-				DeleteRoles:         false,
-				ReadSettings:        true,
-				WriteSettings:       false,
-			}
-			permBytes, err := staffPermissions.ToBytes()
-			if err != nil {
-				log.Fatalf("failed to convert permissions to bytes for staff role: %v", err)
-			}
-			_, err = q.CreateRole(ctx, sqlc.CreateRoleParams{
-				Name:        "staff",
-				Description: u.Pointer("Regular staff member with limited write access"),
-				Permissions: permBytes,
-				IsActive:    u.Pointer(true),
-			})
-			if err != nil {
-				log.Fatalf("failed to create staff role: %v", err)
-			}
-			log.Printf("Created staff role")
-		} else {
-			log.Fatalf("failed to get staff role: %v", err)
-		}
-	}
-
-	// Seed Viewer Role if it doesn't exist
-	_, err = q.GetRoleByName(ctx, "viewer")
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			// Create viewer role
-			viewerPermissions := &models.Permissions{
-				ReadUsers:           true,
-				WriteUsers:          false,
-				DeleteUsers:         false,
-				ReadOrganizations:   true,
-				WriteOrganizations:  false,
-				DeleteOrganizations: false,
-				ReadMarinas:         true,
-				WriteMarinas:        false,
-				DeleteMarinas:       false,
-				ReadRoles:           true,
-				WriteRoles:          false,
-				DeleteRoles:         false,
-				ReadSettings:        true,
-				WriteSettings:       false,
-			}
-			permBytes, err := viewerPermissions.ToBytes()
-			if err != nil {
-				log.Fatalf("failed to convert permissions to bytes for viewer role: %v", err)
-			}
-			_, err = q.CreateRole(ctx, sqlc.CreateRoleParams{
-				Name:        "viewer",
-				Description: u.Pointer("Read-only access"),
-				Permissions: permBytes,
-				IsActive:    u.Pointer(true),
-			})
-			if err != nil {
-				log.Fatalf("failed to create viewer role: %v", err)
-			}
-			log.Printf("Created viewer role")
-		} else {
-			log.Fatalf("failed to get viewer role: %v", err)
-		}
-	}
 }
 
 func main() {

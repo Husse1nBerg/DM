@@ -18,6 +18,7 @@ type CreateRoleRequest struct {
 	Permissions    *models.Permissions `json:"permissions" validate:"required"`
 	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
 	IsCustomerRole *bool               `json:"isCustomerRole,omitempty" example:"false"`
+	Type           string              `json:"type" validate:"required" example:"marina"`
 }
 
 // UpdateRoleRequest represents the parameters that can be updated for a role
@@ -27,6 +28,7 @@ type UpdateRoleRequest struct {
 	Permissions    *models.Permissions `json:"permissions,omitempty"`
 	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
 	IsCustomerRole *bool               `json:"isCustomerRole,omitempty" example:"false"`
+	Type           string              `json:"type,omitempty" example:"marina"`
 }
 
 // Validate performs custom validation on the create role request

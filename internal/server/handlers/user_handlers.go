@@ -1301,10 +1301,10 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 	return responses.NewMessageResponse(http.StatusOK, "If your email is registered, you will receive password recovery instructions").JSON(c)
 }
 
-// CreateUserHandler creates a new user
+// CreateCustomerUserHandler creates a new customer user
 //
-//	@Summary		Create user
-//	@Description	Create a new user
+//	@Summary		Create customer user
+//	@Description	Create a new customer user and assign them to a marina and customer
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -1487,6 +1487,220 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	taskID, resultChan, err := g.server.SendGrid.SendInviteEmail(
 		[]string{user.Email},
 		"DockMaster Customer Portal Invite",
+		templateData,
+	)
+	if err != nil {
+		logger.Zap.Errorw("Failed to send invite email", "error", err)
+	} else {
+		logger.Zap.Infow("Invite email queued",
+			"email", user.Email,
+			"task_id", taskID.String())
+
+		// Log the email attempt (non-blocking)
+		go func() {
+			result := <-resultChan
+			if result.Status == sendgrid.StatusSent {
+				logger.Zap.Infow("Invite email sent successfully",
+					"email", user.Email,
+					"task_id", result.ID.String())
+			} else {
+				logger.Zap.Errorw("Failed to send invite email",
+					"email", user.Email,
+					"task_id", result.ID.String(),
+					"error", result.Error)
+			}
+		}()
+	}
+
+	response := responses.NewUserResponseSuccess(user)
+	return c.JSON(http.StatusCreated, response)
+}
+
+// CreateUserWithInvitationHandler creates a new user with invitation
+//
+//	@Summary		Create user with invitation
+//	@Description	Create a new user and send them an invitation email
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		requests.CreateUserWithInvitationRequest	true	"User information"
+//	@Success		201		{object}	responses.UserResponseWrapper "Created user"
+//	@Failure		400		{object}	responses.Error "Bad request"
+//	@Failure		500		{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/user/invite [post]
+func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
+	// Parse and validate the request body
+	req := new(requests.CreateUserWithInvitationRequest)
+	logger := g.server.Logger
+	cfg := g.server.Config
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	queries := g.server.DB.Queries()
+
+	// Check if the role exists
+	_, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
+	// Check if the marina and organization exist and linked
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina not found").JSON(c)
+	}
+
+	organization, err := queries.GetOrganizationByID(c.Request().Context(), req.OrganizationID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Organization not found").JSON(c)
+	}
+
+	if marina.OrganizationID != organization.ID {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
+	}
+
+	// Check if the email is already taken
+	email := utils.LowerCase(req.Email)
+	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+	}
+	username := req.Username
+	if username == "" {
+		username = utils.GenerateUsername(req.FirstName)
+	}
+
+	// Check if the username is already taken
+	_, err = queries.GetUserByUsername(c.Request().Context(), username)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Username already taken").JSON(c)
+	}
+
+	// Set default values for nullable fields if not provided
+	failedLoginAttempts := int32(0)
+	isActive := true
+	isSuperuser := false
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+	if req.IsSuperuser != nil {
+		isSuperuser = *req.IsSuperuser
+	}
+
+	// Convert permissions and modules to bytes
+	var permissionsBytes, modulesBytes []byte
+
+	// Use provided permissions or default from role
+	if req.Permissions != nil {
+		var err error
+		permissionsBytes, err = req.Permissions.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
+		}
+	} else {
+		// Set default permissions based on the role
+		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		permissionsBytes = role.Permissions
+	}
+
+	// Use provided modules or default read-only modules
+	if req.Modules != nil {
+		var err error
+		modulesBytes, err = req.Modules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+		}
+	} else {
+		// Set default read-only modules if not provided
+		defaultModules := models.ReadOnlyModules()
+		modulesBytes, _ = defaultModules.ToBytes()
+	}
+
+	// Create user without password hash - they'll set it via invitation
+	params := db.CreateUserParams{
+		Username:            username,
+		FirstName:           req.FirstName,
+		LastName:            req.LastName,
+		Email:               email,
+		Phone:               req.Phone,
+		Title:               req.Title,
+		Image:               req.Image,
+		PasswordHash:        nil, // No password hash - user will set via invitation
+		FailedLoginAttempts: &failedLoginAttempts,
+		LastPasswordReset:   utils.PgTimeNow(),
+		OrganizationID:      req.OrganizationID,
+		MarinaID:            req.MarinaID,
+		RoleID:              req.RoleID,
+		IsSuperuser:         &isSuperuser,
+		IsActive:            &isActive,
+		Modules:             modulesBytes,
+		Permissions:         permissionsBytes,
+	}
+
+	user, err := queries.CreateUser(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Assign user to marina
+	assignUserToMarina := db.AssignUserToMarinaParams{
+		UserID:   user.ID,
+		MarinaID: req.MarinaID,
+	}
+
+	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Generate invitation token
+	token, err := utils.GenerateRandomToken(32)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Create invitation record
+	_, err = queries.CreateInvite(c.Request().Context(), db.CreateInviteParams{
+		UserID:    user.ID,
+		Email:     user.Email,
+		Token:     token,
+		ExpiresAt: utils.PgTimeNowAdd(240 * time.Hour), // 10 days
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Build invitation URL
+	inviteURL := fmt.Sprintf("%s/%s?token=%s&email=%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.InvitationRoute,
+		token,
+		url.QueryEscape(user.Email))
+	termsConditionsURL := fmt.Sprintf("%s/%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.TermsConditionsRoute,
+	)
+
+	// Prepare email template data
+	templateData := sendgrid.InviteTemplateData{
+		UserName:        user.FirstName,
+		InviteURL:       inviteURL,
+		TermsConditions: termsConditionsURL,
+	}
+
+	// Send invitation email
+	taskID, resultChan, err := g.server.SendGrid.SendInviteEmail(
+		[]string{user.Email},
+		"DockMaster Platform Invite",
 		templateData,
 	)
 	if err != nil {
