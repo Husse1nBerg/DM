@@ -18,7 +18,8 @@ INSERT INTO contacts (
     name,
     description,
     email,
-    phone
+    phone,
+    is_cp_contact
 )
 VALUES (
     $1,
@@ -26,9 +27,10 @@ VALUES (
     $3,
     $4,
     $5,
-    $6
+    $6,
+    $7
 )
-RETURNING id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at
+RETURNING id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
 `
 
 type CreateContactParams struct {
@@ -38,6 +40,7 @@ type CreateContactParams struct {
 	Description *string
 	Email       *string
 	Phone       *string
+	IsCpContact *bool
 }
 
 func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error) {
@@ -48,6 +51,7 @@ func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (C
 		arg.Description,
 		arg.Email,
 		arg.Phone,
+		arg.IsCpContact,
 	)
 	var i Contact
 	err := row.Scan(
@@ -61,6 +65,7 @@ func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (C
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.IsCpContact,
 	)
 	return i, err
 }
@@ -77,7 +82,7 @@ func (q *Queries) DeleteContact(ctx context.Context, id uuid.UUID) error {
 }
 
 const getContactByID = `-- name: GetContactByID :one
-SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at
+SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
 FROM contacts
 WHERE id = $1
     AND deleted_at IS NULL
@@ -98,12 +103,54 @@ func (q *Queries) GetContactByID(ctx context.Context, id uuid.UUID) (Contact, er
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.IsCpContact,
 	)
 	return i, err
 }
 
+const listCPContacts = `-- name: ListCPContacts :many
+SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
+FROM contacts
+WHERE marina_id = $1
+    AND is_cp_contact = TRUE
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListCPContacts(ctx context.Context, marinaID uuid.UUID) ([]Contact, error) {
+	rows, err := q.db.Query(ctx, listCPContacts, marinaID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Contact
+	for rows.Next() {
+		var i Contact
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.Type,
+			&i.Name,
+			&i.Description,
+			&i.Email,
+			&i.Phone,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.IsCpContact,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listContacts = `-- name: ListContacts :many
-SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at
+SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
 FROM contacts
 WHERE marina_id = $1
     AND deleted_at IS NULL
@@ -130,6 +177,7 @@ func (q *Queries) ListContacts(ctx context.Context, marinaID uuid.UUID) ([]Conta
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.IsCpContact,
 		); err != nil {
 			return nil, err
 		}
@@ -142,7 +190,7 @@ func (q *Queries) ListContacts(ctx context.Context, marinaID uuid.UUID) ([]Conta
 }
 
 const listContactsByType = `-- name: ListContactsByType :many
-SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at
+SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
 FROM contacts
 WHERE marina_id = $1
     AND type = $2
@@ -175,6 +223,7 @@ func (q *Queries) ListContactsByType(ctx context.Context, arg ListContactsByType
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.IsCpContact,
 		); err != nil {
 			return nil, err
 		}
@@ -186,6 +235,18 @@ func (q *Queries) ListContactsByType(ctx context.Context, arg ListContactsByType
 	return items, nil
 }
 
+const unsetCPContact = `-- name: UnsetCPContact :exec
+UPDATE contacts
+SET is_cp_contact = FALSE
+WHERE marina_id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) UnsetCPContact(ctx context.Context, marinaID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, unsetCPContact, marinaID)
+	return err
+}
+
 const updateContact = `-- name: UpdateContact :one
 UPDATE contacts
 SET type = $2,
@@ -193,10 +254,11 @@ SET type = $2,
     description = $4,
     email = $5,
     phone = $6,
+    is_cp_contact = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at
+RETURNING id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
 `
 
 type UpdateContactParams struct {
@@ -206,6 +268,7 @@ type UpdateContactParams struct {
 	Description *string
 	Email       *string
 	Phone       *string
+	IsCpContact *bool
 }
 
 func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error) {
@@ -216,6 +279,7 @@ func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (C
 		arg.Description,
 		arg.Email,
 		arg.Phone,
+		arg.IsCpContact,
 	)
 	var i Contact
 	err := row.Scan(
@@ -229,6 +293,7 @@ func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (C
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.IsCpContact,
 	)
 	return i, err
 }

@@ -300,7 +300,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	// Parse and validate request
 	logger := h.server.Logger
-
+	cfg := h.server.Config
 	req := new(requests.CreateMessageRequest)
 	if err := c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -334,6 +334,10 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -401,19 +405,55 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 
 	} else if req.Type == "email" {
 
-		// Create email data
-		email := sendgrid.MessageTemplateData{
-			Content:   req.Body,
-			Recipient: req.Recipient,
-			Sender:    req.Sender,
-		}
-		to := []string{req.Contact}
-		subject := "Message from " + req.Sender
-
-		// Send email asynchronously
-		taskID, resultChan, err := h.server.SendGrid.SendMessageEmail(to, subject, email)
+		// check if the contact email is already a user
+		user, err := queries.GetUserByEmail(c.Request().Context(), req.Contact)
 		if err != nil {
 			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		var taskID uuid.UUID
+		var resultChan <-chan sendgrid.EmailStatus
+
+		to := []string{req.Contact}
+		subject := "Message from " + req.Sender + " - " + marina.Name
+		termsUrl := cfg.App.TermsConditionsURL()
+
+		if user.IsCustomer != nil && *user.IsCustomer {
+			// Create email data for customer using internal template
+			email := sendgrid.MessageTemplateData{
+				Content:         req.Body,
+				Recipient:       req.Recipient,
+				Sender:          req.Sender + " - " + marina.Name,
+				TermsConditions: termsUrl,
+			}
+
+			// Send email asynchronously using internal template
+			taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			}
+		} else {
+			// get the cp contact
+			cpContact, err := queries.ListCPContacts(c.Request().Context(), req.MarinaID)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			}
+			if cpContact == nil {
+				return responses.NewErrorResponse(http.StatusNotFound, "No Customer Portal contact found, please add a Customer Portal contact first").JSON(c)
+			}
+			// Create email data for external user using external template
+			email := sendgrid.ExternalMessageTemplateData{
+				Content:         req.Body,
+				Recipient:       req.Recipient,
+				Sender:          req.Sender + " - " + marina.Name,
+				ReplyTo:         *cpContact[0].Email,
+				TermsConditions: termsUrl,
+			}
+
+			// Send email asynchronously using external template
+			taskID, resultChan, err = h.server.SendGrid.SendExternalMessageEmail(to, subject, email)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			}
 		}
 
 		// Log the task

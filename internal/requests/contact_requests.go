@@ -21,6 +21,7 @@ type CreateContactRequest struct {
 	Description string      `json:"description"`
 	Email       string      `json:"email" validate:"omitempty,email"`
 	Phone       string      `json:"phone"`
+	IsCPContact *bool       `json:"is_cp_contact"`
 }
 
 // UpdateContactRequest represents the request body for updating a contact
@@ -30,6 +31,7 @@ type UpdateContactRequest struct {
 	Description string      `json:"description"`
 	Email       string      `json:"email" validate:"omitempty,email"`
 	Phone       string      `json:"phone"`
+	IsCPContact *bool       `json:"is_cp_contact"`
 }
 
 // Validate validates the request

@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 )
 
 type AppConfig struct {
@@ -33,4 +34,20 @@ func LoadAppConfig() AppConfig {
 		PasswordResetRoute:   passwordResetRoute,
 		TermsConditionsRoute: termsConditionsRoute,
 	}
+}
+
+func (c *AppConfig) RemoveSlashes(url string) string {
+	return strings.TrimSuffix(strings.TrimPrefix(url, "/"), "/")
+}
+
+func (c *AppConfig) InvitationURL() string {
+	return c.RemoveSlashes(c.FrontendBaseURL) + "/" + c.RemoveSlashes(c.InvitationRoute)
+}
+
+func (c *AppConfig) PasswordResetURL() string {
+	return c.RemoveSlashes(c.FrontendBaseURL) + "/" + c.RemoveSlashes(c.PasswordResetRoute)
+}
+
+func (c *AppConfig) TermsConditionsURL() string {
+	return c.RemoveSlashes(c.FrontendBaseURL) + "/" + c.RemoveSlashes(c.TermsConditionsRoute)
 }

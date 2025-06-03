@@ -34,6 +34,7 @@ type Contact struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	DeletedAt   pgtype.Timestamp
+	IsCpContact *bool
 }
 
 type CustomerSetting struct {
