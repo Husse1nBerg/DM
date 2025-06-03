@@ -1393,9 +1393,13 @@ definitions:
         type: string
       permissions:
         $ref: '#/definitions/models.Permissions'
+      type:
+        example: marina
+        type: string
     required:
     - name
     - permissions
+    - type
     type: object
   requests.CreateUserRequest:
     properties:
@@ -1450,6 +1454,56 @@ definitions:
     - marinaId
     - organizationId
     - password
+    - roleId
+    type: object
+  requests.CreateUserWithInvitationRequest:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      image:
+        example: /images/profiles/johndoe.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isSuperuser:
+        example: false
+        type: boolean
+      lastName:
+        example: Doe
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      modules:
+        $ref: '#/definitions/models.Modules'
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
+      phone:
+        example: "+15551234567"
+        type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      title:
+        example: Manager
+        type: string
+      username:
+        example: johndoe
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - marinaId
+    - organizationId
     - roleId
     type: object
   requests.CustomerCreateRequest:
@@ -1998,6 +2052,9 @@ definitions:
         type: string
       permissions:
         $ref: '#/definitions/models.Permissions'
+      type:
+        example: marina
+        type: string
     type: object
   requests.UpdateUserRequest:
     properties:
@@ -2862,6 +2919,9 @@ definitions:
         type: string
       permissions:
         $ref: '#/definitions/models.Permissions'
+      type:
+        example: marina
+        type: string
       updatedAt:
         example: "2023-01-02T00:00:00Z"
         type: string
@@ -6826,7 +6886,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new user
+      description: Create a new customer user and assign them to a marina and customer
       parameters:
       - description: User information
         in: body
@@ -6851,7 +6911,7 @@ paths:
             $ref: '#/definitions/responses.Error'
       security:
       - ApiKeyAuth: []
-      summary: Create user
+      summary: Create customer user
       tags:
       - User
   /user/customer-portal/{customerId}:
@@ -6933,6 +6993,38 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Forgot password
+      tags:
+      - User
+  /user/invite:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user and send them an invitation email
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateUserWithInvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create user with invitation
       tags:
       - User
   /user/list:

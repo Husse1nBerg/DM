@@ -23,6 +23,7 @@ func LoadSendGridConfig() SendGridConfig {
 	templatesMap["welcome"] = os.Getenv("SENDGRID_TEMPLATE_WELCOME")
 	templatesMap["message"] = os.Getenv("SENDGRID_TEMPLATE_MESSAGE")
 	templatesMap["invite"] = os.Getenv("SENDGRID_TEMPLATE_INVITE")
+	templatesMap["invite_customer"] = os.Getenv("SENDGRID_TEMPLATE_INVITE_CUSTOMER")
 	templatesMap["message_external"] = os.Getenv("SENDGRID_TEMPLATE_MESSAGE_EXTERNAL")
 	if templatesMap["message"] == "" {
 		templatesMap["message"] = "d-2a2afe50d47d417c99019692dc20079a"
@@ -35,6 +36,9 @@ func LoadSendGridConfig() SendGridConfig {
 	}
 	if templatesMap["invite"] == "" {
 		templatesMap["invite"] = "d-c9f51b77474a4d3bbf8e3df07af225a2"
+	}
+	if templatesMap["invite_customer"] == "" {
+		templatesMap["invite_customer"] = "d-c9f51b77474a4d3bbf8e3df07af225a2"
 	}
 	if templatesMap["message_external"] == "" {
 		templatesMap["message_external"] = "d-6c7a11bc1f3147018986af40b98ca69a"

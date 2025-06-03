@@ -1472,19 +1472,19 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	}
 	inviteURL := fmt.Sprintf("%s/%s?token=%s&email=%s",
 		cfg.App.FrontendBaseURL,
-		cfg.App.InvitationRoute,
+		cfg.App.InvitationCustomerRoute,
 		token,
 		url.QueryEscape(user.Email))
 	termsConditionsURL := fmt.Sprintf("%s/%s",
 		cfg.App.FrontendBaseURL,
 		cfg.App.TermsConditionsRoute,
 	)
-	templateData := sendgrid.InviteTemplateData{
+	templateData := sendgrid.InviteCustomerTemplateData{
 		UserName:        user.FirstName,
 		InviteURL:       inviteURL,
 		TermsConditions: termsConditionsURL,
 	}
-	taskID, resultChan, err := g.server.SendGrid.SendInviteEmail(
+	taskID, resultChan, err := g.server.SendGrid.SendInviteCustomerEmail(
 		[]string{user.Email},
 		"DockMaster Customer Portal Invite",
 		templateData,

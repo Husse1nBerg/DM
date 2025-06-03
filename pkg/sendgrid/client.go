@@ -408,3 +408,33 @@ func (c *Client) SendInviteEmail(to []string, subject string, data InviteTemplat
 	taskID, resultChan := c.SendTemplateEmail(email)
 	return taskID, resultChan, nil
 }
+
+// SendInviteCustomerEmail sends an invite email using the invite template
+func (c *Client) SendInviteCustomerEmail(to []string, subject string, data InviteCustomerTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["invite_customer"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("invite template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"user_name":        data.UserName,
+		"invite_url":       data.InviteURL,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		Subject: subject,
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
