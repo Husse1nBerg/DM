@@ -45,11 +45,12 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 	queries := g.server.DB.Queries()
 
 	// Get paginated roles
-	params := db.GetRolesPaginatedParams{
-		Limit:  pagination.PageSize,
-		Offset: (pagination.Page - 1) * pagination.PageSize,
+	params := db.GetAllRolesByTypesPaginatedParams{
+		Column1: []string{"marina", "customer"},
+		Limit:   pagination.PageSize,
+		Offset:  (pagination.Page - 1) * pagination.PageSize,
 	}
-	roles, err := queries.GetRolesPaginated(c.Request().Context(), params)
+	roles, err := queries.GetAllRolesByTypesPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
