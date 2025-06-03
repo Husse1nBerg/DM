@@ -44,6 +44,23 @@ type CreateCustomerUserRequest struct {
 	Modules        *models.Modules     `json:"modules,omitempty"`
 }
 
+type CreateUserWithInvitationRequest struct {
+	Username       string              `json:"username" example:"johndoe"`
+	FirstName      string              `json:"firstName" validate:"required" example:"John"`
+	LastName       string              `json:"lastName" validate:"required" example:"Doe"`
+	Email          string              `json:"email" validate:"required,email" example:"john.doe@example.com"`
+	Phone          *string             `json:"phone,omitempty" example:"+15551234567"`
+	Title          *string             `json:"title,omitempty" example:"Manager"`
+	Image          *string             `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
+	OrganizationID uuid.UUID           `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID       uuid.UUID           `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
+	RoleID         uuid.UUID           `json:"roleId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
+	IsSuperuser    *bool               `json:"isSuperuser,omitempty" example:"false"`
+	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
+	Permissions    *models.Permissions `json:"permissions,omitempty"`
+	Modules        *models.Modules     `json:"modules,omitempty"`
+}
+
 // UpdateUserRequest represents the parameters that can be updated for a user
 type UpdateUserRequest struct {
 	FirstName   *string             `json:"firstName,omitempty" validate:"omitempty" example:"John"`
@@ -75,6 +92,12 @@ type AssignUserToMarinaRequest struct {
 
 // Validate performs custom validation on the request
 func (r *CreateUserRequest) Validate() error {
+	validate := validator.New()
+	return validate.Struct(r)
+}
+
+// Validate performs custom validation on the request
+func (r *CreateUserWithInvitationRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)
 }

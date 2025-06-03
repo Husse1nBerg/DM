@@ -77,3 +77,9 @@ type InviteTemplateData struct {
 	InviteURL       string `json:"invite_url"`       // URL for the invite
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 }
+
+type InviteCustomerTemplateData struct {
+	UserName        string `json:"user_name"`        // User's username for login
+	InviteURL       string `json:"invite_url"`       // URL for the invite
+	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+}

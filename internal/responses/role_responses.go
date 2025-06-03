@@ -17,6 +17,7 @@ type RoleResponse struct {
 	Permissions    *models.Permissions `json:"permissions"`
 	IsActive       bool                `json:"isActive" example:"true"`
 	IsCustomerRole bool                `json:"isCustomerRole" example:"false"`
+	Type           string              `json:"type" example:"marina"`
 	CreatedAt      time.Time           `json:"createdAt" example:"2023-01-01T00:00:00Z"`
 	UpdatedAt      *time.Time          `json:"updatedAt,omitempty" example:"2023-01-02T00:00:00Z"`
 }
@@ -57,6 +58,7 @@ func convertDBRoleToResponse(role db.Role) RoleResponse {
 		Permissions:    permissions,
 		IsActive:       true, // Default to true if nil
 		IsCustomerRole: *role.IsCustomerRole,
+		Type:           role.Type,
 		CreatedAt:      role.CreatedAt.Time,
 	}
 

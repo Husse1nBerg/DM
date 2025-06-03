@@ -189,6 +189,7 @@ type Role struct {
 	UpdatedAt      pgtype.Timestamp
 	DeletedAt      pgtype.Timestamp
 	IsCustomerRole *bool
+	Type           string
 }
 
 type User struct {

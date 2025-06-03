@@ -5625,7 +5625,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Create a new user",
+                "description": "Create a new customer user and assign them to a marina and customer",
                 "consumes": [
                     "application/json"
                 ],
@@ -5635,7 +5635,7 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "Create user",
+                "summary": "Create customer user",
                 "parameters": [
                     {
                         "description": "User information",
@@ -5779,6 +5779,57 @@
                     },
                     "404": {
                         "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/invite": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new user and send them an invitation email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create user with invitation",
+                "parameters": [
+                    {
+                        "description": "User information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateUserWithInvitationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created user",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -9009,7 +9060,8 @@
             "type": "object",
             "required": [
                 "name",
-                "permissions"
+                "permissions",
+                "type"
             ],
             "properties": {
                 "description": {
@@ -9030,6 +9082,10 @@
                 },
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "marina"
                 }
             }
         },
@@ -9084,6 +9140,73 @@
                     "type": "string",
                     "minLength": 12,
                     "example": "SecureP@ssw0rd"
+                },
+                "permissions": {
+                    "$ref": "#/definitions/models.Permissions"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "roleId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Manager"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                }
+            }
+        },
+        "requests.CreateUserWithInvitationRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstName",
+                "lastName",
+                "marinaId",
+                "organizationId",
+                "roleId"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "firstName": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/profiles/johndoe.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isSuperuser": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
                 },
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
@@ -9889,6 +10012,10 @@
                 },
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "marina"
                 }
             }
         },
@@ -11107,6 +11234,10 @@
                 },
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "marina"
                 },
                 "updatedAt": {
                     "type": "string",

@@ -12,9 +12,9 @@ import (
 )
 
 const createRole = `-- name: CreateRole :one
-INSERT INTO roles (name, description, permissions, is_active, is_customer_role)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role
+INSERT INTO roles (name, description, permissions, is_active, is_customer_role, type)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
 `
 
 type CreateRoleParams struct {
@@ -23,6 +23,7 @@ type CreateRoleParams struct {
 	Permissions    []byte
 	IsActive       *bool
 	IsCustomerRole *bool
+	Type           string
 }
 
 func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error) {
@@ -32,6 +33,7 @@ func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, e
 		arg.Permissions,
 		arg.IsActive,
 		arg.IsCustomerRole,
+		arg.Type,
 	)
 	var i Role
 	err := row.Scan(
@@ -44,12 +46,13 @@ func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, e
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.IsCustomerRole,
+		&i.Type,
 	)
 	return i, err
 }
 
 const getAllRoles = `-- name: GetAllRoles :many
-SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
 FROM roles
 WHERE deleted_at IS NULL
 `
@@ -73,6 +76,176 @@ func (q *Queries) GetAllRoles(ctx context.Context) ([]Role, error) {
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.IsCustomerRole,
+			&i.Type,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllRolesByType = `-- name: GetAllRolesByType :many
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
+FROM roles
+WHERE deleted_at IS NULL
+    AND type = $1
+`
+
+func (q *Queries) GetAllRolesByType(ctx context.Context, type_ string) ([]Role, error) {
+	rows, err := q.db.Query(ctx, getAllRolesByType, type_)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Permissions,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.IsCustomerRole,
+			&i.Type,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllRolesByTypePaginated = `-- name: GetAllRolesByTypePaginated :many
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
+FROM roles
+WHERE deleted_at IS NULL
+    AND type = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetAllRolesByTypePaginatedParams struct {
+	Type   string
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetAllRolesByTypePaginated(ctx context.Context, arg GetAllRolesByTypePaginatedParams) ([]Role, error) {
+	rows, err := q.db.Query(ctx, getAllRolesByTypePaginated, arg.Type, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Permissions,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.IsCustomerRole,
+			&i.Type,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllRolesByTypes = `-- name: GetAllRolesByTypes :many
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
+FROM roles
+WHERE deleted_at IS NULL
+    AND type = ANY($1::text[])
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetAllRolesByTypes(ctx context.Context, dollar_1 []string) ([]Role, error) {
+	rows, err := q.db.Query(ctx, getAllRolesByTypes, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Permissions,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.IsCustomerRole,
+			&i.Type,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllRolesByTypesPaginated = `-- name: GetAllRolesByTypesPaginated :many
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
+FROM roles
+WHERE deleted_at IS NULL
+    AND type = ANY($1::text[])
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetAllRolesByTypesPaginatedParams struct {
+	Column1 []string
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetAllRolesByTypesPaginated(ctx context.Context, arg GetAllRolesByTypesPaginatedParams) ([]Role, error) {
+	rows, err := q.db.Query(ctx, getAllRolesByTypesPaginated, arg.Column1, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Permissions,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.IsCustomerRole,
+			&i.Type,
 		); err != nil {
 			return nil, err
 		}
@@ -85,7 +258,7 @@ func (q *Queries) GetAllRoles(ctx context.Context) ([]Role, error) {
 }
 
 const getRoleByID = `-- name: GetRoleByID :one
-SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
 FROM roles
 WHERE id = $1
     AND deleted_at IS NULL
@@ -104,12 +277,13 @@ func (q *Queries) GetRoleByID(ctx context.Context, id uuid.UUID) (Role, error) {
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.IsCustomerRole,
+		&i.Type,
 	)
 	return i, err
 }
 
 const getRoleByName = `-- name: GetRoleByName :one
-SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
 FROM roles
 WHERE name = $1
     AND deleted_at IS NULL
@@ -128,12 +302,13 @@ func (q *Queries) GetRoleByName(ctx context.Context, name string) (Role, error) 
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.IsCustomerRole,
+		&i.Type,
 	)
 	return i, err
 }
 
 const getRolesPaginated = `-- name: GetRolesPaginated :many
-SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
 FROM roles
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
@@ -164,6 +339,7 @@ func (q *Queries) GetRolesPaginated(ctx context.Context, arg GetRolesPaginatedPa
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.IsCustomerRole,
+			&i.Type,
 		); err != nil {
 			return nil, err
 		}
@@ -193,9 +369,10 @@ SET name = $2,
     permissions = $4,
     is_active = $5,
     is_customer_role = $6,
+    type = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role
+RETURNING id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type
 `
 
 type UpdateRoleParams struct {
@@ -205,6 +382,7 @@ type UpdateRoleParams struct {
 	Permissions    []byte
 	IsActive       *bool
 	IsCustomerRole *bool
+	Type           string
 }
 
 func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, error) {
@@ -215,6 +393,7 @@ func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, e
 		arg.Permissions,
 		arg.IsActive,
 		arg.IsCustomerRole,
+		arg.Type,
 	)
 	var i Role
 	err := row.Scan(
@@ -227,6 +406,7 @@ func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, e
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.IsCustomerRole,
+		&i.Type,
 	)
 	return i, err
 }
