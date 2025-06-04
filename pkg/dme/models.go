@@ -45,6 +45,13 @@ type CustomerSearch struct {
 	ProspectID  string `json:"prospectId"`
 }
 
+// Attachment represents customer attachment information
+type Attachment struct {
+	FileName    string `json:"fileName"`
+	Description string `json:"description"`
+	S3Path      string `json:"s3Path"`
+}
+
 // Customer represents detailed customer information
 type Customer struct {
 	ID                          string              `json:"id"`
@@ -106,6 +113,7 @@ type Customer struct {
 	NoCcSurcharge               bool                `json:"noCcSurcharge"`
 	CustomInformation           []CustomInformation `json:"customInformation"`
 	WaitListEntries             []WaitListEntry     `json:"waitListEntries"`
+	Attachments                 []Attachment        `json:"attachments"`
 }
 
 type CustomerList struct {
@@ -321,6 +329,7 @@ type Boat struct {
 	Comments             string                `json:"comments"`
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
+	Attachments          []Attachment          `json:"attachments"`
 }
 
 // BoatUpdate represents boat update information
@@ -572,6 +581,7 @@ type WorkOrderFull struct {
 	Title                string        `json:"title"`
 	Operations           []Operation   `json:"operations"`
 	BillingData          []BillingData `json:"billingData"`
+	Attachments          []Attachment  `json:"attachments"`
 }
 
 // Location represents location information
