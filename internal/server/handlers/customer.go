@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -184,27 +183,12 @@ func (h *CustomerHandler) SearchCustomers(c echo.Context) error {
 // @Router /customers/update [post]
 func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	ctx := c.Request().Context()
-	var reqMap map[string]interface{}
-	if err := c.Bind(&reqMap); err != nil {
+	var req requests.CustomerUpdateRequest
+	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	// Validate required field
-	id, ok := reqMap["id"].(string)
-	if !ok || id == "" {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Missing or invalid 'id' field").JSON(c)
-	}
-
-	// Type/value validation: marshal to JSON, unmarshal into struct, validate
-	jsonBytes, err := json.Marshal(reqMap)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Failed to marshal request").JSON(c)
-	}
-	var reqStruct dme.CustomerUpdate
-	if err := json.Unmarshal(jsonBytes, &reqStruct); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Failed to parse request: "+err.Error()).JSON(c)
-	}
-	if err := c.Validate(&reqStruct); err != nil {
+	if err := c.Validate(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
@@ -219,15 +203,50 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
 
-	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, reqMap, orgID, *systemID)
+	// Convert request to dme.CustomerUpdate
+	customer := &dme.CustomerUpdate{
+		ID:                        req.ID,
+		Name:                      req.Name,
+		FirstName:                 req.FirstName,
+		LastName:                  req.LastName,
+		Email:                     req.Email,
+		Address1:                  req.Address1,
+		Address2:                  req.Address2,
+		Address3:                  req.Address3,
+		City:                      req.City,
+		State:                     req.State,
+		Zip:                       req.Zip,
+		Country:                   req.Country,
+		Phone:                     req.Phone,
+		AltFirstName:              req.AltFirstName,
+		AltLastName:               req.AltLastName,
+		AltAddress1:               req.AltAddress1,
+		AltAddress2:               req.AltAddress2,
+		AltAddress3:               req.AltAddress3,
+		AltCity:                   req.AltCity,
+		AltState:                  req.AltState,
+		AltZip:                    req.AltZip,
+		AltCountry:                req.AltCountry,
+		AltPhone:                  req.AltPhone,
+		UseAltAddress:             req.UseAltAddress,
+		WorkPhone:                 req.WorkPhone,
+		CellPhone:                 req.CellPhone,
+		EmergencyContact:          req.EmergencyContact,
+		EmergencyPhone:            req.EmergencyPhone,
+		CompanyName:               req.CompanyName,
+		ShipmentMethod:            req.ShipmentMethod,
+		ShipmentMethodDescription: req.ShipmentMethodDescription,
+		Attachments:               req.Attachments,
+	}
+
+	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, customer, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to update customer",
 			zap.Error(err),
-			zap.String("customerId", id))
+			zap.String("customerId", req.ID))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert DME response to API response
 	response := responses.ConvertCustomer(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -351,6 +370,7 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 		CompanyName:               req.CompanyName,
 		ShipmentMethod:            req.ShipmentMethod,
 		ShipmentMethodDescription: req.ShipmentMethodDescription,
+		Attachments:               req.Attachments,
 	}
 
 	dmeResponse, err := h.server.DME.CreateCustomer(ctx, customer, orgID, *systemID)

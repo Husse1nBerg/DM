@@ -55,4 +55,42 @@ type BoatCreateRequest struct {
 	OwnerIntegrationID   string                    `json:"ownerIntegrationId"`
 	LastModified         string                    `json:"lastModified"`
 	Comments             string                    `json:"comments"`
+	Attachments          []dme.Attachment          `json:"attachments"`
+}
+
+// BoatUpdateRequest represents a request to update an existing boat
+type BoatUpdateRequest struct {
+	ID                   string                    `json:"id" validate:"required"`
+	Name                 string                    `json:"name"`
+	Registration         string                    `json:"registration"`
+	Year                 string                    `json:"year"`
+	Make                 string                    `json:"make"`
+	Model                string                    `json:"model"`
+	HIN                  string                    `json:"hin"`
+	LOA                  string                    `json:"loa"`
+	LWL                  string                    `json:"lwl"`
+	Draft                string                    `json:"draft"`
+	Beam                 string                    `json:"beam"`
+	Height               string                    `json:"height"`
+	Color                string                    `json:"color"`
+	TrailerMake          string                    `json:"trailerMake"`
+	TrailerModel         string                    `json:"trailerModel"`
+	TrailerSerial        string                    `json:"trailerSerial"`
+	TrailerRegistration  string                    `json:"trailerRegistration"`
+	TrailerLocation      string                    `json:"trailerLocation"`
+	SummerSlip           string                    `json:"summerSlip"`
+	WinterSlip           string                    `json:"winterSlip"`
+	InsuranceCompany     string                    `json:"insuranceCompany"`
+	InsuranceExpDate     string                    `json:"insuranceExpDate"`
+	SlipID               string                    `json:"slipId"`
+	DoNotLaunch          bool                      `json:"doNotLaunch"`
+	BillingCodes         []dme.BillingCode         `json:"billingCodes"`
+	BoatDescriptionCodes []dme.BoatDescriptionCode `json:"boatDescriptionCodes"`
+	CustomInformation    []dme.CustomInformation   `json:"customInformation"`
+	OperationsHistory    []dme.OperationHistory    `json:"operationsHistory"`
+	IntegrationID        string                    `json:"integrationId"`
+	OwnerIntegrationID   string                    `json:"ownerIntegrationId"`
+	LastModified         string                    `json:"lastModified"`
+	Comments             string                    `json:"comments"`
+	Attachments          []dme.Attachment          `json:"attachments"`
 }
