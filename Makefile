@@ -184,3 +184,11 @@ coverage-handlers:
 	@go tool cover -func=handlers-coverage.out
 	@go tool cover -html=handlers-coverage.out -o handlers-coverage.html
 	@echo "Handlers coverage report generated: handlers-coverage.html"
+
+####################
+# SCRIPT COMMANDS
+####################
+.PHONY: user-deactivation
+
+user-deactivation:
+	@go run scripts/user_deactivation/main.go
