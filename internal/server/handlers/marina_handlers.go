@@ -408,6 +408,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		IsActive:     marina.IsActive,
 		IsTest:       marina.IsTest,
 		AddressID:    marina.AddressID,
+		SystemID:     marina.SystemID,
 	}
 
 	if isMultipart {
