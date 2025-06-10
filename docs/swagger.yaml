@@ -1,7 +1,22 @@
 basePath: /api/v1
 definitions:
+  dme.Attachment:
+    properties:
+      description:
+        type: string
+      fileName:
+        type: string
+      s3Path:
+        type: string
+    type: object
   dme.BillingCode:
     properties:
+      LOA_LWL_Or_Spar:
+        type: string
+      Length_Area_Or_CubicFeet:
+        type: string
+      Slip_Boat_Or_Longest:
+        type: string
       cycle:
         type: string
       department:
@@ -11,10 +26,6 @@ definitions:
       description:
         type: string
       id:
-        type: string
-      lengthAreaOrCubicFeet:
-        type: string
-      loaLwlOrSpar:
         type: string
       overrideRate:
         type: number
@@ -26,8 +37,6 @@ definitions:
         items:
           $ref: '#/definitions/dme.Rate'
         type: array
-      slipBoatOrLongest:
-        type: string
     type: object
   dme.BillingData:
     properties:
@@ -44,6 +53,10 @@ definitions:
     type: object
   dme.Boat:
     properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       beam:
         type: string
       billingCodes:
@@ -147,6 +160,10 @@ definitions:
     type: object
   dme.BoatUpdate:
     properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       beam:
         type: string
       billingCodes:
@@ -272,6 +289,10 @@ definitions:
         type: string
       altZip:
         type: string
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       balance:
         type: number
       boats:
@@ -431,6 +452,10 @@ definitions:
         type: string
       altZip:
         type: string
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       cellPhone:
         type: string
       city:
@@ -668,6 +693,10 @@ definitions:
     type: object
   dme.WorkOrder:
     properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       billingData:
         items:
           $ref: '#/definitions/dme.BillingData'
@@ -1008,6 +1037,10 @@ definitions:
     type: object
   requests.BoatCreateRequest:
     properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       beam:
         type: string
       billingCodes:
@@ -1534,6 +1567,10 @@ definitions:
         type: string
       altZip:
         type: string
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       cellPhone:
         type: string
       city:
@@ -2112,6 +2149,10 @@ definitions:
     type: object
   requests.WorkOrderCreateRequest:
     properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       boatId:
         type: string
       boatName:
@@ -2150,6 +2191,10 @@ definitions:
     type: object
   requests.WorkOrderUpdateRequest:
     properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       boatId:
         type: string
       boatName:
