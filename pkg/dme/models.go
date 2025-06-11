@@ -251,9 +251,9 @@ type BillingCode struct {
 	Cycle                 string  `json:"cycle"`
 	PerFoot               bool    `json:"perFoot"`
 	ProRated              bool    `json:"proRated"`
-	SlipBoatOrLongest     string  `json:"slipBoatOrLongest"`
-	LengthAreaOrCubicFeet string  `json:"lengthAreaOrCubicFeet"`
-	LoaLwlOrSpar          string  `json:"loaLwlOrSpar"`
+	SlipBoatOrLongest     string  `json:"Slip_Boat_Or_Longest"`
+	LengthAreaOrCubicFeet string  `json:"Length_Area_Or_CubicFeet"`
+	LoaLwlOrSpar          string  `json:"LOA_LWL_Or_Spar"`
 	Rates                 []Rate  `json:"rates"`
 	OverrideRate          float64 `json:"overrideRate"`
 }

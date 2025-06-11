@@ -7035,9 +7035,32 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dme.Attachment": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "s3Path": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.BillingCode": {
             "type": "object",
             "properties": {
+                "LOA_LWL_Or_Spar": {
+                    "type": "string"
+                },
+                "Length_Area_Or_CubicFeet": {
+                    "type": "string"
+                },
+                "Slip_Boat_Or_Longest": {
+                    "type": "string"
+                },
                 "cycle": {
                     "type": "string"
                 },
@@ -7051,12 +7074,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
-                },
-                "lengthAreaOrCubicFeet": {
-                    "type": "string"
-                },
-                "loaLwlOrSpar": {
                     "type": "string"
                 },
                 "overrideRate": {
@@ -7073,9 +7090,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.Rate"
                     }
-                },
-                "slipBoatOrLongest": {
-                    "type": "string"
                 }
             }
         },
@@ -7102,6 +7116,12 @@ const docTemplate = `{
         "dme.Boat": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "beam": {
                     "type": "string"
                 },
@@ -7258,6 +7278,12 @@ const docTemplate = `{
         "dme.BoatUpdate": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "beam": {
                     "type": "string"
                 },
@@ -7446,6 +7472,12 @@ const docTemplate = `{
                 },
                 "altZip": {
                     "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
                 },
                 "balance": {
                     "type": "number"
@@ -7686,6 +7718,12 @@ const docTemplate = `{
                 },
                 "altZip": {
                     "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
                 },
                 "cellPhone": {
                     "type": "string"
@@ -8047,6 +8085,12 @@ const docTemplate = `{
         "dme.WorkOrder": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "billingData": {
                     "type": "array",
                     "items": {
@@ -8549,6 +8593,12 @@ const docTemplate = `{
                 "ownerId"
             ],
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "beam": {
                     "type": "string"
                 },
@@ -9280,6 +9330,12 @@ const docTemplate = `{
                 },
                 "altZip": {
                     "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
                 },
                 "cellPhone": {
                     "type": "string"
@@ -10108,6 +10164,12 @@ const docTemplate = `{
                 "title"
             ],
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "boatId": {
                     "type": "string"
                 },
@@ -10164,6 +10226,12 @@ const docTemplate = `{
                 "woId"
             ],
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "boatId": {
                     "type": "string"
                 },
