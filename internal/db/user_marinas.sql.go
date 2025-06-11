@@ -282,7 +282,7 @@ func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarina
 }
 
 const getUserMarinasList = `-- name: GetUserMarinasList :many
-SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage
 FROM marinas m
     JOIN user_marinas um ON m.id = um.marina_id
 WHERE um.user_id = $1
@@ -318,6 +318,7 @@ func (q *Queries) GetUserMarinasList(ctx context.Context, userID uuid.UUID) ([]M
 			&i.DeletedAt,
 			&i.AddressID,
 			&i.SystemID,
+			&i.StorageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -330,7 +331,7 @@ func (q *Queries) GetUserMarinasList(ctx context.Context, userID uuid.UUID) ([]M
 }
 
 const getUserMarinasListPaginated = `-- name: GetUserMarinasListPaginated :many
-SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage
 FROM marinas m
     JOIN user_marinas um ON m.id = um.marina_id
 WHERE um.user_id = $1
@@ -374,6 +375,7 @@ func (q *Queries) GetUserMarinasListPaginated(ctx context.Context, arg GetUserMa
 			&i.DeletedAt,
 			&i.AddressID,
 			&i.SystemID,
+			&i.StorageUsage,
 		); err != nil {
 			return nil, err
 		}

@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -8,6 +9,18 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 )
+
+// StorageUsageGB is a custom type to handle GB values with fixed decimal places
+type StorageUsageGB float64
+
+// MarshalJSON implements json.Marshaler interface
+func (s *StorageUsageGB) MarshalJSON() ([]byte, error) {
+	if s == nil {
+		return []byte("null"), nil
+	}
+	// Always format with 2 decimal places
+	return []byte(fmt.Sprintf("%.2f", *s)), nil
+}
 
 // MarinaResponse represents a marina in the system
 // @Description Marina data including location, contact information, and operational details
@@ -30,6 +43,7 @@ type MarinaResponse struct {
 	UpdatedAt      *time.Time           `json:"updatedAt,omitempty"`
 	AddressID      uuid.UUID            `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
 	SystemID       *string              `json:"systemId,omitempty" example:"SYS123456"`
+	StorageUsage   *StorageUsageGB      `json:"storageUsage,omitempty" example:"0.00"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -51,6 +65,14 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		}
 	}
 
+	// Convert storage usage from bytes to GB
+	var storageUsageGB *StorageUsageGB
+	if marina.StorageUsage != nil {
+		const bytesInGB = 1024 * 1024 * 1024 // 1 GB in bytes
+		usageGB := StorageUsageGB(float64(*marina.StorageUsage) / float64(bytesInGB))
+		storageUsageGB = &usageGB
+	}
+
 	return MarinaResponse{
 		ID:             marina.ID,
 		OrganizationID: marina.OrganizationID,
@@ -70,6 +92,7 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		UpdatedAt:      utils.PgTimeToTimePtr(marina.UpdatedAt),
 		AddressID:      marina.AddressID,
 		SystemID:       marina.SystemID,
+		StorageUsage:   storageUsageGB,
 	}
 }
 

@@ -2730,6 +2730,9 @@ definitions:
       phone:
         example: "+15551234567"
         type: string
+      storageUsage:
+        example: 0
+        type: number
       systemId:
         example: SYS123456
         type: string
@@ -2792,6 +2795,9 @@ definitions:
       phone:
         example: "+15551234567"
         type: string
+      storageUsage:
+        example: 0
+        type: number
       systemId:
         example: SYS123456
         type: string

@@ -14,7 +14,8 @@ INSERT INTO marinas (
         is_active,
         is_test,
         address_id,
-        system_id
+        system_id,
+        storage_usage
     )
 VALUES (
         $1,
@@ -31,7 +32,8 @@ VALUES (
         $12,
         $13,
         $14,
-        $15
+        $15,
+        0
     )
 RETURNING *;
 -- name: GetMarinaByID :one
@@ -95,3 +97,20 @@ SET system_id = $2,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
+-- name: IncrementMarinaStorageUsage :one
+UPDATE marinas
+SET storage_usage = storage_usage + $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: DecrementMarinaStorageUsage :one
+UPDATE marinas
+SET storage_usage = GREATEST(storage_usage - $2, 0),
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: GetMarinaStorageUsage :one
+SELECT storage_usage
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL;

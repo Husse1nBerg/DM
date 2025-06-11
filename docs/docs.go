@@ -10986,6 +10986,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+15551234567"
                 },
+                "storageUsage": {
+                    "type": "number",
+                    "example": 0
+                },
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
@@ -11071,6 +11075,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storageUsage": {
+                    "type": "number",
+                    "example": 0
                 },
                 "systemId": {
                     "type": "string",

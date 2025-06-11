@@ -117,6 +117,7 @@ type Marina struct {
 	DeletedAt      pgtype.Timestamp
 	AddressID      uuid.UUID
 	SystemID       *string
+	StorageUsage   *int64
 }
 
 type MarinaGallery struct {
