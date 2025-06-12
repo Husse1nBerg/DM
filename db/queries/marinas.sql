@@ -15,7 +15,8 @@ INSERT INTO marinas (
         is_test,
         address_id,
         system_id,
-        storage_usage
+        storage_usage,
+        email_text_usage
     )
 VALUES (
         $1,
@@ -33,6 +34,7 @@ VALUES (
         $13,
         $14,
         $15,
+        0,
         0
     )
 RETURNING *;
@@ -84,7 +86,8 @@ SET name = $2,
     is_test = $13,
     updated_at = CURRENT_TIMESTAMP,
     address_id = $14,
-    system_id = $15
+    system_id = $15,
+    email_text_usage = COALESCE($16, email_text_usage)
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec
@@ -111,6 +114,23 @@ WHERE id = $1
 RETURNING *;
 -- name: GetMarinaStorageUsage :one
 SELECT storage_usage
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL;
+-- name: IncrementMarinaEmailTextUsage :one
+UPDATE marinas
+SET email_text_usage = COALESCE(email_text_usage, 0)::smallint + $2::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: DecrementMarinaEmailTextUsage :one
+UPDATE marinas
+SET email_text_usage = GREATEST(COALESCE(email_text_usage, 0)::smallint - $2::smallint, 0)::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: GetMarinaEmailTextUsage :one
+SELECT COALESCE(email_text_usage, 0)::smallint
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL;

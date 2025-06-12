@@ -44,6 +44,7 @@ type MarinaResponse struct {
 	AddressID      uuid.UUID            `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
 	SystemID       *string              `json:"systemId,omitempty" example:"SYS123456"`
 	StorageUsage   *StorageUsageGB      `json:"storageUsage,omitempty" example:"0.00"`
+	EmailTextUsage *int16               `json:"emailTextUsage,omitempty" example:"0"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -93,6 +94,7 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		AddressID:      marina.AddressID,
 		SystemID:       marina.SystemID,
 		StorageUsage:   storageUsageGB,
+		EmailTextUsage: marina.EmailTextUsage,
 	}
 }
 

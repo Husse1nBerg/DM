@@ -118,6 +118,7 @@ type Marina struct {
 	AddressID      uuid.UUID
 	SystemID       *string
 	StorageUsage   *int64
+	EmailTextUsage *int16
 }
 
 type MarinaGallery struct {
