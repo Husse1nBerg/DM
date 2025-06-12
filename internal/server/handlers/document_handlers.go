@@ -56,11 +56,11 @@ func (h *DocumentHandler) checkStorageLimit(ctx echo.Context, marinaID uuid.UUID
 
 		// Convert values to GB for the error message
 		currentUsageGB := float64(currentUsage) / float64(bytesInGB)
-		fileSizeGB := float64(fileSize) / float64(bytesInGB)
 		maxLimitGB := float64(maxStorageLimit) / float64(bytesInGB)
+		fileSizeKB := float64(fileSize) / 1024.0 // Convert to KB
 
-		return fmt.Errorf("storage limit exceeded: current usage %.2f GB + file size %.2f GB would exceed limit of %.2f GB",
-			currentUsageGB, fileSizeGB, maxLimitGB)
+		return fmt.Errorf("storage limit exceeded: current usage %.2f GB + file size %.2f KB would exceed limit of %.2f GB",
+			currentUsageGB, fileSizeKB, maxLimitGB)
 	}
 
 	return nil
