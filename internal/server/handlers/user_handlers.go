@@ -1442,6 +1442,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		IsActive:       &isActive,
 		Modules:        modulesBytes,
 		Permissions:    permissionsBytes,
+		UserAnalytics:  utils.Pointer(true),
 	}
 
 	user, err := queries.CreateCustomerUser(c.Request().Context(), params)
