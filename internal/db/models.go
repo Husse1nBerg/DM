@@ -220,6 +220,7 @@ type User struct {
 	CustomerID          *string
 	IsCustomer          *bool
 	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
 }
 
 type UserMarina struct {

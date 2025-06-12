@@ -8882,6 +8882,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Manager"
                 },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "username": {
                     "type": "string",
                     "example": "johndoe"
@@ -9213,6 +9217,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Manager"
                 },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "username": {
                     "type": "string",
                     "example": "johndoe"
@@ -9279,6 +9287,10 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",
@@ -10135,6 +10147,10 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -11456,6 +11472,10 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",

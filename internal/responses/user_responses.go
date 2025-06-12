@@ -36,6 +36,7 @@ type UserResponse struct {
 	IsCustomer          *bool               `json:"isCustomer,omitempty" example:"false"`
 	IsSuperuser         *bool               `json:"isSuperuser,omitempty" example:"false"`
 	IsActive            *bool               `json:"isActive,omitempty" example:"true"`
+	UserAnalytics       *bool               `json:"userAnalytics,omitempty" example:"true"`
 	CreatedAt           *time.Time          `json:"createdAt,omitempty"`
 	UpdatedAt           *time.Time          `json:"updatedAt,omitempty"`
 	Permissions         *models.Permissions `json:"permissions,omitempty"`
@@ -87,6 +88,7 @@ func NewUserResponse(user db.User) UserResponse {
 		IsCustomer:          user.IsCustomer,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 		CreatedAt:           utils.PgTimeToTimePtr(user.CreatedAt),
 		UpdatedAt:           utils.PgTimeToTimePtr(user.UpdatedAt),
 		Permissions:         &permissions,
@@ -131,6 +133,7 @@ func NewUserResponseFromRow(r db.GetUsersByMarinaPaginatedRow, server *server.Se
 		RoleID:              r.RoleID,
 		IsSuperuser:         r.IsSuperuser,
 		IsActive:            r.IsActive,
+		UserAnalytics:       r.UserAnalytics,
 		CreatedAt:           utils.PgTimeToTimePtr(r.CreatedAt),
 		UpdatedAt:           utils.PgTimeToTimePtr(r.UpdatedAt),
 		Permissions:         &permissions,
@@ -193,6 +196,7 @@ func NewUserResponseFromMarinaListRow(r db.GetMarinaUsersListPaginatedRow, serve
 		RoleID:              r.RoleID,
 		IsSuperuser:         r.IsSuperuser,
 		IsActive:            r.IsActive,
+		UserAnalytics:       r.UserAnalytics,
 		CreatedAt:           utils.PgTimeToTimePtr(r.CreatedAt),
 		UpdatedAt:           utils.PgTimeToTimePtr(r.UpdatedAt),
 		Permissions:         &permissions,
