@@ -42,7 +42,6 @@ func (h *GalleryHandler) checkStorageLimit(ctx echo.Context, marinaID uuid.UUID,
 
 	const bytesInGB = 1024 * 1024 * 1024 // 1 GB in bytes
 	maxStorageLimit = maxStorageLimit * bytesInGB
-	maxStorageLimit = 20 * 1024
 
 	// Check if adding the new file would exceed the limit
 	currentUsage := int64(0)
