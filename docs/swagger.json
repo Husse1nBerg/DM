@@ -8875,6 +8875,10 @@
                     "type": "string",
                     "example": "Manager"
                 },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "username": {
                     "type": "string",
                     "example": "johndoe"
@@ -9206,6 +9210,10 @@
                     "type": "string",
                     "example": "Manager"
                 },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "username": {
                     "type": "string",
                     "example": "johndoe"
@@ -9272,6 +9280,10 @@
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",
@@ -10128,6 +10140,10 @@
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -11449,6 +11465,10 @@
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",

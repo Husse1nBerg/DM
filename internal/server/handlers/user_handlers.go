@@ -206,6 +206,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		IsActive:            &isActive,
 		Modules:             modulesBytes,
 		Permissions:         permissionsBytes,
+		UserAnalytics:       utils.Pointer(true),
 	}
 
 	user, err := queries.CreateUser(c.Request().Context(), params)
@@ -737,6 +738,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		IsActive:            currentUser.IsActive,
 		Modules:             currentUser.Modules,
 		Permissions:         currentUser.Permissions,
+		UserAnalytics:       currentUser.UserAnalytics,
 	}
 
 	// Handle image upload if this is a multipart request
@@ -823,6 +825,11 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 				updateParams.RoleID = roleID
 			}
 		}
+		// Add UserAnalytics handling for multipart form
+		if userAnalytics := c.FormValue("userAnalytics"); userAnalytics != "" {
+			analytics := userAnalytics == "true"
+			updateParams.UserAnalytics = &analytics
+		}
 	} else {
 		// Parse and validate the JSON request body
 		req := new(requests.UpdateUserRequest)
@@ -896,6 +903,9 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		}
 		if req.IsActive != nil {
 			updateParams.IsActive = req.IsActive
+		}
+		if req.UserAnalytics != nil {
+			updateParams.UserAnalytics = req.UserAnalytics
 		}
 
 		// Update permissions if provided
@@ -1032,6 +1042,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 		RoleID:              user.RoleID,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 	}
 
 	_, err = queries.UpdateUser(c.Request().Context(), updateParams)
@@ -1160,6 +1171,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 		RoleID:              user.RoleID,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 	}
 
 	_, err = queries.UpdateUser(c.Request().Context(), updateParams)
@@ -1430,6 +1442,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		IsActive:       &isActive,
 		Modules:        modulesBytes,
 		Permissions:    permissionsBytes,
+		UserAnalytics:  utils.Pointer(true),
 	}
 
 	user, err := queries.CreateCustomerUser(c.Request().Context(), params)
@@ -1644,6 +1657,7 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		IsActive:            &isActive,
 		Modules:             modulesBytes,
 		Permissions:         permissionsBytes,
+		UserAnalytics:       utils.Pointer(true),
 	}
 
 	user, err := queries.CreateUser(c.Request().Context(), params)

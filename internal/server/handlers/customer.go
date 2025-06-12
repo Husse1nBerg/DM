@@ -685,6 +685,7 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 		FailedLoginAttempts: utils.Pointer(int32(0)),
 		LockedUntil:         utils.PgTimeNow(),
 		LastPasswordReset:   utils.PgTimeNow(),
+		UserAnalytics:       utils.Pointer(true),
 	}
 
 	user, err := queries.CreateCustomerUser(ctx, params)

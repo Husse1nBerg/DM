@@ -29,7 +29,7 @@ func (q *Queries) AssignUserToMarina(ctx context.Context, arg AssignUserToMarina
 }
 
 const customerMarinaUser = `-- name: CustomerMarinaUser :one
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, u.user_analytics
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
 WHERE um.marina_id = $1
@@ -73,12 +73,13 @@ func (q *Queries) CustomerMarinaUser(ctx context.Context, arg CustomerMarinaUser
 		&i.CustomerID,
 		&i.IsCustomer,
 		&i.JoinedAt,
+		&i.UserAnalytics,
 	)
 	return i, err
 }
 
 const getMarinaUsersList = `-- name: GetMarinaUsersList :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
     LEFT JOIN roles r ON u.role_id = r.id
@@ -120,6 +121,7 @@ type GetMarinaUsersListRow struct {
 	CustomerID          *string
 	IsCustomer          *bool
 	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
 	RoleName            *string
 }
 
@@ -160,6 +162,7 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, arg GetMarinaUsersList
 			&i.CustomerID,
 			&i.IsCustomer,
 			&i.JoinedAt,
+			&i.UserAnalytics,
 			&i.RoleName,
 		); err != nil {
 			return nil, err
@@ -173,7 +176,7 @@ func (q *Queries) GetMarinaUsersList(ctx context.Context, arg GetMarinaUsersList
 }
 
 const getMarinaUsersListPaginated = `-- name: GetMarinaUsersListPaginated :many
-SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, r.name as role_name
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.modules, u.permissions, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
     LEFT JOIN roles r ON u.role_id = r.id
@@ -219,6 +222,7 @@ type GetMarinaUsersListPaginatedRow struct {
 	CustomerID          *string
 	IsCustomer          *bool
 	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
 	RoleName            *string
 }
 
@@ -264,6 +268,7 @@ func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarina
 			&i.CustomerID,
 			&i.IsCustomer,
 			&i.JoinedAt,
+			&i.UserAnalytics,
 			&i.RoleName,
 		); err != nil {
 			return nil, err

@@ -1234,6 +1234,9 @@ definitions:
       title:
         example: Manager
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
       username:
         example: johndoe
         type: string
@@ -1477,6 +1480,9 @@ definitions:
       title:
         example: Manager
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
       username:
         example: johndoe
         type: string
@@ -1528,6 +1534,9 @@ definitions:
       title:
         example: Manager
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
       username:
         example: johndoe
         type: string
@@ -2133,6 +2142,9 @@ definitions:
       title:
         example: Manager
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
     type: object
   requests.WorkOrderCreateFromEstimateRequest:
     properties:
@@ -3069,6 +3081,9 @@ definitions:
         type: string
       updatedAt:
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
       username:
         example: johndoe
         type: string

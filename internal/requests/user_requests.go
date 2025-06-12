@@ -21,6 +21,7 @@ type CreateUserRequest struct {
 	RoleID         uuid.UUID           `json:"roleId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
 	IsSuperuser    *bool               `json:"isSuperuser,omitempty" example:"false"`
 	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
+	UserAnalytics  *bool               `json:"userAnalytics,omitempty" example:"true"`
 	Permissions    *models.Permissions `json:"permissions,omitempty"`
 	Modules        *models.Modules     `json:"modules,omitempty"`
 }
@@ -40,6 +41,7 @@ type CreateCustomerUserRequest struct {
 	IsCustomer     *bool               `json:"isCustomer,omitempty" example:"false"`
 	IsSuperuser    *bool               `json:"isSuperuser,omitempty" example:"false"`
 	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
+	UserAnalytics  *bool               `json:"userAnalytics,omitempty" example:"true"`
 	Permissions    *models.Permissions `json:"permissions,omitempty"`
 	Modules        *models.Modules     `json:"modules,omitempty"`
 }
@@ -57,25 +59,27 @@ type CreateUserWithInvitationRequest struct {
 	RoleID         uuid.UUID           `json:"roleId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
 	IsSuperuser    *bool               `json:"isSuperuser,omitempty" example:"false"`
 	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
+	UserAnalytics  *bool               `json:"userAnalytics,omitempty" example:"true"`
 	Permissions    *models.Permissions `json:"permissions,omitempty"`
 	Modules        *models.Modules     `json:"modules,omitempty"`
 }
 
 // UpdateUserRequest represents the parameters that can be updated for a user
 type UpdateUserRequest struct {
-	FirstName   *string             `json:"firstName,omitempty" validate:"omitempty" example:"John"`
-	LastName    *string             `json:"lastName,omitempty" validate:"omitempty" example:"Doe"`
-	Email       *string             `json:"email,omitempty" validate:"omitempty,email" example:"john.doe@example.com"`
-	Phone       *string             `json:"phone,omitempty" example:"+15551234567"`
-	Title       *string             `json:"title,omitempty" example:"Manager"`
-	Image       *string             `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
-	Password    *string             `json:"password,omitempty" validate:"omitempty,min=12,letters,number,specialchar" example:"NewSecureP@ssw0rd"`
-	MarinaID    *uuid.UUID          `json:"marinaId,omitempty" validate:"omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	RoleID      *uuid.UUID          `json:"roleId,omitempty" validate:"omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
-	IsSuperuser *bool               `json:"isSuperuser,omitempty" example:"false"`
-	IsActive    *bool               `json:"isActive,omitempty" example:"true"`
-	Permissions *models.Permissions `json:"permissions,omitempty"`
-	Modules     *models.Modules     `json:"modules,omitempty"`
+	FirstName     *string             `json:"firstName,omitempty" validate:"omitempty" example:"John"`
+	LastName      *string             `json:"lastName,omitempty" validate:"omitempty" example:"Doe"`
+	Email         *string             `json:"email,omitempty" validate:"omitempty,email" example:"john.doe@example.com"`
+	Phone         *string             `json:"phone,omitempty" example:"+15551234567"`
+	Title         *string             `json:"title,omitempty" example:"Manager"`
+	Image         *string             `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
+	Password      *string             `json:"password,omitempty" validate:"omitempty,min=12,letters,number,specialchar" example:"NewSecureP@ssw0rd"`
+	MarinaID      *uuid.UUID          `json:"marinaId,omitempty" validate:"omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	RoleID        *uuid.UUID          `json:"roleId,omitempty" validate:"omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
+	IsSuperuser   *bool               `json:"isSuperuser,omitempty" example:"false"`
+	IsActive      *bool               `json:"isActive,omitempty" example:"true"`
+	UserAnalytics *bool               `json:"userAnalytics,omitempty" example:"true"`
+	Permissions   *models.Permissions `json:"permissions,omitempty"`
+	Modules       *models.Modules     `json:"modules,omitempty"`
 }
 
 // UserIDParam represents a URL parameter for user ID

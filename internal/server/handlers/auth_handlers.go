@@ -132,6 +132,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 			RoleID:              user.RoleID,
 			IsSuperuser:         user.IsSuperuser,
 			IsActive:            user.IsActive,
+			UserAnalytics:       user.UserAnalytics,
 		})
 
 		if updateErr != nil {
@@ -169,6 +170,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 		RoleID:              user.RoleID,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 	})
 
 	if updateErr != nil {
