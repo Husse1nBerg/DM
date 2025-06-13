@@ -1354,7 +1354,9 @@ definitions:
     required:
     - email
     - name
+    - notesMessagesPlanId
     - organizationId
+    - storagePlanId
     type: object
   requests.CreateMessageRequest:
     properties:

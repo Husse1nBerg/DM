@@ -23,8 +23,8 @@ type CreateMarinaRequest struct {
 	IsTest              *bool                 `json:"isTest,omitempty" example:"false"`
 	Address             *CreateAddressRequest `json:"address,omitempty"`
 	SystemID            *string               `json:"systemId,omitempty" example:"SYS123456"`
-	NotesMessagesPlanID *uuid.UUID            `json:"notesMessagesPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
-	StoragePlanID       *uuid.UUID            `json:"storagePlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	NotesMessagesPlanID *uuid.UUID            `json:"notesMessagesPlanId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
+	StoragePlanID       *uuid.UUID            `json:"storagePlanId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
 }
 
 // UpdateMarinaRequest represents the parameters that can be updated for a marina
@@ -43,8 +43,8 @@ type UpdateMarinaRequest struct {
 	IsTest              *bool                 `json:"isTest,omitempty" example:"false"`
 	Address             *UpdateAddressRequest `json:"address,omitempty"`
 	SystemID            *string               `json:"systemId,omitempty" example:"SYS123456"`
-	NotesMessagesPlanID *uuid.UUID            `json:"notesMessagesPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
-	StoragePlanID       *uuid.UUID            `json:"storagePlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	NotesMessagesPlanID *uuid.UUID            `json:"notesMessagesPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
+	StoragePlanID       *uuid.UUID            `json:"storagePlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
 }
 
 // MarinaIDParam represents the URL parameter for marina ID

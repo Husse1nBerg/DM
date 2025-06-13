@@ -9388,7 +9388,9 @@ const docTemplate = `{
             "required": [
                 "email",
                 "name",
-                "organizationId"
+                "notesMessagesPlanId",
+                "organizationId",
+                "storagePlanId"
             ],
             "properties": {
                 "address": {
