@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
@@ -34,37 +32,39 @@ func (h *MessageHandler) checkMessageLimit(ctx echo.Context, marinaID uuid.UUID,
 		return fmt.Errorf("marina not found")
 	}
 
-	// Get max message limit from environment variable
-	maxLimit := int16(0)
-	if messageType == "sms" {
-		limit, err := strconv.ParseInt(os.Getenv("MAX_TEXT_USAGE"), 10, 16)
-		if err != nil {
-			return err
-		}
-		maxLimit = int16(limit)
-	} else if messageType == "email" {
-		limit, err := strconv.ParseInt(os.Getenv("MAX_EMAIL_USAGE"), 10, 16)
-		if err != nil {
-			return err
-		}
-		maxLimit = int16(limit)
+	// Get marina's notes messages plan
+	notesMessagesPlan, err := h.server.DB.Queries().GetMarinaNotesMessagesPlan(ctx.Request().Context(), marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching notes messages plan", err)
+		return fmt.Errorf("error fetching notes messages plan")
 	}
 
 	// Check if we've reached the limit
-	currentUsage := int16(0)
+	currentUsage := int32(0)
+	maxLimit := notesMessagesPlan.TextLimit
+
 	if messageType == "sms" {
-		currentUsage = *marina.TextUsage
+		if marina.TextUsage != nil {
+			currentUsage = int32(*marina.TextUsage)
+		}
 	} else if messageType == "email" {
-		currentUsage = *marina.EmailUsage
+		if marina.EmailUsage != nil {
+			currentUsage = int32(*marina.EmailUsage)
+		}
 	}
 
-	if currentUsage >= maxLimit {
+	// If maxLimit is nil, it means unlimited
+	if maxLimit == nil {
+		return nil
+	}
+
+	if currentUsage >= *maxLimit {
 		h.server.Logger.Zap.Info("Limit would be exceeded",
 			"currentUsage", currentUsage,
-			"maxLimit", maxLimit)
+			"maxLimit", *maxLimit)
 
-		return fmt.Errorf("Limit exceeded: current usage %d has reached the %s limit.",
-			currentUsage, messageType)
+		return fmt.Errorf("limit exceeded: current usage %d has reached the %s limit of %d",
+			currentUsage, messageType, *maxLimit)
 	}
 
 	return nil

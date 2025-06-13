@@ -3,8 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/responses"
@@ -33,15 +31,20 @@ func (h *GalleryHandler) checkStorageLimit(ctx echo.Context, marinaID uuid.UUID,
 		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(ctx)
 	}
 
-	// Get max storage limit from environment variable
-	maxStorageLimit, err := strconv.ParseInt(os.Getenv("MAX_STORAGE_USAGE"), 10, 64)
+	// Get marina's storage plan
+	storagePlan, err := h.server.DB.Queries().GetMarinaStoragePlan(ctx.Request().Context(), marinaID)
 	if err != nil {
-		h.server.Logger.Zap.Error("Error parsing MAX_STORAGE_USAGE", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error parsing MAX_STORAGE_USAGE").JSON(ctx)
+		h.server.Logger.Zap.Error("Error fetching storage plan", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching storage plan").JSON(ctx)
+	}
+
+	// If storage limit is nil, it means unlimited storage
+	if storagePlan.StorageLimitGb == nil {
+		return nil
 	}
 
 	const bytesInGB = 1024 * 1024 * 1024 // 1 GB in bytes
-	maxStorageLimit = maxStorageLimit * bytesInGB
+	maxStorageLimit := int64(*storagePlan.StorageLimitGb) * bytesInGB
 
 	// Check if adding the new file would exceed the limit
 	currentUsage := int64(0)

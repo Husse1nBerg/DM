@@ -1331,11 +1331,17 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       systemId:
         example: SYS123456
@@ -2014,8 +2020,14 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       systemId:
         example: SYS123456
@@ -2727,11 +2739,17 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       storageUsage:
         example: 0
@@ -2847,11 +2865,17 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       storageUsage:
         example: 0
@@ -6773,6 +6797,132 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /plans/notes-messages:
+    get:
+      consumes:
+      - application/json
+      description: Get all notes and messages plans with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of plans
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List notes and messages plans
+      tags:
+      - Plans
+  /plans/notes-messages/{planId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific notes and messages plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: planId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan details
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid plan ID
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Plan not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get notes and messages plan
+      tags:
+      - Plans
+  /plans/storage:
+    get:
+      consumes:
+      - application/json
+      description: Get all storage plans with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of plans
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List storage plans
+      tags:
+      - Plans
+  /plans/storage/{planId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific storage plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: planId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan details
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid plan ID
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Plan not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get storage plan
+      tags:
+      - Plans
   /project-details:
     get:
       consumes:

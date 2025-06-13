@@ -98,28 +98,30 @@ type Invite struct {
 }
 
 type Marina struct {
-	ID             uuid.UUID
-	OrganizationID uuid.UUID
-	Name           string
-	Email          string
-	Location       *string
-	Phone          *string
-	Country        *string
-	Currency       *string
-	WorkingHours   []byte
-	Website        *string
-	Image          *string
-	MaxUsers       *int32
-	IsActive       *bool
-	IsTest         *bool
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
-	DeletedAt      pgtype.Timestamp
-	AddressID      uuid.UUID
-	SystemID       *string
-	StorageUsage   *int64
-	EmailUsage     *int16
-	TextUsage      *int16
+	ID                  uuid.UUID
+	OrganizationID      uuid.UUID
+	Name                string
+	Email               string
+	Location            *string
+	Phone               *string
+	Country             *string
+	Currency            *string
+	WorkingHours        []byte
+	Website             *string
+	Image               *string
+	MaxUsers            *int32
+	IsActive            *bool
+	IsTest              *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	AddressID           uuid.UUID
+	SystemID            *string
+	StorageUsage        *int64
+	EmailUsage          *int16
+	TextUsage           *int16
+	NotesMessagesPlanID uuid.UUID
+	StoragePlanID       uuid.UUID
 }
 
 type MarinaGallery struct {
@@ -158,6 +160,18 @@ type Message struct {
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
 	DeletedAt  pgtype.Timestamp
+}
+
+type NotesMessagesPlan struct {
+	ID            uuid.UUID
+	Name          string
+	MonthlyPrice  float64
+	TextLimit     *int32
+	EmailLimit    *string
+	UserLimit     *string
+	IsMostPopular *bool
+	CreatedAt     pgtype.Timestamp
+	UpdatedAt     pgtype.Timestamp
 }
 
 type Organization struct {
@@ -204,6 +218,17 @@ type Role struct {
 	DeletedAt      pgtype.Timestamp
 	IsCustomerRole *bool
 	Type           string
+}
+
+type StoragePlan struct {
+	ID             uuid.UUID
+	Name           string
+	MonthlyPrice   float64
+	StorageLimitGb *int32
+	UserLimit      *string
+	IsMostPopular  *bool
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
 }
 
 type User struct {
