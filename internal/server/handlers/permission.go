@@ -47,10 +47,10 @@ type PermissionTestResponse struct {
 // @Accept json
 // @Produce json
 // @Param request body PermissionTestRequest true "Permission test request"
-// @Success 200 {object} responses.Response{data=PermissionTestResponse} "Permission check result"
-// @Failure 400 {object} responses.ErrorResponse "Bad request"
-// @Failure 401 {object} responses.ErrorResponse "Unauthorized"
-// @Failure 500 {object} responses.ErrorResponse "Internal server error"
+// @Success 200 {object} PermissionTestResponse "Permission check result"
+// @Failure 400 {object} responses.BaseResponse "Bad request"
+// @Failure 401 {object} responses.BaseResponse "Unauthorized"
+// @Failure 500 {object} responses.BaseResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /test/permissions [post]
 func (h *PermissionTestHandler) TestPermission(c echo.Context) error {
@@ -131,10 +131,10 @@ func (h *PermissionTestHandler) TestPermission(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param requests body []PermissionTestRequest true "Array of permission test requests"
-// @Success 200 {object} responses.Response{data=[]PermissionTestResponse} "Permission check results"
-// @Failure 400 {object} responses.ErrorResponse "Bad request"
-// @Failure 401 {object} responses.ErrorResponse "Unauthorized"
-// @Failure 500 {object} responses.ErrorResponse "Internal server error"
+// @Success 200 {object} []PermissionTestResponse "Permission check results"
+// @Failure 400 {object} responses.BaseResponse "Bad request"
+// @Failure 401 {object} responses.BaseResponse "Unauthorized"
+// @Failure 500 {object} responses.BaseResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /test/permissions/batch [post]
 func (h *PermissionTestHandler) TestPermissionBatch(c echo.Context) error {
@@ -221,9 +221,9 @@ func (h *PermissionTestHandler) TestPermissionBatch(c echo.Context) error {
 // @Description Get all permissions for the currently logged in user in the current marina
 // @Tags permissions
 // @Produce json
-// @Success 200 {object} responses.Response{data=map[string]interface{}} "User permissions and available objects"
-// @Failure 401 {object} responses.ErrorResponse "Unauthorized"
-// @Failure 500 {object} responses.ErrorResponse "Internal server error"
+// @Success 200 {object} map[string]interface{} "User permissions and available objects"
+// @Failure 401 {object} responses.BaseResponse "Unauthorized"
+// @Failure 500 {object} responses.BaseResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /test/permissions/user [get]
 func (h *PermissionTestHandler) GetUserPermissions(c echo.Context) error {
@@ -276,9 +276,9 @@ func (h *PermissionTestHandler) GetUserPermissions(c echo.Context) error {
 // @Description Get all configured route-to-permission mappings for debugging
 // @Tags permissions
 // @Produce json
-// @Success 200 {object} responses.Response{data=map[string]interface{}} "Route permission mappings"
-// @Failure 401 {object} responses.ErrorResponse "Unauthorized"
-// @Failure 500 {object} responses.ErrorResponse "Internal server error"
+// @Success 200 {object} map[string]interface{} "Route permission mappings"
+// @Failure 401 {object} responses.BaseResponse "Unauthorized"
+// @Failure 500 {object} responses.BaseResponse "Internal server error"
 // @Security ApiKeyAuth
 // @Router /test/permissions/routes [get]
 func (h *PermissionTestHandler) GetRoutePermissions(c echo.Context) error {

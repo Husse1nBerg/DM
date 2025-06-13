@@ -5995,6 +5995,202 @@ const docTemplate = `{
                 }
             }
         },
+        "/test/permissions": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Test if the current user has permission to perform an action on an object",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions"
+                ],
+                "summary": "Test user permissions",
+                "parameters": [
+                    {
+                        "description": "Permission test request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PermissionTestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission check result",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PermissionTestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/test/permissions/batch": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Test if the current user has permissions for multiple object-action combinations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions"
+                ],
+                "summary": "Test multiple user permissions",
+                "parameters": [
+                    {
+                        "description": "Array of permission test requests",
+                        "name": "requests",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.PermissionTestRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission check results",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.PermissionTestResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/test/permissions/routes": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all configured route-to-permission mappings for debugging",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions"
+                ],
+                "summary": "Get route permission mappings",
+                "responses": {
+                    "200": {
+                        "description": "Route permission mappings",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/test/permissions/user": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all permissions for the currently logged in user in the current marina",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions"
+                ],
+                "summary": "Get current user permissions",
+                "responses": {
+                    "200": {
+                        "description": "User permissions and available objects",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user": {
             "post": {
                 "security": [
@@ -8808,6 +9004,65 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.PermissionTestRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "object"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                }
+            }
+        },
+        "handlers.PermissionTestResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "has_access": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marina_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174001"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Access granted"
+                },
+                "module_info": {
+                    "type": "object",
+                    "properties": {
+                        "module_enabled": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "required_module": {
+                            "type": "string",
+                            "example": "customerVessels"
+                        }
+                    }
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
         "handlers.ProjectDetailsResponse": {
             "type": "object",
             "properties": {
@@ -8826,114 +9081,33 @@ const docTemplate = `{
         "models.Modules": {
             "type": "object",
             "properties": {
-                "customerVesselsRead": {
+                "customerVessels": {
                     "type": "boolean"
                 },
-                "customerVesselsWrite": {
+                "inventoryManagement": {
                     "type": "boolean"
                 },
-                "inventoryManagementRead": {
+                "marinaManagement": {
                     "type": "boolean"
                 },
-                "inventoryManagementWrite": {
+                "payments": {
                     "type": "boolean"
                 },
-                "marinaManagementRead": {
+                "pos": {
                     "type": "boolean"
                 },
-                "marinaManagementWrite": {
+                "salesManagement": {
                     "type": "boolean"
                 },
-                "paymentsRead": {
-                    "type": "boolean"
-                },
-                "paymentsWrite": {
-                    "type": "boolean"
-                },
-                "posRead": {
-                    "type": "boolean"
-                },
-                "posWrite": {
-                    "type": "boolean"
-                },
-                "salesManagementRead": {
-                    "type": "boolean"
-                },
-                "salesManagementWrite": {
-                    "type": "boolean"
-                },
-                "serviceManagementRead": {
-                    "type": "boolean"
-                },
-                "serviceManagementWrite": {
+                "serviceManagement": {
                     "type": "boolean"
                 }
             }
         },
         "models.Permissions": {
             "type": "object",
-            "properties": {
-                "deleteMarinas": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "deleteOrganizations": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "deleteRoles": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "deleteUsers": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "readMarinas": {
-                    "description": "Marina permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readOrganizations": {
-                    "description": "Organization permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readRoles": {
-                    "description": "Role permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readSettings": {
-                    "description": "Settings permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readUsers": {
-                    "description": "User permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeMarinas": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeOrganizations": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeRoles": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeSettings": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeUsers": {
-                    "type": "boolean",
-                    "example": true
-                }
+            "additionalProperties": {
+                "type": "boolean"
             }
         },
         "models.WorkingHours": {
@@ -9281,15 +9455,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -9427,6 +9595,9 @@ const docTemplate = `{
                 "maxUsers": {
                     "type": "integer",
                     "example": 100
+                },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
                 },
                 "name": {
                     "type": "string",
@@ -9621,9 +9792,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
@@ -9632,9 +9800,6 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 12,
                     "example": "SecureP@ssw0rd"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -9697,15 +9862,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -10399,6 +10558,9 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 100
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
@@ -10564,16 +10726,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "password": {
                     "type": "string",
                     "minLength": 12,
                     "example": "NewSecureP@ssw0rd"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -11417,6 +11573,9 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 100
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
@@ -11591,6 +11750,9 @@ const docTemplate = `{
                 "maxUsers": {
                     "type": "integer",
                     "example": 100
+                },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
                 },
                 "name": {
                     "type": "string",
@@ -11992,15 +12154,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",

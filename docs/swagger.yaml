@@ -893,6 +893,48 @@ definitions:
           '{"status"': '"ok"'
         type: object
     type: object
+  handlers.PermissionTestRequest:
+    properties:
+      action:
+        example: read
+        type: string
+      object:
+        example: customers
+        type: string
+    required:
+    - action
+    - object
+    type: object
+  handlers.PermissionTestResponse:
+    properties:
+      action:
+        example: read
+        type: string
+      has_access:
+        example: true
+        type: boolean
+      marina_id:
+        example: 123e4567-e89b-12d3-a456-426614174001
+        type: string
+      message:
+        example: Access granted
+        type: string
+      module_info:
+        properties:
+          module_enabled:
+            example: true
+            type: boolean
+          required_module:
+            example: customerVessels
+            type: string
+        type: object
+      object:
+        example: customers
+        type: string
+      user_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
   handlers.ProjectDetailsResponse:
     properties:
       data:
@@ -905,84 +947,24 @@ definitions:
     type: object
   models.Modules:
     properties:
-      customerVesselsRead:
+      customerVessels:
         type: boolean
-      customerVesselsWrite:
+      inventoryManagement:
         type: boolean
-      inventoryManagementRead:
+      marinaManagement:
         type: boolean
-      inventoryManagementWrite:
+      payments:
         type: boolean
-      marinaManagementRead:
+      pos:
         type: boolean
-      marinaManagementWrite:
+      salesManagement:
         type: boolean
-      paymentsRead:
-        type: boolean
-      paymentsWrite:
-        type: boolean
-      posRead:
-        type: boolean
-      posWrite:
-        type: boolean
-      salesManagementRead:
-        type: boolean
-      salesManagementWrite:
-        type: boolean
-      serviceManagementRead:
-        type: boolean
-      serviceManagementWrite:
+      serviceManagement:
         type: boolean
     type: object
   models.Permissions:
-    properties:
-      deleteMarinas:
-        example: false
-        type: boolean
-      deleteOrganizations:
-        example: false
-        type: boolean
-      deleteRoles:
-        example: false
-        type: boolean
-      deleteUsers:
-        example: false
-        type: boolean
-      readMarinas:
-        description: Marina permissions
-        example: true
-        type: boolean
-      readOrganizations:
-        description: Organization permissions
-        example: true
-        type: boolean
-      readRoles:
-        description: Role permissions
-        example: true
-        type: boolean
-      readSettings:
-        description: Settings permissions
-        example: true
-        type: boolean
-      readUsers:
-        description: User permissions
-        example: true
-        type: boolean
-      writeMarinas:
-        example: true
-        type: boolean
-      writeOrganizations:
-        example: true
-        type: boolean
-      writeRoles:
-        example: true
-        type: boolean
-      writeSettings:
-        example: true
-        type: boolean
-      writeUsers:
-        example: true
-        type: boolean
+    additionalProperties:
+      type: boolean
     type: object
   models.WorkingHours:
     properties:
@@ -1218,13 +1200,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
-      modules:
-        $ref: '#/definitions/models.Modules'
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
-      permissions:
-        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -1328,6 +1306,8 @@ definitions:
       maxUsers:
         example: 100
         type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
       name:
         example: Harbor Bay Marina
         type: string
@@ -1468,8 +1448,6 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
-      modules:
-        $ref: '#/definitions/models.Modules'
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
@@ -1477,8 +1455,6 @@ definitions:
         example: SecureP@ssw0rd
         minLength: 12
         type: string
-      permissions:
-        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -1526,13 +1502,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
-      modules:
-        $ref: '#/definitions/models.Modules'
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
-      permissions:
-        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -2019,6 +1991,8 @@ definitions:
       maxUsers:
         example: 100
         type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
       name:
         example: Harbor Bay Marina
         type: string
@@ -2139,14 +2113,10 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
-      modules:
-        $ref: '#/definitions/models.Modules'
       password:
         example: NewSecureP@ssw0rd
         minLength: 12
         type: string
-      permissions:
-        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -2738,6 +2708,8 @@ definitions:
       maxUsers:
         example: 100
         type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
       name:
         example: Harbor Bay Marina
         type: string
@@ -2864,6 +2836,8 @@ definitions:
       maxUsers:
         example: 100
         type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
       name:
         example: Harbor Bay Marina
         type: string
@@ -3153,13 +3127,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
-      modules:
-        $ref: '#/definitions/models.Modules'
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
-      permissions:
-        $ref: '#/definitions/models.Permissions'
       phone:
         example: "+15551234567"
         type: string
@@ -7180,6 +7150,133 @@ paths:
       summary: Send SMS
       tags:
       - SMS
+  /test/permissions:
+    post:
+      consumes:
+      - application/json
+      description: Test if the current user has permission to perform an action on
+        an object
+      parameters:
+      - description: Permission test request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PermissionTestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission check result
+          schema:
+            $ref: '#/definitions/handlers.PermissionTestResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Test user permissions
+      tags:
+      - permissions
+  /test/permissions/batch:
+    post:
+      consumes:
+      - application/json
+      description: Test if the current user has permissions for multiple object-action
+        combinations
+      parameters:
+      - description: Array of permission test requests
+        in: body
+        name: requests
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/handlers.PermissionTestRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission check results
+          schema:
+            items:
+              $ref: '#/definitions/handlers.PermissionTestResponse'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Test multiple user permissions
+      tags:
+      - permissions
+  /test/permissions/routes:
+    get:
+      description: Get all configured route-to-permission mappings for debugging
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Route permission mappings
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get route permission mappings
+      tags:
+      - permissions
+  /test/permissions/user:
+    get:
+      description: Get all permissions for the currently logged in user in the current
+        marina
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User permissions and available objects
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user permissions
+      tags:
+      - permissions
   /user:
     post:
       consumes:
