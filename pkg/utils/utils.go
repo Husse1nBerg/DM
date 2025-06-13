@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -8,6 +9,18 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+// StorageUsageGB is a custom type to handle GB values with fixed decimal places
+type StorageUsageGB float64
+
+// MarshalJSON implements json.Marshaler interface
+func (s *StorageUsageGB) MarshalJSON() ([]byte, error) {
+	if s == nil {
+		return []byte("null"), nil
+	}
+	// Always format with 2 decimal places
+	return []byte(fmt.Sprintf("%.2f", *s)), nil
+}
 
 var (
 	imageService    *s3.ImageService

@@ -1,7 +1,6 @@
 package responses
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -10,42 +9,30 @@ import (
 	"github.com/google/uuid"
 )
 
-// StorageUsageGB is a custom type to handle GB values with fixed decimal places
-type StorageUsageGB float64
-
-// MarshalJSON implements json.Marshaler interface
-func (s *StorageUsageGB) MarshalJSON() ([]byte, error) {
-	if s == nil {
-		return []byte("null"), nil
-	}
-	// Always format with 2 decimal places
-	return []byte(fmt.Sprintf("%.2f", *s)), nil
-}
-
 // MarinaResponse represents a marina in the system
 // @Description Marina data including location, contact information, and operational details
 type MarinaResponse struct {
-	ID             uuid.UUID            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrganizationID uuid.UUID            `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Name           string               `json:"name" example:"Harbor Bay Marina"`
-	Email          string               `json:"email" example:"info@harborbay.com"`
-	Location       *string              `json:"location,omitempty" example:"Miami Beach"`
-	Phone          *string              `json:"phone,omitempty" example:"+15551234567"`
-	Country        *string              `json:"country,omitempty" example:"USA"`
-	Currency       *string              `json:"currency,omitempty" example:"USD"`
-	WorkingHours   *models.WorkingHours `json:"workingHours,omitempty"`
-	Website        *string              `json:"website,omitempty" example:"https://harborbay.com"`
-	Image          *string              `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
-	MaxUsers       *int32               `json:"maxUsers,omitempty" example:"100"`
-	IsActive       *bool                `json:"isActive,omitempty" example:"true"`
-	IsTest         *bool                `json:"isTest,omitempty" example:"false"`
-	CreatedAt      *time.Time           `json:"createdAt,omitempty"`
-	UpdatedAt      *time.Time           `json:"updatedAt,omitempty"`
-	AddressID      uuid.UUID            `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
-	SystemID       *string              `json:"systemId,omitempty" example:"SYS123456"`
-	StorageUsage   *StorageUsageGB      `json:"storageUsage,omitempty" example:"0.00"`
-	EmailUsage     *int16               `json:"emailUsage,omitempty" example:"0"`
-	TextUsage      *int16               `json:"textUsage,omitempty" example:"0"`
+	ID             uuid.UUID             `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID uuid.UUID             `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Name           string                `json:"name" example:"Harbor Bay Marina"`
+	Email          string                `json:"email" example:"info@harborbay.com"`
+	Location       *string               `json:"location,omitempty" example:"Miami Beach"`
+	Phone          *string               `json:"phone,omitempty" example:"+15551234567"`
+	Country        *string               `json:"country,omitempty" example:"USA"`
+	Currency       *string               `json:"currency,omitempty" example:"USD"`
+	WorkingHours   *models.WorkingHours  `json:"workingHours,omitempty"`
+	Website        *string               `json:"website,omitempty" example:"https://harborbay.com"`
+	Image          *string               `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
+	MaxUsers       *int32                `json:"maxUsers,omitempty" example:"100"`
+	IsActive       *bool                 `json:"isActive,omitempty" example:"true"`
+	IsTest         *bool                 `json:"isTest,omitempty" example:"false"`
+	CreatedAt      *time.Time            `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time            `json:"updatedAt,omitempty"`
+	AddressID      uuid.UUID             `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	SystemID       *string               `json:"systemId,omitempty" example:"SYS123456"`
+	StorageUsage   *utils.StorageUsageGB `json:"storageUsage,omitempty" example:"0.00"`
+	EmailUsage     *int16                `json:"emailUsage,omitempty" example:"0"`
+	TextUsage      *int16                `json:"textUsage,omitempty" example:"0"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -68,10 +55,10 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 	}
 
 	// Convert storage usage from bytes to GB
-	var storageUsageGB *StorageUsageGB
+	var storageUsageGB *utils.StorageUsageGB
 	if marina.StorageUsage != nil {
 		const bytesInGB = 1024 * 1024 * 1024 // 1 GB in bytes
-		usageGB := StorageUsageGB(float64(*marina.StorageUsage) / float64(bytesInGB))
+		usageGB := utils.StorageUsageGB(float64(*marina.StorageUsage) / float64(bytesInGB))
 		storageUsageGB = &usageGB
 	}
 

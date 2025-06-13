@@ -46,6 +46,7 @@ func RegisterRoutes(s *s.Server) {
 	messageHandler := h.NewMessageHandler(s)
 	documentHandler := h.NewDocumentHandler(s)
 	inviteHandler := h.NewInviteHandler(s)
+	marinaUsageHistoryHandler := h.NewMarinaUsageHistoryHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -262,4 +263,11 @@ func RegisterRoutes(s *s.Server) {
 	messages.DELETE("/customer", messageHandler.DeleteCustomerMessageHandler)
 	messages.DELETE("/marina", messageHandler.DeleteMarinaMessageHandler)
 
+	// Marina Usage History routes
+	marinaUsageHistory := protected.Group("/marina-usage-history")
+	marinaUsageHistory.GET("/:id", marinaUsageHistoryHandler.GetMarinaUsageHistoryByID)
+	marinaUsageHistory.GET("/marina/:marinaId", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMarinaID)
+	marinaUsageHistory.GET("/marina/:marinaId/range", marinaUsageHistoryHandler.GetMarinaUsageHistoryByDateRange)
+	marinaUsageHistory.GET("/marina/:marinaId/latest", marinaUsageHistoryHandler.GetLatestMarinaUsageHistory)
+	marinaUsageHistory.GET("/marina/:marinaId/month", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMonth)
 }
