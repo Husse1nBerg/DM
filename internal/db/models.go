@@ -117,6 +117,9 @@ type Marina struct {
 	DeletedAt      pgtype.Timestamp
 	AddressID      uuid.UUID
 	SystemID       *string
+	StorageUsage   *int64
+	EmailUsage     *int16
+	TextUsage      *int16
 }
 
 type MarinaGallery struct {
@@ -127,6 +130,17 @@ type MarinaGallery struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	DeletedAt   pgtype.Timestamp
+}
+
+type MarinaUsageHistory struct {
+	ID           uuid.UUID
+	MarinaID     uuid.UUID
+	StorageUsage int64
+	EmailUsage   int16
+	TextUsage    int16
+	CreatedAt    pgtype.Timestamptz
+	UpdatedAt    pgtype.Timestamptz
+	MonthDate    pgtype.Date
 }
 
 type Message struct {

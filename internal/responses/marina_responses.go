@@ -12,24 +12,27 @@ import (
 // MarinaResponse represents a marina in the system
 // @Description Marina data including location, contact information, and operational details
 type MarinaResponse struct {
-	ID             uuid.UUID            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrganizationID uuid.UUID            `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Name           string               `json:"name" example:"Harbor Bay Marina"`
-	Email          string               `json:"email" example:"info@harborbay.com"`
-	Location       *string              `json:"location,omitempty" example:"Miami Beach"`
-	Phone          *string              `json:"phone,omitempty" example:"+15551234567"`
-	Country        *string              `json:"country,omitempty" example:"USA"`
-	Currency       *string              `json:"currency,omitempty" example:"USD"`
-	WorkingHours   *models.WorkingHours `json:"workingHours,omitempty"`
-	Website        *string              `json:"website,omitempty" example:"https://harborbay.com"`
-	Image          *string              `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
-	MaxUsers       *int32               `json:"maxUsers,omitempty" example:"100"`
-	IsActive       *bool                `json:"isActive,omitempty" example:"true"`
-	IsTest         *bool                `json:"isTest,omitempty" example:"false"`
-	CreatedAt      *time.Time           `json:"createdAt,omitempty"`
-	UpdatedAt      *time.Time           `json:"updatedAt,omitempty"`
-	AddressID      uuid.UUID            `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
-	SystemID       *string              `json:"systemId,omitempty" example:"SYS123456"`
+	ID             uuid.UUID             `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID uuid.UUID             `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Name           string                `json:"name" example:"Harbor Bay Marina"`
+	Email          string                `json:"email" example:"info@harborbay.com"`
+	Location       *string               `json:"location,omitempty" example:"Miami Beach"`
+	Phone          *string               `json:"phone,omitempty" example:"+15551234567"`
+	Country        *string               `json:"country,omitempty" example:"USA"`
+	Currency       *string               `json:"currency,omitempty" example:"USD"`
+	WorkingHours   *models.WorkingHours  `json:"workingHours,omitempty"`
+	Website        *string               `json:"website,omitempty" example:"https://harborbay.com"`
+	Image          *string               `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
+	MaxUsers       *int32                `json:"maxUsers,omitempty" example:"100"`
+	IsActive       *bool                 `json:"isActive,omitempty" example:"true"`
+	IsTest         *bool                 `json:"isTest,omitempty" example:"false"`
+	CreatedAt      *time.Time            `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time            `json:"updatedAt,omitempty"`
+	AddressID      uuid.UUID             `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	SystemID       *string               `json:"systemId,omitempty" example:"SYS123456"`
+	StorageUsage   *utils.StorageUsageGB `json:"storageUsage,omitempty" example:"0.00"`
+	EmailUsage     *int16                `json:"emailUsage,omitempty" example:"0"`
+	TextUsage      *int16                `json:"textUsage,omitempty" example:"0"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -51,6 +54,14 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		}
 	}
 
+	// Convert storage usage from bytes to GB
+	var storageUsageGB *utils.StorageUsageGB
+	if marina.StorageUsage != nil {
+		const bytesInGB = 1024 * 1024 * 1024 // 1 GB in bytes
+		usageGB := utils.StorageUsageGB(float64(*marina.StorageUsage) / float64(bytesInGB))
+		storageUsageGB = &usageGB
+	}
+
 	return MarinaResponse{
 		ID:             marina.ID,
 		OrganizationID: marina.OrganizationID,
@@ -70,6 +81,9 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		UpdatedAt:      utils.PgTimeToTimePtr(marina.UpdatedAt),
 		AddressID:      marina.AddressID,
 		SystemID:       marina.SystemID,
+		StorageUsage:   storageUsageGB,
+		EmailUsage:     marina.EmailUsage,
+		TextUsage:      marina.TextUsage,
 	}
 }
 

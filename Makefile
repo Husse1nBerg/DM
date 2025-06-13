@@ -192,3 +192,6 @@ coverage-handlers:
 
 user-deactivation:
 	@go run scripts/user_deactivation/main.go
+
+marina-usage-history:
+	@go run scripts/marina_usage_history/main.go

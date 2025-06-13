@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
@@ -20,6 +23,79 @@ type MessageHandler struct {
 
 func NewMessageHandler(server *s.Server) *MessageHandler {
 	return &MessageHandler{server: server}
+}
+
+// checkMessageLimit checks if the marina has reached its message usage limit
+func (h *MessageHandler) checkMessageLimit(ctx echo.Context, marinaID uuid.UUID, messageType string) error {
+	// Get marina to check current message usage
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx.Request().Context(), marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina", err)
+		return fmt.Errorf("marina not found")
+	}
+
+	// Get max message limit from environment variable
+	maxLimit := int16(0)
+	if messageType == "sms" {
+		limit, err := strconv.ParseInt(os.Getenv("MAX_TEXT_USAGE"), 10, 16)
+		if err != nil {
+			return err
+		}
+		maxLimit = int16(limit)
+	} else if messageType == "email" {
+		limit, err := strconv.ParseInt(os.Getenv("MAX_EMAIL_USAGE"), 10, 16)
+		if err != nil {
+			return err
+		}
+		maxLimit = int16(limit)
+	}
+
+	// Check if we've reached the limit
+	currentUsage := int16(0)
+	if messageType == "sms" {
+		currentUsage = *marina.TextUsage
+	} else if messageType == "email" {
+		currentUsage = *marina.EmailUsage
+	}
+
+	if currentUsage >= maxLimit {
+		h.server.Logger.Zap.Info("Limit would be exceeded",
+			"currentUsage", currentUsage,
+			"maxLimit", maxLimit)
+
+		return fmt.Errorf("Limit exceeded: current usage %d has reached the %s limit.",
+			currentUsage, messageType)
+	}
+
+	return nil
+}
+
+// updateMessageUsage updates the marina's message usage count
+func (h *MessageHandler) updateUsage(ctx context.Context, marinaID uuid.UUID, messageType string) error {
+	increment := int16(1)
+
+	// Increment the usage count
+	if messageType == "sms" {
+		_, err := h.server.DB.Queries().IncrementMarinaTextUsage(ctx, db.IncrementMarinaTextUsageParams{
+			ID:      marinaID,
+			Column2: increment,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error updating marina text usage", err)
+			return err
+		}
+	} else if messageType == "email" {
+		_, err := h.server.DB.Queries().IncrementMarinaEmailUsage(ctx, db.IncrementMarinaEmailUsageParams{
+			ID:      marinaID,
+			Column2: increment,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error updating marina email usage", err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ListMessagesHandler lists messages for a marina and customer
@@ -193,6 +269,12 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Internal and SMS messages are not allowed for customers").JSON(c)
 	}
 
+	// Check message limit before sending
+	if err := h.checkMessageLimit(c, req.MarinaID, "email"); err != nil {
+		logger.Zap.Error("Message limit check failed", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	}
+
 	// Create the message
 	params := db.CreateMessageParams{
 		MarinaID:   req.MarinaID,
@@ -244,7 +326,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	// Log the task
 	logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Recipient)
 
-	// Process the result asynchronously to log success/failure
+	// Process the result asynchronously to log success/failure and update message usage
 	go func() {
 		result := <-resultChan
 		if result.Status == telgorithm.StatusSent {
@@ -260,6 +342,12 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 			}); err != nil {
 				logger.Zap.Errorw("Failed to update message status",
 					"message_id", message.ID,
+					"error", err)
+			}
+			// Increment message usage count
+			if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
+				logger.Zap.Errorw("Failed to update message usage",
+					"marina_id", req.MarinaID,
 					"error", err)
 			}
 		} else {
@@ -283,7 +371,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	return c.JSON(http.StatusCreated, response)
 }
 
-// CreateMessageHandler creates a new message
+// CreateMessageMarinaHandler creates a new message
 //
 //	@Summary		Create message
 //	@Description	Create a new message
@@ -300,7 +388,6 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	// Parse and validate request
 	logger := h.server.Logger
-	cfg := h.server.Config
 	req := new(requests.CreateMessageRequest)
 	if err := c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -310,6 +397,12 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	}
 
 	queries := h.server.DB.Queries()
+
+	// Check message limit before sending
+	if err := h.checkMessageLimit(c, req.MarinaID, req.Type); err != nil {
+		logger.Zap.Error("Message limit check failed", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	}
 
 	var direction string
 	if req.Type == "internal" {
@@ -334,10 +427,6 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-	}
-	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -368,7 +457,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		// Log the task
 		logger.Zap.Infow("SMS queued", "task_id", taskID.String(), "to", req.Contact)
 
-		// Process the result asynchronously to log success/failure
+		// Process the result asynchronously to log success/failure and update message usage
 		go func() {
 			result := <-resultChan
 			if result.Status == telgorithm.StatusSent {
@@ -384,6 +473,12 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				}); err != nil {
 					logger.Zap.Errorw("Failed to update message status",
 						"message_id", message.ID,
+						"error", err)
+				}
+				// Increment message usage count
+				if err := h.updateUsage(context.Background(), req.MarinaID, "sms"); err != nil {
+					logger.Zap.Errorw("Failed to update message usage",
+						"marina_id", req.MarinaID,
 						"error", err)
 				}
 			} else {
@@ -402,64 +497,29 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				}
 			}
 		}()
-
 	} else if req.Type == "email" {
-
-		// check if the contact email is already a user
-		user, err := queries.GetUserByEmail(c.Request().Context(), req.Contact)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-		}
 		var taskID uuid.UUID
 		var resultChan <-chan sendgrid.EmailStatus
 
+		// Create email data
+		email := sendgrid.MessageTemplateData{
+			Content:   req.Body,
+			Recipient: req.Recipient,
+			Sender:    req.Sender,
+		}
 		to := []string{req.Contact}
-		subject := "Message from " + req.Sender + " - " + marina.Name
-		termsUrl := cfg.App.TermsConditionsURL()
+		subject := "Message from " + req.Sender
 
-		if user.IsCustomer != nil && *user.IsCustomer {
-			// Create email data for customer using internal template
-			email := sendgrid.MessageTemplateData{
-				Content:         req.Body,
-				Recipient:       req.Recipient,
-				Sender:          req.Sender + " - " + marina.Name,
-				TermsConditions: termsUrl,
-			}
-
-			// Send email asynchronously using internal template
-			taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-			}
-		} else {
-			// get the cp contact
-			cpContact, err := queries.ListCPContacts(c.Request().Context(), req.MarinaID)
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-			}
-			if cpContact == nil {
-				return responses.NewErrorResponse(http.StatusNotFound, "No Customer Portal contact found, please add a Customer Portal contact first").JSON(c)
-			}
-			// Create email data for external user using external template
-			email := sendgrid.ExternalMessageTemplateData{
-				Content:         req.Body,
-				Recipient:       req.Recipient,
-				Sender:          req.Sender + " - " + marina.Name,
-				ReplyTo:         *cpContact[0].Email,
-				TermsConditions: termsUrl,
-			}
-
-			// Send email asynchronously using external template
-			taskID, resultChan, err = h.server.SendGrid.SendExternalMessageEmail(to, subject, email)
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-			}
+		// Send email asynchronously
+		taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 		}
 
 		// Log the task
 		logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Recipient)
 
-		// Process the result asynchronously to log success/failure
+		// Process the result asynchronously to log success/failure and update message usage
 		go func() {
 			result := <-resultChan
 			if result.Status == telgorithm.StatusSent {
@@ -475,6 +535,12 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				}); err != nil {
 					logger.Zap.Errorw("Failed to update message status",
 						"message_id", message.ID,
+						"error", err)
+				}
+				// Increment message usage count
+				if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
+					logger.Zap.Errorw("Failed to update message usage",
+						"marina_id", req.MarinaID,
 						"error", err)
 				}
 			} else {
@@ -493,9 +559,16 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				}
 			}
 		}()
-
 	} else {
-		queries.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{ID: message.ID, Status: "sent"})
+		// For internal messages, just mark as sent
+		if err := queries.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
+			ID:     message.ID,
+			Status: "sent",
+		}); err != nil {
+			logger.Zap.Errorw("Failed to update message status",
+				"message_id", message.ID,
+				"error", err)
+		}
 	}
 
 	response := responses.NewMessageResponseSuccess(message)
