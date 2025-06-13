@@ -30,7 +30,9 @@ INSERT INTO marinas (
         system_id,
         storage_usage,
         email_usage,
-        text_usage
+        text_usage,
+        notes_messages_plan_id,
+        storage_plan_id
     )
 VALUES (
         $1,
@@ -50,27 +52,31 @@ VALUES (
         $15,
         0,
         0,
-        0
+        0,
+        $16,
+        $17
     )
 RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage, notes_messages_plan_id, storage_plan_id
 `
 
 type CreateMarinaParams struct {
-	OrganizationID uuid.UUID
-	Name           string
-	Email          string
-	Location       *string
-	Phone          *string
-	Country        *string
-	Currency       *string
-	WorkingHours   []byte
-	Website        *string
-	Image          *string
-	MaxUsers       *int32
-	IsActive       *bool
-	IsTest         *bool
-	AddressID      uuid.UUID
-	SystemID       *string
+	OrganizationID      uuid.UUID
+	Name                string
+	Email               string
+	Location            *string
+	Phone               *string
+	Country             *string
+	Currency            *string
+	WorkingHours        []byte
+	Website             *string
+	Image               *string
+	MaxUsers            *int32
+	IsActive            *bool
+	IsTest              *bool
+	AddressID           uuid.UUID
+	SystemID            *string
+	NotesMessagesPlanID uuid.UUID
+	StoragePlanID       uuid.UUID
 }
 
 func (q *Queries) CreateMarina(ctx context.Context, arg CreateMarinaParams) (Marina, error) {
@@ -90,6 +96,8 @@ func (q *Queries) CreateMarina(ctx context.Context, arg CreateMarinaParams) (Mar
 		arg.IsTest,
 		arg.AddressID,
 		arg.SystemID,
+		arg.NotesMessagesPlanID,
+		arg.StoragePlanID,
 	)
 	var i Marina
 	err := row.Scan(
@@ -761,29 +769,33 @@ SET name = $2,
     address_id = $14,
     system_id = $15,
     email_usage = COALESCE($16, email_usage),
-    text_usage = COALESCE($17, text_usage)
+    text_usage = COALESCE($17, text_usage),
+    notes_messages_plan_id = $18,
+    storage_plan_id = $19
 WHERE id = $1
 RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage, notes_messages_plan_id, storage_plan_id
 `
 
 type UpdateMarinaParams struct {
-	ID           uuid.UUID
-	Name         string
-	Email        string
-	Location     *string
-	Phone        *string
-	Country      *string
-	Currency     *string
-	WorkingHours []byte
-	Website      *string
-	Image        *string
-	MaxUsers     *int32
-	IsActive     *bool
-	IsTest       *bool
-	AddressID    uuid.UUID
-	SystemID     *string
-	EmailUsage   *int16
-	TextUsage    *int16
+	ID                  uuid.UUID
+	Name                string
+	Email               string
+	Location            *string
+	Phone               *string
+	Country             *string
+	Currency            *string
+	WorkingHours        []byte
+	Website             *string
+	Image               *string
+	MaxUsers            *int32
+	IsActive            *bool
+	IsTest              *bool
+	AddressID           uuid.UUID
+	SystemID            *string
+	EmailUsage          *int16
+	TextUsage           *int16
+	NotesMessagesPlanID uuid.UUID
+	StoragePlanID       uuid.UUID
 }
 
 func (q *Queries) UpdateMarina(ctx context.Context, arg UpdateMarinaParams) (Marina, error) {
@@ -805,6 +817,8 @@ func (q *Queries) UpdateMarina(ctx context.Context, arg UpdateMarinaParams) (Mar
 		arg.SystemID,
 		arg.EmailUsage,
 		arg.TextUsage,
+		arg.NotesMessagesPlanID,
+		arg.StoragePlanID,
 	)
 	var i Marina
 	err := row.Scan(

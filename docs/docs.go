@@ -9430,6 +9430,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Harbor Bay Marina"
                 },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
@@ -9437,6 +9441,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "systemId": {
                     "type": "string",
@@ -10393,9 +10401,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Harbor Bay Marina"
                 },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "systemId": {
                     "type": "string",
@@ -11403,6 +11419,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Harbor Bay Marina"
                 },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
@@ -11410,6 +11430,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "storageUsage": {
                     "type": "number",
@@ -11570,6 +11594,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Harbor Bay Marina"
                 },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
@@ -11577,6 +11605,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "storageUsage": {
                     "type": "number",

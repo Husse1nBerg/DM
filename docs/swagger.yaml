@@ -1331,11 +1331,17 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       systemId:
         example: SYS123456
@@ -2014,8 +2020,14 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       systemId:
         example: SYS123456
@@ -2727,11 +2739,17 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       storageUsage:
         example: 0
@@ -2847,11 +2865,17 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
       phone:
         example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       storageUsage:
         example: 0
