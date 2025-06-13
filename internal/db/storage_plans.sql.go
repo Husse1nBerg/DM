@@ -26,7 +26,7 @@ INSERT INTO storage_plans (
 type CreateStoragePlanParams struct {
 	Name           string
 	MonthlyPrice   float64
-	StorageLimitGb *string
+	StorageLimitGb *int32
 	UserLimit      *string
 	IsMostPopular  *bool
 }
@@ -218,6 +218,42 @@ func (q *Queries) GetStoragePlansWithStorageLimits(ctx context.Context) ([]Stora
 	return items, nil
 }
 
+const getStoragePlansWithUsageLimits = `-- name: GetStoragePlansWithUsageLimits :many
+SELECT id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at FROM storage_plans 
+WHERE storage_limit_gb IS NOT NULL
+ORDER BY monthly_price
+`
+
+// Get plans with usage limits
+func (q *Queries) GetStoragePlansWithUsageLimits(ctx context.Context) ([]StoragePlan, error) {
+	rows, err := q.db.Query(ctx, getStoragePlansWithUsageLimits)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []StoragePlan
+	for rows.Next() {
+		var i StoragePlan
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MonthlyPrice,
+			&i.StorageLimitGb,
+			&i.UserLimit,
+			&i.IsMostPopular,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getStoragePlansWithUserLimits = `-- name: GetStoragePlansWithUserLimits :many
 SELECT id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at FROM storage_plans 
 WHERE user_limit != 'Unlimited Users'
@@ -345,7 +381,7 @@ type UpdateStoragePlanParams struct {
 	ID             uuid.UUID
 	Name           string
 	MonthlyPrice   float64
-	StorageLimitGb *string
+	StorageLimitGb *int32
 	UserLimit      *string
 	IsMostPopular  *bool
 }

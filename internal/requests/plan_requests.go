@@ -9,7 +9,7 @@ import (
 type CreateNotesMessagesPlanRequest struct {
 	Name          string  `json:"name" validate:"required" example:"Basic Plan"`
 	MonthlyPrice  float64 `json:"monthlyPrice" validate:"required,min=0" example:"29.99"`
-	TextLimit     *string `json:"textLimit,omitempty" example:"1000 Texts"`
+	TextLimit     *int32  `json:"textLimit,omitempty" example:"1000"`
 	EmailLimit    *string `json:"emailLimit,omitempty" example:"Unlimited Emails"`
 	UserLimit     *string `json:"userLimit,omitempty" example:"Unlimited Users"`
 	IsMostPopular *bool   `json:"isMostPopular,omitempty" example:"false"`
@@ -19,7 +19,7 @@ type CreateNotesMessagesPlanRequest struct {
 type UpdateNotesMessagesPlanRequest struct {
 	Name          *string  `json:"name,omitempty" example:"Basic Plan"`
 	MonthlyPrice  *float64 `json:"monthlyPrice,omitempty" validate:"omitempty,min=0" example:"29.99"`
-	TextLimit     *string  `json:"textLimit,omitempty" example:"1000 Texts"`
+	TextLimit     *int32   `json:"textLimit,omitempty" example:"1000"`
 	EmailLimit    *string  `json:"emailLimit,omitempty" example:"Unlimited Emails"`
 	UserLimit     *string  `json:"userLimit,omitempty" example:"Unlimited Users"`
 	IsMostPopular *bool    `json:"isMostPopular,omitempty" example:"false"`
@@ -29,7 +29,7 @@ type UpdateNotesMessagesPlanRequest struct {
 type CreateStoragePlanRequest struct {
 	Name           string  `json:"name" validate:"required" example:"Basic Storage"`
 	MonthlyPrice   float64 `json:"monthlyPrice" validate:"required,min=0" example:"19.99"`
-	StorageLimitGB *string `json:"storageLimitGB,omitempty" example:"10 GB"`
+	StorageLimitGB *int32  `json:"storageLimitGB,omitempty" example:"10"`
 	UserLimit      *string `json:"userLimit,omitempty" example:"Unlimited Users"`
 	IsMostPopular  *bool   `json:"isMostPopular,omitempty" example:"false"`
 }
@@ -38,7 +38,7 @@ type CreateStoragePlanRequest struct {
 type UpdateStoragePlanRequest struct {
 	Name           *string  `json:"name,omitempty" example:"Basic Storage"`
 	MonthlyPrice   *float64 `json:"monthlyPrice,omitempty" validate:"omitempty,min=0" example:"19.99"`
-	StorageLimitGB *string  `json:"storageLimitGB,omitempty" example:"10 GB"`
+	StorageLimitGB *int32   `json:"storageLimitGB,omitempty" example:"10"`
 	UserLimit      *string  `json:"userLimit,omitempty" example:"Unlimited Users"`
 	IsMostPopular  *bool    `json:"isMostPopular,omitempty" example:"false"`
 }

@@ -1,16 +1,16 @@
 -- Get all storage plans
 -- name: ListStoragePlans :many
-SELECT * FROM storage_plans ORDER BY monthly_price;
+SELECT id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at FROM storage_plans ORDER BY monthly_price;
 
 -- Get all storage plans with pagination
 -- name: ListStoragePlansPaginated :many
-SELECT * FROM storage_plans 
+SELECT id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at FROM storage_plans 
 ORDER BY monthly_price
 LIMIT $1 OFFSET $2;
 
 -- Get a specific plan by ID
 -- name: GetStoragePlanByID :one
-SELECT * FROM storage_plans WHERE id = $1;
+SELECT id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at FROM storage_plans WHERE id = $1;
 
 -- Get the most popular plan
 -- name: GetMostPopularStoragePlan :one
@@ -18,7 +18,7 @@ SELECT * FROM storage_plans WHERE is_most_popular = true LIMIT 1;
 
 -- Get plan by name
 -- name: GetStoragePlanByName :one
-SELECT * FROM storage_plans WHERE name = $1;
+SELECT id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at FROM storage_plans WHERE name = $1;
 
 -- Get marina's current plan
 -- name: GetMarinaStoragePlan :one
@@ -55,7 +55,7 @@ INSERT INTO storage_plans (
     is_most_popular
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING *;
+) RETURNING id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at;
 
 -- Update an existing storage plan
 -- name: UpdateStoragePlan :one
@@ -67,4 +67,10 @@ SET name = $2,
     is_most_popular = $6,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING *;
+RETURNING id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at;
+
+-- Get plans with usage limits
+-- name: GetStoragePlansWithUsageLimits :many
+SELECT id, name, monthly_price, storage_limit_gb, user_limit, is_most_popular, created_at, updated_at FROM storage_plans 
+WHERE storage_limit_gb IS NOT NULL
+ORDER BY monthly_price;

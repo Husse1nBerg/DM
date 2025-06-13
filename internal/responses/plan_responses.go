@@ -14,7 +14,7 @@ type NotesMessagesPlanResponse struct {
 	ID            uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Name          string     `json:"name" example:"Basic Plan"`
 	MonthlyPrice  float64    `json:"monthlyPrice" example:"29.99"`
-	TextLimit     *string    `json:"textLimit,omitempty" example:"1000"`
+	TextLimit     *int32     `json:"textLimit,omitempty" example:"1000"`
 	EmailLimit    *string    `json:"emailLimit,omitempty" example:"Unlimited"`
 	UserLimit     *string    `json:"userLimit,omitempty" example:"Unlimited"`
 	IsMostPopular *bool      `json:"isMostPopular" example:"false"`
@@ -28,7 +28,7 @@ type StoragePlanResponse struct {
 	ID             uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Name           string     `json:"name" example:"Basic Storage"`
 	MonthlyPrice   float64    `json:"monthlyPrice" example:"19.99"`
-	StorageLimitGB *string    `json:"storageLimitGB,omitempty" example:"10"`
+	StorageLimitGB *int32     `json:"storageLimitGB,omitempty" example:"10"`
 	UserLimit      *string    `json:"userLimit,omitempty" example:"Unlimited"`
 	IsMostPopular  *bool      `json:"isMostPopular" example:"false"`
 	CreatedAt      time.Time  `json:"createdAt" example:"2024-01-01T00:00:00Z"`

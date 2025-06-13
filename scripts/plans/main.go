@@ -33,7 +33,7 @@ func RunPlansSeed() {
 	notesMessagesPlans := []struct {
 		name          string
 		monthlyPrice  float64
-		textLimit     *string
+		textLimit     *int32
 		emailLimit    *string
 		userLimit     *string
 		isMostPopular bool
@@ -41,7 +41,7 @@ func RunPlansSeed() {
 		{
 			name:          "Free",
 			monthlyPrice:  0.00,
-			textLimit:     u.Pointer("100 Texts"),
+			textLimit:     u.Pointer(int32(100)),
 			emailLimit:    u.Pointer("Unlimited Emails"),
 			userLimit:     u.Pointer("Unlimited Users"),
 			isMostPopular: false,
@@ -49,7 +49,7 @@ func RunPlansSeed() {
 		{
 			name:          "Starter",
 			monthlyPrice:  150.00,
-			textLimit:     u.Pointer("2500 Texts"),
+			textLimit:     u.Pointer(int32(2500)),
 			emailLimit:    u.Pointer("Unlimited Emails"),
 			userLimit:     u.Pointer("Unlimited Users"),
 			isMostPopular: false,
@@ -57,7 +57,7 @@ func RunPlansSeed() {
 		{
 			name:          "Intermediate",
 			monthlyPrice:  250.00,
-			textLimit:     u.Pointer("7000 Texts"),
+			textLimit:     u.Pointer(int32(7000)),
 			emailLimit:    u.Pointer("Unlimited Emails"),
 			userLimit:     u.Pointer("Unlimited Users"),
 			isMostPopular: true,
@@ -65,15 +65,15 @@ func RunPlansSeed() {
 		{
 			name:          "Advanced",
 			monthlyPrice:  500.00,
-			textLimit:     u.Pointer("Unlimited Texts"),
+			textLimit:     nil,
 			emailLimit:    u.Pointer("Unlimited Emails"),
 			userLimit:     u.Pointer("Unlimited Users"),
 			isMostPopular: false,
 		},
 		{
 			name:          "Pay as You Go",
-			monthlyPrice:  1.50,
-			textLimit:     u.Pointer("Unlimited Texts"),
+			monthlyPrice:  0.30,
+			textLimit:     nil,
 			emailLimit:    u.Pointer("Unlimited Emails"),
 			userLimit:     u.Pointer("Unlimited Users"),
 			isMostPopular: false,
@@ -122,42 +122,42 @@ func RunPlansSeed() {
 	storagePlans := []struct {
 		name           string
 		monthlyPrice   float64
-		storageLimitGB *string
+		storageLimitGB *int32
 		userLimit      *string
 		isMostPopular  bool
 	}{
 		{
 			name:           "Free",
 			monthlyPrice:   0.00,
-			storageLimitGB: u.Pointer("5 GB"),
+			storageLimitGB: u.Pointer(int32(5)),
 			userLimit:      u.Pointer("Unlimited Users"),
 			isMostPopular:  false,
 		},
 		{
 			name:           "Starter",
 			monthlyPrice:   100.00,
-			storageLimitGB: u.Pointer("100 GB"),
+			storageLimitGB: u.Pointer(int32(100)),
 			userLimit:      u.Pointer("Unlimited Users"),
 			isMostPopular:  false,
 		},
 		{
 			name:           "Intermediate",
 			monthlyPrice:   150.00,
-			storageLimitGB: u.Pointer("250 GB"),
+			storageLimitGB: u.Pointer(int32(250)),
 			userLimit:      u.Pointer("Unlimited Users"),
 			isMostPopular:  true,
 		},
 		{
 			name:           "Advanced",
 			monthlyPrice:   500.00,
-			storageLimitGB: u.Pointer("Unlimited Storage"),
+			storageLimitGB: nil,
 			userLimit:      u.Pointer("Unlimited Users"),
 			isMostPopular:  false,
 		},
 		{
 			name:           "Pay as You Go",
 			monthlyPrice:   1.50,
-			storageLimitGB: u.Pointer("Unlimited Storage"),
+			storageLimitGB: nil,
 			userLimit:      u.Pointer("Unlimited Users"),
 			isMostPopular:  false,
 		},

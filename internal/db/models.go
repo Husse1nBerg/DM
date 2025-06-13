@@ -166,7 +166,7 @@ type NotesMessagesPlan struct {
 	ID            uuid.UUID
 	Name          string
 	MonthlyPrice  float64
-	TextLimit     *string
+	TextLimit     *int32
 	EmailLimit    *string
 	UserLimit     *string
 	IsMostPopular *bool
@@ -224,7 +224,7 @@ type StoragePlan struct {
 	ID             uuid.UUID
 	Name           string
 	MonthlyPrice   float64
-	StorageLimitGb *string
+	StorageLimitGb *int32
 	UserLimit      *string
 	IsMostPopular  *bool
 	CreatedAt      pgtype.Timestamp

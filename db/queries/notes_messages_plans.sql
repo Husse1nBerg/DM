@@ -1,16 +1,16 @@
 -- Get all notes and messages plans
 -- name: ListNotesMessagesPlans :many
-SELECT * FROM notes_messages_plans ORDER BY monthly_price;
+SELECT id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at FROM notes_messages_plans ORDER BY monthly_price;
 
 -- Get all notes and messages plans with pagination
 -- name: ListNotesMessagesPlansPaginated :many
-SELECT * FROM notes_messages_plans 
+SELECT id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at FROM notes_messages_plans 
 ORDER BY monthly_price
 LIMIT $1 OFFSET $2;
 
 -- Get a specific plan by ID
 -- name: GetNotesMessagesPlanByID :one
-SELECT * FROM notes_messages_plans WHERE id = $1;
+SELECT id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at FROM notes_messages_plans WHERE id = $1;
 
 -- Get the most popular plan
 -- name: GetMostPopularNotesMessagesPlan :one
@@ -18,7 +18,7 @@ SELECT * FROM notes_messages_plans WHERE is_most_popular = true LIMIT 1;
 
 -- Get plan by name
 -- name: GetNotesMessagesPlanByName :one
-SELECT * FROM notes_messages_plans WHERE name = $1;
+SELECT id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at FROM notes_messages_plans WHERE name = $1;
 
 -- Get marina's current plan
 -- name: GetMarinaNotesMessagesPlan :one
@@ -29,8 +29,8 @@ WHERE m.id = $1;
 
 -- Get plans with usage limits
 -- name: GetNotesMessagesPlansWithUsageLimits :many
-SELECT * FROM notes_messages_plans 
-WHERE text_limit != 'Unlimited Texts'
+SELECT id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at FROM notes_messages_plans 
+WHERE text_limit IS NOT NULL
    OR email_limit != 'Unlimited Emails'
 ORDER BY monthly_price;
 
@@ -51,7 +51,7 @@ INSERT INTO notes_messages_plans (
     is_most_popular
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING *;
+) RETURNING id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at;
 
 -- Update an existing notes and messages plan
 -- name: UpdateNotesMessagesPlan :one
@@ -64,4 +64,4 @@ SET name = $2,
     is_most_popular = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING *;
+RETURNING id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at;

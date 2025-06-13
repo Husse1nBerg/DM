@@ -27,7 +27,7 @@ INSERT INTO notes_messages_plans (
 type CreateNotesMessagesPlanParams struct {
 	Name          string
 	MonthlyPrice  float64
-	TextLimit     *string
+	TextLimit     *int32
 	EmailLimit    *string
 	UserLimit     *string
 	IsMostPopular *bool
@@ -151,7 +151,7 @@ func (q *Queries) GetNotesMessagesPlanByName(ctx context.Context, name string) (
 
 const getNotesMessagesPlansWithUsageLimits = `-- name: GetNotesMessagesPlansWithUsageLimits :many
 SELECT id, name, monthly_price, text_limit, email_limit, user_limit, is_most_popular, created_at, updated_at FROM notes_messages_plans 
-WHERE text_limit != 'Unlimited Texts'
+WHERE text_limit IS NOT NULL
    OR email_limit != 'Unlimited Emails'
 ORDER BY monthly_price
 `
@@ -318,7 +318,7 @@ type UpdateNotesMessagesPlanParams struct {
 	ID            uuid.UUID
 	Name          string
 	MonthlyPrice  float64
-	TextLimit     *string
+	TextLimit     *int32
 	EmailLimit    *string
 	UserLimit     *string
 	IsMostPopular *bool
