@@ -59,6 +59,7 @@ type MessageTemplateData struct {
 	Content         string `json:"content"`          // Message content
 	Recipient       string `json:"recipient"`        // Recipient name
 	Sender          string `json:"sender"`           // Sender name
+	HomeURL         string `json:"home_url"`         // URL for the home page
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 }
 

@@ -35,6 +35,7 @@ type MarinaResponse struct {
 	TextUsage           *int16                `json:"textUsage,omitempty" example:"0"`
 	NotesMessagesPlanID uuid.UUID             `json:"notesMessagesPlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
 	StoragePlanID       uuid.UUID             `json:"storagePlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
+	Modules             *models.Modules       `json:"modules,omitempty"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -47,6 +48,15 @@ type MarinaWithAddressResponse struct {
 // ConvertMarinaToResponse converts a database marina to a response model
 func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 	var workingHours *models.WorkingHours
+	var modules *models.Modules
+
+	if marina.Modules != nil {
+		modules = &models.Modules{}
+		if err := modules.FromBytes(marina.Modules); err != nil {
+			// Handle error or set to nil (using default zero values is fine)
+			modules = nil
+		}
+	}
 
 	if marina.WorkingHours != nil {
 		workingHours = &models.WorkingHours{}
@@ -88,6 +98,7 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		TextUsage:           marina.TextUsage,
 		NotesMessagesPlanID: marina.NotesMessagesPlanID,
 		StoragePlanID:       marina.StoragePlanID,
+		Modules:             modules,
 	}
 }
 

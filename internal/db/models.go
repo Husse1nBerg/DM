@@ -122,6 +122,7 @@ type Marina struct {
 	TextUsage           *int16
 	NotesMessagesPlanID uuid.UUID
 	StoragePlanID       uuid.UUID
+	Modules             []byte
 }
 
 type MarinaGallery struct {
@@ -254,8 +255,6 @@ type User struct {
 	CreatedAt           pgtype.Timestamp
 	UpdatedAt           pgtype.Timestamp
 	DeletedAt           pgtype.Timestamp
-	Modules             []byte
-	Permissions         []byte
 	CustomerID          *string
 	IsCustomer          *bool
 	JoinedAt            pgtype.Timestamp

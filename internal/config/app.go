@@ -18,8 +18,8 @@ type AppConfig struct {
 
 func LoadAppConfig() AppConfig {
 	frontendBaseURL := os.Getenv("FRONTEND_BASE_URL")
-	invitationRoute := EnvOrDefault("INVITATION_ROUTE", "auth/customer-portal-access")
-	invitationCustomerRoute := EnvOrDefault("INVITATION_CUSTOMER_ROUTE", "auth/customer-portal-access")
+	invitationRoute := EnvOrDefault("INVITATION_ROUTE", "auth/invitation")
+	invitationCustomerRoute := EnvOrDefault("INVITATION_CUSTOMER_ROUTE", "auth/invitation")
 	customerIntakeRoute := EnvOrDefault("CUSTOMER_INTAKE_ROUTE", "auth/customer-intake")
 	passwordResetRoute := EnvOrDefault("PASSWORD_RESET_ROUTE", "auth/password-reset")
 	termsConditionsRoute := EnvOrDefault("TERMS_CONDITIONS_ROUTE", "terms-conditions")
@@ -57,4 +57,12 @@ func (c *AppConfig) PasswordResetURL() string {
 
 func (c *AppConfig) TermsConditionsURL() string {
 	return c.RemoveSlashes(c.FrontendBaseURL) + "/" + c.RemoveSlashes(c.TermsConditionsRoute)
+}
+
+func (c *AppConfig) CustomerIntakeURL() string {
+	return c.RemoveSlashes(c.FrontendBaseURL) + "/" + c.RemoveSlashes(c.CustomerIntakeRoute)
+}
+
+func (c *AppConfig) HomeURL() string {
+	return c.RemoveSlashes(c.FrontendBaseURL)
 }

@@ -15,7 +15,7 @@ services:
       - db
 
   db:
-    image: postgres:16-alpine
+    image: postgres:17.0-alpine
     restart: always
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -27,7 +27,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   test_db:
-    image: postgres:16-alpine
+    image: postgres:17.0-alpine
     restart: always
     ports:
       - "${TEST_DB_PORT:-5433}:5432"
