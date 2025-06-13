@@ -734,8 +734,9 @@ SET name = $2,
     updated_at = CURRENT_TIMESTAMP,
     address_id = $14,
     system_id = $15,
-    email_usage = COALESCE($16, email_usage),
-    text_usage = COALESCE($17, text_usage)
+    storage_usage = COALESCE($16, storage_usage),
+    email_usage = COALESCE($17, email_usage),
+    text_usage = COALESCE($18, text_usage)
 WHERE id = $1
 RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
@@ -756,6 +757,7 @@ type UpdateMarinaParams struct {
 	IsTest       *bool
 	AddressID    uuid.UUID
 	SystemID     *string
+	StorageUsage *int64
 	EmailUsage   *int16
 	TextUsage    *int16
 }
@@ -777,6 +779,7 @@ func (q *Queries) UpdateMarina(ctx context.Context, arg UpdateMarinaParams) (Mar
 		arg.IsTest,
 		arg.AddressID,
 		arg.SystemID,
+		arg.StorageUsage,
 		arg.EmailUsage,
 		arg.TextUsage,
 	)
