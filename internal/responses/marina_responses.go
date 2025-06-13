@@ -33,8 +33,8 @@ type MarinaResponse struct {
 	StorageUsage        *utils.StorageUsageGB `json:"storageUsage,omitempty" example:"0.00"`
 	EmailUsage          *int16                `json:"emailUsage,omitempty" example:"0"`
 	TextUsage           *int16                `json:"textUsage,omitempty" example:"0"`
-	NotesMessagesPlanID uuid.UUID             `json:"notesMessagesPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
-	StoragePlanID       uuid.UUID             `json:"storagePlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	NotesMessagesPlanID uuid.UUID             `json:"notesMessagesPlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
+	StoragePlanID       uuid.UUID             `json:"storagePlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
