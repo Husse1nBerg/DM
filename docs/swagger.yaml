@@ -2703,7 +2703,7 @@ definitions:
       email:
         example: info@harborbay.com
         type: string
-      emailTextUsage:
+      emailUsage:
         example: 0
         type: integer
       id:
@@ -2739,6 +2739,9 @@ definitions:
       systemId:
         example: SYS123456
         type: string
+      textUsage:
+        example: 0
+        type: integer
       updatedAt:
         type: string
       website:
@@ -2771,7 +2774,7 @@ definitions:
       email:
         example: info@harborbay.com
         type: string
-      emailTextUsage:
+      emailUsage:
         example: 0
         type: integer
       id:
@@ -2807,6 +2810,9 @@ definitions:
       systemId:
         example: SYS123456
         type: string
+      textUsage:
+        example: 0
+        type: integer
       updatedAt:
         type: string
       website:

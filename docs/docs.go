@@ -10950,7 +10950,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "info@harborbay.com"
                 },
-                "emailTextUsage": {
+                "emailUsage": {
                     "type": "integer",
                     "example": 0
                 },
@@ -10997,6 +10997,10 @@ const docTemplate = `{
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                },
+                "textUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "updatedAt": {
                     "type": "string"
@@ -11044,7 +11048,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "info@harborbay.com"
                 },
-                "emailTextUsage": {
+                "emailUsage": {
                     "type": "integer",
                     "example": 0
                 },
@@ -11091,6 +11095,10 @@ const docTemplate = `{
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                },
+                "textUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "updatedAt": {
                     "type": "string"

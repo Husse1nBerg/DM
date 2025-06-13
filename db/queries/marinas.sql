@@ -16,7 +16,8 @@ INSERT INTO marinas (
         address_id,
         system_id,
         storage_usage,
-        email_text_usage
+        email_usage,
+        text_usage
     )
 VALUES (
         $1,
@@ -34,6 +35,7 @@ VALUES (
         $13,
         $14,
         $15,
+        0,
         0,
         0
     )
@@ -87,7 +89,8 @@ SET name = $2,
     updated_at = CURRENT_TIMESTAMP,
     address_id = $14,
     system_id = $15,
-    email_text_usage = COALESCE($16, email_text_usage)
+    email_usage = COALESCE($16, email_usage),
+    text_usage = COALESCE($17, text_usage)
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec
@@ -117,20 +120,37 @@ SELECT storage_usage
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL;
--- name: IncrementMarinaEmailTextUsage :one
+-- name: IncrementMarinaEmailUsage :one
 UPDATE marinas
-SET email_text_usage = COALESCE(email_text_usage, 0)::smallint + $2::smallint,
+SET email_usage = COALESCE(email_usage, 0)::smallint + $2::smallint,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
--- name: DecrementMarinaEmailTextUsage :one
+-- name: DecrementMarinaEmailUsage :one
 UPDATE marinas
-SET email_text_usage = GREATEST(COALESCE(email_text_usage, 0)::smallint - $2::smallint, 0)::smallint,
+SET email_usage = GREATEST(COALESCE(email_usage, 0)::smallint - $2::smallint, 0)::smallint,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
--- name: GetMarinaEmailTextUsage :one
-SELECT COALESCE(email_text_usage, 0)::smallint
+-- name: GetMarinaEmailUsage :one
+SELECT COALESCE(email_usage, 0)::smallint
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL;
+-- name: IncrementMarinaTextUsage :one
+UPDATE marinas
+SET text_usage = COALESCE(text_usage, 0)::smallint + $2::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: DecrementMarinaTextUsage :one
+UPDATE marinas
+SET text_usage = GREATEST(COALESCE(text_usage, 0)::smallint - $2::smallint, 0)::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: GetMarinaTextUsage :one
+SELECT COALESCE(text_usage, 0)::smallint
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL;

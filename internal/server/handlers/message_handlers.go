@@ -26,7 +26,7 @@ func NewMessageHandler(server *s.Server) *MessageHandler {
 }
 
 // checkMessageLimit checks if the marina has reached its message usage limit
-func (h *MessageHandler) checkMessageLimit(ctx echo.Context, marinaID uuid.UUID) error {
+func (h *MessageHandler) checkMessageLimit(ctx echo.Context, marinaID uuid.UUID, messageType string) error {
 	// Get marina to check current message usage
 	marina, err := h.server.DB.Queries().GetMarinaByID(ctx.Request().Context(), marinaID)
 	if err != nil {
@@ -35,42 +35,64 @@ func (h *MessageHandler) checkMessageLimit(ctx echo.Context, marinaID uuid.UUID)
 	}
 
 	// Get max message limit from environment variable
-	maxMessageLimit, err := strconv.ParseInt(os.Getenv("MAX_MESSAGE_TEXT_USAGE"), 10, 16)
-	if err != nil {
-		h.server.Logger.Zap.Error("Error parsing MAX_MESSAGE_TEXT_USAGE", err)
-		return fmt.Errorf("error parsing MAX_MESSAGE_TEXT_USAGE")
+	maxLimit := int16(0)
+	if messageType == "sms" {
+		limit, err := strconv.ParseInt(os.Getenv("MAX_TEXT_USAGE"), 10, 16)
+		if err != nil {
+			return err
+		}
+		maxLimit = int16(limit)
+	} else if messageType == "email" {
+		limit, err := strconv.ParseInt(os.Getenv("MAX_EMAIL_USAGE"), 10, 16)
+		if err != nil {
+			return err
+		}
+		maxLimit = int16(limit)
 	}
 
 	// Check if we've reached the limit
 	currentUsage := int16(0)
-	if marina.EmailTextUsage != nil {
-		currentUsage = *marina.EmailTextUsage
+	if messageType == "sms" {
+		currentUsage = *marina.TextUsage
+	} else if messageType == "email" {
+		currentUsage = *marina.EmailUsage
 	}
 
-	if currentUsage >= int16(maxMessageLimit) {
-		h.server.Logger.Zap.Info("Message limit would be exceeded",
+	if currentUsage >= maxLimit {
+		h.server.Logger.Zap.Info("Limit would be exceeded",
 			"currentUsage", currentUsage,
-			"maxLimit", maxMessageLimit)
+			"maxLimit", maxLimit)
 
-		return fmt.Errorf("message limit exceeded: current usage %d messages has reached the limit of %d messages",
-			currentUsage, maxMessageLimit)
+		return fmt.Errorf("Limit exceeded: current usage %d has reached the %s limit.",
+			currentUsage, messageType)
 	}
 
 	return nil
 }
 
 // updateMessageUsage updates the marina's message usage count
-func (h *MessageHandler) updateMessageUsage(ctx context.Context, marinaID uuid.UUID) error {
+func (h *MessageHandler) updateUsage(ctx context.Context, marinaID uuid.UUID, messageType string) error {
 	increment := int16(1)
 
 	// Increment the usage count
-	_, err := h.server.DB.Queries().IncrementMarinaEmailTextUsage(ctx, db.IncrementMarinaEmailTextUsageParams{
-		ID:      marinaID,
-		Column2: increment,
-	})
-	if err != nil {
-		h.server.Logger.Zap.Error("Error updating marina message usage", err)
-		return err
+	if messageType == "sms" {
+		_, err := h.server.DB.Queries().IncrementMarinaTextUsage(ctx, db.IncrementMarinaTextUsageParams{
+			ID:      marinaID,
+			Column2: increment,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error updating marina text usage", err)
+			return err
+		}
+	} else if messageType == "email" {
+		_, err := h.server.DB.Queries().IncrementMarinaEmailUsage(ctx, db.IncrementMarinaEmailUsageParams{
+			ID:      marinaID,
+			Column2: increment,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error updating marina email usage", err)
+			return err
+		}
 	}
 
 	return nil
@@ -248,7 +270,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	}
 
 	// Check message limit before sending
-	if err := h.checkMessageLimit(c, req.MarinaID); err != nil {
+	if err := h.checkMessageLimit(c, req.MarinaID, "email"); err != nil {
 		logger.Zap.Error("Message limit check failed", err)
 		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
 	}
@@ -323,7 +345,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 					"error", err)
 			}
 			// Increment message usage count
-			if err := h.updateMessageUsage(context.Background(), req.MarinaID); err != nil {
+			if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
 				logger.Zap.Errorw("Failed to update message usage",
 					"marina_id", req.MarinaID,
 					"error", err)
@@ -377,7 +399,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	queries := h.server.DB.Queries()
 
 	// Check message limit before sending
-	if err := h.checkMessageLimit(c, req.MarinaID); err != nil {
+	if err := h.checkMessageLimit(c, req.MarinaID, req.Type); err != nil {
 		logger.Zap.Error("Message limit check failed", err)
 		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
 	}
@@ -454,7 +476,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 						"error", err)
 				}
 				// Increment message usage count
-				if err := h.updateMessageUsage(context.Background(), req.MarinaID); err != nil {
+				if err := h.updateUsage(context.Background(), req.MarinaID, "sms"); err != nil {
 					logger.Zap.Errorw("Failed to update message usage",
 						"marina_id", req.MarinaID,
 						"error", err)
@@ -516,7 +538,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 						"error", err)
 				}
 				// Increment message usage count
-				if err := h.updateMessageUsage(context.Background(), req.MarinaID); err != nil {
+				if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
 					logger.Zap.Errorw("Failed to update message usage",
 						"marina_id", req.MarinaID,
 						"error", err)
@@ -538,19 +560,13 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 			}
 		}()
 	} else {
-		// For internal messages, just mark as sent and increment usage
+		// For internal messages, just mark as sent
 		if err := queries.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
 			ID:     message.ID,
 			Status: "sent",
 		}); err != nil {
 			logger.Zap.Errorw("Failed to update message status",
 				"message_id", message.ID,
-				"error", err)
-		}
-		// Increment message usage count for internal messages too
-		if err := h.updateMessageUsage(context.Background(), req.MarinaID); err != nil {
-			logger.Zap.Errorw("Failed to update message usage",
-				"marina_id", req.MarinaID,
 				"error", err)
 		}
 	}

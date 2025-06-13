@@ -29,7 +29,8 @@ INSERT INTO marinas (
         address_id,
         system_id,
         storage_usage,
-        email_text_usage
+        email_usage,
+        text_usage
     )
 VALUES (
         $1,
@@ -48,9 +49,10 @@ VALUES (
         $14,
         $15,
         0,
+        0,
         0
     )
-RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
 
 type CreateMarinaParams struct {
@@ -111,26 +113,27 @@ func (q *Queries) CreateMarina(ctx context.Context, arg CreateMarinaParams) (Mar
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
 
-const decrementMarinaEmailTextUsage = `-- name: DecrementMarinaEmailTextUsage :one
+const decrementMarinaEmailUsage = `-- name: DecrementMarinaEmailUsage :one
 UPDATE marinas
-SET email_text_usage = GREATEST(COALESCE(email_text_usage, 0)::smallint - $2::smallint, 0)::smallint,
+SET email_usage = GREATEST(COALESCE(email_usage, 0)::smallint - $2::smallint, 0)::smallint,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
 
-type DecrementMarinaEmailTextUsageParams struct {
+type DecrementMarinaEmailUsageParams struct {
 	ID      uuid.UUID
 	Column2 int16
 }
 
-func (q *Queries) DecrementMarinaEmailTextUsage(ctx context.Context, arg DecrementMarinaEmailTextUsageParams) (Marina, error) {
-	row := q.db.QueryRow(ctx, decrementMarinaEmailTextUsage, arg.ID, arg.Column2)
+func (q *Queries) DecrementMarinaEmailUsage(ctx context.Context, arg DecrementMarinaEmailUsageParams) (Marina, error) {
+	row := q.db.QueryRow(ctx, decrementMarinaEmailUsage, arg.ID, arg.Column2)
 	var i Marina
 	err := row.Scan(
 		&i.ID,
@@ -153,7 +156,8 @@ func (q *Queries) DecrementMarinaEmailTextUsage(ctx context.Context, arg Decreme
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
@@ -163,7 +167,7 @@ UPDATE marinas
 SET storage_usage = GREATEST(storage_usage - $2, 0),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
 
 type DecrementMarinaStorageUsageParams struct {
@@ -195,13 +199,57 @@ func (q *Queries) DecrementMarinaStorageUsage(ctx context.Context, arg Decrement
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
+	)
+	return i, err
+}
+
+const decrementMarinaTextUsage = `-- name: DecrementMarinaTextUsage :one
+UPDATE marinas
+SET text_usage = GREATEST(COALESCE(text_usage, 0)::smallint - $2::smallint, 0)::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
+`
+
+type DecrementMarinaTextUsageParams struct {
+	ID      uuid.UUID
+	Column2 int16
+}
+
+func (q *Queries) DecrementMarinaTextUsage(ctx context.Context, arg DecrementMarinaTextUsageParams) (Marina, error) {
+	row := q.db.QueryRow(ctx, decrementMarinaTextUsage, arg.ID, arg.Column2)
+	var i Marina
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.Name,
+		&i.Email,
+		&i.Location,
+		&i.Phone,
+		&i.Country,
+		&i.Currency,
+		&i.WorkingHours,
+		&i.Website,
+		&i.Image,
+		&i.MaxUsers,
+		&i.IsActive,
+		&i.IsTest,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.AddressID,
+		&i.SystemID,
+		&i.StorageUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
 
 const getAllMarinas = `-- name: GetAllMarinas :many
-SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 FROM marinas
 WHERE deleted_at IS NULL
 `
@@ -236,7 +284,8 @@ func (q *Queries) GetAllMarinas(ctx context.Context) ([]Marina, error) {
 			&i.AddressID,
 			&i.SystemID,
 			&i.StorageUsage,
-			&i.EmailTextUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -249,7 +298,7 @@ func (q *Queries) GetAllMarinas(ctx context.Context) ([]Marina, error) {
 }
 
 const getMarinaByEmail = `-- name: GetMarinaByEmail :one
-SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 FROM marinas
 WHERE email = $1
     AND deleted_at IS NULL
@@ -279,13 +328,14 @@ func (q *Queries) GetMarinaByEmail(ctx context.Context, email string) (Marina, e
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
 
 const getMarinaByID = `-- name: GetMarinaByID :one
-SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL
@@ -315,20 +365,21 @@ func (q *Queries) GetMarinaByID(ctx context.Context, id uuid.UUID) (Marina, erro
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
 
-const getMarinaEmailTextUsage = `-- name: GetMarinaEmailTextUsage :one
-SELECT COALESCE(email_text_usage, 0)::smallint
+const getMarinaEmailUsage = `-- name: GetMarinaEmailUsage :one
+SELECT COALESCE(email_usage, 0)::smallint
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL
 `
 
-func (q *Queries) GetMarinaEmailTextUsage(ctx context.Context, id uuid.UUID) (int16, error) {
-	row := q.db.QueryRow(ctx, getMarinaEmailTextUsage, id)
+func (q *Queries) GetMarinaEmailUsage(ctx context.Context, id uuid.UUID) (int16, error) {
+	row := q.db.QueryRow(ctx, getMarinaEmailUsage, id)
 	var column_1 int16
 	err := row.Scan(&column_1)
 	return column_1, err
@@ -348,8 +399,22 @@ func (q *Queries) GetMarinaStorageUsage(ctx context.Context, id uuid.UUID) (*int
 	return storage_usage, err
 }
 
+const getMarinaTextUsage = `-- name: GetMarinaTextUsage :one
+SELECT COALESCE(text_usage, 0)::smallint
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) GetMarinaTextUsage(ctx context.Context, id uuid.UUID) (int16, error) {
+	row := q.db.QueryRow(ctx, getMarinaTextUsage, id)
+	var column_1 int16
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const getMarinasByOrganization = `-- name: GetMarinasByOrganization :many
-SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 FROM marinas
 WHERE organization_id = $1
     AND deleted_at IS NULL
@@ -385,7 +450,8 @@ func (q *Queries) GetMarinasByOrganization(ctx context.Context, organizationID u
 			&i.AddressID,
 			&i.SystemID,
 			&i.StorageUsage,
-			&i.EmailTextUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -398,7 +464,7 @@ func (q *Queries) GetMarinasByOrganization(ctx context.Context, organizationID u
 }
 
 const getMarinasByOrganizationPaginated = `-- name: GetMarinasByOrganizationPaginated :many
-SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 FROM marinas
 WHERE organization_id = $1
     AND deleted_at IS NULL
@@ -442,7 +508,8 @@ func (q *Queries) GetMarinasByOrganizationPaginated(ctx context.Context, arg Get
 			&i.AddressID,
 			&i.SystemID,
 			&i.StorageUsage,
-			&i.EmailTextUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -455,7 +522,7 @@ func (q *Queries) GetMarinasByOrganizationPaginated(ctx context.Context, arg Get
 }
 
 const getMarinasPaginated = `-- name: GetMarinasPaginated :many
-SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 FROM marinas
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
@@ -497,7 +564,8 @@ func (q *Queries) GetMarinasPaginated(ctx context.Context, arg GetMarinasPaginat
 			&i.AddressID,
 			&i.SystemID,
 			&i.StorageUsage,
-			&i.EmailTextUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -509,21 +577,21 @@ func (q *Queries) GetMarinasPaginated(ctx context.Context, arg GetMarinasPaginat
 	return items, nil
 }
 
-const incrementMarinaEmailTextUsage = `-- name: IncrementMarinaEmailTextUsage :one
+const incrementMarinaEmailUsage = `-- name: IncrementMarinaEmailUsage :one
 UPDATE marinas
-SET email_text_usage = COALESCE(email_text_usage, 0)::smallint + $2::smallint,
+SET email_usage = COALESCE(email_usage, 0)::smallint + $2::smallint,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
 
-type IncrementMarinaEmailTextUsageParams struct {
+type IncrementMarinaEmailUsageParams struct {
 	ID      uuid.UUID
 	Column2 int16
 }
 
-func (q *Queries) IncrementMarinaEmailTextUsage(ctx context.Context, arg IncrementMarinaEmailTextUsageParams) (Marina, error) {
-	row := q.db.QueryRow(ctx, incrementMarinaEmailTextUsage, arg.ID, arg.Column2)
+func (q *Queries) IncrementMarinaEmailUsage(ctx context.Context, arg IncrementMarinaEmailUsageParams) (Marina, error) {
+	row := q.db.QueryRow(ctx, incrementMarinaEmailUsage, arg.ID, arg.Column2)
 	var i Marina
 	err := row.Scan(
 		&i.ID,
@@ -546,7 +614,8 @@ func (q *Queries) IncrementMarinaEmailTextUsage(ctx context.Context, arg Increme
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
@@ -556,7 +625,7 @@ UPDATE marinas
 SET storage_usage = storage_usage + $2,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
 
 type IncrementMarinaStorageUsageParams struct {
@@ -588,7 +657,51 @@ func (q *Queries) IncrementMarinaStorageUsage(ctx context.Context, arg Increment
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
+	)
+	return i, err
+}
+
+const incrementMarinaTextUsage = `-- name: IncrementMarinaTextUsage :one
+UPDATE marinas
+SET text_usage = COALESCE(text_usage, 0)::smallint + $2::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
+`
+
+type IncrementMarinaTextUsageParams struct {
+	ID      uuid.UUID
+	Column2 int16
+}
+
+func (q *Queries) IncrementMarinaTextUsage(ctx context.Context, arg IncrementMarinaTextUsageParams) (Marina, error) {
+	row := q.db.QueryRow(ctx, incrementMarinaTextUsage, arg.ID, arg.Column2)
+	var i Marina
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.Name,
+		&i.Email,
+		&i.Location,
+		&i.Phone,
+		&i.Country,
+		&i.Currency,
+		&i.WorkingHours,
+		&i.Website,
+		&i.Image,
+		&i.MaxUsers,
+		&i.IsActive,
+		&i.IsTest,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.AddressID,
+		&i.SystemID,
+		&i.StorageUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
@@ -621,28 +734,30 @@ SET name = $2,
     updated_at = CURRENT_TIMESTAMP,
     address_id = $14,
     system_id = $15,
-    email_text_usage = COALESCE($16, email_text_usage)
+    email_usage = COALESCE($16, email_usage),
+    text_usage = COALESCE($17, text_usage)
 WHERE id = $1
-RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
 
 type UpdateMarinaParams struct {
-	ID             uuid.UUID
-	Name           string
-	Email          string
-	Location       *string
-	Phone          *string
-	Country        *string
-	Currency       *string
-	WorkingHours   []byte
-	Website        *string
-	Image          *string
-	MaxUsers       *int32
-	IsActive       *bool
-	IsTest         *bool
-	AddressID      uuid.UUID
-	SystemID       *string
-	EmailTextUsage *int16
+	ID           uuid.UUID
+	Name         string
+	Email        string
+	Location     *string
+	Phone        *string
+	Country      *string
+	Currency     *string
+	WorkingHours []byte
+	Website      *string
+	Image        *string
+	MaxUsers     *int32
+	IsActive     *bool
+	IsTest       *bool
+	AddressID    uuid.UUID
+	SystemID     *string
+	EmailUsage   *int16
+	TextUsage    *int16
 }
 
 func (q *Queries) UpdateMarina(ctx context.Context, arg UpdateMarinaParams) (Marina, error) {
@@ -662,7 +777,8 @@ func (q *Queries) UpdateMarina(ctx context.Context, arg UpdateMarinaParams) (Mar
 		arg.IsTest,
 		arg.AddressID,
 		arg.SystemID,
-		arg.EmailTextUsage,
+		arg.EmailUsage,
+		arg.TextUsage,
 	)
 	var i Marina
 	err := row.Scan(
@@ -686,7 +802,8 @@ func (q *Queries) UpdateMarina(ctx context.Context, arg UpdateMarinaParams) (Mar
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }
@@ -696,7 +813,7 @@ UPDATE marinas
 SET system_id = $2,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_text_usage
+RETURNING id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage
 `
 
 type UpdateMarinaSystemIDParams struct {
@@ -728,7 +845,8 @@ func (q *Queries) UpdateMarinaSystemID(ctx context.Context, arg UpdateMarinaSyst
 		&i.AddressID,
 		&i.SystemID,
 		&i.StorageUsage,
-		&i.EmailTextUsage,
+		&i.EmailUsage,
+		&i.TextUsage,
 	)
 	return i, err
 }

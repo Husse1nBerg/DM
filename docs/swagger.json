@@ -10943,7 +10943,7 @@
                     "type": "string",
                     "example": "info@harborbay.com"
                 },
-                "emailTextUsage": {
+                "emailUsage": {
                     "type": "integer",
                     "example": 0
                 },
@@ -10990,6 +10990,10 @@
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                },
+                "textUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "updatedAt": {
                     "type": "string"
@@ -11037,7 +11041,7 @@
                     "type": "string",
                     "example": "info@harborbay.com"
                 },
-                "emailTextUsage": {
+                "emailUsage": {
                     "type": "integer",
                     "example": 0
                 },
@@ -11084,6 +11088,10 @@
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                },
+                "textUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "updatedAt": {
                     "type": "string"
