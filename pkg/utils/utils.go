@@ -89,3 +89,12 @@ func GenerateUsername(firstName string) string {
 func LowerCase(s string) string {
 	return strings.ToLower(s)
 }
+
+// IntToInt32Ptr converts *int to *int32
+func IntToInt32Ptr(i *int) *int32 {
+	if i == nil {
+		return nil
+	}
+	v := int32(*i)
+	return &v
+}

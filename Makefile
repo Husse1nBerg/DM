@@ -195,3 +195,6 @@ user-deactivation:
 
 marina-usage-history:
 	@go run scripts/marina_usage_history/main.go
+
+plans:
+	@go run scripts/plans/main.go

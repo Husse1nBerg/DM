@@ -47,6 +47,7 @@ func RegisterRoutes(s *s.Server) {
 	documentHandler := h.NewDocumentHandler(s)
 	inviteHandler := h.NewInviteHandler(s)
 	marinaUsageHistoryHandler := h.NewMarinaUsageHistoryHandler(s)
+	planHandler := h.NewPlanHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -270,4 +271,17 @@ func RegisterRoutes(s *s.Server) {
 	marinaUsageHistory.GET("/marina/:marinaId/range", marinaUsageHistoryHandler.GetMarinaUsageHistoryByDateRange)
 	marinaUsageHistory.GET("/marina/:marinaId/latest", marinaUsageHistoryHandler.GetLatestMarinaUsageHistory)
 	marinaUsageHistory.GET("/marina/:marinaId/month", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMonth)
+
+	// Plan routes
+	plans := protected.Group("/plans")
+
+	// Notes and Messages Plans
+	notesMessagesPlans := plans.Group("/notes-messages")
+	notesMessagesPlans.GET("", planHandler.ListNotesMessagesPlans)
+	notesMessagesPlans.GET("/:planId", planHandler.GetNotesMessagesPlan)
+
+	// Storage Plans
+	storagePlans := plans.Group("/storage")
+	storagePlans.GET("", planHandler.ListStoragePlans)
+	storagePlans.GET("/:planId", planHandler.GetStoragePlan)
 }
