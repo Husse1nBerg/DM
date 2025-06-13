@@ -291,6 +291,9 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	if boat.OperationsHistory == nil {
 		boat.OperationsHistory = []OperationHistory{}
 	}
+	if boat.Attachments == nil {
+		boat.Attachments = []Attachment{}
+	}
 
 	// Initialize Slip if it's nil
 	if boat.Slip == (Slip{}) {
@@ -329,7 +332,7 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
 
-	// Initialize all array fields if they are null
+	// Initialize empty arrays if nil
 	if boat.Motors == nil {
 		boat.Motors = []Motor{}
 	}
@@ -345,17 +348,20 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	if boat.OperationsHistory == nil {
 		boat.OperationsHistory = []OperationHistory{}
 	}
+	if boat.Attachments == nil {
+		boat.Attachments = []Attachment{}
+	}
 
 	// Initialize Slip if it's nil
 	if boat.Slip == (Slip{}) {
 		boat.Slip = Slip{
-			LastModifedDate: time.Now().Format("2000-01-01T00:00:00"),
+			LastModifedDate: time.Now().Format("2006-01-02T15:04:05"),
 		}
 	}
 
 	// Set LastModified if empty
 	if boat.LastModified == "" {
-		boat.LastModified = time.Now().Format("2000-01-01T00:00:00")
+		boat.LastModified = time.Now().Format("2006-01-02T15:04:05")
 	}
 
 	err := c.DoJSONRequest(
