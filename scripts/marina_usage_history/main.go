@@ -59,7 +59,6 @@ func SaveMarinaUsageHistory() {
 		}
 
 		// Reset current usage values to 0
-		zeroStorage := int64(0)
 		zeroEmail := int16(0)
 		zeroText := int16(0)
 
@@ -79,7 +78,6 @@ func SaveMarinaUsageHistory() {
 			IsTest:       marina.IsTest,
 			AddressID:    marina.AddressID,
 			SystemID:     marina.SystemID,
-			StorageUsage: &zeroStorage,
 			EmailUsage:   &zeroEmail,
 			TextUsage:    &zeroText,
 		}

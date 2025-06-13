@@ -89,9 +89,8 @@ SET name = $2,
     updated_at = CURRENT_TIMESTAMP,
     address_id = $14,
     system_id = $15,
-    storage_usage = COALESCE($16, storage_usage),
-    email_usage = COALESCE($17, email_usage),
-    text_usage = COALESCE($18, text_usage)
+    email_usage = COALESCE($16, email_usage),
+    text_usage = COALESCE($17, text_usage)
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec
