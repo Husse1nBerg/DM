@@ -36,27 +36,37 @@ func UpdateMarinaModules() {
 	if err != nil {
 		log.Fatalf("failed to convert default modules to bytes: %v", err)
 	}
+	notesMessagesPlan, err := q.GetNotesMessagesPlanByName(ctx, "Free")
+	if err != nil {
+		log.Fatalf("failed to get notes/messages plan: %v", err)
+	}
+	storagePlan, err := q.GetStoragePlanByName(ctx, "Free")
+	if err != nil {
+		log.Fatalf("failed to get storage plan: %v", err)
+	}
 
 	// Update each marina with default modules
 	updatedCount := 0
 	for _, marina := range marinas {
 		_, err := q.UpdateMarina(ctx, sqlc.UpdateMarinaParams{
-			ID:           marina.ID,
-			Name:         marina.Name,
-			Email:        marina.Email,
-			Location:     marina.Location,
-			Phone:        marina.Phone,
-			Country:      marina.Country,
-			Currency:     marina.Currency,
-			WorkingHours: marina.WorkingHours,
-			Website:      marina.Website,
-			Image:        marina.Image,
-			MaxUsers:     marina.MaxUsers,
-			IsActive:     marina.IsActive,
-			IsTest:       marina.IsTest,
-			AddressID:    marina.AddressID,
-			SystemID:     marina.SystemID,
-			Modules:      defaultModulesBytes,
+			ID:                  marina.ID,
+			Name:                marina.Name,
+			Email:               marina.Email,
+			Location:            marina.Location,
+			Phone:               marina.Phone,
+			Country:             marina.Country,
+			Currency:            marina.Currency,
+			WorkingHours:        marina.WorkingHours,
+			Website:             marina.Website,
+			Image:               marina.Image,
+			MaxUsers:            marina.MaxUsers,
+			IsActive:            marina.IsActive,
+			IsTest:              marina.IsTest,
+			AddressID:           marina.AddressID,
+			SystemID:            marina.SystemID,
+			Modules:             defaultModulesBytes,
+			NotesMessagesPlanID: notesMessagesPlan.ID,
+			StoragePlanID:       storagePlan.ID,
 		})
 		if err != nil {
 			log.Printf("failed to update marina %s (ID: %d): %v", marina.Name, marina.ID, err)
