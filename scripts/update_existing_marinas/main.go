@@ -36,14 +36,14 @@ func UpdateMarinaModules() {
 	if err != nil {
 		log.Fatalf("failed to convert default modules to bytes: %v", err)
 	}
-	notesMessagesPlan, err := q.GetNotesMessagesPlanByName(ctx, "Free")
-	if err != nil {
-		log.Fatalf("failed to get notes/messages plan: %v", err)
-	}
-	storagePlan, err := q.GetStoragePlanByName(ctx, "Free")
-	if err != nil {
-		log.Fatalf("failed to get storage plan: %v", err)
-	}
+	// notesMessagesPlan, err := q.GetNotesMessagesPlanByName(ctx, "Free")
+	// if err != nil {
+	// 	log.Fatalf("failed to get notes/messages plan: %v", err)
+	// }
+	// storagePlan, err := q.GetStoragePlanByName(ctx, "Free")
+	// if err != nil {
+	// 	log.Fatalf("failed to get storage plan: %v", err)
+	// }
 
 	// Update each marina with default modules
 	updatedCount := 0
@@ -65,8 +65,8 @@ func UpdateMarinaModules() {
 			AddressID:           marina.AddressID,
 			SystemID:            marina.SystemID,
 			Modules:             defaultModulesBytes,
-			NotesMessagesPlanID: notesMessagesPlan.ID,
-			StoragePlanID:       storagePlan.ID,
+			NotesMessagesPlanID: marina.NotesMessagesPlanID,
+			StoragePlanID:       marina.StoragePlanID,
 		})
 		if err != nil {
 			log.Printf("failed to update marina %s (ID: %d): %v", marina.Name, marina.ID, err)
