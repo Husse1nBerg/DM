@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -81,7 +84,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	}
 
 	params := db.CreateOrganizationParams{
-		Email:     req.Email,
+		Email:     utils.LowerCase(req.Email),
 		Name:      req.Name,
 		Image:     req.Image,
 		Website:   req.Website,
@@ -202,15 +205,15 @@ func (h *OrganizationHandler) GetOrganizationByEmail(c echo.Context) error {
 //	@Tags			Organizations
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Page size limit"	default(10)
-//	@Param			offset	query		int	false	"Page offset"		default(0)
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200		{array}		responses.OrganizationResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/organizations [get]
 func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
-	var req requests.GetOrganizationsPaginatedRequest
+	var req requests.PaginationQuery
 
 	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -221,8 +224,8 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 	}
 
 	// Set defaults
-	if req.Limit <= 0 {
-		req.Limit = 10
+	if req.PageSize <= 0 {
+		req.PageSize = 10
 	}
 
 	// Calculate total count (in a real app, you'd use a COUNT query)
@@ -234,8 +237,8 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 
 	// Fetch paginated data
 	params := db.GetOrganizationsPaginatedParams{
-		Limit:  req.Limit,
-		Offset: req.Offset,
+		Limit:  req.PageSize,
+		Offset: (req.Page - 1) * req.PageSize,
 	}
 
 	orgs, err := h.server.DB.Queries().GetOrganizationsPaginated(c.Request().Context(), params)
@@ -244,9 +247,9 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 	}
 
 	// Calculate current page
-	currentPage := req.Offset/req.Limit + 1
+	currentPage := req.Page
 
-	return responses.NewOrganizationsPaginatedResponse(orgs, total, req.Limit, currentPage).JSON(c)
+	return responses.NewOrganizationsPaginatedResponse(orgs, total, req.PageSize, currentPage).JSON(c)
 }
 
 // UpdateOrganization updates an existing organization
@@ -265,72 +268,129 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/organizations/{id} [put]
 func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
+	// Parse organization ID from path parameter
+	orgIDStr := c.Param("id")
+	orgID, err := uuid.Parse(orgIDStr)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid organization ID").JSON(c)
+		h.server.Logger.Zap.Error("Error parsing organization ID", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid organization ID format").JSON(c)
 	}
 
-	// Check if organization exists and get current values
-	currentOrg, err := h.server.DB.Queries().GetOrganizationByID(c.Request().Context(), id)
+	// Get existing organization to update
+	queries := h.server.DB.Queries()
+	org, err := queries.GetOrganizationByID(c.Request().Context(), orgID)
 	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching organization", err)
 		return responses.NewErrorResponse(http.StatusNotFound, "Organization not found").JSON(c)
 	}
 
-	var req requests.UpdateOrganizationRequest
-	if err := c.Bind(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	// Check if this is a multipart form (which would include a file upload)
+	contentType := c.Request().Header.Get("Content-Type")
+	isMultipart := strings.HasPrefix(contentType, "multipart/form-data")
+
+	// Initialize update parameters with current values
+	updateParams := db.UpdateOrganizationParams{
+		ID:        orgID,
+		Email:     utils.LowerCase(org.Email),
+		Name:      org.Name,
+		Image:     org.Image,
+		Website:   org.Website,
+		Country:   org.Country,
+		Phone:     org.Phone,
+		IsActive:  org.IsActive,
+		IsTest:    org.IsTest,
+		AddressID: org.AddressID,
 	}
 
-	if err := c.Validate(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	if isMultipart {
+		// Check if there's an image file in the form
+		file, header, err := c.Request().FormFile("image")
+		if err == nil {
+			defer file.Close()
+
+			// Upload the image to S3
+			imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.OrganizationImageType)
+			if err != nil {
+				h.server.Logger.Zap.Error("Error uploading organization image to S3", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
+			}
+
+			// Update the image path
+			updateParams.Image = &imagePath
+		}
+
+		// Parse other form fields
+		if name := c.FormValue("name"); name != "" {
+			updateParams.Name = name
+		}
+		if email := c.FormValue("email"); email != "" {
+			updateParams.Email = utils.LowerCase(email)
+		}
+		if website := c.FormValue("website"); website != "" {
+			updateParams.Website = &website
+		}
+		if country := c.FormValue("country"); country != "" {
+			updateParams.Country = &country
+		}
+		if phone := c.FormValue("phone"); phone != "" {
+			updateParams.Phone = &phone
+		}
+		// Parse boolean fields
+		if isActiveStr := c.FormValue("isActive"); isActiveStr != "" {
+			isActive := isActiveStr == "true"
+			updateParams.IsActive = &isActive
+		}
+		if isTestStr := c.FormValue("isTest"); isTestStr != "" {
+			isTest := isTestStr == "true"
+			updateParams.IsTest = &isTest
+		}
+	} else {
+		// Parse and validate the JSON request body
+		req := new(requests.UpdateOrganizationRequest)
+		if err := c.Bind(req); err != nil {
+			h.server.Logger.Zap.Error("Error binding request", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Error parsing request").JSON(c)
+		}
+		if err := c.Validate(req); err != nil {
+			h.server.Logger.Zap.Error("Error validating request", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+		}
+
+		// Update fields if provided in request
+		if req.Email != nil {
+			updateParams.Email = utils.LowerCase(*req.Email)
+		}
+		if req.Name != nil {
+			updateParams.Name = *req.Name
+		}
+		if req.Image != nil {
+			updateParams.Image = req.Image
+		}
+		if req.Website != nil {
+			updateParams.Website = req.Website
+		}
+		if req.Country != nil {
+			updateParams.Country = req.Country
+		}
+		if req.Phone != nil {
+			updateParams.Phone = req.Phone
+		}
+		if req.IsActive != nil {
+			updateParams.IsActive = req.IsActive
+		}
+		if req.IsTest != nil {
+			updateParams.IsTest = req.IsTest
+		}
 	}
 
-	// Build update params with current values that will be overridden
-	params := db.UpdateOrganizationParams{
-		ID:        id,
-		Email:     currentOrg.Email,
-		Name:      currentOrg.Name,
-		Image:     currentOrg.Image,
-		Website:   currentOrg.Website,
-		Country:   currentOrg.Country,
-		Phone:     currentOrg.Phone,
-		IsActive:  currentOrg.IsActive,
-		IsTest:    currentOrg.IsTest,
-		AddressID: currentOrg.AddressID,
-	}
-
-	// Update only fields that are provided
-	if req.Email != nil {
-		params.Email = *req.Email
-	}
-	if req.Name != nil {
-		params.Name = *req.Name
-	}
-	if req.Image != nil {
-		params.Image = req.Image
-	}
-	if req.Website != nil {
-		params.Website = req.Website
-	}
-	if req.Country != nil {
-		params.Country = req.Country
-	}
-	if req.Phone != nil {
-		params.Phone = req.Phone
-	}
-	if req.IsActive != nil {
-		params.IsActive = req.IsActive
-	}
-	if req.IsTest != nil {
-		params.IsTest = req.IsTest
-	}
-
-	updatedOrg, err := h.server.DB.Queries().UpdateOrganization(c.Request().Context(), params)
+	// Update organization in database
+	updatedOrg, err := queries.UpdateOrganization(c.Request().Context(), updateParams)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		h.server.Logger.Zap.Error("Error updating organization", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating organization").JSON(c)
 	}
 
+	// Return updated organization
 	return responses.NewOrganizationResponseSuccess(updatedOrg).JSON(c)
 }
 
@@ -387,7 +447,7 @@ func (h *OrganizationHandler) UpdateOrgAddress(c echo.Context) error {
 
 	// Update only organization fields that are provided
 	if req.Email != nil {
-		orgParams.Email = *req.Email
+		orgParams.Email = utils.LowerCase(*req.Email)
 	}
 	if req.Name != nil {
 		orgParams.Name = *req.Name

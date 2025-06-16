@@ -40,10 +40,25 @@ func GetEchoLogConfig(cfg *Config) middleware.LoggerConfig {
 }
 
 func LoadServerConfig() ServerConfig {
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "development"
+	}
+
 	return ServerConfig{
-		Host:       os.Getenv("HOST"),
-		Port:       os.Getenv("PORT"),
-		Env:        os.Getenv("ENV"),
+		Host:       host,
+		Port:       port,
+		Env:        env,
 		Validator:  ValidatorInit(),
 		Binder:     &BinderWithValidation{},
 		CORSConfig: middleware.DefaultCORSConfig,
@@ -67,6 +82,47 @@ func ValidatorInit() echo.Validator {
 		return false
 	})
 
+	v.RegisterValidation("letters", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		hasLower := false
+		hasUpper := false
+
+		for _, char := range value {
+			if char >= 'a' && char <= 'z' {
+				hasLower = true
+			} else if char >= 'A' && char <= 'Z' {
+				hasUpper = true
+			}
+
+			// Early return if we found both
+			if hasLower && hasUpper {
+				return true
+			}
+		}
+
+		return hasLower && hasUpper
+	})
+
+	v.RegisterValidation("number", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		for _, char := range value {
+			if char >= '0' && char <= '9' {
+				return true
+			}
+		}
+		return false
+	})
+
+	v.RegisterValidation("specialchar", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		for _, char := range value {
+			if strings.ContainsRune("!@#$%^&*()-_=+[]{}|;:'\",.<>/?`~", char) {
+				return true
+			}
+		}
+		return false
+	})
+
 	return &AppValidator{validate: v}
 }
 
@@ -81,10 +137,10 @@ func (BinderWithValidation) Bind(i interface{}, ctx echo.Context) error {
 			if msg, ok := e.Message.(string); ok {
 				return errors.New(msg)
 			}
-			return errors.New("Invalid request format")
+			return errors.New("invalid request format")
 		default:
 			// Handle other errors including EOF
-			return errors.New("Request parsing error: " + err.Error())
+			return errors.New("request parsing error: " + err.Error())
 		}
 	}
 

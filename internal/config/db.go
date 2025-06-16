@@ -16,13 +16,34 @@ type DBConfig struct {
 }
 
 func LoadDBConfig() DBConfig {
+	port := os.Getenv("DB_PORT")
+	if port == "" {
+		port = "5432"
+	}
+
+	schema := os.Getenv("DB_SCHEMA")
+	if schema == "" {
+		schema = "public"
+	}
+
 	return DBConfig{
 		User:     os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
 		Name:     os.Getenv("DB_NAME"),
 		Host:     os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		Schema:   os.Getenv("DB_SCHEMA"),
+		Port:     port,
+		Schema:   schema,
+	}
+}
+
+func LoadTestDBConfig() DBConfig {
+	return DBConfig{
+		User:     os.Getenv("TEST_DB_USER"),
+		Password: os.Getenv("TEST_DB_PASSWORD"),
+		Name:     os.Getenv("TEST_DB_NAME"),
+		Host:     os.Getenv("TEST_DB_HOST"),
+		Port:     os.Getenv("TEST_DB_PORT"),
+		Schema:   os.Getenv("TEST_DB_SCHEMA"),
 	}
 }
 

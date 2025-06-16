@@ -15,10 +15,6 @@ import (
 //	@version		0.0.1
 //	@description	This is a API Server.
 
-//	@contact.name	Andrew Sameh
-//	@contact.url	https://andrewsam.xyz
-//	@contact.email	g.andrewsameh@gmail.com
-
 //	@securityDefinitions.apiKey ApiKeyAuth
 //	@in							header
 //	@name						Authorization
@@ -31,12 +27,19 @@ func main() {
 	if zlog.Zap != nil {
 		defer zlog.Zap.Sync()
 	}
+	// Log the environment and the port
+	zlog.Zap.Infof("Environment: %s, Port: %s", cfg.Server.Env, cfg.Server.Port)
 
 	server := server.NewServer(cfg, zlog)
 	routes.RegisterRoutes(server)
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
-	zlog.Zap.Infof("Service URL: http://localhost:%s/swagger/index.html", cfg.Server.Port)
+	if cfg.Server.Env != "local" {
+		docs.SwaggerInfo.Host = cfg.Server.Host
+		zlog.Zap.Infof("Service URL: https://%s/swagger/index.html", cfg.Server.Host)
+	} else {
+		docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
+		zlog.Zap.Infof("Service URL: http://localhost:%s/swagger/index.html", cfg.Server.Port)
+	}
 
 	err := server.Start(cfg.Server.Port)
 

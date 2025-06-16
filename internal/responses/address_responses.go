@@ -9,6 +9,8 @@ import (
 )
 
 // AddressResponse defines the response for address data
+// @Description Address response model
+// @Schema responses.AddressResponse
 type AddressResponse struct {
 	ID         uuid.UUID  `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
 	Street     *string    `json:"street,omitempty" example:"123 Main St"`
@@ -23,6 +25,8 @@ type AddressResponse struct {
 }
 
 // OrganizationWithAddressResponse extends the organization response to include the address
+// @Description Organization with address response model
+// @Schema responses.OrganizationWithAddressResponse
 type OrganizationWithAddressResponse struct {
 	ID        uuid.UUID        `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
 	Email     string           `json:"email" example:"org@example.com"`
@@ -68,29 +72,4 @@ func ConvertAddressToResponse(address db.Address) AddressResponse {
 // NewAddressResponseSuccess creates a successful response with address data
 func NewAddressResponseSuccess(address db.Address) BaseResponse {
 	return NewSuccessResponse(ConvertAddressToResponse(address))
-}
-
-// NewOrganizationWithAddressResponse creates a response containing organization and its address
-func NewOrganizationWithAddressResponse(org db.Organization, address *db.Address) BaseResponse {
-	orgResponse := ConvertOrganizationToResponse(org)
-	response := OrganizationWithAddressResponse{
-		ID:        orgResponse.ID,
-		Email:     orgResponse.Email,
-		Name:      orgResponse.Name,
-		Image:     orgResponse.Image,
-		Website:   orgResponse.Website,
-		Country:   orgResponse.Country,
-		Phone:     orgResponse.Phone,
-		IsActive:  orgResponse.IsActive,
-		IsTest:    orgResponse.IsTest,
-		CreatedAt: orgResponse.CreatedAt,
-		UpdatedAt: orgResponse.UpdatedAt,
-	}
-
-	if address != nil {
-		addressResponse := ConvertAddressToResponse(*address)
-		response.Address = &addressResponse
-	}
-
-	return NewSuccessResponse(response)
 }

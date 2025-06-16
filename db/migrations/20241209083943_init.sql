@@ -1,5 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE organizations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -36,6 +37,7 @@ CREATE TABLE marinas (
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP EXTENSION IF EXISTS "uuid-ossp";
 DROP TABLE IF EXISTS marinas;
 DROP TABLE IF EXISTS organizations;
 -- +goose StatementEnd

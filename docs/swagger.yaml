@@ -1,5 +1,888 @@
 basePath: /api/v1
 definitions:
+  dme.Attachment:
+    properties:
+      description:
+        type: string
+      fileName:
+        type: string
+      s3Path:
+        type: string
+    type: object
+  dme.BillingCode:
+    properties:
+      LOA_LWL_Or_Spar:
+        type: string
+      Length_Area_Or_CubicFeet:
+        type: string
+      Slip_Boat_Or_Longest:
+        type: string
+      cycle:
+        type: string
+      department:
+        type: string
+      departmentDesc:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      overrideRate:
+        type: number
+      perFoot:
+        type: boolean
+      proRated:
+        type: boolean
+      rates:
+        items:
+          $ref: '#/definitions/dme.Rate'
+        type: array
+    type: object
+  dme.BillingData:
+    properties:
+      amountBilled:
+        type: number
+      billingDate:
+        type: string
+      environmentCharges:
+        type: number
+      otherCharges:
+        type: number
+      salesTax:
+        type: number
+    type: object
+  dme.Boat:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      beam:
+        type: string
+      billingCodes:
+        items:
+          $ref: '#/definitions/dme.BillingCode'
+        type: array
+      boatDescriptionCodes:
+        items:
+          $ref: '#/definitions/dme.BoatDescriptionCode'
+        type: array
+      color:
+        type: string
+      comments:
+        type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      doNotLaunch:
+        type: boolean
+      draft:
+        type: string
+      height:
+        type: string
+      hin:
+        type: string
+      id:
+        type: string
+      insuranceCompany:
+        type: string
+      insuranceExpDate:
+        type: string
+      integrationId:
+        type: string
+      lastModified:
+        type: string
+      loa:
+        type: string
+      lwl:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      motors:
+        items:
+          $ref: '#/definitions/dme.Motor'
+        type: array
+      name:
+        type: string
+      operationsHistory:
+        items:
+          $ref: '#/definitions/dme.OperationHistory'
+        type: array
+      ownerId:
+        type: string
+      ownerIntegrationId:
+        type: string
+      registration:
+        type: string
+      slip:
+        $ref: '#/definitions/dme.Slip'
+      slipId:
+        type: string
+      summerSlip:
+        type: string
+      trailerLocation:
+        type: string
+      trailerMake:
+        type: string
+      trailerModel:
+        type: string
+      trailerRegistration:
+        type: string
+      trailerSerial:
+        type: string
+      winterSlip:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.BoatDescriptionCode:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+    type: object
+  dme.BoatSearch:
+    properties:
+      arrivalDate:
+        type: string
+      boatId:
+        type: string
+      boatName:
+        type: string
+      departureDate:
+        type: string
+      ownerName:
+        type: string
+    type: object
+  dme.BoatUpdate:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      beam:
+        type: string
+      billingCodes:
+        items:
+          $ref: '#/definitions/dme.BillingCode'
+        type: array
+      boatDescriptionCodes:
+        items:
+          $ref: '#/definitions/dme.BoatDescriptionCode'
+        type: array
+      color:
+        type: string
+      comments:
+        type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      doNotLaunch:
+        type: boolean
+      draft:
+        type: string
+      height:
+        type: string
+      hin:
+        type: string
+      id:
+        type: string
+      insuranceCompany:
+        type: string
+      insuranceExpDate:
+        type: string
+      integrationId:
+        type: string
+      lastModified:
+        type: string
+      loa:
+        type: string
+      lwl:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      motors:
+        items:
+          $ref: '#/definitions/dme.Motor'
+        type: array
+      name:
+        type: string
+      operationsHistory:
+        items:
+          $ref: '#/definitions/dme.OperationHistory'
+        type: array
+      ownerIntegrationId:
+        type: string
+      registration:
+        type: string
+      slip:
+        $ref: '#/definitions/dme.Slip'
+      slipId:
+        type: string
+      summerSlip:
+        type: string
+      trailerLocation:
+        type: string
+      trailerMake:
+        type: string
+      trailerModel:
+        type: string
+      trailerRegistration:
+        type: string
+      trailerSerial:
+        type: string
+      winterSlip:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.CategoryCode:
+    properties:
+      desc:
+        type: string
+      id:
+        type: string
+    type: object
+  dme.CustomInformation:
+    properties:
+      fieldName:
+        type: string
+      fieldValue:
+        type: string
+    type: object
+  dme.Customer:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      allowBackOrders:
+        type: boolean
+      allowTransactions:
+        type: boolean
+      altAddress1:
+        type: string
+      altAddress2:
+        type: string
+      altAddress3:
+        type: string
+      altCity:
+        type: string
+      altCountry:
+        type: string
+      altFirstName:
+        type: string
+      altLastName:
+        type: string
+      altPhone:
+        type: string
+      altState:
+        type: string
+      altZip:
+        type: string
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      balance:
+        type: number
+      boats:
+        items:
+          $ref: '#/definitions/dme.Boat'
+        type: array
+      categoryCodes:
+        items:
+          $ref: '#/definitions/dme.CategoryCode'
+        type: array
+      cellPhone:
+        type: string
+      city:
+        type: string
+      comments:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      creditLimit:
+        type: number
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      discount:
+        type: number
+      email:
+        type: string
+      emergencyContact:
+        type: string
+      emergencyPhone:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      inactive:
+        type: boolean
+      inactiveDate:
+        type: string
+      integrationId:
+        type: string
+      invoices:
+        items:
+          $ref: '#/definitions/dme.InvoiceDetailed'
+        type: array
+      lastModified:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      noCcSurcharge:
+        type: boolean
+      paymentTermsCode:
+        type: string
+      paymentTermsCodeDescription:
+        type: string
+      phone:
+        type: string
+      poRequired:
+        type: boolean
+      priceColumn:
+        type: string
+      prospectId:
+        type: string
+      sendMassEmail:
+        type: boolean
+      shipmentMethod:
+        type: string
+      shipmentMethodDescription:
+        type: string
+      state:
+        type: string
+      taxFlag:
+        type: boolean
+      taxId:
+        type: string
+      taxIdState:
+        type: string
+      taxSchema:
+        type: string
+      useAltAddress:
+        type: boolean
+      waitListEntries:
+        items:
+          $ref: '#/definitions/dme.WaitListEntry'
+        type: array
+      webId:
+        type: string
+      webPassword:
+        type: string
+      workPhone:
+        type: string
+      zip:
+        type: string
+    type: object
+  dme.CustomerSearch:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      companyName:
+        type: string
+      customerID:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      prospectId:
+        type: string
+      state:
+        type: string
+      zip:
+        type: string
+    type: object
+  dme.CustomerShort:
+    properties:
+      companyName:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dme.CustomerUpdate:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      altAddress1:
+        type: string
+      altAddress2:
+        type: string
+      altAddress3:
+        type: string
+      altCity:
+        type: string
+      altCountry:
+        type: string
+      altFirstName:
+        type: string
+      altLastName:
+        type: string
+      altPhone:
+        type: string
+      altState:
+        type: string
+      altZip:
+        type: string
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      cellPhone:
+        type: string
+      city:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      emergencyContact:
+        type: string
+      emergencyPhone:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      shipmentMethod:
+        type: string
+      shipmentMethodDescription:
+        type: string
+      state:
+        type: string
+      useAltAddress:
+        type: boolean
+      workPhone:
+        type: string
+      zip:
+        type: string
+    type: object
+  dme.Installment:
+    properties:
+      amount:
+        type: number
+      dueDate:
+        type: string
+      id:
+        type: string
+    type: object
+  dme.InvoiceDetailed:
+    properties:
+      amount:
+        type: number
+      customerId:
+        type: string
+      description:
+        type: string
+      dueDate:
+        type: string
+      id:
+        type: string
+      installments:
+        items:
+          $ref: '#/definitions/dme.Installment'
+        type: array
+      invoiceAmount:
+        type: number
+      invoiceBalance:
+        type: number
+      locationCode:
+        type: string
+      unappliedPayment:
+        type: boolean
+    type: object
+  dme.Motor:
+    properties:
+      drive:
+        type: string
+      hours:
+        type: number
+      make:
+        type: string
+      model:
+        type: string
+      number:
+        type: integer
+      serial:
+        type: string
+      size:
+        type: string
+      transomId:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.Operation:
+    properties:
+      category:
+        type: string
+      estCompleteDate:
+        type: string
+      estStartDate:
+        type: string
+      estimatedCharges:
+        type: number
+      flatRateAmount:
+        type: number
+      flatRatePerFootMethod:
+        type: string
+      flatRatePerFootRate:
+        type: number
+      forecastedLaborCharges:
+        type: number
+      forecastedLaborHours:
+        type: number
+      forecastedPartsCharges:
+        type: number
+      id:
+        type: string
+      isOpcodeApproved:
+        type: boolean
+      laborBilled:
+        type: number
+      longDesc:
+        type: string
+      opcode:
+        type: string
+      opcodeDesc:
+        type: string
+      reqCompDate:
+        type: string
+      status:
+        type: string
+      techDesc:
+        type: string
+      totalBillCodes:
+        type: number
+      totalCharges:
+        type: number
+      totalEquipment:
+        type: number
+      totalFreight:
+        type: number
+      totalLabor:
+        type: number
+      totalLaborHours:
+        type: number
+      totalMileage:
+        type: number
+      totalMiscSupply:
+        type: number
+      totalParts:
+        type: number
+      totalSublet:
+        type: number
+      totalToComplete:
+        type: number
+      type:
+        type: string
+    type: object
+  dme.OperationHistory:
+    properties:
+      code:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      operationCharges:
+        type: number
+      type:
+        type: string
+      workOrder:
+        type: string
+    type: object
+  dme.Rate:
+    properties:
+      endDate:
+        type: string
+      rate:
+        type: number
+      startDate:
+        type: string
+    type: object
+  dme.Slip:
+    properties:
+      cableTv:
+        type: boolean
+      description:
+        type: string
+      draft:
+        type: string
+      electric:
+        type: boolean
+      id:
+        type: string
+      lastModifedDate:
+        type: string
+      length:
+        type: string
+      linear:
+        type: boolean
+      location:
+        type: string
+      phone:
+        type: boolean
+      tieOff:
+        type: string
+      transient:
+        type: boolean
+      type:
+        type: string
+      unusable:
+        type: boolean
+      water:
+        type: boolean
+      width:
+        type: string
+    type: object
+  dme.WaitListEntry:
+    properties:
+      boatId:
+        type: string
+      boatName:
+        type: string
+      customerId:
+        type: string
+      description:
+        type: string
+      entryDate:
+        type: string
+      entryNumber:
+        type: string
+      id:
+        type: string
+      waitListName:
+        type: string
+    type: object
+  dme.WorkOrder:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      billingData:
+        items:
+          $ref: '#/definitions/dme.BillingData'
+        type: array
+      boatId:
+        type: string
+      boatLength:
+        type: string
+      boatMake:
+        type: string
+      boatModel:
+        type: string
+      boatName:
+        type: string
+      boatYear:
+        type: string
+      category:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      creationDate:
+        type: string
+      customerID:
+        type: string
+      customerName:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      id:
+        type: string
+      isEstimate:
+        type: boolean
+      lastModDate:
+        type: string
+      lastModTime:
+        type: string
+      locationCode:
+        type: string
+      operations:
+        items:
+          $ref: '#/definitions/dme.Operation'
+        type: array
+      promisedDate:
+        type: string
+      riggingId:
+        type: string
+      riggingType:
+        type: string
+      startDate:
+        type: string
+      status:
+        type: string
+      taxSchema:
+        type: string
+      title:
+        type: string
+      totalBillCodes:
+        type: number
+      totalEquipment:
+        type: number
+      totalForecastedHours:
+        type: number
+      totalForecastedLabor:
+        type: number
+      totalForecastedParts:
+        type: number
+      totalFreight:
+        type: number
+      totalFreightCost:
+        type: number
+      totalLabor:
+        type: number
+      totalLaborCost:
+        type: number
+      totalLaborHours:
+        type: number
+      totalMileage:
+        type: number
+      totalMiscSupply:
+        type: number
+      totalParts:
+        type: number
+      totalPartsCost:
+        type: number
+      totalSublet:
+        type: number
+      totalSubletCost:
+        type: number
+      totalWOCharges:
+        type: number
+      type:
+        type: string
+    type: object
+  dme.WorkOrderOperation:
+    properties:
+      approved:
+        type: boolean
+      categoryCode:
+        type: string
+      custPromiseDate:
+        type: string
+      desc:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      estimatedBillCodes:
+        type: number
+      estimatedEquipment:
+        type: number
+      estimatedFreight:
+        type: number
+      estimatedLabor:
+        type: number
+      estimatedLaborHours:
+        type: number
+      estimatedMileage:
+        type: number
+      estimatedMiscSupply:
+        type: number
+      estimatedParts:
+        type: number
+      estimatedSublet:
+        type: number
+      flatRateAmount:
+        type: number
+      flatRatePerFootMethod:
+        type: string
+      flatRatePerFootRate:
+        type: number
+      forecastedLaborCharges:
+        type: number
+      forecastedLaborHours:
+        type: number
+      forecastedPartsCharges:
+        type: number
+      laborFinished:
+        type: boolean
+      longDesc:
+        type: string
+      opcode:
+        type: string
+      standardHours:
+        type: number
+      techDesc:
+        type: string
+    type: object
+  dme.WorkOrderSearch:
+    properties:
+      boat:
+        type: string
+      customer:
+        type: string
+      id:
+        type: string
+      locationCode:
+        type: string
+      openDate:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  dme.WorkOrderShort:
+    properties:
+      boat:
+        type: string
+      customer:
+        type: string
+      id:
+        type: string
+      locationCode:
+        type: string
+      openDate:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
   handlers.HealthResponse:
     properties:
       data:
@@ -9,6 +892,48 @@ definitions:
           '"database"': '"connected"}'
           '{"status"': '"ok"'
         type: object
+    type: object
+  handlers.PermissionTestRequest:
+    properties:
+      action:
+        example: read
+        type: string
+      object:
+        example: customers
+        type: string
+    required:
+    - action
+    - object
+    type: object
+  handlers.PermissionTestResponse:
+    properties:
+      action:
+        example: read
+        type: string
+      has_access:
+        example: true
+        type: boolean
+      marina_id:
+        example: 123e4567-e89b-12d3-a456-426614174001
+        type: string
+      message:
+        example: Access granted
+        type: string
+      module_info:
+        properties:
+          module_enabled:
+            example: true
+            type: boolean
+          required_module:
+            example: customerVessels
+            type: string
+        type: object
+      object:
+        example: customers
+        type: string
+      user_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
     type: object
   handlers.ProjectDetailsResponse:
     properties:
@@ -20,8 +945,68 @@ definitions:
           '{"name"': '"Marina Management System"'
         type: object
     type: object
+  models.Modules:
+    properties:
+      customerVessels:
+        type: boolean
+      inventoryManagement:
+        type: boolean
+      marinaManagement:
+        type: boolean
+      payments:
+        type: boolean
+      pos:
+        type: boolean
+      salesManagement:
+        type: boolean
+      serviceManagement:
+        type: boolean
+    type: object
+  models.Permissions:
+    additionalProperties:
+      type: boolean
+    type: object
+  models.WorkingHours:
+    properties:
+      friday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      monday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      saturday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      sunday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      thursday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      tuesday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+      wednesday:
+        example: 9:00 AM - 5:00 PM
+        type: string
+    type: object
+  requests.AcceptInvitationRequest:
+    properties:
+      password:
+        example: SecureP@ssw0rd
+        minLength: 12
+        type: string
+      token:
+        type: string
+    required:
+    - password
+    - token
+    type: object
   requests.AssignUserToMarinaRequest:
     properties:
+      customerId:
+        example: "1234567890"
+        type: string
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
@@ -32,6 +1017,114 @@ definitions:
     - marinaId
     - userId
     type: object
+  requests.BoatCreateRequest:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      beam:
+        type: string
+      billingCodes:
+        items:
+          $ref: '#/definitions/dme.BillingCode'
+        type: array
+      boatDescriptionCodes:
+        items:
+          $ref: '#/definitions/dme.BoatDescriptionCode'
+        type: array
+      color:
+        type: string
+      comments:
+        type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      doNotLaunch:
+        type: boolean
+      draft:
+        type: string
+      height:
+        type: string
+      hin:
+        type: string
+      insuranceCompany:
+        type: string
+      insuranceExpDate:
+        type: string
+      integrationId:
+        type: string
+      lastModified:
+        type: string
+      loa:
+        type: string
+      lwl:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      name:
+        type: string
+      operationsHistory:
+        items:
+          $ref: '#/definitions/dme.OperationHistory'
+        type: array
+      ownerId:
+        type: string
+      ownerIntegrationId:
+        type: string
+      registration:
+        type: string
+      slipId:
+        type: string
+      summerSlip:
+        type: string
+      trailerLocation:
+        type: string
+      trailerMake:
+        type: string
+      trailerModel:
+        type: string
+      trailerRegistration:
+        type: string
+      trailerSerial:
+        type: string
+      winterSlip:
+        type: string
+      year:
+        type: string
+    required:
+    - name
+    - ownerId
+    type: object
+  requests.CompletePasswordRecoveryRequest:
+    description: Complete password recovery request payload
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      newPassword:
+        example: NewPa$$w0rd123
+        minLength: 12
+        type: string
+      token:
+        example: recovery-token-123
+        type: string
+    required:
+    - email
+    - newPassword
+    - token
+    type: object
+  requests.ContactType:
+    enum:
+    - phone
+    - email
+    type: string
+    x-enum-varnames:
+    - ContactTypePhone
+    - ContactTypeEmail
   requests.CreateAddressRequest:
     properties:
       city:
@@ -55,6 +1148,226 @@ definitions:
       street:
         example: 123 Main St
         type: string
+    type: object
+  requests.CreateContactRequest:
+    properties:
+      description:
+        type: string
+      email:
+        type: string
+      is_cp_contact:
+        type: boolean
+      name:
+        type: string
+      phone:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/requests.ContactType'
+        enum:
+        - phone
+        - email
+    required:
+    - name
+    - type
+    type: object
+  requests.CreateCustomerUserRequest:
+    properties:
+      customerId:
+        example: "1234567890"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      image:
+        example: /images/profiles/johndoe.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isCustomer:
+        example: false
+        type: boolean
+      isSuperuser:
+        example: false
+        type: boolean
+      lastName:
+        example: Doe
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      title:
+        example: Manager
+        type: string
+      userAnalytics:
+        example: true
+        type: boolean
+      username:
+        example: johndoe
+        type: string
+    required:
+    - customerId
+    - email
+    - firstName
+    - lastName
+    - marinaId
+    - organizationId
+    - roleId
+    type: object
+  requests.CreateDMECredentialRequest:
+    properties:
+      accessToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expiryDate:
+        type: string
+      isOldApi:
+        example: false
+        type: boolean
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      password:
+        example: secure_password
+        type: string
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      username:
+        example: api_user
+        type: string
+    required:
+    - organizationId
+    - username
+    type: object
+  requests.CreateDMESysIDRequest:
+    properties:
+      description:
+        example: Primary production environment for marina operations
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Production System
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+    required:
+    - name
+    - organizationId
+    - systemId
+    type: object
+  requests.CreateMarinaRequest:
+    properties:
+      address:
+        $ref: '#/definitions/requests.CreateAddressRequest'
+      country:
+        example: USA
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
+      name:
+        example: Harbor Bay Marina
+        type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
+    required:
+    - email
+    - name
+    - notesMessagesPlanId
+    - organizationId
+    - storagePlanId
+    type: object
+  requests.CreateMessageRequest:
+    properties:
+      body:
+        type: string
+      contact:
+        type: string
+      customerId:
+        type: string
+      marinaId:
+        type: string
+      pinned:
+        type: boolean
+      recipient:
+        type: string
+      sender:
+        type: string
+      type:
+        enum:
+        - email
+        - sms
+        - internal
+        type: string
+    required:
+    - body
+    - contact
+    - customerId
+    - marinaId
+    - recipient
+    - sender
+    - type
     type: object
   requests.CreateOrganizationRequest:
     properties:
@@ -88,6 +1401,30 @@ definitions:
     - email
     - name
     type: object
+  requests.CreateRoleRequest:
+    properties:
+      description:
+        example: Administrator role with full access
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isCustomerRole:
+        example: false
+        type: boolean
+      name:
+        example: Admin
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
+      type:
+        example: marina
+        type: string
+    required:
+    - name
+    - permissions
+    - type
+    type: object
   requests.CreateUserRequest:
     properties:
       email:
@@ -116,7 +1453,7 @@ definitions:
         type: string
       password:
         example: SecureP@ssw0rd
-        minLength: 8
+        minLength: 12
         type: string
       phone:
         example: "+15551234567"
@@ -127,6 +1464,9 @@ definitions:
       title:
         example: Manager
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
       username:
         example: johndoe
         type: string
@@ -138,7 +1478,201 @@ definitions:
     - organizationId
     - password
     - roleId
-    - username
+    type: object
+  requests.CreateUserWithInvitationRequest:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      image:
+        example: /images/profiles/johndoe.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isSuperuser:
+        example: false
+        type: boolean
+      lastName:
+        example: Doe
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      title:
+        example: Manager
+        type: string
+      userAnalytics:
+        example: true
+        type: boolean
+      username:
+        example: johndoe
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - marinaId
+    - organizationId
+    - roleId
+    type: object
+  requests.CustomerCreateRequest:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      altAddress1:
+        type: string
+      altAddress2:
+        type: string
+      altAddress3:
+        type: string
+      altCity:
+        type: string
+      altCountry:
+        type: string
+      altFirstName:
+        type: string
+      altLastName:
+        type: string
+      altPhone:
+        type: string
+      altState:
+        type: string
+      altZip:
+        type: string
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      cellPhone:
+        type: string
+      city:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      emergencyContact:
+        type: string
+      emergencyPhone:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      shipmentMethod:
+        type: string
+      shipmentMethodDescription:
+        type: string
+      state:
+        type: string
+      useAltAddress:
+        type: boolean
+      workPhone:
+        type: string
+      zip:
+        type: string
+    required:
+    - lastName
+    type: object
+  requests.CustomerIntakeRequest:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      cellPhone:
+        type: string
+      city:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      emergencyContact:
+        type: string
+      emergencyPhone:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      marinaId:
+        type: string
+      organizationId:
+        description: Customer fields
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      state:
+        type: string
+      workPhone:
+        type: string
+      zip:
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - marinaId
+    - organizationId
+    type: object
+  requests.CustomerSettingsUpdateRequest:
+    properties:
+      customerId:
+        type: string
+      enablePortal:
+        type: boolean
+      marinaId:
+        type: string
+    required:
+    - customerId
+    - marinaId
+    type: object
+  requests.ForgotPasswordRequest:
+    description: Forgot password request payload
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+    required:
+    - email
+    type: object
+  requests.LinkDMESysIDRequest:
+    properties:
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    required:
+    - marinaId
     type: object
   requests.LoginRequest:
     properties:
@@ -147,11 +1681,66 @@ definitions:
         type: string
       password:
         example: Pa$$w0rd123
-        minLength: 8
+        minLength: 12
         type: string
     required:
     - email
     - password
+    type: object
+  requests.OperationCode:
+    properties:
+      approved:
+        type: boolean
+      categoryCode:
+        type: string
+      custPromiseDate:
+        type: string
+      desc:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      estimatedBillCodes:
+        type: number
+      estimatedEquipment:
+        type: number
+      estimatedFreight:
+        type: number
+      estimatedLabor:
+        type: number
+      estimatedLaborHours:
+        type: number
+      estimatedMileage:
+        type: number
+      estimatedMiscSupply:
+        type: number
+      estimatedParts:
+        type: number
+      estimatedSublet:
+        type: number
+      flatRateAmount:
+        type: number
+      flatRatePerFootMethod:
+        type: string
+      flatRatePerFootRate:
+        type: number
+      forecastedLaborCharges:
+        type: number
+      forecastedLaborHours:
+        type: number
+      forecastedPartsCharges:
+        type: number
+      laborFinished:
+        type: boolean
+      longDesc:
+        type: string
+      opcode:
+        type: string
+      standardHours:
+        type: number
+      techDesc:
+        type: string
     type: object
   requests.RefreshRequest:
     properties:
@@ -161,37 +1750,98 @@ definitions:
     required:
     - token
     type: object
-  requests.RegisterRequest:
+  requests.ResetPasswordRequest:
+    description: Password reset request payload
     properties:
-      email:
-        example: john.doe@example.com
+      newPassword:
+        example: NewPa$$w0rd123
+        minLength: 12
         type: string
-      first_name:
-        example: John
-        minLength: 2
+      oldPassword:
+        example: OldPa$$w0rd123
         type: string
-      last_name:
-        example: Doe
-        minLength: 2
-        type: string
-      password:
-        example: Pa$$w0rd123
-        minLength: 8
-        type: string
-      role_id:
-        example: admin
-        type: string
-      username:
-        example: johndoe
-        minLength: 3
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
     required:
-    - email
-    - first_name
-    - last_name
-    - password
-    - role_id
-    - username
+    - newPassword
+    - oldPassword
+    - userId
+    type: object
+  requests.SendHTMLEmailRequest:
+    description: Send HTML email request payload
+    properties:
+      htmlContent:
+        example: <h1>Hello World</h1><p>This is a test email.</p>
+        type: string
+      plainText:
+        example: Hello World. This is a test email.
+        type: string
+      subject:
+        example: Welcome to Dockmaster
+        type: string
+      to:
+        example:
+        - user@example.com
+        items:
+          type: string
+        type: array
+    required:
+    - htmlContent
+    - plainText
+    - subject
+    - to
+    type: object
+  requests.SendSMSRequest:
+    properties:
+      expires_on:
+        type: string
+      from_number:
+        type: string
+      media_urls:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      priority:
+        enum:
+        - Urgent
+        - High
+        - Normal
+        - Low
+        type: string
+      to:
+        items:
+          type: string
+        type: array
+    required:
+    - message
+    - to
+    type: object
+  requests.SendTemplateEmailRequest:
+    description: Send template email request payload
+    properties:
+      subject:
+        example: Welcome to Dockmaster
+        type: string
+      templateData:
+        example: '{"name":"John Doe"}'
+        type: string
+      templateName:
+        example: welcome
+        type: string
+      to:
+        example:
+        - user@example.com
+        items:
+          type: string
+        type: array
+    required:
+    - subject
+    - templateData
+    - templateName
+    - to
     type: object
   requests.UpdateAddressRequest:
     properties:
@@ -216,6 +1866,153 @@ definitions:
       street:
         example: 123 Main St
         type: string
+    type: object
+  requests.UpdateContactRequest:
+    properties:
+      description:
+        type: string
+      email:
+        type: string
+      is_cp_contact:
+        type: boolean
+      name:
+        type: string
+      phone:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/requests.ContactType'
+        enum:
+        - phone
+        - email
+    required:
+    - name
+    - type
+    type: object
+  requests.UpdateCustomerMessageRequest:
+    properties:
+      body:
+        type: string
+      customerId:
+        type: string
+      id:
+        type: string
+      marinaId:
+        type: string
+      pinned:
+        type: boolean
+    required:
+    - body
+    - customerId
+    - id
+    - marinaId
+    type: object
+  requests.UpdateDMECredentialRequest:
+    properties:
+      accessToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expiryDate:
+        type: string
+      isOldApi:
+        example: false
+        type: boolean
+      password:
+        example: secure_password
+        type: string
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      username:
+        example: api_user
+        type: string
+    type: object
+  requests.UpdateDMESysIDRequest:
+    properties:
+      description:
+        example: Primary production environment for marina operations
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Production System
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+    type: object
+  requests.UpdateMarinaMessageRequest:
+    properties:
+      body:
+        type: string
+      customerId:
+        type: string
+      id:
+        type: string
+      marinaId:
+        type: string
+      pinned:
+        type: boolean
+    required:
+    - body
+    - customerId
+    - id
+    - marinaId
+    type: object
+  requests.UpdateMarinaRequest:
+    properties:
+      address:
+        $ref: '#/definitions/requests.UpdateAddressRequest'
+      country:
+        example: USA
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
+      name:
+        example: Harbor Bay Marina
+        type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
     type: object
   requests.UpdateOrgAddressRequest:
     properties:
@@ -273,6 +2070,26 @@ definitions:
         example: https://updated-example.com
         type: string
     type: object
+  requests.UpdateRoleRequest:
+    properties:
+      description:
+        example: Administrator role with full access
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isCustomerRole:
+        example: false
+        type: boolean
+      name:
+        example: Admin
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
+      type:
+        example: marina
+        type: string
+    type: object
   requests.UpdateUserRequest:
     properties:
       email:
@@ -298,7 +2115,7 @@ definitions:
         type: string
       password:
         example: NewSecureP@ssw0rd
-        minLength: 8
+        minLength: 12
         type: string
       phone:
         example: "+15551234567"
@@ -309,8 +2126,123 @@ definitions:
       title:
         example: Manager
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
+    type: object
+  requests.WorkOrderCreateFromEstimateRequest:
+    properties:
+      EstimateId:
+        type: string
+      WithDetail:
+        default: false
+        type: boolean
+      WithUnapprovedOps:
+        default: false
+        type: boolean
+    required:
+    - EstimateId
+    type: object
+  requests.WorkOrderCreateRequest:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      boatId:
+        type: string
+      boatName:
+        type: string
+      categoryCode:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      custId:
+        type: string
+      custPromiseDate:
+        type: string
+      customerEmail:
+        type: string
+      customerPhone:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      locationCode:
+        type: string
+      operationCodes:
+        items:
+          $ref: '#/definitions/requests.OperationCode'
+        type: array
+      title:
+        type: string
+      woId:
+        type: string
+    required:
+    - custId
+    - title
+    type: object
+  requests.WorkOrderUpdateRequest:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      boatId:
+        type: string
+      boatName:
+        type: string
+      categoryCode:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      custId:
+        type: string
+      custPromiseDate:
+        type: string
+      customerEmail:
+        type: string
+      customerPhone:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      locationCode:
+        type: string
+      operationCodes:
+        items:
+          $ref: '#/definitions/requests.OperationCode'
+        type: array
+      title:
+        type: string
+      woId:
+        type: string
+    required:
+    - woId
+    type: object
+  responses.AcceptInvitationResponse:
+    properties:
+      currentPage:
+        type: integer
+      data: {}
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
     type: object
   responses.AddressResponse:
+    description: Address response model
     properties:
       city:
         example: San Francisco
@@ -359,6 +2291,301 @@ definitions:
       total:
         type: integer
     type: object
+  responses.BoatListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.Boat'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.BoatResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.Boat'
+    type: object
+  responses.BoatSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.BoatSearch'
+        type: array
+    type: object
+  responses.ConfirmTokenResponse:
+    properties:
+      currentPage:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.InviteResponse'
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  responses.ContactListResponse:
+    description: Contact list response model
+    properties:
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.ContactResponse'
+        type: array
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  responses.ContactResponse:
+    description: Contact response model
+    properties:
+      createdAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Primary emergency contact
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      is_cp_contact:
+        example: false
+        type: boolean
+      marinaId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: John Doe
+        type: string
+      phone:
+        example: +1-555-123-4567
+        type: string
+      type:
+        example: EMERGENCY
+        type: string
+      updatedAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    type: object
+  responses.CustomerListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.Customer'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.CustomerListShortResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.CustomerShort'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.CustomerResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.Customer'
+    type: object
+  responses.CustomerSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.CustomerSearch'
+        type: array
+    type: object
+  responses.CustomerSettingsResponse:
+    properties:
+      customerId:
+        type: string
+      enablePortal:
+        type: boolean
+      marinaId:
+        type: string
+    type: object
+  responses.DMECredentialResponse:
+    description: DME API credentials used for integration
+    properties:
+      accessToken:
+        type: string
+      createdAt:
+        type: string
+      expiryDate:
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOldApi:
+        example: false
+        type: boolean
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      refreshToken:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        example: api_user
+        type: string
+    type: object
+  responses.DMECredentialResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.DMECredentialResponse'
+    type: object
+  responses.DMESysIDListResponseWrapper:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.DMESysIDResponse'
+        type: array
+    type: object
+  responses.DMESysIDResponse:
+    description: DME System IDs used for marina integration
+    properties:
+      createdAt:
+        type: string
+      description:
+        example: Primary production environment
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Production System
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS123456
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.DMESysIDResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.DMESysIDResponse'
+    type: object
+  responses.DocumentResponse:
+    description: Document data including file path, file type, and size
+    properties:
+      createdAt:
+        type: string
+      entityId:
+        example: "0000000000"
+        type: string
+      entityType:
+        example: customer
+        type: string
+      fileName:
+        example: contract.pdf
+        type: string
+      filePath:
+        example: /documents/customers/550e8400-e29b-41d4-a716-446655440002/contract.pdf
+        type: string
+      fileSize:
+        example: 1024
+        type: integer
+      fileType:
+        example: application/pdf
+        type: string
+      fileUrl:
+        example: https://example.com/documents/customers/550e8400-e29b-41d4-a716-446655440002/contract.pdf
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.EmailSendResponse:
+    description: Email send response
+    properties:
+      currentPage:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.EmailSendResponseData'
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  responses.EmailSendResponseData:
+    properties:
+      accepted:
+        description: Whether the email was accepted for delivery
+        type: boolean
+      message:
+        description: Status message
+        type: string
+      taskId:
+        description: Task ID for tracking
+        type: string
+    type: object
   responses.Error:
     description: Error response structure with optional validation details
     properties:
@@ -369,6 +2596,17 @@ definitions:
       message:
         example: Validation failed
         type: string
+    type: object
+  responses.InviteResponse:
+    properties:
+      email:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      valid:
+        type: boolean
     type: object
   responses.LoginResponse:
     description: Authentication token response containing access token, refresh token
@@ -391,6 +2629,318 @@ definitions:
       message:
         example: Login successful
         type: string
+    type: object
+  responses.MarinaGalleryItemResponse:
+    description: Marina gallery item data including image URL and description
+    properties:
+      createdAt:
+        type: string
+      description:
+        example: Beautiful view of the marina at sunset
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      imageUrl:
+        example: /images/marinas/sunset_view.jpg
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.MarinaListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.MarinaResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.MarinaResponse:
+    description: Marina data including location, contact information, and operational
+      details
+    properties:
+      addressId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      country:
+        example: USA
+        type: string
+      createdAt:
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      emailUsage:
+        example: 0
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
+      name:
+        example: Harbor Bay Marina
+        type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      storageUsage:
+        example: 0
+        type: number
+      systemId:
+        example: SYS123456
+        type: string
+      textUsage:
+        example: 0
+        type: integer
+      updatedAt:
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
+    type: object
+  responses.MarinaResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.MarinaResponse'
+    type: object
+  responses.MarinaUsageHistoryListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.MarinaUsageHistoryResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.MarinaUsageHistoryResponse:
+    description: Marina usage history data including storage, email, and text usage
+    properties:
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      emailUsage:
+        example: 0
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      storageUsage:
+        example: 0
+        type: number
+      textUsage:
+        example: 0
+        type: integer
+      updatedAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+    type: object
+  responses.MarinaUsageHistoryResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.MarinaUsageHistoryResponse'
+    type: object
+  responses.MarinaWithAddressResponse:
+    description: Marina data with address details
+    properties:
+      address:
+        $ref: '#/definitions/responses.AddressResponse'
+      addressId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      country:
+        example: USA
+        type: string
+      createdAt:
+        type: string
+      currency:
+        example: USD
+        type: string
+      email:
+        example: info@harborbay.com
+        type: string
+      emailUsage:
+        example: 0
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image:
+        example: /images/marinas/harborbay.jpg
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isTest:
+        example: false
+        type: boolean
+      location:
+        example: Miami Beach
+        type: string
+      maxUsers:
+        example: 100
+        type: integer
+      modules:
+        $ref: '#/definitions/models.Modules'
+      name:
+        example: Harbor Bay Marina
+        type: string
+      notesMessagesPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      storagePlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      storageUsage:
+        example: 0
+        type: number
+      systemId:
+        example: SYS123456
+        type: string
+      textUsage:
+        example: 0
+        type: integer
+      updatedAt:
+        type: string
+      website:
+        example: https://harborbay.com
+        type: string
+      workingHours:
+        $ref: '#/definitions/models.WorkingHours'
+    type: object
+  responses.MarinaWithAddressResponseWrapper:
+    properties:
+      data:
+        $ref: '#/definitions/responses.MarinaWithAddressResponse'
+    type: object
+  responses.MessageListResponse:
+    description: Paginated list of messages
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.MessageResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.MessageResponse:
+    description: Message data including customer, type, direction, and status information
+    properties:
+      body:
+        example: Your reservation has been confirmed
+        type: string
+      contact:
+        example: jane@example.com
+        type: string
+      createdAt:
+        type: string
+      customerId:
+        example: CUST123
+        type: string
+      direction:
+        example: to_customer
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      pinned:
+        example: false
+        type: boolean
+      recipient:
+        example: Jane Smith
+        type: string
+      sender:
+        example: John Doe
+        type: string
+      status:
+        example: sent
+        type: string
+      type:
+        example: email
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.MessageResponseWrapper:
+    description: Wrapper for a single message response
+    properties:
+      data:
+        $ref: '#/definitions/responses.MessageResponse'
     type: object
   responses.OrganizationResponse:
     properties:
@@ -432,6 +2982,7 @@ definitions:
         type: string
     type: object
   responses.OrganizationWithAddressResponse:
+    description: Organization with address response model
     properties:
       address:
         $ref: '#/definitions/responses.AddressResponse'
@@ -469,12 +3020,43 @@ definitions:
         example: https://example.com
         type: string
     type: object
-  responses.RegisterResponseWrapper:
+  responses.RoleResponse:
+    description: Role representation for API responses
     properties:
-      data:
-        $ref: '#/definitions/responses.UserResponse'
+      createdAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Administrator role with full access
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      isCustomerRole:
+        example: false
+        type: boolean
+      name:
+        example: Admin
+        type: string
+      permissions:
+        $ref: '#/definitions/models.Permissions'
+      type:
+        example: marina
+        type: string
+      updatedAt:
+        example: "2023-01-02T00:00:00Z"
+        type: string
+    type: object
+  responses.SMSSendResponse:
+    properties:
       message:
-        example: User created successfully
+        type: string
+      success:
+        type: boolean
+      task_id:
         type: string
     type: object
   responses.UserListResponse:
@@ -501,6 +3083,12 @@ definitions:
     properties:
       createdAt:
         type: string
+      customerId:
+        example: "1234567890"
+        type: string
+      customerName:
+        example: John's Marina
+        type: string
       email:
         example: john.doe@example.com
         type: string
@@ -520,6 +3108,9 @@ definitions:
         type: string
       isActive:
         example: true
+        type: boolean
+      isCustomer:
+        example: false
         type: boolean
       isSuperuser:
         example: false
@@ -545,11 +3136,17 @@ definitions:
       roleId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
+      roleName:
+        example: Admin
+        type: string
       title:
         example: Manager
         type: string
       updatedAt:
         type: string
+      userAnalytics:
+        example: true
+        type: boolean
       username:
         example: johndoe
         type: string
@@ -578,11 +3175,108 @@ definitions:
         example: invalid_value
         type: string
     type: object
+  responses.VesselGalleryItemResponse:
+    description: Vessel gallery item data including image URL, description, and main
+      image flag
+    properties:
+      boatId:
+        example: BOAT123456
+        type: string
+      createdAt:
+        type: string
+      customerId:
+        example: CUST123456
+        type: string
+      description:
+        example: Port side view of the yacht
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      imageUrl:
+        example: /images/vessels/yacht_port_side.jpg
+        type: string
+      main:
+        example: true
+        type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.WorkOrderCompletedResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrder'
+        type: array
+    type: object
+  responses.WorkOrderCreateResponse:
+    properties:
+      operations:
+        items:
+          type: string
+        type: array
+      result:
+        type: string
+      woId:
+        type: string
+    type: object
+  responses.WorkOrderDeleteOperationResponse:
+    properties:
+      message:
+        type: string
+      result:
+        type: string
+    type: object
+  responses.WorkOrderListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrder'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.WorkOrderOperationsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+    type: object
+  responses.WorkOrderResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.WorkOrder'
+    type: object
+  responses.WorkOrderSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderSearch'
+        type: array
+    type: object
+  responses.WorkOrderShortListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderShort'
+        type: array
+    type: object
 info:
-  contact:
-    email: g.andrewsameh@gmail.com
-    name: Andrew Sameh
-    url: https://andrewsam.xyz
+  contact: {}
   description: This is a API Server.
   title: DockMaster Web API
   version: 0.0.1
@@ -696,6 +3390,78 @@ paths:
       summary: Update address
       tags:
       - Addresses
+  /api/v1/invite/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accepts an invitation and sets the user's password
+      parameters:
+      - description: Invitation acceptance request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AcceptInvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AcceptInvitationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Accept an invitation
+      tags:
+      - Invitations
+  /api/v1/invite/confirm:
+    get:
+      consumes:
+      - application/json
+      description: Checks if the provided token is valid
+      parameters:
+      - description: Invitation token
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: User email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ConfirmTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Confirm an invitation token
+      tags:
+      - Invitations
   /auth/login:
     post:
       consumes:
@@ -722,6 +3488,10 @@ paths:
             $ref: '#/definitions/responses.Error'
         "401":
           description: Authentication error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "403":
+          description: Account locked
           schema:
             $ref: '#/definitions/responses.Error'
         "500":
@@ -759,6 +3529,10 @@ paths:
           description: Authentication error
           schema:
             $ref: '#/definitions/responses.Error'
+        "403":
+          description: Account locked
+          schema:
+            $ref: '#/definitions/responses.Error'
         "500":
           description: Server error
           schema:
@@ -766,26 +3540,1342 @@ paths:
       summary: Refresh access token
       tags:
       - Authentication
-  /auth/register:
+  /boats/create:
     post:
       consumes:
       - application/json
-      description: New user registration
-      operationId: user-register
+      description: Creates a new boat
       parameters:
-      - description: User's registration details
+      - description: Boat information
         in: body
-        name: params
+        name: boat
         required: true
         schema:
-          $ref: '#/definitions/requests.RegisterRequest'
+          $ref: '#/definitions/requests.BoatCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create boat
+      tags:
+      - Boats
+  /boats/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves boats associated with a customer
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boats for customer
+      tags:
+      - Boats
+  /boats/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of boats
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List boats by page
+      tags:
+      - Boats
+  /boats/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a boat by its ID
+      parameters:
+      - description: Boat ID
+        in: query
+        name: BoatId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boat by ID
+      tags:
+      - Boats
+  /boats/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for boats based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search boats
+      tags:
+      - Boats
+  /boats/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates a boat's information
+      parameters:
+      - description: Boat information
+        in: body
+        name: boat
+        required: true
+        schema:
+          $ref: '#/definitions/dme.BoatUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BoatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update boat
+      tags:
+      - Boats
+  /customer-intake:
+    post:
+      consumes:
+      - application/json
+      description: Creates a customer in DME and then creates a user for that customer
+        - public endpoint
+      parameters:
+      - description: Organization ID
+        in: header
+        name: Organization-ID
+        required: true
+        type: string
+      - description: Marina ID
+        in: header
+        name: Marina-ID
+        required: true
+        type: string
+      - description: Customer and user information
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CustomerIntakeRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: User created successfully
+          description: Created user with customer
           schema:
-            $ref: '#/definitions/responses.RegisterResponseWrapper'
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Customer intake (public endpoint)
+      tags:
+      - Customers
+  /customers/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new customer
+      parameters:
+      - description: Customer information
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CustomerCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create customer
+      tags:
+      - Customers
+  /customers/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of customers
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List customers by page
+      tags:
+      - Customers
+  /customers/list-short:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated short list of customers
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerListShortResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List customers short
+      tags:
+      - Customers
+  /customers/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a customer by their ID
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer by ID
+      tags:
+      - Customers
+  /customers/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for customers based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search customers
+      tags:
+      - Customers
+  /customers/settings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves settings for a customer, creates with defaults if not
+        found
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get customer settings
+      tags:
+      - Customers
+    post:
+      consumes:
+      - application/json
+      description: Updates settings for a customer
+      parameters:
+      - description: Customer settings
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CustomerSettingsUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update customer settings
+      tags:
+      - Customers
+  /customers/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates a customer's information
+      parameters:
+      - description: Customer information
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/dme.CustomerUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update customer
+      tags:
+      - Customers
+  /dme/credentials:
+    post:
+      consumes:
+      - application/json
+      description: Create new DME API credentials for an organization
+      parameters:
+      - description: Create DME credential request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateDMECredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMECredentialResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create DME credentials
+      tags:
+      - DME Credentials
+  /dme/credentials/organization/{organizationId}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete DME API credentials for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete DME credentials
+      tags:
+      - DME Credentials
+    get:
+      consumes:
+      - application/json
+      description: Get DME API credentials for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMECredentialResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME credentials by organization ID
+      tags:
+      - DME Credentials
+    put:
+      consumes:
+      - application/json
+      description: Update DME API credentials for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - description: Update DME credential request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateDMECredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMECredentialResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update DME credentials
+      tags:
+      - DME Credentials
+  /dme/sysids:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all DME System IDs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDListResponseWrapper'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List all DME System IDs
+      tags:
+      - DME System IDs
+    post:
+      consumes:
+      - application/json
+      description: Create a new DME System ID for an organization
+      parameters:
+      - description: Create DME System ID request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateDMESysIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create DME System ID
+      tags:
+      - DME System IDs
+  /dme/sysids/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a DME System ID
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete DME System ID
+      tags:
+      - DME System IDs
+    get:
+      consumes:
+      - application/json
+      description: Get DME System ID by its unique identifier
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System ID by ID
+      tags:
+      - DME System IDs
+    put:
+      consumes:
+      - application/json
+      description: Update a DME System ID
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update DME System ID request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateDMESysIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update DME System ID
+      tags:
+      - DME System IDs
+  /dme/sysids/{id}/link:
+    patch:
+      consumes:
+      - application/json
+      description: Link a DME System ID to a specific marina
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Link DME System ID request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.LinkDMESysIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Link DME System ID to marina
+      tags:
+      - DME System IDs
+  /dme/sysids/{id}/unlink:
+    patch:
+      consumes:
+      - application/json
+      description: Remove the link between a DME System ID and a marina
+      parameters:
+      - description: DME System ID identifier
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Unlink DME System ID from marina
+      tags:
+      - DME System IDs
+  /dme/sysids/marina/{marinaId}:
+    get:
+      consumes:
+      - application/json
+      description: Get DME System ID linked to a specific marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System ID by marina ID
+      tags:
+      - DME System IDs
+  /dme/sysids/organization/{organizationId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all DME System IDs for an organization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDListResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System IDs by organization ID
+      tags:
+      - DME System IDs
+  /dme/sysids/system/{systemId}:
+    get:
+      consumes:
+      - application/json
+      description: Get DME System ID by its external system identifier
+      parameters:
+      - description: System identifier
+        in: path
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DMESysIDResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get DME System ID by system identifier
+      tags:
+      - DME System IDs
+  /documents/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a document
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete document
+      tags:
+      - Documents
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific document by ID
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get document
+      tags:
+      - Documents
+  /documents/boat:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all documents for a boat entity
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.DocumentResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get boat documents
+      tags:
+      - Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new document for a boat
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: formData
+        name: entityId
+        required: true
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload document
+      tags:
+      - Documents
+  /documents/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all documents for a customer entity
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.DocumentResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get customer documents
+      tags:
+      - Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new document for a customer
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: formData
+        name: entityId
+        required: true
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload document
+      tags:
+      - Documents
+  /documents/user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all documents for a user entity
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.DocumentResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user documents
+      tags:
+      - Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new document for a user
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID
+        in: formData
+        name: entityId
+        required: true
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload document
+      tags:
+      - Documents
+  /email/send-html:
+    post:
+      consumes:
+      - application/json
+      description: Send an email with HTML content
+      parameters:
+      - description: Email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendHTMLEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
         "400":
           description: Validation error
           schema:
@@ -794,9 +4884,505 @@ paths:
           description: Server error
           schema:
             $ref: '#/definitions/responses.Error'
-      summary: Register
+      summary: Send HTML email
       tags:
-      - Authentication
+      - Email
+  /email/send-template:
+    post:
+      consumes:
+      - application/json
+      description: Send an email using a SendGrid dynamic template
+      parameters:
+      - description: Email details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendTemplateEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.EmailSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send template email
+      tags:
+      - Email
+  /gallery/boat:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new gallery item for a vessel
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: formData
+        name: customerId
+        required: true
+        type: string
+      - description: Boat ID
+        in: formData
+        name: boatId
+        required: true
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Whether this is the main image
+        in: formData
+        name: main
+        type: boolean
+      - description: Image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create vessel gallery item
+      tags:
+      - Vessel Gallery
+  /gallery/boat/{boatId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all gallery items for a vessel
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      - description: Boat ID
+        in: path
+        name: boatId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.VesselGalleryItemResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get vessel gallery
+      tags:
+      - Vessel Gallery
+  /gallery/boat/item/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a vessel gallery item
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete vessel gallery item
+      tags:
+      - Vessel Gallery
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific vessel gallery item by ID
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get vessel gallery item
+      tags:
+      - Vessel Gallery
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates a vessel gallery item
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Whether this is the main image
+        in: formData
+        name: main
+        type: boolean
+      - description: Image file
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update vessel gallery item
+      tags:
+      - Vessel Gallery
+  /gallery/marina:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new gallery item for a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create marina gallery item
+      tags:
+      - Marina Gallery
+  /gallery/marina/{marinaId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all gallery items for a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina gallery
+      tags:
+      - Marina Gallery
+  /gallery/marina/item/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a marina gallery item
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete marina gallery item
+      tags:
+      - Marina Gallery
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific gallery item by ID
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina gallery item
+      tags:
+      - Marina Gallery
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates a marina gallery item
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.MarinaGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina gallery item
+      tags:
+      - Marina Gallery
   /health:
     get:
       consumes:
@@ -812,21 +5398,1099 @@ paths:
       summary: Health check
       tags:
       - Generic
+  /marina-usage-history/{id}:
+    get:
+      description: Retrieves a marina usage history record by its ID
+      parameters:
+      - description: Marina Usage History ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by ID
+      tags:
+      - marina-usage-history
+  /marina-usage-history/date-range:
+    get:
+      description: Retrieves marina usage history records within a specified date
+        range
+      parameters:
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: End Date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by date range
+      tags:
+      - marina-usage-history
+  /marina-usage-history/latest/{marinaId}:
+    get:
+      description: Retrieves the most recent marina usage history record for a specific
+        marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get latest marina usage history
+      tags:
+      - marina-usage-history
+  /marina-usage-history/marina/{marinaId}:
+    get:
+      description: Retrieves all marina usage history records for a specific marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by marina ID
+      tags:
+      - marina-usage-history
+  /marina-usage-history/month:
+    get:
+      description: Retrieves marina usage history records for a specific month
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Month (YYYY-MM)
+        in: query
+        name: month
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by month
+      tags:
+      - marina-usage-history
+  /marina/{marinaId}/contacts:
+    get:
+      consumes:
+      - application/json
+      description: Lists all contacts for a marina, optionally filtered by type
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact type (phone or email)
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ContactListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List contacts
+      tags:
+      - Contacts
+    post:
+      consumes:
+      - application/json
+      description: Creates a new contact for a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact details
+        in: body
+        name: contact
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateContactRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.ContactResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create contact
+      tags:
+      - Contacts
+  /marina/{marinaId}/contacts/{contactId}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes a contact
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact ID
+        format: uuid
+        in: path
+        name: contactId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete contact
+      tags:
+      - Contacts
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing contact
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Contact ID
+        format: uuid
+        in: path
+        name: contactId
+        required: true
+        type: string
+      - description: Contact details
+        in: body
+        name: contact
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateContactRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ContactResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update contact
+      tags:
+      - Contacts
+  /marinas:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas with pagination support
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get paginated marinas
+      tags:
+      - Marinas
+    post:
+      consumes:
+      - application/json
+      description: Creates a new marina in the system
+      parameters:
+      - description: Marina details
+        in: body
+        name: marina
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create marina
+      tags:
+      - Marinas
+  /marinas/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes a marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete marina
+      tags:
+      - Marinas
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a marina by its ID
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina by ID
+      tags:
+      - Marinas
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing marina
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Marina details
+        in: body
+        name: marina
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina
+      tags:
+      - Marinas
+  /marinas/{id}/with-address:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a marina and its address details
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaWithAddressResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina with address
+      tags:
+      - Marinas
+    put:
+      consumes:
+      - application/json
+      description: Updates a marina and its address details
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Marina details with address
+        in: body
+        name: marina
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateMarinaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaWithAddressResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina with address
+      tags:
+      - Marinas
+  /marinas/by-email:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a marina by its email address
+      parameters:
+      - description: Marina email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina by email
+      tags:
+      - Marinas
+  /marinas/organization/{organizationId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas belonging to a specific organization with pagination
+        support
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: path
+        name: organizationId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marinas by organization
+      tags:
+      - Marinas
+  /marinas/user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas associated with the current authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get my user marinas
+      tags:
+      - Marinas
+  /marinas/user/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas associated with a specific user with pagination
+        support
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.MarinaListResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user marinas
+      tags:
+      - Marinas
+  /message/customer:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing customer message
+      parameters:
+      - description: Message ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message deleted
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete customer message
+      tags:
+      - Message
+    get:
+      consumes:
+      - application/json
+      description: Get messages of type email or sms for a marina and customer
+      parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of customer messages
+          schema:
+            $ref: '#/definitions/responses.MessageListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List customer messages
+      tags:
+      - Message
+    post:
+      consumes:
+      - application/json
+      description: Create a new message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create message
+      tags:
+      - Message
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateCustomerMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update customer message
+      tags:
+      - Message
+  /message/get:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific message by ID
+      parameters:
+      - description: Message ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message details
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get message
+      tags:
+      - Message
+  /message/marina:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing marina message
+      parameters:
+      - description: Message ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message deleted
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete marina message
+      tags:
+      - Message
+    get:
+      consumes:
+      - application/json
+      description: Get messages for a marina and customer
+      parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of messages
+          schema:
+            $ref: '#/definitions/responses.MessageListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List messages
+      tags:
+      - Message
+    post:
+      consumes:
+      - application/json
+      description: Create a new message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create message
+      tags:
+      - Message
+    put:
+      consumes:
+      - application/json
+      description: Update an existing marina message
+      parameters:
+      - description: Message information
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateMarinaMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated message
+          schema:
+            $ref: '#/definitions/responses.MessageResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Message not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update marina message
+      tags:
+      - Message
   /organizations:
     get:
       consumes:
       - application/json
       description: Retrieves organizations with pagination support
       parameters:
-      - default: 10
-        description: Page size limit
+      - default: 1
+        description: Page number
         in: query
-        name: limit
+        name: page
         type: integer
-      - default: 0
-        description: Page offset
+      - default: 10
+        description: Page size
         in: query
-        name: offset
+        name: pageSize
         type: integer
       produces:
       - application/json
@@ -1105,6 +6769,132 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /plans/notes-messages:
+    get:
+      consumes:
+      - application/json
+      description: Get all notes and messages plans with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of plans
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List notes and messages plans
+      tags:
+      - Plans
+  /plans/notes-messages/{planId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific notes and messages plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: planId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan details
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid plan ID
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Plan not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get notes and messages plan
+      tags:
+      - Plans
+  /plans/storage:
+    get:
+      consumes:
+      - application/json
+      description: Get all storage plans with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of plans
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List storage plans
+      tags:
+      - Plans
+  /plans/storage/{planId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific storage plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: planId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan details
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid plan ID
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Plan not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get storage plan
+      tags:
+      - Plans
   /project-details:
     get:
       consumes:
@@ -1120,6 +6910,373 @@ paths:
       summary: Project details
       tags:
       - Generic
+  /role:
+    post:
+      consumes:
+      - application/json
+      description: Create a new role
+      parameters:
+      - description: Role information
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created role
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create role
+      tags:
+      - Role
+  /role/{roleId}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete role
+      tags:
+      - Role
+    get:
+      consumes:
+      - application/json
+      description: Get a specific role by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role details
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get role
+      tags:
+      - Role
+    put:
+      consumes:
+      - application/json
+      description: Update an existing role
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      - description: Updated role information
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated role
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update role
+      tags:
+      - Role
+  /role/list:
+    get:
+      consumes:
+      - application/json
+      description: Get all roles with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of roles
+          schema:
+            items:
+              $ref: '#/definitions/responses.RoleResponse'
+            type: array
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List roles
+      tags:
+      - Role
+  /role/name:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific role by name
+      parameters:
+      - description: Role name
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role details
+          schema:
+            $ref: '#/definitions/responses.RoleResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get role by name
+      tags:
+      - Role
+  /sms/send:
+    post:
+      consumes:
+      - application/json
+      description: Send SMS message to one or more recipients
+      parameters:
+      - description: SMS details
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendSMSRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SMS accepted for delivery
+          schema:
+            $ref: '#/definitions/responses.SMSSendResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Send SMS
+      tags:
+      - SMS
+  /test/permissions:
+    post:
+      consumes:
+      - application/json
+      description: Test if the current user has permission to perform an action on
+        an object
+      parameters:
+      - description: Permission test request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PermissionTestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission check result
+          schema:
+            $ref: '#/definitions/handlers.PermissionTestResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Test user permissions
+      tags:
+      - permissions
+  /test/permissions/batch:
+    post:
+      consumes:
+      - application/json
+      description: Test if the current user has permissions for multiple object-action
+        combinations
+      parameters:
+      - description: Array of permission test requests
+        in: body
+        name: requests
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/handlers.PermissionTestRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission check results
+          schema:
+            items:
+              $ref: '#/definitions/handlers.PermissionTestResponse'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Test multiple user permissions
+      tags:
+      - permissions
+  /test/permissions/routes:
+    get:
+      description: Get all configured route-to-permission mappings for debugging
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Route permission mappings
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get route permission mappings
+      tags:
+      - permissions
+  /test/permissions/user:
+    get:
+      description: Get all permissions for the currently logged in user in the current
+        marina
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User permissions and available objects
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user permissions
+      tags:
+      - permissions
   /user:
     post:
       consumes:
@@ -1256,17 +7413,164 @@ paths:
       summary: Update user
       tags:
       - User
+  /user/customer-portal:
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer user and assign them to a marina and customer
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateCustomerUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create customer user
+      tags:
+      - User
+  /user/customer-portal/{customerId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all users in a specific customer
+      parameters:
+      - description: Customer ID
+        in: path
+        name: customerId
+        required: true
+        type: string
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of users in the marina for this  customer
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get users by customer ID
+      tags:
+      - User
+  /user/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Initiate password recovery process
+      operationId: user-forgot-password
+      parameters:
+      - description: Email for password recovery
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password recovery email sent
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Forgot password
+      tags:
+      - User
+  /user/invite:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user and send them an invitation email
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateUserWithInvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/responses.UserResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create user with invitation
+      tags:
+      - User
   /user/list:
     get:
       consumes:
       - application/json
       description: get users
       parameters:
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -1297,11 +7601,17 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Page number
+      - description: Filter by customer status. If not provided, returns all users
+        in: query
+        name: isCustomer
+        type: boolean
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -1336,11 +7646,17 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Page number
+      - description: Filter by customer status. If not provided, returns all users
+        in: query
+        name: isCustomer
+        type: boolean
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -1435,11 +7751,13 @@ paths:
         name: organizationId
         required: true
         type: string
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -1484,6 +7802,75 @@ paths:
       summary: Get my user
       tags:
       - User
+  /user/recover-password:
+    post:
+      consumes:
+      - application/json
+      description: Verify token and set new password
+      operationId: user-recover-password
+      parameters:
+      - description: Recovery token and new password
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CompletePasswordRecoveryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password updated successfully
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid token or validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Complete password recovery
+      tags:
+      - User
+  /user/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset authenticated user's password and check against previous
+        passwords
+      operationId: user-reset-password
+      parameters:
+      - description: Password reset info
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset success
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Authentication error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Reset user password
+      tags:
+      - User
   /user/role/{roleId}:
     get:
       consumes:
@@ -1495,11 +7882,13 @@ paths:
         name: roleId
         required: true
         type: string
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         name: page
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         name: pageSize
         type: integer
@@ -1523,6 +7912,319 @@ paths:
       summary: Get users by role
       tags:
       - User
+  /work-orders/completed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves work orders completed on a specific date
+      parameters:
+      - description: 'Completion date (format: YYYY-MM-DD)'
+        in: query
+        name: CompleteDate
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderCompletedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve completed work orders
+      tags:
+      - WorkOrders
+  /work-orders/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new work order
+      parameters:
+      - description: Work Order information
+        in: body
+        name: workOrder
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create work order
+      tags:
+      - WorkOrders
+  /work-orders/create-from-estimate:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new work order from an existing estimate
+      parameters:
+      - description: Estimate information
+        in: body
+        name: workOrder
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderCreateFromEstimateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderCreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create work order from estimate
+      tags:
+      - WorkOrders
+  /work-orders/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of work orders for a specific customer
+      parameters:
+      - description: Customer ID
+        in: query
+        name: custId
+        required: true
+        type: string
+      - description: Status (O for Open, C for Closed, blank for All)
+        in: query
+        name: status
+        type: string
+      - description: Comma delimited list of location codes
+        in: query
+        name: locationCodeList
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderShortListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List work orders for customer
+      tags:
+      - WorkOrders
+  /work-orders/delete-operation:
+    post:
+      consumes:
+      - application/json
+      description: Deletes an operation from a work order
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WorkOrder
+        required: true
+        type: string
+      - description: Operation Code to delete
+        in: query
+        name: Operation
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderDeleteOperationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete work order operation
+      tags:
+      - WorkOrders
+  /work-orders/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of work orders
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List work orders by page
+      tags:
+      - WorkOrders
+  /work-orders/operations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves available operation codes for work orders
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderOperationsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order operations
+      tags:
+      - WorkOrders
+  /work-orders/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a work order by its ID
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WorkOrderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order by ID
+      tags:
+      - WorkOrders
+  /work-orders/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches for work orders based on search string
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - default: false
+        description: Direct hit search
+        in: query
+        name: DirectHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search work orders
+      tags:
+      - WorkOrders
+  /work-orders/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates an existing work order
+      parameters:
+      - description: Work Order information
+        in: body
+        name: workOrder
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update work order
+      tags:
+      - WorkOrders
 securityDefinitions:
   ApiKeyAuth:
     in: header

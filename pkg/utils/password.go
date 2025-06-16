@@ -1,8 +1,15 @@
 package utils
 
 import (
+	"errors"
+	"math/rand"
+
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrPasswordReused = errors.New("password was recently used, please choose a different password")
 )
 
 // HashPassword hashes a password using bcrypt with the default cost
@@ -28,4 +35,31 @@ func UpdatePasswordFields(password string) (string, pgtype.Timestamp, error) {
 	}
 
 	return passwordHash, PgTimeNow(), nil
+}
+
+// IsPasswordInHistory checks if the provided password matches any of the provided historical hashes
+func IsPasswordInHistory(newPassword string, historyHashes []string) (bool, error) {
+	for _, hash := range historyHashes {
+		err := VerifyPassword(hash, newPassword)
+		if err == nil {
+			// If no error, passwords match, so password is in history
+			return true, nil
+		}
+		// If error is bcrypt.ErrMismatchedHashAndPassword, passwords don't match
+		// Any other error should be returned
+		if !errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return false, err
+		}
+	}
+	return false, nil
+}
+
+// RandomString generates a random string of length n
+func RandomString(n int) string {
+	b := make([]byte, n)
+	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }

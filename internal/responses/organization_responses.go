@@ -46,7 +46,7 @@ func ConvertOrganizationToResponse(org db.Organization) OrganizationResponse {
 		ID:        org.ID,
 		Email:     org.Email,
 		Name:      org.Name,
-		Image:     org.Image,
+		Image:     utils.GetFullImageURL(org.Image),
 		Website:   org.Website,
 		Country:   org.Country,
 		Phone:     org.Phone,
@@ -75,4 +75,29 @@ func NewOrganizationResponseSuccess(org db.Organization) BaseResponse {
 // NewOrganizationsPaginatedResponse creates a paginated response for organizations
 func NewOrganizationsPaginatedResponse(orgs []db.Organization, total int64, perPage, page int32) BaseResponse {
 	return NewPaginatedResponse(ConvertOrganizationsToResponse(orgs), total, perPage, page)
+}
+
+// NewOrganizationWithAddressResponse creates a response containing organization and its address
+func NewOrganizationWithAddressResponse(org db.Organization, address *db.Address) BaseResponse {
+	orgResponse := ConvertOrganizationToResponse(org)
+	response := OrganizationWithAddressResponse{
+		ID:        orgResponse.ID,
+		Email:     orgResponse.Email,
+		Name:      orgResponse.Name,
+		Image:     orgResponse.Image,
+		Website:   orgResponse.Website,
+		Country:   orgResponse.Country,
+		Phone:     orgResponse.Phone,
+		IsActive:  orgResponse.IsActive,
+		IsTest:    orgResponse.IsTest,
+		CreatedAt: orgResponse.CreatedAt,
+		UpdatedAt: orgResponse.UpdatedAt,
+	}
+
+	if address != nil {
+		addressResponse := ConvertAddressToResponse(*address)
+		response.Address = &addressResponse
+	}
+
+	return NewSuccessResponse(response)
 }
