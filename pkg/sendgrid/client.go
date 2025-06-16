@@ -161,6 +161,7 @@ func (c *Client) SendTemplateByName(name string, to []string, subject string, te
 	}
 
 	email := &TemplateEmail{
+		Subject: subject,
 		EmailData: EmailData{
 			To:        to,
 			Subject:   subject,
@@ -183,6 +184,10 @@ func (c *Client) sendHTMLEmailSync(email *HTMLEmail) error {
 	message.SetFrom(from)
 
 	message.Subject = email.Subject
+
+	if email.ReplyTo != "" {
+		message.SetReplyTo(mail.NewEmail("", email.ReplyTo))
+	}
 
 	// Add content
 	p := mail.NewContent("text/plain", email.PlainText)
@@ -215,8 +220,12 @@ func (c *Client) sendTemplateEmailSync(email *TemplateEmail) error {
 
 	from := mail.NewEmail(email.FromName, email.FromEmail)
 	message.SetFrom(from)
+	message.Subject = email.Subject
 
 	message.SetTemplateID(email.TemplateID)
+	if email.ReplyTo != "" {
+		message.SetReplyTo(mail.NewEmail("", email.ReplyTo))
+	}
 
 	// Add recipients and template data
 	personalization := mail.NewPersonalization()
@@ -261,6 +270,7 @@ func (c *Client) SendWelcomeEmail(to []string, subject string, data WelcomeTempl
 	}
 
 	email := &TemplateEmail{
+		Subject: subject,
 		EmailData: EmailData{
 			To:        to,
 			Subject:   subject,
@@ -290,6 +300,7 @@ func (c *Client) SendPasswordResetEmail(to []string, subject string, data Passwo
 	}
 
 	email := &TemplateEmail{
+		Subject: subject,
 		EmailData: EmailData{
 			To:        to,
 			Subject:   subject,
@@ -316,10 +327,105 @@ func (c *Client) SendMessageEmail(to []string, subject string, data MessageTempl
 		"content":          data.Content,
 		"recipient":        data.Recipient,
 		"sender":           data.Sender,
+		"home_url":         data.HomeURL,
 		"terms_conditions": data.TermsConditions,
 	}
 
 	email := &TemplateEmail{
+		Subject: subject,
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
+// SendMessageExternalEmail sends a message email using the message template
+func (c *Client) SendExternalMessageEmail(to []string, subject string, data ExternalMessageTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["message_external"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("message template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"content":          data.Content,
+		"recipient":        data.Recipient,
+		"sender":           data.Sender,
+		"reply_to":         data.ReplyTo,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		Subject: subject,
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		ReplyTo:      data.ReplyTo,
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
+// SendInviteEmail sends an invite email using the invite template
+func (c *Client) SendInviteEmail(to []string, subject string, data InviteTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["invite"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("invite template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"user_name":        data.UserName,
+		"invite_url":       data.InviteURL,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		Subject: subject,
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
+// SendInviteCustomerEmail sends an invite email using the invite template
+func (c *Client) SendInviteCustomerEmail(to []string, subject string, data InviteCustomerTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["invite_customer"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("invite template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"user_name":        data.UserName,
+		"invite_url":       data.InviteURL,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		Subject: subject,
 		EmailData: EmailData{
 			To:        to,
 			Subject:   subject,

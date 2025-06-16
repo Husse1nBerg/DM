@@ -19,6 +19,7 @@ type ContactResponse struct {
 	Description *string    `json:"description,omitempty" example:"Primary emergency contact"`
 	Email       *string    `json:"email,omitempty" example:"john@example.com"`
 	Phone       *string    `json:"phone,omitempty" example:"+1-555-123-4567"`
+	IsCPContact bool       `json:"is_cp_contact" example:"false"`
 	CreatedAt   *time.Time `json:"createdAt,omitempty" example:"2023-01-01T00:00:00Z"`
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty" example:"2023-01-01T00:00:00Z"`
 }
@@ -41,6 +42,7 @@ func ConvertContactToResponse(contact db.Contact) ContactResponse {
 		Description: contact.Description,
 		Email:       contact.Email,
 		Phone:       contact.Phone,
+		IsCPContact: contact.IsCpContact != nil && *contact.IsCpContact,
 		CreatedAt:   utils.PgTimeToTimePtr(contact.CreatedAt),
 		UpdatedAt:   utils.PgTimeToTimePtr(contact.UpdatedAt),
 	}

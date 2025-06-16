@@ -158,6 +158,14 @@ func (c *Client) CreateCustomer(ctx context.Context, customer *CustomerCreate, o
 	var result CustomerCreateUpdateResponse
 	endpoint := "/DockMaster/Customers/UpdateCustomer"
 
+	// Initialize empty arrays if nil
+	if customer.CustomInformation == nil {
+		customer.CustomInformation = []CustomInformation{}
+	}
+	if customer.Attachments == nil {
+		customer.Attachments = []Attachment{}
+	}
+
 	err := c.DoJSONRequest(
 		ctx,
 		http.MethodPost,
@@ -275,16 +283,36 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
 
-	// Fix for issue: Motors field is required and cannot be null
+	// Initialize all array fields if they are null
 	if boat.Motors == nil {
-		// Add empty motor array if none provided
 		boat.Motors = []Motor{}
 	}
+	if boat.BillingCodes == nil {
+		boat.BillingCodes = []BillingCode{}
+	}
+	if boat.BoatDescriptionCodes == nil {
+		boat.BoatDescriptionCodes = []BoatDescriptionCode{}
+	}
+	if boat.CustomInformation == nil {
+		boat.CustomInformation = []CustomInformation{}
+	}
+	if boat.OperationsHistory == nil {
+		boat.OperationsHistory = []OperationHistory{}
+	}
+	if boat.Attachments == nil {
+		boat.Attachments = []Attachment{}
+	}
 
-	// Fix for issue: LastModifedDate field is required (note the typo in the API)
-	if boat.Slip.LastModifedDate == "" {
-		// Set current time if not provided
-		boat.Slip.LastModifedDate = time.Now().Format("2000-01-01T00:00:00")
+	// Initialize Slip if it's nil
+	if boat.Slip == (Slip{}) {
+		boat.Slip = Slip{
+			LastModifedDate: time.Now().Format("2000-01-01T00:00:00"),
+		}
+	}
+
+	// Set LastModified if empty
+	if boat.LastModified == "" {
+		boat.LastModified = time.Now().Format("2000-01-01T00:00:00")
 	}
 
 	err := c.DoJSONRequest(
@@ -312,16 +340,36 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
 
-	// Fix for issue: Motors field is required and cannot be null
+	// Initialize empty arrays if nil
 	if boat.Motors == nil {
-		// Add empty motor array if none provided
 		boat.Motors = []Motor{}
 	}
+	if boat.BillingCodes == nil {
+		boat.BillingCodes = []BillingCode{}
+	}
+	if boat.BoatDescriptionCodes == nil {
+		boat.BoatDescriptionCodes = []BoatDescriptionCode{}
+	}
+	if boat.CustomInformation == nil {
+		boat.CustomInformation = []CustomInformation{}
+	}
+	if boat.OperationsHistory == nil {
+		boat.OperationsHistory = []OperationHistory{}
+	}
+	if boat.Attachments == nil {
+		boat.Attachments = []Attachment{}
+	}
 
-	// Fix for issue: LastModifedDate field is required (note the typo in the API)
-	if boat.Slip.LastModifedDate == "" {
-		// Set current time if not provided
-		boat.Slip.LastModifedDate = time.Now().Format("2000-01-01T00:00:00")
+	// Initialize Slip if it's nil
+	if boat.Slip == (Slip{}) {
+		boat.Slip = Slip{
+			LastModifedDate: time.Now().Format("2006-01-02T15:04:05"),
+		}
+	}
+
+	// Set LastModified if empty
+	if boat.LastModified == "" {
+		boat.LastModified = time.Now().Format("2006-01-02T15:04:05")
 	}
 
 	err := c.DoJSONRequest(
@@ -337,6 +385,7 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	if err != nil {
 		return nil, fmt.Errorf("failed to create boat: %w", err)
 	}
+
 	createdBoat, err := c.RetrieveBoatByID(ctx, result.BoatID, organizationID, systemID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve created boat: %w", err)

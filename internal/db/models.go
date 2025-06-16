@@ -34,6 +34,7 @@ type Contact struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	DeletedAt   pgtype.Timestamp
+	IsCpContact *bool
 }
 
 type CustomerSetting struct {
@@ -86,26 +87,42 @@ type Document struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
+type Invite struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Email     string
+	Token     string
+	ExpiresAt pgtype.Timestamp
+	Used      *bool
+	CreatedAt pgtype.Timestamp
+}
+
 type Marina struct {
-	ID             uuid.UUID
-	OrganizationID uuid.UUID
-	Name           string
-	Email          string
-	Location       *string
-	Phone          *string
-	Country        *string
-	Currency       *string
-	WorkingHours   []byte
-	Website        *string
-	Image          *string
-	MaxUsers       *int32
-	IsActive       *bool
-	IsTest         *bool
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
-	DeletedAt      pgtype.Timestamp
-	AddressID      uuid.UUID
-	SystemID       *string
+	ID                  uuid.UUID
+	OrganizationID      uuid.UUID
+	Name                string
+	Email               string
+	Location            *string
+	Phone               *string
+	Country             *string
+	Currency            *string
+	WorkingHours        []byte
+	Website             *string
+	Image               *string
+	MaxUsers            *int32
+	IsActive            *bool
+	IsTest              *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	AddressID           uuid.UUID
+	SystemID            *string
+	StorageUsage        *int64
+	EmailUsage          *int16
+	TextUsage           *int16
+	NotesMessagesPlanID uuid.UUID
+	StoragePlanID       uuid.UUID
+	Modules             []byte
 }
 
 type MarinaGallery struct {
@@ -116,6 +133,17 @@ type MarinaGallery struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	DeletedAt   pgtype.Timestamp
+}
+
+type MarinaUsageHistory struct {
+	ID           uuid.UUID
+	MarinaID     uuid.UUID
+	StorageUsage int64
+	EmailUsage   int16
+	TextUsage    int16
+	CreatedAt    pgtype.Timestamptz
+	UpdatedAt    pgtype.Timestamptz
+	MonthDate    pgtype.Date
 }
 
 type Message struct {
@@ -133,6 +161,18 @@ type Message struct {
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
 	DeletedAt  pgtype.Timestamp
+}
+
+type NotesMessagesPlan struct {
+	ID            uuid.UUID
+	Name          string
+	MonthlyPrice  float64
+	TextLimit     *int32
+	EmailLimit    *string
+	UserLimit     *string
+	IsMostPopular *bool
+	CreatedAt     pgtype.Timestamp
+	UpdatedAt     pgtype.Timestamp
 }
 
 type Organization struct {
@@ -178,6 +218,18 @@ type Role struct {
 	UpdatedAt      pgtype.Timestamp
 	DeletedAt      pgtype.Timestamp
 	IsCustomerRole *bool
+	Type           string
+}
+
+type StoragePlan struct {
+	ID             uuid.UUID
+	Name           string
+	MonthlyPrice   float64
+	StorageLimitGb *int32
+	UserLimit      *string
+	IsMostPopular  *bool
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
 }
 
 type User struct {
@@ -190,7 +242,7 @@ type User struct {
 	Phone               *string
 	Title               *string
 	Image               *string
-	PasswordHash        string
+	PasswordHash        *string
 	LastLogin           pgtype.Timestamp
 	FailedLoginAttempts *int32
 	LockedUntil         pgtype.Timestamp
@@ -203,10 +255,10 @@ type User struct {
 	CreatedAt           pgtype.Timestamp
 	UpdatedAt           pgtype.Timestamp
 	DeletedAt           pgtype.Timestamp
-	Modules             []byte
-	Permissions         []byte
 	CustomerID          *string
 	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
 }
 
 type UserMarina struct {

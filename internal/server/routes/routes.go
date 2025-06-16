@@ -6,6 +6,7 @@ import (
 	_ "github.com/dockworks/dm-web-backend/docs"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	h "github.com/dockworks/dm-web-backend/internal/server/handlers"
+	pm "github.com/dockworks/dm-web-backend/internal/server/middleware"
 	"go.uber.org/zap"
 
 	"github.com/brpaz/echozap"
@@ -45,6 +46,10 @@ func RegisterRoutes(s *s.Server) {
 	contactHandler := h.NewContactHandler(s)
 	messageHandler := h.NewMessageHandler(s)
 	documentHandler := h.NewDocumentHandler(s)
+	inviteHandler := h.NewInviteHandler(s)
+	marinaUsageHistoryHandler := h.NewMarinaUsageHistoryHandler(s)
+	planHandler := h.NewPlanHandler(s)
+	permissionTestHandler := h.NewPermissionTestHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -70,6 +75,11 @@ func RegisterRoutes(s *s.Server) {
 	auth.POST("/login", authHandler.Login)
 	auth.POST("/refresh", authHandler.RefreshToken)
 
+	// Invite routes (public endpoints)
+	invite := base.Group("/invite")
+	invite.GET("/confirm", inviteHandler.ConfirmToken)
+	invite.POST("/accept", inviteHandler.AcceptInvitation)
+
 	protected := base.Group("")
 	// Configure middleware with the custom claims type
 	config := echojwt.Config{
@@ -80,8 +90,18 @@ func RegisterRoutes(s *s.Server) {
 	}
 	protected.Use(echojwt.WithConfig(config))
 
+	permissionMiddleware, err := pm.InitializePermissionMiddleware(s.DB.Queries())
+	if err != nil {
+		s.Logger.Zap.Error("Failed to initialize permission middleware", err)
+	}
+
+	permissionProtected := protected.Group("")
+	if permissionMiddleware != nil {
+		permissionProtected.Use(permissionMiddleware.RequirePermission())
+	}
+
 	// User routes
-	users := protected.Group("/user")
+	users := permissionProtected.Group("/user")
 	users.GET("/profile", userHandler.GetMyUserHandler)
 	users.GET("/list", userHandler.ListUsersHandler)
 	users.POST("", userHandler.CreateUserHandler)
@@ -91,10 +111,14 @@ func RegisterRoutes(s *s.Server) {
 	users.POST("/reset-password", userHandler.ResetPassword)
 	users.POST("/customer-portal", userHandler.CreateCustomerUserHandler)
 	users.GET("/customer-portal/:customerId", userHandler.GetUsersByCustomerIDHandler)
+	users.POST("/invite", userHandler.CreateUserWithInvitationHandler)
 
 	// Password recovery (public endpoints)
 	base.POST("/user/forgot-password", userHandler.ForgotPassword)
 	base.POST("/user/recover-password", userHandler.RecoverPassword)
+
+	// Customer intake (public endpoint)
+	base.POST("/customer-intake", customerHandler.CustomerIntake)
 
 	// User by role, organization, marina
 	users.GET("/role/:roleId", userHandler.GetUsersByRoleHandler)
@@ -107,7 +131,7 @@ func RegisterRoutes(s *s.Server) {
 	users.POST("/marina/unassign", userHandler.UnassignUserFromMarinaHandler)
 
 	// Role routes
-	roles := protected.Group("/role")
+	roles := permissionProtected.Group("/role")
 	roles.GET("/list", roleHandler.ListRolesHandler)
 	roles.POST("", roleHandler.CreateRoleHandler)
 	roles.GET("/:roleId", roleHandler.GetRoleHandler)
@@ -116,7 +140,7 @@ func RegisterRoutes(s *s.Server) {
 	roles.GET("/name", roleHandler.GetRoleByNameHandler)
 
 	// Organization routes
-	organizations := protected.Group("/organizations")
+	organizations := permissionProtected.Group("/organizations")
 	organizations.POST("", organizationHandler.CreateOrganization)
 	organizations.GET("", organizationHandler.GetOrganizationsPaginated)
 	organizations.GET("/by-email", organizationHandler.GetOrganizationByEmail)
@@ -127,7 +151,7 @@ func RegisterRoutes(s *s.Server) {
 	organizations.DELETE("/:id", organizationHandler.DeleteOrganization)
 
 	// Marina routes
-	marinas := protected.Group("/marinas")
+	marinas := permissionProtected.Group("/marinas")
 	marinas.POST("", marinaHandler.CreateMarina)
 	marinas.GET("", marinaHandler.GetMarinasPaginated)
 	marinas.GET("/by-email", marinaHandler.GetMarinaByEmail)
@@ -145,13 +169,13 @@ func RegisterRoutes(s *s.Server) {
 	marinas.DELETE("/:id/contacts/:contactId", contactHandler.DeleteContact)
 
 	// Address routes
-	addresses := protected.Group("/addresses")
+	addresses := permissionProtected.Group("/addresses")
 	addresses.POST("", addressHandler.CreateAddress)
 	addresses.GET("/:id", addressHandler.GetAddressById)
 	addresses.PUT("/:id", addressHandler.UpdateAddress)
 
 	// DME routes
-	dme := protected.Group("/dme")
+	dme := permissionProtected.Group("/dme")
 
 	// DME Credentials routes
 	credGroup := dme.Group("/credentials")
@@ -174,7 +198,7 @@ func RegisterRoutes(s *s.Server) {
 	sysidGroup.PATCH("/:id/unlink", dmeSysIDHandler.UnlinkDMESysIDFromMarina)
 
 	// Customer routes
-	customers := protected.Group("/customers")
+	customers := permissionProtected.Group("/customers")
 	customers.GET("/list", customerHandler.ListCustomersByPage)
 	customers.GET("/list-short", customerHandler.ListCustomersShortByPage)
 	customers.GET("/retrieve", customerHandler.RetrieveCustomer)
@@ -185,17 +209,16 @@ func RegisterRoutes(s *s.Server) {
 	customers.POST("/settings", customerHandler.UpdateCustomerSettings)
 
 	// Email routes
-	emails := protected.Group("/email")
+	emails := permissionProtected.Group("/email")
 	emails.POST("/send-html", emailHandler.SendHTMLEmail)
 	emails.POST("/send-template", emailHandler.SendTemplateEmail)
 
 	// SMS routes
-	sms := protected.Group("/sms")
+	sms := permissionProtected.Group("/sms")
 	sms.POST("/send", smsHandler.SendSMS)
-	sms.POST("/send-batch", smsHandler.SendBatchSMS)
 
 	// Boat routes
-	boats := protected.Group("/boats")
+	boats := permissionProtected.Group("/boats")
 	boats.GET("/list", boatHandler.ListBoatsByPage)
 	boats.GET("/retrieve", boatHandler.RetrieveBoat)
 	boats.GET("/customer", boatHandler.RetrieveBoatsForCustomer)
@@ -204,7 +227,7 @@ func RegisterRoutes(s *s.Server) {
 	boats.POST("/create", boatHandler.CreateBoat)
 
 	// Gallery routes
-	gallery := protected.Group("/gallery")
+	gallery := permissionProtected.Group("/gallery")
 	gallery.POST("/marina", galleryHandler.CreateMarinaGalleryItem)
 	gallery.GET("/marina/:marinaId", galleryHandler.GetMarinaGallery)
 	gallery.GET("/marina/item/:id", galleryHandler.GetMarinaGalleryItem)
@@ -218,7 +241,7 @@ func RegisterRoutes(s *s.Server) {
 	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
 
 	// Document routes
-	documents := protected.Group("/documents")
+	documents := permissionProtected.Group("/documents")
 	documents.POST("/customer", documentHandler.CustomerUploadDocument)
 	documents.GET("/customer", documentHandler.CustomerGetDocumentsByEntity)
 	documents.POST("/boat", documentHandler.BoatUploadDocument)
@@ -229,7 +252,7 @@ func RegisterRoutes(s *s.Server) {
 	documents.DELETE("/:id", documentHandler.DeleteDocument)
 
 	// Work Order routes
-	workOrders := protected.Group("/work-orders")
+	workOrders := permissionProtected.Group("/work-orders")
 	workOrders.GET("/list", workOrderHandler.ListWorkOrdersByPage)
 	workOrders.GET("/retrieve", workOrderHandler.RetrieveWorkOrder)
 	workOrders.GET("/search", workOrderHandler.SearchWorkOrders)
@@ -242,7 +265,7 @@ func RegisterRoutes(s *s.Server) {
 	workOrders.POST("/delete-operation", workOrderHandler.DeleteWorkOrderOperation)
 
 	// Message routes
-	messages := protected.Group("/message")
+	messages := permissionProtected.Group("/message")
 	messages.POST("/customer", messageHandler.CreateMessageHandler)
 	messages.POST("/marina", messageHandler.CreateMessageMarinaHandler)
 	messages.GET("/marina", messageHandler.ListMessagesMarinaHandler)
@@ -252,5 +275,31 @@ func RegisterRoutes(s *s.Server) {
 	messages.PUT("/marina", messageHandler.UpdateMarinaMessageHandler)
 	messages.DELETE("/customer", messageHandler.DeleteCustomerMessageHandler)
 	messages.DELETE("/marina", messageHandler.DeleteMarinaMessageHandler)
+
+	// Marina Usage History routes
+	marinaUsageHistory := protected.Group("/marina-usage-history")
+	marinaUsageHistory.GET("/:id", marinaUsageHistoryHandler.GetMarinaUsageHistoryByID)
+	marinaUsageHistory.GET("/marina/:marinaId", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMarinaID)
+	marinaUsageHistory.GET("/marina/:marinaId/range", marinaUsageHistoryHandler.GetMarinaUsageHistoryByDateRange)
+	marinaUsageHistory.GET("/marina/:marinaId/latest", marinaUsageHistoryHandler.GetLatestMarinaUsageHistory)
+	marinaUsageHistory.GET("/marina/:marinaId/month", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMonth)
+
+	// Plan routes
+	plans := protected.Group("/plans")
+
+	// Notes and Messages Plans
+	notesMessagesPlans := plans.Group("/notes-messages")
+	notesMessagesPlans.GET("", planHandler.ListNotesMessagesPlans)
+	notesMessagesPlans.GET("/:planId", planHandler.GetNotesMessagesPlan)
+
+	// Storage Plans
+	storagePlans := plans.Group("/storage")
+	storagePlans.GET("", planHandler.ListStoragePlans)
+	storagePlans.GET("/:planId", planHandler.GetStoragePlan)
+	// Permission test routes (for testing the permission system)
+	test := permissionProtected.Group("/test")
+	test.POST("/permissions", permissionTestHandler.TestPermission)
+	test.GET("/permissions/user", permissionTestHandler.GetUserPermissions)
+	test.GET("/permissions/routes", permissionTestHandler.GetRoutePermissions)
 
 }

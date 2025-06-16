@@ -11,7 +11,6 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
-	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/token"
@@ -121,8 +120,9 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
 	}
 
+	email := utils.LowerCase(req.Email)
 	// Check if the email is already taken
-	_, err = queries.GetUserByEmail(c.Request().Context(), req.Email)
+	_, err = queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
 	}
@@ -155,47 +155,15 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		isSuperuser = *req.IsSuperuser
 	}
 
-	// Convert permissions and modules to bytes
-	var permissionsBytes, modulesBytes []byte
-
-	// Use provided permissions or default from role
-	if req.Permissions != nil {
-		var err error
-		permissionsBytes, err = req.Permissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-		}
-	} else {
-		// Set default permissions based on the role
-		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-		}
-		permissionsBytes = role.Permissions
-	}
-
-	// Use provided modules or default read-only modules
-	if req.Modules != nil {
-		var err error
-		modulesBytes, err = req.Modules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-		}
-	} else {
-		// Set default read-only modules if not provided
-		defaultModules := models.ReadOnlyModules()
-		modulesBytes, _ = defaultModules.ToBytes()
-	}
-
 	params := db.CreateUserParams{
 		Username:            username,
 		FirstName:           req.FirstName,
 		LastName:            req.LastName,
-		Email:               req.Email,
+		Email:               email,
 		Phone:               req.Phone,
 		Title:               req.Title,
 		Image:               req.Image,
-		PasswordHash:        passwordHash,
+		PasswordHash:        utils.Pointer(passwordHash),
 		FailedLoginAttempts: &failedLoginAttempts,
 		LastPasswordReset:   utils.PgTimeNow(),
 		OrganizationID:      req.OrganizationID,
@@ -203,8 +171,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		RoleID:              req.RoleID,
 		IsSuperuser:         &isSuperuser,
 		IsActive:            &isActive,
-		Modules:             modulesBytes,
-		Permissions:         permissionsBytes,
+		UserAnalytics:       utils.Pointer(true),
 	}
 
 	user, err := queries.CreateUser(c.Request().Context(), params)
@@ -438,6 +405,7 @@ func (g *UserHandler) GetUsersByOrganizationHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	path		string	true	"Marina ID"
+//	@Param			isCustomer	query		bool	false	"Filter by customer status. If not provided, returns all users"	default()
 //	@Param			page		query		int		false	"Page number"	default(1)
 //	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200			{object}	responses.UserListResponse "Paginated list of users in the marina"
@@ -454,6 +422,14 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	// Parse isCustomer parameter
+	isCustomerStr := c.QueryParam("isCustomer")
+	var isCustomer *bool
+	if isCustomerStr != "" {
+		value := isCustomerStr == "true"
+		isCustomer = &value
+	}
+
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -465,23 +441,35 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 
 	// Get paginated users by marina
 	params := db.GetUsersByMarinaPaginatedParams{
-		MarinaID: marinaID,
-		Limit:    pagination.PageSize,
-		Offset:   (pagination.Page - 1) * pagination.PageSize,
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+		Limit:      pagination.PageSize,
+		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
+	userRows, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Get total count for pagination
-	allUsers, err := queries.GetUsersByMarina(c.Request().Context(), marinaID)
+	allUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 	total := int64(len(allUsers))
 
-	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
+	// Create user responses with server instance for DME client
+	userResponses := make([]responses.UserResponse, len(userRows))
+	for i, user := range userRows {
+		response := responses.NewUserResponseFromRow(user, g.server)
+		if response != nil {
+			userResponses[i] = *response
+		}
+	}
+	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
 // GetMarinaUsersList gets all users associated with a marina through user_marinas
@@ -492,6 +480,7 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	path		string	true	"Marina ID"
+//	@Param			isCustomer	query		bool	false	"Filter by customer status. If not provided, returns all users"	default()
 //	@Param			page		query		int		false	"Page number"	default(1)
 //	@Param			pageSize	query		int		false	"Page size"		default(10)
 //	@Success		200			{object}	responses.UserListResponse "List of users assigned to the marina"
@@ -508,6 +497,14 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	// Parse isCustomer parameter
+	isCustomerStr := c.QueryParam("isCustomer")
+	var isCustomer *bool
+	if isCustomerStr != "" {
+		value := isCustomerStr == "true"
+		isCustomer = &value
+	}
+
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -519,23 +516,35 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 
 	// Get paginated marina users list
 	params := db.GetMarinaUsersListPaginatedParams{
-		MarinaID: marinaID,
-		Limit:    pagination.PageSize,
-		Offset:   (pagination.Page - 1) * pagination.PageSize,
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+		Limit:      pagination.PageSize,
+		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
+	userRows, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Get total count for pagination
-	allUsers, err := queries.GetMarinaUsersList(c.Request().Context(), marinaID)
+	allUsers, err := queries.GetMarinaUsersList(c.Request().Context(), db.GetMarinaUsersListParams{
+		MarinaID:   marinaID,
+		IsCustomer: isCustomer,
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 	total := int64(len(allUsers))
 
-	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
+	// Create user responses with server instance for DME client
+	userResponses := make([]responses.UserResponse, len(userRows))
+	for i, user := range userRows {
+		response := responses.NewUserResponseFromMarinaListRow(user, g.server)
+		if response != nil {
+			userResponses[i] = *response
+		}
+	}
+	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
 // AssignUserToMarinaHandler assigns a user to a marina (creates a user_marinas record)
@@ -692,8 +701,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		RoleID:              currentUser.RoleID,
 		IsSuperuser:         currentUser.IsSuperuser,
 		IsActive:            currentUser.IsActive,
-		Modules:             currentUser.Modules,
-		Permissions:         currentUser.Permissions,
+		UserAnalytics:       currentUser.UserAnalytics,
 	}
 
 	// Handle image upload if this is a multipart request
@@ -744,7 +752,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			updateParams.LastName = lastName
 		}
 		if email := c.FormValue("email"); email != "" {
-			updateParams.Email = email
+			updateParams.Email = utils.LowerCase(email)
 		}
 		if phone := c.FormValue("phone"); phone != "" {
 			updateParams.Phone = &phone
@@ -758,7 +766,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
 			}
-			updateParams.PasswordHash = passwordHash
+			updateParams.PasswordHash = utils.Pointer(passwordHash)
 			updateParams.LastPasswordReset = lastPasswordReset
 		}
 		// Handle boolean and UUID fields
@@ -779,6 +787,11 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			if roleID, err := uuid.Parse(roleIDStr); err == nil {
 				updateParams.RoleID = roleID
 			}
+		}
+		// Add UserAnalytics handling for multipart form
+		if userAnalytics := c.FormValue("userAnalytics"); userAnalytics != "" {
+			analytics := userAnalytics == "true"
+			updateParams.UserAnalytics = &analytics
 		}
 	} else {
 		// Parse and validate the JSON request body
@@ -822,7 +835,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			updateParams.LastName = *req.LastName
 		}
 		if req.Email != nil {
-			updateParams.Email = *req.Email
+			updateParams.Email = utils.LowerCase(*req.Email)
 		}
 		if req.Phone != nil {
 			updateParams.Phone = req.Phone
@@ -839,7 +852,7 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password update").JSON(c)
 			}
-			updateParams.PasswordHash = passwordHash
+			updateParams.PasswordHash = utils.Pointer(passwordHash)
 			updateParams.LastPasswordReset = lastPasswordReset
 		}
 		if req.MarinaID != nil {
@@ -854,24 +867,10 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		if req.IsActive != nil {
 			updateParams.IsActive = req.IsActive
 		}
-
-		// Update permissions if provided
-		if req.Permissions != nil {
-			permissionsBytes, err := req.Permissions.ToBytes()
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-			}
-			updateParams.Permissions = permissionsBytes
+		if req.UserAnalytics != nil {
+			updateParams.UserAnalytics = req.UserAnalytics
 		}
 
-		// Update modules if provided
-		if req.Modules != nil {
-			modulesBytes, err := req.Modules.ToBytes()
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-			}
-			updateParams.Modules = modulesBytes
-		}
 	}
 
 	// Perform update
@@ -921,7 +920,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 	}
 
 	// Verify current password
-	if err := utils.VerifyPassword(user.PasswordHash, resetRequest.OldPassword); err != nil {
+	if err := utils.VerifyPassword(*user.PasswordHash, resetRequest.OldPassword); err != nil {
 		logger.Zap.Info("password reset failed: invalid current password", c.Response().Header().Get(echo.HeaderXRequestID))
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid current password").JSON(c)
 	}
@@ -939,7 +938,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 
 	// Create a slice of password hashes from the history
 	historyHashes := make([]string, 0, len(passwordHistory)+1)
-	historyHashes = append(historyHashes, user.PasswordHash)  // Add current password to history
+	historyHashes = append(historyHashes, *user.PasswordHash) // Add current password to history
 	historyHashes = append(historyHashes, passwordHistory...) // Add previous password hashes
 
 	// Check if new password matches any of the last 4 passwords
@@ -963,7 +962,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 	// Add old password to history first
 	_, err = queries.AddPasswordToHistory(c.Request().Context(), db.AddPasswordToHistoryParams{
 		UserID:       user.ID,
-		PasswordHash: user.PasswordHash, // Store the old password that's being replaced
+		PasswordHash: *user.PasswordHash, // Store the old password that's being replaced
 	})
 	if err != nil {
 		logger.Zap.Error("failed to update password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
@@ -980,7 +979,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 		Phone:               user.Phone,
 		Title:               user.Title,
 		Image:               user.Image,
-		PasswordHash:        newPasswordHash,
+		PasswordHash:        &newPasswordHash,
 		LastLogin:           user.LastLogin,
 		FailedLoginAttempts: user.FailedLoginAttempts,
 		LockedUntil:         user.LockedUntil,
@@ -989,6 +988,7 @@ func (g *UserHandler) ResetPassword(c echo.Context) error {
 		RoleID:              user.RoleID,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 	}
 
 	_, err = queries.UpdateUser(c.Request().Context(), updateParams)
@@ -1067,7 +1067,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 
 	// Create a slice of password hashes from the history
 	historyHashes := make([]string, 0, len(passwordHistory)+1)
-	historyHashes = append(historyHashes, user.PasswordHash)  // Add current password to history
+	historyHashes = append(historyHashes, *user.PasswordHash) // Add current password to history
 	historyHashes = append(historyHashes, passwordHistory...) // Add previous password hashes
 
 	// Check if new password matches any of the last 4 passwords
@@ -1091,7 +1091,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 	// Add old password to history first
 	_, err = queries.AddPasswordToHistory(c.Request().Context(), db.AddPasswordToHistoryParams{
 		UserID:       user.ID,
-		PasswordHash: user.PasswordHash, // Store the old password that's being replaced
+		PasswordHash: *user.PasswordHash, // Store the old password that's being replaced
 	})
 	if err != nil {
 		logger.Zap.Error("failed to update password history", err, c.Response().Header().Get(echo.HeaderXRequestID))
@@ -1108,7 +1108,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 		Phone:               user.Phone,
 		Title:               user.Title,
 		Image:               user.Image,
-		PasswordHash:        newPasswordHash,
+		PasswordHash:        &newPasswordHash,
 		LastLogin:           user.LastLogin,
 		FailedLoginAttempts: user.FailedLoginAttempts,
 		LockedUntil:         user.LockedUntil,
@@ -1117,6 +1117,7 @@ func (g *UserHandler) RecoverPassword(c echo.Context) error {
 		RoleID:              user.RoleID,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 	}
 
 	_, err = queries.UpdateUser(c.Request().Context(), updateParams)
@@ -1258,10 +1259,10 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 	return responses.NewMessageResponse(http.StatusOK, "If your email is registered, you will receive password recovery instructions").JSON(c)
 }
 
-// CreateUserHandler creates a new user
+// CreateCustomerUserHandler creates a new customer user
 //
-//	@Summary		Create user
-//	@Description	Create a new user
+//	@Summary		Create customer user
+//	@Description	Create a new customer user and assign them to a marina and customer
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -1275,6 +1276,8 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	// Parse and validate the request body
 	req := new(requests.CreateCustomerUserRequest)
+	logger := g.server.Logger
+	cfg := g.server.Config
 	if err := c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
@@ -1310,7 +1313,8 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	}
 
 	// Check if the email is already taken
-	_, err = queries.GetUserByEmail(c.Request().Context(), req.Email)
+	email := utils.LowerCase(req.Email)
+	_, err = queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
 	}
@@ -1325,15 +1329,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Username already taken").JSON(c)
 	}
 
-	// Create the user
-	// Hash the password
-	passwordHash, err := utils.HashPassword(req.Password)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password").JSON(c)
-	}
-
 	// Set default values for nullable fields if not provided
-	failedLoginAttempts := int32(0)
 	isActive := true
 	isSuperuser := false
 	if req.IsActive != nil {
@@ -1343,58 +1339,22 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		isSuperuser = *req.IsSuperuser
 	}
 
-	// Convert permissions and modules to bytes
-	var permissionsBytes, modulesBytes []byte
-
-	// Use provided permissions or default from role
-	if req.Permissions != nil {
-		var err error
-		permissionsBytes, err = req.Permissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-		}
-	} else {
-		// Set default permissions based on the role
-		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-		}
-		permissionsBytes = role.Permissions
-	}
-
-	// Use provided modules or default read-only modules
-	if req.Modules != nil {
-		var err error
-		modulesBytes, err = req.Modules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-		}
-	} else {
-		// Set default read-only modules if not provided
-		defaultModules := models.ReadOnlyModules()
-		modulesBytes, _ = defaultModules.ToBytes()
-	}
-
 	params := db.CreateCustomerUserParams{
-		Username:            username,
-		FirstName:           req.FirstName,
-		LastName:            req.LastName,
-		Email:               req.Email,
-		Phone:               req.Phone,
-		Title:               req.Title,
-		Image:               req.Image,
-		PasswordHash:        passwordHash,
-		FailedLoginAttempts: &failedLoginAttempts,
-		LastPasswordReset:   utils.PgTimeNow(),
-		OrganizationID:      req.OrganizationID,
-		MarinaID:            req.MarinaID,
-		RoleID:              req.RoleID,
-		CustomerID:          req.CustomerID,
-		IsCustomer:          utils.Pointer(true),
-		IsSuperuser:         &isSuperuser,
-		IsActive:            &isActive,
-		Modules:             modulesBytes,
-		Permissions:         permissionsBytes,
+		Username:       username,
+		FirstName:      req.FirstName,
+		LastName:       req.LastName,
+		Email:          email,
+		Phone:          req.Phone,
+		Title:          req.Title,
+		Image:          req.Image,
+		OrganizationID: req.OrganizationID,
+		MarinaID:       req.MarinaID,
+		RoleID:         req.RoleID,
+		CustomerID:     req.CustomerID,
+		IsCustomer:     utils.Pointer(true),
+		IsSuperuser:    &isSuperuser,
+		IsActive:       &isActive,
+		UserAnalytics:  utils.Pointer(true),
 	}
 
 	user, err := queries.CreateCustomerUser(c.Request().Context(), params)
@@ -1421,6 +1381,241 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	token, err := utils.GenerateRandomToken(32)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	_, err = queries.CreateInvite(c.Request().Context(), db.CreateInviteParams{
+		UserID:    user.ID,
+		Email:     user.Email,
+		Token:     token,
+		ExpiresAt: utils.PgTimeNowAdd(240 * time.Hour),
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	inviteURL := fmt.Sprintf("%s/%s?token=%s&email=%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.InvitationCustomerRoute,
+		token,
+		url.QueryEscape(user.Email))
+	termsConditionsURL := fmt.Sprintf("%s/%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.TermsConditionsRoute,
+	)
+	templateData := sendgrid.InviteCustomerTemplateData{
+		UserName:        user.FirstName,
+		InviteURL:       inviteURL,
+		TermsConditions: termsConditionsURL,
+	}
+	taskID, resultChan, err := g.server.SendGrid.SendInviteCustomerEmail(
+		[]string{user.Email},
+		"DockMaster Customer Portal Invite",
+		templateData,
+	)
+	if err != nil {
+		logger.Zap.Errorw("Failed to send invite email", "error", err)
+	} else {
+		logger.Zap.Infow("Invite email queued",
+			"email", user.Email,
+			"task_id", taskID.String())
+
+		// Log the email attempt (non-blocking)
+		go func() {
+			result := <-resultChan
+			if result.Status == sendgrid.StatusSent {
+				logger.Zap.Infow("Invite email sent successfully",
+					"email", user.Email,
+					"task_id", result.ID.String())
+			} else {
+				logger.Zap.Errorw("Failed to send invite email",
+					"email", user.Email,
+					"task_id", result.ID.String(),
+					"error", result.Error)
+			}
+		}()
+	}
+
+	response := responses.NewUserResponseSuccess(user)
+	return c.JSON(http.StatusCreated, response)
+}
+
+// CreateUserWithInvitationHandler creates a new user with invitation
+//
+//	@Summary		Create user with invitation
+//	@Description	Create a new user and send them an invitation email
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		requests.CreateUserWithInvitationRequest	true	"User information"
+//	@Success		201		{object}	responses.UserResponseWrapper "Created user"
+//	@Failure		400		{object}	responses.Error "Bad request"
+//	@Failure		500		{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/user/invite [post]
+func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
+	// Parse and validate the request body
+	req := new(requests.CreateUserWithInvitationRequest)
+	logger := g.server.Logger
+	cfg := g.server.Config
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	queries := g.server.DB.Queries()
+
+	// Check if the role exists
+	_, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
+	// Check if the marina and organization exist and linked
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina not found").JSON(c)
+	}
+
+	organization, err := queries.GetOrganizationByID(c.Request().Context(), req.OrganizationID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Organization not found").JSON(c)
+	}
+
+	if marina.OrganizationID != organization.ID {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
+	}
+
+	// Check if the email is already taken
+	email := utils.LowerCase(req.Email)
+	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+	}
+	username := req.Username
+	if username == "" {
+		username = utils.GenerateUsername(req.FirstName)
+	}
+
+	// Check if the username is already taken
+	_, err = queries.GetUserByUsername(c.Request().Context(), username)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Username already taken").JSON(c)
+	}
+
+	// Set default values for nullable fields if not provided
+	failedLoginAttempts := int32(0)
+	isActive := true
+	isSuperuser := false
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+	if req.IsSuperuser != nil {
+		isSuperuser = *req.IsSuperuser
+	}
+
+	// Create user without password hash - they'll set it via invitation
+	params := db.CreateUserParams{
+		Username:            username,
+		FirstName:           req.FirstName,
+		LastName:            req.LastName,
+		Email:               email,
+		Phone:               req.Phone,
+		Title:               req.Title,
+		Image:               req.Image,
+		PasswordHash:        nil, // No password hash - user will set via invitation
+		FailedLoginAttempts: &failedLoginAttempts,
+		LastPasswordReset:   utils.PgTimeNow(),
+		OrganizationID:      req.OrganizationID,
+		MarinaID:            req.MarinaID,
+		RoleID:              req.RoleID,
+		IsSuperuser:         &isSuperuser,
+		IsActive:            &isActive,
+		UserAnalytics:       utils.Pointer(true),
+	}
+
+	user, err := queries.CreateUser(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Assign user to marina
+	assignUserToMarina := db.AssignUserToMarinaParams{
+		UserID:   user.ID,
+		MarinaID: req.MarinaID,
+	}
+
+	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Generate invitation token
+	token, err := utils.GenerateRandomToken(32)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Create invitation record
+	_, err = queries.CreateInvite(c.Request().Context(), db.CreateInviteParams{
+		UserID:    user.ID,
+		Email:     user.Email,
+		Token:     token,
+		ExpiresAt: utils.PgTimeNowAdd(240 * time.Hour), // 10 days
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Build invitation URL
+	inviteURL := fmt.Sprintf("%s/%s?token=%s&email=%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.InvitationRoute,
+		token,
+		url.QueryEscape(user.Email))
+	termsConditionsURL := fmt.Sprintf("%s/%s",
+		cfg.App.FrontendBaseURL,
+		cfg.App.TermsConditionsRoute,
+	)
+
+	// Prepare email template data
+	templateData := sendgrid.InviteTemplateData{
+		UserName:        user.FirstName,
+		InviteURL:       inviteURL,
+		TermsConditions: termsConditionsURL,
+	}
+
+	// Send invitation email
+	taskID, resultChan, err := g.server.SendGrid.SendInviteEmail(
+		[]string{user.Email},
+		"DockMaster Platform Invite",
+		templateData,
+	)
+	if err != nil {
+		logger.Zap.Errorw("Failed to send invite email", "error", err)
+	} else {
+		logger.Zap.Infow("Invite email queued",
+			"email", user.Email,
+			"task_id", taskID.String())
+
+		// Log the email attempt (non-blocking)
+		go func() {
+			result := <-resultChan
+			if result.Status == sendgrid.StatusSent {
+				logger.Zap.Infow("Invite email sent successfully",
+					"email", user.Email,
+					"task_id", result.ID.String())
+			} else {
+				logger.Zap.Errorw("Failed to send invite email",
+					"email", user.Email,
+					"task_id", result.ID.String(),
+					"error", result.Error)
+			}
+		}()
 	}
 
 	response := responses.NewUserResponseSuccess(user)

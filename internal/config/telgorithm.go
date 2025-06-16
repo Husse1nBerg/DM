@@ -15,7 +15,7 @@ type TelgorithmConfig struct {
 // LoadTelgorithmConfig loads Telgorithm configuration from environment variables
 func LoadTelgorithmConfig() TelgorithmConfig {
 	return TelgorithmConfig{
-		BaseURL:    getEnvOrDefault("TELGORITHM_BASE_URL", "https://api.telgorithm.com/v1"),
+		BaseURL:    EnvOrDefault("TELGORITHM_BASE_URL", "https://api.telgorithm.com/v1"),
 		Username:   os.Getenv("TELGORITHM_USERNAME"),
 		Password:   os.Getenv("TELGORITHM_PASSWORD"),
 		FromNumber: os.Getenv("TELGORITHM_FROM_NUMBER"),

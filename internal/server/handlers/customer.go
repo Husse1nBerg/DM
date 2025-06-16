@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -16,6 +16,7 @@ import (
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 )
 
 // CustomerHandler handles customer-related requests
@@ -181,27 +182,12 @@ func (h *CustomerHandler) SearchCustomers(c echo.Context) error {
 // @Router /customers/update [post]
 func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	ctx := c.Request().Context()
-	var reqMap map[string]interface{}
-	if err := c.Bind(&reqMap); err != nil {
+	var req requests.CustomerUpdateRequest
+	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	// Validate required field
-	id, ok := reqMap["id"].(string)
-	if !ok || id == "" {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Missing or invalid 'id' field").JSON(c)
-	}
-
-	// Type/value validation: marshal to JSON, unmarshal into struct, validate
-	jsonBytes, err := json.Marshal(reqMap)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Failed to marshal request").JSON(c)
-	}
-	var reqStruct dme.CustomerUpdate
-	if err := json.Unmarshal(jsonBytes, &reqStruct); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Failed to parse request: "+err.Error()).JSON(c)
-	}
-	if err := c.Validate(&reqStruct); err != nil {
+	if err := c.Validate(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
@@ -216,15 +202,153 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
 
-	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, reqMap, orgID, *systemID)
+	// Get existing customer first
+	existingCustomer, err := h.server.DME.CustomerRetrieve(ctx, req.ID, orgID, *systemID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve existing customer: "+err.Error()).JSON(c)
+	}
+
+	// Only update fields that are present in the request
+	if req.Name != "" {
+		existingCustomer.Name = req.Name
+	}
+	if req.FirstName != "" {
+		existingCustomer.FirstName = req.FirstName
+	}
+	if req.LastName != "" {
+		existingCustomer.LastName = req.LastName
+	}
+	if req.Email != "" {
+		existingCustomer.Email = req.Email
+	}
+	if req.Address1 != "" {
+		existingCustomer.Address1 = req.Address1
+	}
+	if req.Address2 != "" {
+		existingCustomer.Address2 = req.Address2
+	}
+	if req.Address3 != "" {
+		existingCustomer.Address3 = req.Address3
+	}
+	if req.City != "" {
+		existingCustomer.City = req.City
+	}
+	if req.State != "" {
+		existingCustomer.State = req.State
+	}
+	if req.Zip != "" {
+		existingCustomer.Zip = req.Zip
+	}
+	if req.Country != "" {
+		existingCustomer.Country = req.Country
+	}
+	if req.Phone != "" {
+		existingCustomer.Phone = req.Phone
+	}
+	if req.AltFirstName != "" {
+		existingCustomer.AltFirstName = req.AltFirstName
+	}
+	if req.AltLastName != "" {
+		existingCustomer.AltLastName = req.AltLastName
+	}
+	if req.AltAddress1 != "" {
+		existingCustomer.AltAddress1 = req.AltAddress1
+	}
+	if req.AltAddress2 != "" {
+		existingCustomer.AltAddress2 = req.AltAddress2
+	}
+	if req.AltAddress3 != "" {
+		existingCustomer.AltAddress3 = req.AltAddress3
+	}
+	if req.AltCity != "" {
+		existingCustomer.AltCity = req.AltCity
+	}
+	if req.AltState != "" {
+		existingCustomer.AltState = req.AltState
+	}
+	if req.AltZip != "" {
+		existingCustomer.AltZip = req.AltZip
+	}
+	if req.AltCountry != "" {
+		existingCustomer.AltCountry = req.AltCountry
+	}
+	if req.AltPhone != "" {
+		existingCustomer.AltPhone = req.AltPhone
+	}
+	existingCustomer.UseAltAddress = req.UseAltAddress
+	if req.WorkPhone != "" {
+		existingCustomer.WorkPhone = req.WorkPhone
+	}
+	if req.CellPhone != "" {
+		existingCustomer.CellPhone = req.CellPhone
+	}
+	if req.EmergencyContact != "" {
+		existingCustomer.EmergencyContact = req.EmergencyContact
+	}
+	if req.EmergencyPhone != "" {
+		existingCustomer.EmergencyPhone = req.EmergencyPhone
+	}
+	if req.CompanyName != "" {
+		existingCustomer.CompanyName = req.CompanyName
+	}
+	if req.ShipmentMethod != "" {
+		existingCustomer.ShipmentMethod = req.ShipmentMethod
+	}
+	if req.ShipmentMethodDescription != "" {
+		existingCustomer.ShipmentMethodDescription = req.ShipmentMethodDescription
+	}
+	if req.CustomInformation != nil {
+		existingCustomer.CustomInformation = req.CustomInformation
+	}
+	if req.Attachments != nil {
+		existingCustomer.Attachments = req.Attachments
+	}
+
+	// Convert to CustomerUpdate
+	customer := dme.CustomerUpdate{
+		ID:                        existingCustomer.ID,
+		Name:                      existingCustomer.Name,
+		FirstName:                 existingCustomer.FirstName,
+		LastName:                  existingCustomer.LastName,
+		Email:                     existingCustomer.Email,
+		Address1:                  existingCustomer.Address1,
+		Address2:                  existingCustomer.Address2,
+		Address3:                  existingCustomer.Address3,
+		City:                      existingCustomer.City,
+		State:                     existingCustomer.State,
+		Zip:                       existingCustomer.Zip,
+		Country:                   existingCustomer.Country,
+		Phone:                     existingCustomer.Phone,
+		AltFirstName:              existingCustomer.AltFirstName,
+		AltLastName:               existingCustomer.AltLastName,
+		AltAddress1:               existingCustomer.AltAddress1,
+		AltAddress2:               existingCustomer.AltAddress2,
+		AltAddress3:               existingCustomer.AltAddress3,
+		AltCity:                   existingCustomer.AltCity,
+		AltState:                  existingCustomer.AltState,
+		AltZip:                    existingCustomer.AltZip,
+		AltCountry:                existingCustomer.AltCountry,
+		AltPhone:                  existingCustomer.AltPhone,
+		UseAltAddress:             existingCustomer.UseAltAddress,
+		WorkPhone:                 existingCustomer.WorkPhone,
+		CellPhone:                 existingCustomer.CellPhone,
+		EmergencyContact:          existingCustomer.EmergencyContact,
+		EmergencyPhone:            existingCustomer.EmergencyPhone,
+		CompanyName:               existingCustomer.CompanyName,
+		ShipmentMethod:            existingCustomer.ShipmentMethod,
+		ShipmentMethodDescription: existingCustomer.ShipmentMethodDescription,
+		CustomInformation:         existingCustomer.CustomInformation,
+		Attachments:               existingCustomer.Attachments,
+	}
+
+	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, &customer, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to update customer",
 			zap.Error(err),
-			zap.String("customerId", id))
+			zap.String("customerId", req.ID))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert DME response to API response
 	response := responses.ConvertCustomer(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -321,6 +445,7 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 		Name:                      req.Name,
 		FirstName:                 req.FirstName,
 		LastName:                  req.LastName,
+		Email:                     req.Email,
 		Address1:                  req.Address1,
 		Address2:                  req.Address2,
 		Address3:                  req.Address3,
@@ -347,6 +472,8 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 		CompanyName:               req.CompanyName,
 		ShipmentMethod:            req.ShipmentMethod,
 		ShipmentMethodDescription: req.ShipmentMethodDescription,
+		CustomInformation:         req.CustomInformation,
+		Attachments:               req.Attachments,
 	}
 
 	dmeResponse, err := h.server.DME.CreateCustomer(ctx, customer, orgID, *systemID)
@@ -509,4 +636,208 @@ func (h *CustomerHandler) UpdateCustomerSettings(c echo.Context) error {
 	// Convert settings to response format
 	response := responses.ConvertCustomerSettings(settings)
 	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Customer intake (public endpoint)
+// @Description Creates a customer in DME and then creates a user for that customer - public endpoint
+// @Tags Customers
+// @Accept json
+// @Produce json
+// @Param Organization-ID header string true "Organization ID"
+// @Param Marina-ID header string true "Marina ID"
+// @Param customer body requests.CustomerIntakeRequest true "Customer and user information"
+// @Success 201 {object} responses.UserResponseWrapper "Created user with customer"
+// @Failure 400 {object} responses.Error "Bad request"
+// @Failure 500 {object} responses.Error "Server error"
+// @Router /customer-intake [post]
+func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	// Parse and validate request
+	var req requests.CustomerIntakeRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Parse UUIDs
+	orgID, err := uuid.Parse(req.OrganizationID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid Organization-ID format").JSON(c)
+	}
+
+	marinaID, err := uuid.Parse(req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid Marina-ID format").JSON(c)
+	}
+
+	queries := h.server.DB.Queries()
+
+	// Validate that organization and marina exist and are linked
+	marina, err := queries.GetMarinaByID(ctx, marinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina not found").JSON(c)
+	}
+
+	organization, err := queries.GetOrganizationByID(ctx, orgID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Organization not found").JSON(c)
+	}
+
+	if marina.OrganizationID != organization.ID {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
+	}
+
+	// Get system ID for DME operations
+	if marina.SystemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina does not have a system ID configured").JSON(c)
+	}
+	systemID := *marina.SystemID
+
+	name := req.FirstName + " " + req.LastName
+	email := utils.LowerCase(req.Email)
+	// Step 1: Create customer in DME
+	customer := &dme.CustomerCreate{
+		Name:             name,
+		FirstName:        req.FirstName,
+		LastName:         req.LastName,
+		Email:            email,
+		Address1:         req.Address1,
+		Address2:         req.Address2,
+		Address3:         req.Address3,
+		City:             req.City,
+		State:            req.State,
+		Zip:              req.Zip,
+		Country:          req.Country,
+		Phone:            req.Phone,
+		WorkPhone:        req.WorkPhone,
+		CellPhone:        req.CellPhone,
+		EmergencyContact: req.EmergencyContact,
+		EmergencyPhone:   req.EmergencyPhone,
+		CompanyName:      req.CompanyName,
+	}
+
+	dmeResponse, err := h.server.DME.CreateCustomer(ctx, customer, orgID, systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to create customer in DME",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create customer: "+err.Error()).JSON(c)
+	}
+
+	// Step 2: Get customer_user role
+	customerRole, err := queries.GetRoleByName(ctx, "customer_user")
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to get customer_user role",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Customer role not found").JSON(c)
+	}
+
+	// Step 3: Create user for the customer
+	// Check if the email is already taken
+	_, err = queries.GetUserByEmail(ctx, email)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+	}
+
+	// Generate username if not provided
+	username := utils.GenerateUsername(req.FirstName)
+
+	// Check if the username is already taken
+	_, err = queries.GetUserByUsername(ctx, username)
+	if err == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Username already taken").JSON(c)
+	}
+
+	// Set defaults for user creation
+	isActive := true
+	isSuperuser := false
+
+	// Create customer user
+	params := db.CreateCustomerUserParams{
+		Username:            username,
+		FirstName:           req.FirstName,
+		LastName:            req.LastName,
+		Email:               email,
+		Phone:               &req.Phone,
+		OrganizationID:      orgID,
+		MarinaID:            marinaID,
+		RoleID:              customerRole.ID,
+		CustomerID:          &dmeResponse.ID,
+		IsCustomer:          utils.Pointer(true),
+		IsSuperuser:         &isSuperuser,
+		IsActive:            &isActive,
+		EmailVerified:       utils.PgTimeNow(),
+		LastLogin:           utils.PgTimeNow(),
+		FailedLoginAttempts: utils.Pointer(int32(0)),
+		LockedUntil:         utils.PgTimeNow(),
+		LastPasswordReset:   utils.PgTimeNow(),
+		UserAnalytics:       utils.Pointer(true),
+	}
+
+	user, err := queries.CreateCustomerUser(ctx, params)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to create customer user",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create user: "+err.Error()).JSON(c)
+	}
+
+	// Assign user to marina
+	assignUserToMarina := db.AssignUserToMarinaParams{
+		UserID:     user.ID,
+		MarinaID:   marinaID,
+		CustomerID: &dmeResponse.ID,
+	}
+
+	err = queries.AssignUserToMarina(ctx, assignUserToMarina)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to assign user to marina",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to assign user to marina: "+err.Error()).JSON(c)
+	}
+
+	// Update customer settings to enable portal
+	_, err = queries.UpsertCustomerSettings(ctx, db.UpsertCustomerSettingsParams{
+		MarinaID:     marinaID,
+		CustomerID:   dmeResponse.ID,
+		EnablePortal: utils.Pointer(true),
+	})
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to create customer settings",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create customer settings: "+err.Error()).JSON(c)
+	}
+
+	// Hash the password using the utility function from utils
+	passwordHash, err := utils.HashPassword(req.Password)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to hash password",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to process password").JSON(c)
+	}
+
+	// Update the user with the new password
+	userPasswordParams := db.UpdateUserInviteParams{
+		ID:           user.ID,
+		PasswordHash: utils.Pointer(passwordHash),
+	}
+
+	_, err = queries.UpdateUserInvite(ctx, userPasswordParams)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to update user password",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update user password").JSON(c)
+	}
+
+	response := responses.NewUserResponseSuccess(user)
+	return c.JSON(http.StatusCreated, response)
 }

@@ -18,8 +18,7 @@ INSERT INTO users (
         role_id,
         is_superuser,
         is_active,
-        modules,
-        permissions
+        user_analytics
     )
 VALUES (
         $1,
@@ -40,8 +39,7 @@ VALUES (
         $16,
         $17,
         $18,
-        $19,
-        $20
+        $19
     )
 RETURNING *;
 -- name: GetUserByID :one
@@ -99,10 +97,12 @@ FROM users
 WHERE organization_id = $1
     AND deleted_at IS NULL;
 -- name: GetUsersByMarina :many
-SELECT *
-FROM users
-WHERE marina_id = $1
-    AND deleted_at IS NULL;
+SELECT u.*, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL;
 -- name: GetUsersPaginated :many
 SELECT *
 FROM users
@@ -117,12 +117,24 @@ WHERE organization_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 -- name: GetUsersByMarinaPaginated :many
-SELECT *
-FROM users
-WHERE marina_id = $1
-    AND deleted_at IS NULL
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+SELECT u.*, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4;
+-- name: GetUsersByMarinaUsersListPaginated :many
+SELECT u.*, r.name as role_name
+FROM users u
+JOIN user_marinas um ON u.id = um.user_id
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4;
 -- name: UpdateUser :one
 UPDATE users
 SET first_name = $2,
@@ -141,8 +153,7 @@ SET first_name = $2,
     role_id = $15,
     is_superuser = $16,
     is_active = $17,
-    modules = $18,
-    permissions = $19,
+    user_analytics = $18,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
@@ -160,7 +171,6 @@ INSERT INTO users (
         phone,
         title,
         image,
-        password_hash,
         last_login,
         failed_login_attempts,
         locked_until,
@@ -172,8 +182,7 @@ INSERT INTO users (
         is_customer,
         is_superuser,
         is_active,
-        modules,
-        permissions
+        user_analytics
     )
 VALUES (
         $1,
@@ -195,9 +204,7 @@ VALUES (
         $17,
         $18,
         $19,
-        $20,
-        $21,
-        $22
+        $20
     )
 RETURNING *;
 -- name: ActivateUser :one
@@ -241,3 +248,11 @@ WHERE is_customer = TRUE
     AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT $3 OFFSET $4;
+-- name: UpdateUserInvite :one
+UPDATE users
+SET password_hash = $2,
+    last_password_reset = CURRENT_TIMESTAMP,
+    failed_login_attempts = 0,
+    joined_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;

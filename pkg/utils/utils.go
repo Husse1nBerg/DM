@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -8,6 +9,18 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+// StorageUsageGB is a custom type to handle GB values with fixed decimal places
+type StorageUsageGB float64
+
+// MarshalJSON implements json.Marshaler interface
+func (s *StorageUsageGB) MarshalJSON() ([]byte, error) {
+	if s == nil {
+		return []byte("null"), nil
+	}
+	// Always format with 2 decimal places
+	return []byte(fmt.Sprintf("%.2f", *s)), nil
+}
 
 var (
 	imageService    *s3.ImageService
@@ -17,6 +30,10 @@ var (
 // Now returns the current time as a pgtype.Timestamp UTC.
 func PgTimeNow() pgtype.Timestamp {
 	return pgtype.Timestamp{Time: time.Now().UTC(), Valid: true}
+}
+
+func PgTimeNowAdd(duration time.Duration) pgtype.Timestamp {
+	return pgtype.Timestamp{Time: time.Now().UTC().Add(duration), Valid: true}
 }
 
 func PgTimeNowLocal() pgtype.Timestamp {
@@ -67,4 +84,17 @@ func GenerateUsername(firstName string) string {
 	// Generate a random string of 6 characters
 	randomString := uuid.New().String()[:6]
 	return strings.ToLower(firstName + randomString)
+}
+
+func LowerCase(s string) string {
+	return strings.ToLower(s)
+}
+
+// IntToInt32Ptr converts *int to *int32
+func IntToInt32Ptr(i *int) *int32 {
+	if i == nil {
+		return nil
+	}
+	v := int32(*i)
+	return &v
 }

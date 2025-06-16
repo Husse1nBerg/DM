@@ -7,6 +7,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -118,6 +119,19 @@ func (h *ContactHandler) CreateContact(c echo.Context) error {
 	if contactType == "phone" {
 		email = nil
 	}
+	var isCpContact *bool
+	if req.IsCPContact != nil {
+		isCpContact = req.IsCPContact
+	} else {
+		isCpContact = utils.Pointer(false)
+	}
+	if isCpContact != nil && *isCpContact {
+		// unset all cp contacts
+		err = h.server.DB.Queries().UnsetCPContact(c.Request().Context(), marinaID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+	}
 	params := db.CreateContactParams{
 		MarinaID:    marinaID,
 		Type:        contactType,
@@ -125,6 +139,7 @@ func (h *ContactHandler) CreateContact(c echo.Context) error {
 		Description: description,
 		Email:       email,
 		Phone:       phone,
+		IsCpContact: isCpContact,
 	}
 
 	contact, err := h.server.DB.Queries().CreateContact(c.Request().Context(), params)
@@ -210,6 +225,20 @@ func (h *ContactHandler) UpdateContact(c echo.Context) error {
 	if req.Type == "phone" {
 		email = nil
 	}
+	// Check if isCPContact is provided in the request and if it is true, unset all cp contacts,
+	var isCpContact *bool
+	if req.IsCPContact != nil {
+		isCpContact = req.IsCPContact
+	} else {
+		isCpContact = contact.IsCpContact
+	}
+	if isCpContact != nil && *isCpContact {
+		// unset all cp contacts
+		err = h.server.DB.Queries().UnsetCPContact(c.Request().Context(), contact.MarinaID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+	}
 	params := db.UpdateContactParams{
 		ID:          contactID,
 		Type:        string(req.Type),
@@ -217,6 +246,7 @@ func (h *ContactHandler) UpdateContact(c echo.Context) error {
 		Description: description,
 		Email:       email,
 		Phone:       phone,
+		IsCpContact: isCpContact,
 	}
 
 	newContact, err := h.server.DB.Queries().UpdateContact(c.Request().Context(), params)

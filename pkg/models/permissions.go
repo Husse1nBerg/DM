@@ -3,50 +3,28 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
-// Permissions represents the role-based access control permissions structure
-type Permissions struct {
-	// User permissions
-	ReadUsers   bool `json:"readUsers" example:"true"`
-	WriteUsers  bool `json:"writeUsers" example:"true"`
-	DeleteUsers bool `json:"deleteUsers" example:"false"`
+// Permissions represents the role-based access control permissions using boolean map structure
+type Permissions map[string]bool
 
-	// Organization permissions
-	ReadOrganizations   bool `json:"readOrganizations" example:"true"`
-	WriteOrganizations  bool `json:"writeOrganizations" example:"true"`
-	DeleteOrganizations bool `json:"deleteOrganizations" example:"false"`
-
-	// Marina permissions
-	ReadMarinas   bool `json:"readMarinas" example:"true"`
-	WriteMarinas  bool `json:"writeMarinas" example:"true"`
-	DeleteMarinas bool `json:"deleteMarinas" example:"false"`
-
-	// Role permissions
-	ReadRoles   bool `json:"readRoles" example:"true"`
-	WriteRoles  bool `json:"writeRoles" example:"true"`
-	DeleteRoles bool `json:"deleteRoles" example:"false"`
-
-	// Settings permissions
-	ReadSettings  bool `json:"readSettings" example:"true"`
-	WriteSettings bool `json:"writeSettings" example:"true"`
-}
-
-// ToBytes converts the Permissions struct to a JSON byte array for database storage
-func (p *Permissions) ToBytes() ([]byte, error) {
+// ToBytes converts the Permissions map to a JSON byte array for database storage
+func (p Permissions) ToBytes() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-// FromBytes populates the Permissions struct from a JSON byte array
+// FromBytes populates the Permissions map from a JSON byte array
 func (p *Permissions) FromBytes(data []byte) error {
 	if data == nil {
+		*p = make(Permissions)
 		return nil
 	}
 	return json.Unmarshal(data, p)
 }
 
 // String returns a string representation of the Permissions for debugging
-func (p *Permissions) String() string {
+func (p Permissions) String() string {
 	data, err := json.Marshal(p)
 	if err != nil {
 		return fmt.Sprintf("Error marshaling Permissions: %v", err)
@@ -54,42 +32,134 @@ func (p *Permissions) String() string {
 	return string(data)
 }
 
-// DefaultAdminPermissions returns a Permissions struct with full administrative access
-func DefaultAdminPermissions() *Permissions {
-	return &Permissions{
-		ReadUsers:           true,
-		WriteUsers:          true,
-		DeleteUsers:         true,
-		ReadOrganizations:   true,
-		WriteOrganizations:  true,
-		DeleteOrganizations: true,
-		ReadMarinas:         true,
-		WriteMarinas:        true,
-		DeleteMarinas:       true,
-		ReadRoles:           true,
-		WriteRoles:          true,
-		DeleteRoles:         true,
-		ReadSettings:        true,
-		WriteSettings:       true,
+// HasPermission checks if a specific object.action permission is granted
+func (p Permissions) HasPermission(object, action string) bool {
+	key := fmt.Sprintf("%s.%s", object, action)
+	granted, exists := p[key]
+	return exists && granted
+}
+
+// GetObjectPermissions returns all permissions for a specific object
+func (p Permissions) GetObjectPermissions(object string) map[string]bool {
+	objectPerms := make(map[string]bool)
+	prefix := object + "."
+
+	for key, value := range p {
+		if strings.HasPrefix(key, prefix) {
+			action := strings.TrimPrefix(key, prefix)
+			objectPerms[action] = value
+		}
+	}
+	return objectPerms
+}
+
+// GetAllowedActions returns all allowed actions for a specific object
+func (p Permissions) GetAllowedActions(object string) []string {
+	var allowed []string
+	prefix := object + "."
+
+	for key, value := range p {
+		if strings.HasPrefix(key, prefix) && value {
+			action := strings.TrimPrefix(key, prefix)
+			allowed = append(allowed, action)
+		}
+	}
+	return allowed
+}
+
+// GetAllowedObjects returns all objects that have at least one allowed action
+func (p Permissions) GetAllowedObjects() []string {
+	objectSet := make(map[string]bool)
+
+	for key, value := range p {
+		if value && strings.Contains(key, ".") {
+			parts := strings.SplitN(key, ".", 2)
+			if len(parts) == 2 {
+				objectSet[parts[0]] = true
+			}
+		}
+	}
+
+	var objects []string
+	for object := range objectSet {
+		objects = append(objects, object)
+	}
+	return objects
+}
+
+// Grant adds or updates a permission
+func (p Permissions) Grant(object, action string) {
+	key := fmt.Sprintf("%s.%s", object, action)
+	p[key] = true
+}
+
+// Revoke removes a permission or sets it to false
+func (p Permissions) Revoke(object, action string) {
+	key := fmt.Sprintf("%s.%s", object, action)
+	p[key] = false
+}
+
+// DefaultAdminPermissions returns a Permissions map with full administrative access
+func DefaultAdminPermissions() Permissions {
+	return Permissions{
+		"users.read":           true,
+		"users.write":          true,
+		"users.delete":         true,
+		"organizations.read":   true,
+		"organizations.write":  true,
+		"organizations.delete": true,
+		"marinas.read":         true,
+		"marinas.write":        true,
+		"marinas.delete":       true,
+		"customers.read":       true,
+		"customers.write":      true,
+		"customers.delete":     true,
+		"vessels.read":         true,
+		"vessels.write":        true,
+		"vessels.delete":       true,
+		"roles.read":           true,
+		"roles.write":          true,
+		"roles.delete":         true,
+		"settings.read":        true,
+		"settings.write":       true,
 	}
 }
 
-// DefaultUserPermissions returns a Permissions struct with limited user-level access
-func DefaultUserPermissions() *Permissions {
-	return &Permissions{
-		ReadUsers:           true,
-		WriteUsers:          false,
-		DeleteUsers:         false,
-		ReadOrganizations:   true,
-		WriteOrganizations:  false,
-		DeleteOrganizations: false,
-		ReadMarinas:         true,
-		WriteMarinas:        false,
-		DeleteMarinas:       false,
-		ReadRoles:           true,
-		WriteRoles:          false,
-		DeleteRoles:         false,
-		ReadSettings:        true,
-		WriteSettings:       false,
+// DefaultUserPermissions returns a Permissions map with limited user-level access
+func DefaultUserPermissions() Permissions {
+	return Permissions{
+		"users.read":           true,
+		"users.write":          false,
+		"users.delete":         false,
+		"organizations.read":   true,
+		"organizations.write":  false,
+		"organizations.delete": false,
+		"marinas.read":         true,
+		"marinas.write":        false,
+		"marinas.delete":       false,
+		"customers.read":       true,
+		"customers.write":      false,
+		"customers.delete":     false,
+		"vessels.read":         true,
+		"vessels.write":        false,
+		"vessels.delete":       false,
+		"roles.read":           true,
+		"roles.write":          false,
+		"roles.delete":         false,
+		"settings.read":        true,
+		"settings.write":       false,
+	}
+}
+
+// ReadOnlyPermissions returns a Permissions map with only read access
+func ReadOnlyPermissions() Permissions {
+	return Permissions{
+		"users.read":         true,
+		"organizations.read": true,
+		"marinas.read":       true,
+		"customers.read":     true,
+		"vessels.read":       true,
+		"roles.read":         true,
+		"settings.read":      true,
 	}
 }

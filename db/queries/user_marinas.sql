@@ -20,19 +20,23 @@ WHERE um.user_id = $1
 ORDER BY m.created_at DESC
 LIMIT $2 OFFSET $3;
 -- name: GetMarinaUsersList :many
-SELECT u.*
+SELECT u.*, r.name as role_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
+    LEFT JOIN roles r ON u.role_id = r.id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL;
 -- name: GetMarinaUsersListPaginated :many
-SELECT u.*
+SELECT u.*, r.name as role_name
 FROM users u
     JOIN user_marinas um ON u.id = um.user_id
+    LEFT JOIN roles r ON u.role_id = r.id
 WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
-LIMIT $2 OFFSET $3;
+LIMIT $3 OFFSET $4;
 -- name: CustomerMarinaUser :one
 SELECT u.*
 FROM users u
@@ -47,3 +51,10 @@ SELECT EXISTS (
     WHERE um.user_id = $1
         AND um.marina_id = $2
 ) AS can_access;
+-- name: GetUserRoleInMarina :one
+SELECT u.role_id
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE u.id = $1
+    AND um.marina_id = $2
+    AND u.deleted_at IS NULL;

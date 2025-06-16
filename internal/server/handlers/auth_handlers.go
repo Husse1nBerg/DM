@@ -59,10 +59,16 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	user, err := queries.GetUserByEmail(ctx, loginRequest.Email)
+	email := utils.LowerCase(loginRequest.Email)
+
+	user, err := queries.GetUserByEmail(ctx, email)
+	if user.PasswordHash == nil {
+		logger.Zap.Info("login failed: user didn't create a password yet", err, email, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusUnauthorized, "User didn't create a password yet").JSON(c)
+	}
 
 	if err != nil {
-		logger.Zap.Info("login failed: user not found ", err, loginRequest.Email, c.Response().Header().Get(echo.HeaderXRequestID))
+		logger.Zap.Info("login failed: user not found ", err, email, c.Response().Header().Get(echo.HeaderXRequestID))
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid credentials").JSON(c)
 	}
 
@@ -80,7 +86,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	}
 
 	// Check password
-	if err := utils.VerifyPassword(user.PasswordHash, loginRequest.Password); err != nil {
+	if err := utils.VerifyPassword(*user.PasswordHash, loginRequest.Password); err != nil {
 		logger.Zap.Info("login failed: invalid password", c.Response().Header().Get(echo.HeaderXRequestID))
 
 		// Increment failed login attempts
@@ -126,6 +132,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 			RoleID:              user.RoleID,
 			IsSuperuser:         user.IsSuperuser,
 			IsActive:            user.IsActive,
+			UserAnalytics:       user.UserAnalytics,
 		})
 
 		if updateErr != nil {
@@ -163,6 +170,7 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 		RoleID:              user.RoleID,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 	})
 
 	if updateErr != nil {

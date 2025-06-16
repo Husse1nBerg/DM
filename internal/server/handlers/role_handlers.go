@@ -7,7 +7,6 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
-	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -45,17 +44,19 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 	queries := g.server.DB.Queries()
 
 	// Get paginated roles
-	params := db.GetRolesPaginatedParams{
-		Limit:  pagination.PageSize,
-		Offset: (pagination.Page - 1) * pagination.PageSize,
+	params := db.GetAllRolesByTypesPaginatedParams{
+		Column1: []string{"marina", "customer"},
+		Limit:   pagination.PageSize,
+		Offset:  (pagination.Page - 1) * pagination.PageSize,
 	}
-	roles, err := queries.GetRolesPaginated(c.Request().Context(), params)
+	roles, err := queries.GetAllRolesByTypesPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Get total count for pagination
-	allRoles, err := queries.GetAllRoles(c.Request().Context())
+	// allRoles, err := queries.GetAllRoles(c.Request().Context())
+	allRoles, err := queries.GetAllRolesByTypes(c.Request().Context(), []string{"marina", "customer"})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -92,18 +93,20 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 	var permissionsBytes []byte
 	var err error
 
+	if req.Type == "" {
+		req.Type = "marina"
+	}
+	if req.Type != "marina" && req.Type != "customer" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid role type").JSON(c)
+	}
+
 	if req.Permissions != nil {
 		permissionsBytes, err = req.Permissions.ToBytes()
 		if err != nil {
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing permissions").JSON(c)
 		}
 	} else {
-		// Use default admin permissions
-		defaultPermissions := models.DefaultAdminPermissions()
-		permissionsBytes, err = defaultPermissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default permissions").JSON(c)
-		}
+		return responses.NewErrorResponse(http.StatusBadRequest, "Permissions are required").JSON(c)
 	}
 
 	// Set default values for nullable fields if not provided

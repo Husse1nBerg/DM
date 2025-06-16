@@ -1,10 +1,11 @@
 package responses
 
 import (
+	"context"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
-	"github.com/dockworks/dm-web-backend/pkg/models"
+	"github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 )
@@ -12,50 +13,40 @@ import (
 // UserResponse represents a user profile in the system
 // @Description User profile data including personal information and system roles
 type UserResponse struct {
-	ID                  uuid.UUID           `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username            string              `json:"username" example:"johndoe"`
-	FirstName           string              `json:"firstName" example:"John"`
-	LastName            string              `json:"lastName" example:"Doe"`
-	Email               string              `json:"email" example:"john.doe@example.com"`
-	EmailVerified       *time.Time          `json:"emailVerified,omitempty"`
-	Phone               *string             `json:"phone,omitempty" example:"+15551234567"`
-	Title               *string             `json:"title,omitempty" example:"Manager"`
-	Image               *string             `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
-	LastLogin           *time.Time          `json:"lastLogin,omitempty"`
-	FailedLoginAttempts *int32              `json:"failedLoginAttempts,omitempty" example:"0"`
-	LockedUntil         *time.Time          `json:"lockedUntil,omitempty"`
-	LastPasswordReset   *time.Time          `json:"lastPasswordReset,omitempty"`
-	OrganizationID      uuid.UUID           `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	MarinaID            uuid.UUID           `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
-	RoleID              uuid.UUID           `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
-	CustomerID          *string             `json:"customerId,omitempty" example:"1234567890"`
-	IsCustomer          *bool               `json:"isCustomer,omitempty" example:"false"`
-	IsSuperuser         *bool               `json:"isSuperuser,omitempty" example:"false"`
-	IsActive            *bool               `json:"isActive,omitempty" example:"true"`
-	CreatedAt           *time.Time          `json:"createdAt,omitempty"`
-	UpdatedAt           *time.Time          `json:"updatedAt,omitempty"`
-	Permissions         *models.Permissions `json:"permissions,omitempty"`
-	Modules             *models.Modules     `json:"modules,omitempty"`
+	ID                  uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username            string     `json:"username" example:"johndoe"`
+	FirstName           string     `json:"firstName" example:"John"`
+	LastName            string     `json:"lastName" example:"Doe"`
+	Email               string     `json:"email" example:"john.doe@example.com"`
+	EmailVerified       *time.Time `json:"emailVerified,omitempty"`
+	Phone               *string    `json:"phone,omitempty" example:"+15551234567"`
+	Title               *string    `json:"title,omitempty" example:"Manager"`
+	Image               *string    `json:"image,omitempty" example:"/images/profiles/johndoe.jpg"`
+	LastLogin           *time.Time `json:"lastLogin,omitempty"`
+	FailedLoginAttempts *int32     `json:"failedLoginAttempts,omitempty" example:"0"`
+	LockedUntil         *time.Time `json:"lockedUntil,omitempty"`
+	LastPasswordReset   *time.Time `json:"lastPasswordReset,omitempty"`
+	OrganizationID      uuid.UUID  `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID            uuid.UUID  `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
+	RoleID              uuid.UUID  `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	RoleName            *string    `json:"roleName,omitempty" example:"Admin"`
+	CustomerID          *string    `json:"customerId,omitempty" example:"1234567890"`
+	CustomerName        *string    `json:"customerName,omitempty" example:"John's Marina"`
+	IsCustomer          *bool      `json:"isCustomer,omitempty" example:"false"`
+	IsSuperuser         *bool      `json:"isSuperuser,omitempty" example:"false"`
+	IsActive            *bool      `json:"isActive,omitempty" example:"true"`
+	UserAnalytics       *bool      `json:"userAnalytics,omitempty" example:"true"`
+	CreatedAt           *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt           *time.Time `json:"updatedAt,omitempty"`
+}
+
+// UserWithRole embeds User and adds RoleName field
+type UserWithRole struct {
+	db.User
+	RoleName *string `json:"roleName,omitempty" example:"Admin"`
 }
 
 func NewUserResponse(user db.User) UserResponse {
-	// Create instances to fill from DB byte arrays
-	var permissions models.Permissions
-	var modules models.Modules
-
-	// Convert byte arrays to structs
-	if user.Permissions != nil {
-		if err := permissions.FromBytes(user.Permissions); err != nil {
-			// Handle error or set to nil (using default zero values is fine)
-		}
-	}
-
-	if user.Modules != nil {
-		if err := modules.FromBytes(user.Modules); err != nil {
-			// Handle error or set to nil (using default zero values is fine)
-		}
-	}
-
 	return UserResponse{
 		ID:                  user.ID,
 		Username:            user.Username,
@@ -77,11 +68,122 @@ func NewUserResponse(user db.User) UserResponse {
 		IsCustomer:          user.IsCustomer,
 		IsSuperuser:         user.IsSuperuser,
 		IsActive:            user.IsActive,
+		UserAnalytics:       user.UserAnalytics,
 		CreatedAt:           utils.PgTimeToTimePtr(user.CreatedAt),
 		UpdatedAt:           utils.PgTimeToTimePtr(user.UpdatedAt),
-		Permissions:         &permissions,
-		Modules:             &modules,
 	}
+}
+
+func NewUserResponseFromRow(r db.GetUsersByMarinaPaginatedRow, server *server.Server) *UserResponse {
+
+	response := &UserResponse{
+		ID:                  r.ID,
+		Username:            r.Username,
+		FirstName:           r.FirstName,
+		LastName:            r.LastName,
+		Email:               r.Email,
+		EmailVerified:       utils.PgTimeToTimePtr(r.EmailVerified),
+		Phone:               r.Phone,
+		Title:               r.Title,
+		Image:               utils.GetFullImageURL(r.Image),
+		LastLogin:           utils.PgTimeToTimePtr(r.LastLogin),
+		FailedLoginAttempts: r.FailedLoginAttempts,
+		LockedUntil:         utils.PgTimeToTimePtr(r.LockedUntil),
+		LastPasswordReset:   utils.PgTimeToTimePtr(r.LastPasswordReset),
+		OrganizationID:      r.OrganizationID,
+		MarinaID:            r.MarinaID,
+		RoleID:              r.RoleID,
+		IsSuperuser:         r.IsSuperuser,
+		IsActive:            r.IsActive,
+		UserAnalytics:       r.UserAnalytics,
+		CreatedAt:           utils.PgTimeToTimePtr(r.CreatedAt),
+		UpdatedAt:           utils.PgTimeToTimePtr(r.UpdatedAt),
+		CustomerID:          r.CustomerID,
+		IsCustomer:          r.IsCustomer,
+		RoleName:            r.RoleName,
+	}
+
+	// If CustomerID is present, get the customer name from DME
+	if r.CustomerID != nil && server != nil {
+		// Get the marina to get the system ID
+		marina, err := server.DB.Queries().GetMarinaByID(context.Background(), r.MarinaID)
+		if err == nil && marina.SystemID != nil {
+			// Get customer name from DME
+			customer, err := server.DME.CustomerRetrieve(context.Background(), *r.CustomerID, r.OrganizationID, *marina.SystemID)
+			if err == nil {
+				response.CustomerName = &customer.Name
+			}
+		}
+	}
+
+	return response
+}
+
+func NewUserResponseFromMarinaListRow(r db.GetMarinaUsersListPaginatedRow, server *server.Server) *UserResponse {
+
+	response := &UserResponse{
+		ID:                  r.ID,
+		Username:            r.Username,
+		FirstName:           r.FirstName,
+		LastName:            r.LastName,
+		Email:               r.Email,
+		EmailVerified:       utils.PgTimeToTimePtr(r.EmailVerified),
+		Phone:               r.Phone,
+		Title:               r.Title,
+		Image:               utils.GetFullImageURL(r.Image),
+		LastLogin:           utils.PgTimeToTimePtr(r.LastLogin),
+		FailedLoginAttempts: r.FailedLoginAttempts,
+		LockedUntil:         utils.PgTimeToTimePtr(r.LockedUntil),
+		LastPasswordReset:   utils.PgTimeToTimePtr(r.LastPasswordReset),
+		OrganizationID:      r.OrganizationID,
+		MarinaID:            r.MarinaID,
+		RoleID:              r.RoleID,
+		IsSuperuser:         r.IsSuperuser,
+		IsActive:            r.IsActive,
+		UserAnalytics:       r.UserAnalytics,
+		CreatedAt:           utils.PgTimeToTimePtr(r.CreatedAt),
+		UpdatedAt:           utils.PgTimeToTimePtr(r.UpdatedAt),
+		CustomerID:          r.CustomerID,
+		IsCustomer:          r.IsCustomer,
+		RoleName:            r.RoleName,
+	}
+
+	// If CustomerID is present, get the customer name from DME
+	if r.CustomerID != nil && server != nil {
+		// Get the marina to get the system ID
+		marina, err := server.DB.Queries().GetMarinaByID(context.Background(), r.MarinaID)
+		if err == nil && marina.SystemID != nil {
+			// Get customer name from DME
+			customer, err := server.DME.CustomerRetrieve(context.Background(), *r.CustomerID, r.OrganizationID, *marina.SystemID)
+			if err == nil {
+				response.CustomerName = &customer.Name
+			}
+		}
+	}
+
+	return response
+}
+
+func NewUsersPaginatedResponseFromRows(users []db.GetUsersByMarinaPaginatedRow, total int64, perPage, page int32) BaseResponse {
+	userResponses := make([]UserResponse, len(users))
+	for i, user := range users {
+		response := NewUserResponseFromRow(user, nil)
+		if response != nil {
+			userResponses[i] = *response
+		}
+	}
+	return NewPaginatedResponse(userResponses, total, perPage, page)
+}
+
+func NewUsersPaginatedResponseFromMarinaRows(users []db.GetMarinaUsersListPaginatedRow, total int64, perPage, page int32) BaseResponse {
+	userResponses := make([]UserResponse, len(users))
+	for i, user := range users {
+		response := NewUserResponseFromMarinaListRow(user, nil)
+		if response != nil {
+			userResponses[i] = *response
+		}
+	}
+	return NewPaginatedResponse(userResponses, total, perPage, page)
 }
 
 func NewUserResponseSuccess(user db.User) BaseResponse {

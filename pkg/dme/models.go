@@ -45,6 +45,13 @@ type CustomerSearch struct {
 	ProspectID  string `json:"prospectId"`
 }
 
+// Attachment represents customer attachment information
+type Attachment struct {
+	FileName    string `json:"fileName"`
+	Description string `json:"description"`
+	S3Path      string `json:"s3Path"`
+}
+
 // Customer represents detailed customer information
 type Customer struct {
 	ID                          string              `json:"id"`
@@ -106,6 +113,7 @@ type Customer struct {
 	NoCcSurcharge               bool                `json:"noCcSurcharge"`
 	CustomInformation           []CustomInformation `json:"customInformation"`
 	WaitListEntries             []WaitListEntry     `json:"waitListEntries"`
+	Attachments                 []Attachment        `json:"attachments"`
 }
 
 type CustomerList struct {
@@ -117,69 +125,75 @@ type CustomerList struct {
 
 // CustomerUpdate represents updatable customer information
 type CustomerUpdate struct {
-	ID                        string `json:"id"`
-	Name                      string `json:"name"`
-	FirstName                 string `json:"firstName"`
-	LastName                  string `json:"lastName"`
-	Address1                  string `json:"address1"`
-	Address2                  string `json:"address2"`
-	Address3                  string `json:"address3"`
-	City                      string `json:"city"`
-	State                     string `json:"state"`
-	Zip                       string `json:"zip"`
-	Country                   string `json:"country"`
-	Phone                     string `json:"phone"`
-	AltFirstName              string `json:"altFirstName"`
-	AltLastName               string `json:"altLastName"`
-	AltAddress1               string `json:"altAddress1"`
-	AltAddress2               string `json:"altAddress2"`
-	AltAddress3               string `json:"altAddress3"`
-	AltCity                   string `json:"altCity"`
-	AltState                  string `json:"altState"`
-	AltZip                    string `json:"altZip"`
-	AltCountry                string `json:"altCountry"`
-	AltPhone                  string `json:"altPhone"`
-	UseAltAddress             bool   `json:"useAltAddress"`
-	WorkPhone                 string `json:"workPhone"`
-	CellPhone                 string `json:"cellPhone"`
-	EmergencyContact          string `json:"emergencyContact"`
-	EmergencyPhone            string `json:"emergencyPhone"`
-	CompanyName               string `json:"companyName"`
-	ShipmentMethod            string `json:"shipmentMethod"`
-	ShipmentMethodDescription string `json:"shipmentMethodDescription"`
+	ID                        string              `json:"id"`
+	Name                      string              `json:"name"`
+	FirstName                 string              `json:"firstName"`
+	LastName                  string              `json:"lastName"`
+	Email                     string              `json:"email"`
+	Address1                  string              `json:"address1"`
+	Address2                  string              `json:"address2"`
+	Address3                  string              `json:"address3"`
+	City                      string              `json:"city"`
+	State                     string              `json:"state"`
+	Zip                       string              `json:"zip"`
+	Country                   string              `json:"country"`
+	Phone                     string              `json:"phone"`
+	AltFirstName              string              `json:"altFirstName"`
+	AltLastName               string              `json:"altLastName"`
+	AltAddress1               string              `json:"altAddress1"`
+	AltAddress2               string              `json:"altAddress2"`
+	AltAddress3               string              `json:"altAddress3"`
+	AltCity                   string              `json:"altCity"`
+	AltState                  string              `json:"altState"`
+	AltZip                    string              `json:"altZip"`
+	AltCountry                string              `json:"altCountry"`
+	AltPhone                  string              `json:"altPhone"`
+	UseAltAddress             bool                `json:"useAltAddress"`
+	WorkPhone                 string              `json:"workPhone"`
+	CellPhone                 string              `json:"cellPhone"`
+	EmergencyContact          string              `json:"emergencyContact"`
+	EmergencyPhone            string              `json:"emergencyPhone"`
+	CompanyName               string              `json:"companyName"`
+	ShipmentMethod            string              `json:"shipmentMethod"`
+	ShipmentMethodDescription string              `json:"shipmentMethodDescription"`
+	CustomInformation         []CustomInformation `json:"customInformation"`
+	Attachments               []Attachment        `json:"attachments"`
 }
 
 // Customer Create
 type CustomerCreate struct {
-	Name                      string `json:"name"`
-	FirstName                 string `json:"firstName"`
-	LastName                  string `json:"lastName"`
-	Address1                  string `json:"address1"`
-	Address2                  string `json:"address2"`
-	Address3                  string `json:"address3"`
-	City                      string `json:"city"`
-	State                     string `json:"state"`
-	Zip                       string `json:"zip"`
-	Country                   string `json:"country"`
-	Phone                     string `json:"phone"`
-	AltFirstName              string `json:"altFirstName"`
-	AltLastName               string `json:"altLastName"`
-	AltAddress1               string `json:"altAddress1"`
-	AltAddress2               string `json:"altAddress2"`
-	AltAddress3               string `json:"altAddress3"`
-	AltCity                   string `json:"altCity"`
-	AltState                  string `json:"altState"`
-	AltZip                    string `json:"altZip"`
-	AltCountry                string `json:"altCountry"`
-	AltPhone                  string `json:"altPhone"`
-	UseAltAddress             bool   `json:"useAltAddress"`
-	WorkPhone                 string `json:"workPhone"`
-	CellPhone                 string `json:"cellPhone"`
-	EmergencyContact          string `json:"emergencyContact"`
-	EmergencyPhone            string `json:"emergencyPhone"`
-	CompanyName               string `json:"companyName"`
-	ShipmentMethod            string `json:"shipmentMethod"`
-	ShipmentMethodDescription string `json:"shipmentMethodDescription"`
+	Name                      string              `json:"name"`
+	FirstName                 string              `json:"firstName"`
+	LastName                  string              `json:"lastName"`
+	Email                     string              `json:"email"`
+	Address1                  string              `json:"address1"`
+	Address2                  string              `json:"address2"`
+	Address3                  string              `json:"address3"`
+	City                      string              `json:"city"`
+	State                     string              `json:"state"`
+	Zip                       string              `json:"zip"`
+	Country                   string              `json:"country"`
+	Phone                     string              `json:"phone"`
+	AltFirstName              string              `json:"altFirstName"`
+	AltLastName               string              `json:"altLastName"`
+	AltAddress1               string              `json:"altAddress1"`
+	AltAddress2               string              `json:"altAddress2"`
+	AltAddress3               string              `json:"altAddress3"`
+	AltCity                   string              `json:"altCity"`
+	AltState                  string              `json:"altState"`
+	AltZip                    string              `json:"altZip"`
+	AltCountry                string              `json:"altCountry"`
+	AltPhone                  string              `json:"altPhone"`
+	UseAltAddress             bool                `json:"useAltAddress"`
+	WorkPhone                 string              `json:"workPhone"`
+	CellPhone                 string              `json:"cellPhone"`
+	EmergencyContact          string              `json:"emergencyContact"`
+	EmergencyPhone            string              `json:"emergencyPhone"`
+	CompanyName               string              `json:"companyName"`
+	ShipmentMethod            string              `json:"shipmentMethod"`
+	ShipmentMethodDescription string              `json:"shipmentMethodDescription"`
+	CustomInformation         []CustomInformation `json:"customInformation"`
+	Attachments               []Attachment        `json:"attachments"`
 }
 
 type CustomerCreateUpdateResponse struct {
@@ -239,9 +253,9 @@ type BillingCode struct {
 	Cycle                 string  `json:"cycle"`
 	PerFoot               bool    `json:"perFoot"`
 	ProRated              bool    `json:"proRated"`
-	SlipBoatOrLongest     string  `json:"slipBoatOrLongest"`
-	LengthAreaOrCubicFeet string  `json:"lengthAreaOrCubicFeet"`
-	LoaLwlOrSpar          string  `json:"loaLwlOrSpar"`
+	SlipBoatOrLongest     string  `json:"Slip_Boat_Or_Longest"`
+	LengthAreaOrCubicFeet string  `json:"Length_Area_Or_CubicFeet"`
+	LoaLwlOrSpar          string  `json:"LOA_LWL_Or_Spar"`
 	Rates                 []Rate  `json:"rates"`
 	OverrideRate          float64 `json:"overrideRate"`
 }
@@ -319,64 +333,85 @@ type Boat struct {
 	Comments             string                `json:"comments"`
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
+	Attachments          []Attachment          `json:"attachments"`
 }
 
 // BoatUpdate represents boat update information
 type BoatUpdate struct {
-	ID                  string  `json:"id"`
-	Name                string  `json:"name"`
-	Registration        string  `json:"registration"`
-	Year                string  `json:"year"`
-	Make                string  `json:"make"`
-	Model               string  `json:"model"`
-	HIN                 string  `json:"hin"`
-	LOA                 string  `json:"loa"`
-	LWL                 string  `json:"lwl"`
-	Draft               string  `json:"draft"`
-	Beam                string  `json:"beam"`
-	Height              string  `json:"height"`
-	Color               string  `json:"color"`
-	TrailerMake         string  `json:"trailerMake"`
-	TrailerModel        string  `json:"trailerModel"`
-	TrailerSerial       string  `json:"trailerSerial"`
-	TrailerRegistration string  `json:"trailerRegistration"`
-	TrailerLocation     string  `json:"trailerLocation"`
-	SummerSlip          string  `json:"summerSlip"`
-	WinterSlip          string  `json:"winterSlip"`
-	InsuranceCompany    string  `json:"insuranceCompany"`
-	InsuranceExpDate    string  `json:"insuranceExpDate"`
-	SlipID              string  `json:"slipId"`
-	Slip                Slip    `json:"slip"`
-	Motors              []Motor `json:"motors"`
+	ID                   string                `json:"id"`
+	Name                 string                `json:"name"`
+	Registration         string                `json:"registration"`
+	Year                 string                `json:"year"`
+	Make                 string                `json:"make"`
+	Model                string                `json:"model"`
+	HIN                  string                `json:"hin"`
+	LOA                  string                `json:"loa"`
+	LWL                  string                `json:"lwl"`
+	Draft                string                `json:"draft"`
+	Beam                 string                `json:"beam"`
+	Height               string                `json:"height"`
+	Color                string                `json:"color"`
+	TrailerMake          string                `json:"trailerMake"`
+	TrailerModel         string                `json:"trailerModel"`
+	TrailerSerial        string                `json:"trailerSerial"`
+	TrailerRegistration  string                `json:"trailerRegistration"`
+	TrailerLocation      string                `json:"trailerLocation"`
+	SummerSlip           string                `json:"summerSlip"`
+	WinterSlip           string                `json:"winterSlip"`
+	InsuranceCompany     string                `json:"insuranceCompany"`
+	InsuranceExpDate     string                `json:"insuranceExpDate"`
+	SlipID               string                `json:"slipId"`
+	Slip                 Slip                  `json:"slip"`
+	Motors               []Motor               `json:"motors"`
+	DoNotLaunch          bool                  `json:"doNotLaunch"`
+	BillingCodes         []BillingCode         `json:"billingCodes"`
+	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
+	CustomInformation    []CustomInformation   `json:"customInformation"`
+	OperationsHistory    []OperationHistory    `json:"operationsHistory"`
+	IntegrationID        string                `json:"integrationId"`
+	OwnerIntegrationID   string                `json:"ownerIntegrationId"`
+	LastModified         string                `json:"lastModified"`
+	Comments             string                `json:"comments"`
+	Attachments          []Attachment          `json:"attachments"`
 }
 
 // BoatCreate represents boat creation information
 type BoatCreate struct {
-	Name                string  `json:"name"`
-	OwnerID             string  `json:"ownerId"`
-	Registration        string  `json:"registration"`
-	Year                string  `json:"year"`
-	Make                string  `json:"make"`
-	Model               string  `json:"model"`
-	HIN                 string  `json:"hin"`
-	LOA                 string  `json:"loa"`
-	LWL                 string  `json:"lwl"`
-	Draft               string  `json:"draft"`
-	Beam                string  `json:"beam"`
-	Height              string  `json:"height"`
-	Color               string  `json:"color"`
-	TrailerMake         string  `json:"trailerMake"`
-	TrailerModel        string  `json:"trailerModel"`
-	TrailerSerial       string  `json:"trailerSerial"`
-	TrailerRegistration string  `json:"trailerRegistration"`
-	TrailerLocation     string  `json:"trailerLocation"`
-	SummerSlip          string  `json:"summerSlip"`
-	WinterSlip          string  `json:"winterSlip"`
-	InsuranceCompany    string  `json:"insuranceCompany"`
-	InsuranceExpDate    string  `json:"insuranceExpDate"`
-	SlipID              string  `json:"slipId"`
-	Slip                Slip    `json:"slip"`
-	Motors              []Motor `json:"motors"`
+	Name                 string                `json:"name"`
+	OwnerID              string                `json:"ownerId"`
+	Registration         string                `json:"registration"`
+	Year                 string                `json:"year"`
+	Make                 string                `json:"make"`
+	Model                string                `json:"model"`
+	HIN                  string                `json:"hin"`
+	LOA                  string                `json:"loa"`
+	LWL                  string                `json:"lwl"`
+	Draft                string                `json:"draft"`
+	Beam                 string                `json:"beam"`
+	Height               string                `json:"height"`
+	Color                string                `json:"color"`
+	TrailerMake          string                `json:"trailerMake"`
+	TrailerModel         string                `json:"trailerModel"`
+	TrailerSerial        string                `json:"trailerSerial"`
+	TrailerRegistration  string                `json:"trailerRegistration"`
+	TrailerLocation      string                `json:"trailerLocation"`
+	SummerSlip           string                `json:"summerSlip"`
+	WinterSlip           string                `json:"winterSlip"`
+	InsuranceCompany     string                `json:"insuranceCompany"`
+	InsuranceExpDate     string                `json:"insuranceExpDate"`
+	SlipID               string                `json:"slipId"`
+	Slip                 Slip                  `json:"slip"`
+	Motors               []Motor               `json:"motors"`
+	DoNotLaunch          bool                  `json:"doNotLaunch"`
+	BillingCodes         []BillingCode         `json:"billingCodes"`
+	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
+	CustomInformation    []CustomInformation   `json:"customInformation"`
+	OperationsHistory    []OperationHistory    `json:"operationsHistory"`
+	IntegrationID        string                `json:"integrationId"`
+	OwnerIntegrationID   string                `json:"ownerIntegrationId"`
+	LastModified         string                `json:"lastModified"`
+	Comments             string                `json:"comments"`
+	Attachments          []Attachment          `json:"attachments"`
 }
 
 type BoatCreateUpdateResponse struct {
@@ -552,6 +587,7 @@ type WorkOrderFull struct {
 	Title                string        `json:"title"`
 	Operations           []Operation   `json:"operations"`
 	BillingData          []BillingData `json:"billingData"`
+	Attachments          []Attachment  `json:"attachments"`
 }
 
 // Location represents location information

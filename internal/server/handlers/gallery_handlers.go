@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -19,6 +20,76 @@ type GalleryHandler struct {
 // NewGalleryHandler creates a new gallery handler
 func NewGalleryHandler(server *s.Server) *GalleryHandler {
 	return &GalleryHandler{server: server}
+}
+
+// checkStorageLimit checks if the marina has enough storage space for the new file
+func (h *GalleryHandler) checkStorageLimit(ctx echo.Context, marinaID uuid.UUID, fileSize int64) error {
+	// Get marina to check current storage usage
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx.Request().Context(), marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina", err)
+		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(ctx)
+	}
+
+	// Get marina's storage plan
+	storagePlan, err := h.server.DB.Queries().GetMarinaStoragePlan(ctx.Request().Context(), marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching storage plan", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching storage plan").JSON(ctx)
+	}
+
+	// If storage limit is nil, it means unlimited storage
+	if storagePlan.StorageLimitGb == nil {
+		return nil
+	}
+
+	const bytesInGB = 1024 * 1024 * 1024 // 1 GB in bytes
+	maxStorageLimit := int64(*storagePlan.StorageLimitGb) * bytesInGB
+
+	// Check if adding the new file would exceed the limit
+	currentUsage := int64(0)
+	if marina.StorageUsage != nil {
+		currentUsage = *marina.StorageUsage
+	}
+
+	if currentUsage+fileSize > maxStorageLimit {
+		h.server.Logger.Zap.Info("Storage limit would be exceeded",
+			"currentUsage", currentUsage,
+			"fileSize", fileSize,
+			"maxLimit", maxStorageLimit)
+
+		// Convert values to GB for the error message
+		currentUsageGB := float64(currentUsage) / float64(bytesInGB)
+		maxLimitGB := float64(maxStorageLimit) / float64(bytesInGB)
+		fileSizeKB := float64(fileSize) / 1024.0 // Convert to KB
+
+		return fmt.Errorf("storage limit exceeded: current usage %.2f GB + file size %.2f KB would exceed limit of %.2f GB",
+			currentUsageGB, fileSizeKB, maxLimitGB)
+	}
+
+	return nil
+}
+
+// updateStorageUsage updates the marina's storage usage
+func (h *GalleryHandler) updateStorageUsage(ctx echo.Context, marinaID uuid.UUID, fileSize int64, isIncrement bool) error {
+	var err error
+	if isIncrement {
+		_, err = h.server.DB.Queries().IncrementMarinaStorageUsage(ctx.Request().Context(), db.IncrementMarinaStorageUsageParams{
+			ID:           marinaID,
+			StorageUsage: &fileSize,
+		})
+	} else {
+		_, err = h.server.DB.Queries().DecrementMarinaStorageUsage(ctx.Request().Context(), db.DecrementMarinaStorageUsageParams{
+			ID:           marinaID,
+			StorageUsage: &fileSize,
+		})
+	}
+
+	if err != nil {
+		h.server.Logger.Zap.Error("Error updating marina storage usage", err)
+		return err
+	}
+	return nil
 }
 
 // CreateMarinaGalleryItem creates a new marina gallery item
@@ -68,11 +139,24 @@ func (h *GalleryHandler) CreateMarinaGalleryItem(c echo.Context) error {
 	}
 	defer file.Close()
 
+	// Check storage limit before upload
+	if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+		h.server.Logger.Zap.Error("Storage limit check failed", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	}
+
 	// Upload the image to S3
 	imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.MarinaGalleryImageType)
 	if err != nil {
 		h.server.Logger.Zap.Error("Error uploading image to S3", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
+	}
+
+	// Update storage usage
+	err = h.updateStorageUsage(c, marinaID, header.Size, true)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error updating marina storage usage", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
 	}
 
 	// Create gallery item in database
@@ -204,11 +288,18 @@ func (h *GalleryHandler) UpdateMarinaGalleryItem(c echo.Context) error {
 	// Initialize update parameters with current values
 	imageUrl := existingItem.ImageUrl
 	description := existingItem.Description
+	var fileSize int64
 
 	// Check if there's an image file in the form
 	file, header, err := c.Request().FormFile("image")
 	if err == nil {
 		defer file.Close()
+
+		// Check storage limit before upload
+		if err := h.checkStorageLimit(c, existingItem.MarinaID, header.Size); err != nil {
+			h.server.Logger.Zap.Error("Storage limit check failed", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+		}
 
 		// Upload the new image to S3
 		imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.MarinaGalleryImageType)
@@ -237,6 +328,15 @@ func (h *GalleryHandler) UpdateMarinaGalleryItem(c echo.Context) error {
 	if err != nil {
 		h.server.Logger.Zap.Error("Error updating marina gallery item", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating gallery item").JSON(c)
+	}
+
+	// Update storage usage only if a new file was uploaded
+	if fileSize > 0 {
+		err = h.updateStorageUsage(c, existingItem.MarinaID, fileSize, true)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error updating marina storage usage", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
+		}
 	}
 
 	// Return updated gallery item
@@ -360,6 +460,12 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 	}
 	defer file.Close()
 
+	// Check storage limit before upload
+	if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+		h.server.Logger.Zap.Error("Storage limit check failed", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	}
+
 	// Upload the image to S3
 	imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.VesselGalleryImageType)
 	if err != nil {
@@ -381,6 +487,13 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating vessel gallery item", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating gallery item").JSON(c)
+	}
+
+	// Update storage usage
+	err = h.updateStorageUsage(c, marinaID, header.Size, true)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error updating marina storage usage", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
 	}
 
 	// Return created gallery item
@@ -519,33 +632,18 @@ func (h *GalleryHandler) UpdateVesselGalleryItem(c echo.Context) error {
 	// Initialize update parameters with current values
 	imageUrl := existingItem.ImageUrl
 	description := existingItem.Description
-	main := existingItem.Main
-
-	// Check if this should be the main image
-	mainStr := c.FormValue("main")
-	if mainStr != "" {
-		isMain := mainStr == "true"
-		main = &isMain
-
-		// If this is the main image, update existing main images to not be main
-		if isMain {
-			removeMainParams := db.RemoveMainVesselImageParams{
-				VesselID:   existingItem.VesselID,
-				CustomerID: existingItem.CustomerID,
-				MarinaID:   existingItem.MarinaID,
-			}
-			err = h.server.DB.Queries().RemoveMainVesselImage(c.Request().Context(), removeMainParams)
-			if err != nil {
-				h.server.Logger.Zap.Error("Error removing main flag from existing images", err)
-				// Continue even if this fails
-			}
-		}
-	}
+	var fileSize int64
 
 	// Check if there's an image file in the form
 	file, header, err := c.Request().FormFile("image")
 	if err == nil {
 		defer file.Close()
+
+		// Check storage limit before upload
+		if err := h.checkStorageLimit(c, existingItem.MarinaID, header.Size); err != nil {
+			h.server.Logger.Zap.Error("Storage limit check failed", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+		}
 
 		// Upload the new image to S3
 		imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.VesselGalleryImageType)
@@ -568,13 +666,21 @@ func (h *GalleryHandler) UpdateVesselGalleryItem(c echo.Context) error {
 		ID:          id,
 		ImageUrl:    imageUrl,
 		Description: description,
-		Main:        main,
 	}
 
 	updatedItem, err := h.server.DB.Queries().UpdateVesselGalleryItem(c.Request().Context(), updateParams)
 	if err != nil {
 		h.server.Logger.Zap.Error("Error updating vessel gallery item", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating gallery item").JSON(c)
+	}
+
+	// Update storage usage only if a new file was uploaded
+	if fileSize > 0 {
+		err = h.updateStorageUsage(c, existingItem.MarinaID, fileSize, true)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error updating marina storage usage", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
+		}
 	}
 
 	// Return updated gallery item

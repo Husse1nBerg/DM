@@ -1,5 +1,7 @@
 package requests
 
+import "github.com/dockworks/dm-web-backend/pkg/dme"
+
 // WorkOrderListRequest represents a request to list work orders by page
 type WorkOrderListRequest struct {
 	Page     int `query:"page" validate:"required,min=1"`
@@ -50,40 +52,42 @@ type OperationCode struct {
 
 // WorkOrderCreateRequest represents a request to create a new work order
 type WorkOrderCreateRequest struct {
-	WoId            string          `json:"woId"`
-	ClerkId         string          `json:"clerkId"`
-	CustId          string          `json:"custId" validate:"required"`
-	BoatId          string          `json:"boatId"`
-	BoatName        string          `json:"boatName"`
-	CustomerPhone   string          `json:"customerPhone"`
-	CustomerEmail   string          `json:"customerEmail"`
-	Comments        string          `json:"comments"`
-	LocationCode    string          `json:"locationCode"`
-	EstCompDate     string          `json:"estCompDate"`
-	EstStartDate    string          `json:"estStartDate"`
-	CustPromiseDate string          `json:"custPromiseDate"`
-	CategoryCode    string          `json:"categoryCode"`
-	Title           string          `json:"title" validate:"required"`
-	OperationCodes  []OperationCode `json:"operationCodes"`
+	WoId            string           `json:"woId"`
+	ClerkId         string           `json:"clerkId"`
+	CustId          string           `json:"custId" validate:"required"`
+	BoatId          string           `json:"boatId"`
+	BoatName        string           `json:"boatName"`
+	CustomerPhone   string           `json:"customerPhone"`
+	CustomerEmail   string           `json:"customerEmail"`
+	Comments        string           `json:"comments"`
+	LocationCode    string           `json:"locationCode"`
+	EstCompDate     string           `json:"estCompDate"`
+	EstStartDate    string           `json:"estStartDate"`
+	CustPromiseDate string           `json:"custPromiseDate"`
+	CategoryCode    string           `json:"categoryCode"`
+	Title           string           `json:"title" validate:"required"`
+	OperationCodes  []OperationCode  `json:"operationCodes"`
+	Attachments     []dme.Attachment `json:"attachments"`
 }
 
 // WorkOrderUpdateRequest represents a request to update an existing work order
 type WorkOrderUpdateRequest struct {
-	WoId            string          `json:"woId" validate:"required"`
-	ClerkId         string          `json:"clerkId"`
-	CustId          string          `json:"custId"`
-	BoatId          string          `json:"boatId"`
-	BoatName        string          `json:"boatName"`
-	CustomerPhone   string          `json:"customerPhone"`
-	CustomerEmail   string          `json:"customerEmail"`
-	Comments        string          `json:"comments"`
-	LocationCode    string          `json:"locationCode"`
-	EstCompDate     string          `json:"estCompDate"`
-	EstStartDate    string          `json:"estStartDate"`
-	CustPromiseDate string          `json:"custPromiseDate"`
-	CategoryCode    string          `json:"categoryCode"`
-	Title           string          `json:"title"`
-	OperationCodes  []OperationCode `json:"operationCodes"`
+	WoId            string           `json:"woId" validate:"required"`
+	ClerkId         string           `json:"clerkId"`
+	CustId          string           `json:"custId"`
+	BoatId          string           `json:"boatId"`
+	BoatName        string           `json:"boatName"`
+	CustomerPhone   string           `json:"customerPhone"`
+	CustomerEmail   string           `json:"customerEmail"`
+	Comments        string           `json:"comments"`
+	LocationCode    string           `json:"locationCode"`
+	EstCompDate     string           `json:"estCompDate"`
+	EstStartDate    string           `json:"estStartDate"`
+	CustPromiseDate string           `json:"custPromiseDate"`
+	CategoryCode    string           `json:"categoryCode"`
+	Title           string           `json:"title"`
+	OperationCodes  []OperationCode  `json:"operationCodes"`
+	Attachments     []dme.Attachment `json:"attachments"`
 }
 
 // WorkOrdersForCustomerRequest represents a request to list work orders for a specific customer

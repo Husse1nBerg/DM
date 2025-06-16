@@ -185,6 +185,115 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/invite/accept": {
+            "post": {
+                "description": "Accepts an invitation and sets the user's password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Accept an invitation",
+                "parameters": [
+                    {
+                        "description": "Invitation acceptance request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.AcceptInvitationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AcceptInvitationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/invite/confirm": {
+            "get": {
+                "description": "Checks if the provided token is valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Confirm an invitation token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invitation token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ConfirmTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Perform user login",
@@ -581,6 +690,66 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customer-intake": {
+            "post": {
+                "description": "Creates a customer in DME and then creates a user for that customer - public endpoint",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Customer intake (public endpoint)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "Organization-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "Marina-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Customer and user information",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CustomerIntakeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created user with customer",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -3129,6 +3298,237 @@ const docTemplate = `{
                 }
             }
         },
+        "/marina-usage-history/date-range": {
+            "get": {
+                "description": "Retrieves marina usage history records within a specified date range",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marina usage history by date range",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina-usage-history/latest/{marinaId}": {
+            "get": {
+                "description": "Retrieves the most recent marina usage history record for a specific marina",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get latest marina usage history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina-usage-history/marina/{marinaId}": {
+            "get": {
+                "description": "Retrieves all marina usage history records for a specific marina",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marina usage history by marina ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina-usage-history/month": {
+            "get": {
+                "description": "Retrieves marina usage history records for a specific month",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marina usage history by month",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Month (YYYY-MM)",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina-usage-history/{id}": {
+            "get": {
+                "description": "Retrieves a marina usage history record by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marina usage history by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Marina Usage History ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/marina/{marinaId}/contacts": {
             "get": {
                 "security": [
@@ -5007,6 +5407,196 @@ const docTemplate = `{
                 }
             }
         },
+        "/plans/notes-messages": {
+            "get": {
+                "description": "Get all notes and messages plans with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "List notes and messages plans",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of plans",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/notes-messages/{planId}": {
+            "get": {
+                "description": "Get a specific notes and messages plan by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get notes and messages plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Plan ID",
+                        "name": "planId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Plan details",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid plan ID",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Plan not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/storage": {
+            "get": {
+                "description": "Get all storage plans with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "List storage plans",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of plans",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/storage/{planId}": {
+            "get": {
+                "description": "Get a specific storage plan by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get storage plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Plan ID",
+                        "name": "planId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Plan details",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid plan ID",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Plan not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/project-details": {
             "get": {
                 "description": "Returns information about the Marina Management System project",
@@ -5405,9 +5995,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/sms/send-batch": {
+        "/test/permissions": {
             "post": {
-                "description": "Send multiple SMS messages in a batch",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Test if the current user has permission to perform an action on an object",
                 "consumes": [
                     "application/json"
                 ],
@@ -5415,37 +6010,182 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "SMS"
+                    "permissions"
                 ],
-                "summary": "Send batch SMS",
+                "summary": "Test user permissions",
                 "parameters": [
                     {
-                        "description": "Batch SMS details",
-                        "name": "params",
+                        "description": "Permission test request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.BatchSMSRequest"
+                            "$ref": "#/definitions/handlers.PermissionTestRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Batch SMS accepted for delivery",
+                        "description": "Permission check result",
                         "schema": {
-                            "$ref": "#/definitions/responses.BatchSMSSendResponse"
+                            "$ref": "#/definitions/handlers.PermissionTestResponse"
                         }
                     },
                     "400": {
-                        "description": "Validation error",
+                        "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
                         }
                     },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/test/permissions/batch": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Test if the current user has permissions for multiple object-action combinations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions"
+                ],
+                "summary": "Test multiple user permissions",
+                "parameters": [
+                    {
+                        "description": "Array of permission test requests",
+                        "name": "requests",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.PermissionTestRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission check results",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.PermissionTestResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/test/permissions/routes": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all configured route-to-permission mappings for debugging",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions"
+                ],
+                "summary": "Get route permission mappings",
+                "responses": {
+                    "200": {
+                        "description": "Route permission mappings",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/test/permissions/user": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all permissions for the currently logged in user in the current marina",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "permissions"
+                ],
+                "summary": "Get current user permissions",
+                "responses": {
+                    "200": {
+                        "description": "User permissions and available objects",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
                         }
                     }
                 }
@@ -5509,7 +6249,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Create a new user",
+                "description": "Create a new customer user and assign them to a marina and customer",
                 "consumes": [
                     "application/json"
                 ],
@@ -5519,7 +6259,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Create user",
+                "summary": "Create customer user",
                 "parameters": [
                     {
                         "description": "User information",
@@ -5663,6 +6403,57 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/invite": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new user and send them an invitation email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create user with invitation",
+                "parameters": [
+                    {
+                        "description": "User information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateUserWithInvitationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created user",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -5849,6 +6640,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "boolean",
+                        "description": "Filter by customer status. If not provided, returns all users",
+                        "name": "isCustomer",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "default": 1,
                         "description": "Page number",
@@ -5910,6 +6707,12 @@ const docTemplate = `{
                         "name": "marinaId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by customer status. If not provided, returns all users",
+                        "name": "isCustomer",
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -6849,9 +7652,32 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dme.Attachment": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "s3Path": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.BillingCode": {
             "type": "object",
             "properties": {
+                "LOA_LWL_Or_Spar": {
+                    "type": "string"
+                },
+                "Length_Area_Or_CubicFeet": {
+                    "type": "string"
+                },
+                "Slip_Boat_Or_Longest": {
+                    "type": "string"
+                },
                 "cycle": {
                     "type": "string"
                 },
@@ -6865,12 +7691,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
-                },
-                "lengthAreaOrCubicFeet": {
-                    "type": "string"
-                },
-                "loaLwlOrSpar": {
                     "type": "string"
                 },
                 "overrideRate": {
@@ -6887,9 +7707,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.Rate"
                     }
-                },
-                "slipBoatOrLongest": {
-                    "type": "string"
                 }
             }
         },
@@ -6916,6 +7733,12 @@ const docTemplate = `{
         "dme.Boat": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "beam": {
                     "type": "string"
                 },
@@ -7072,11 +7895,41 @@ const docTemplate = `{
         "dme.BoatUpdate": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "beam": {
                     "type": "string"
                 },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
                 "color": {
                     "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
                 },
                 "draft": {
                     "type": "string"
@@ -7094,6 +7947,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
                     "type": "string"
                 },
                 "loa": {
@@ -7115,6 +7974,15 @@ const docTemplate = `{
                     }
                 },
                 "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
+                "ownerIntegrationId": {
                     "type": "string"
                 },
                 "registration": {
@@ -7221,6 +8089,12 @@ const docTemplate = `{
                 },
                 "altZip": {
                     "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
                 },
                 "balance": {
                     "type": "number"
@@ -7462,6 +8336,12 @@ const docTemplate = `{
                 "altZip": {
                     "type": "string"
                 },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "cellPhone": {
                     "type": "string"
                 },
@@ -7472,6 +8352,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "country": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "emergencyContact": {
@@ -7819,6 +8702,12 @@ const docTemplate = `{
         "dme.WorkOrder": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "billingData": {
                     "type": "array",
                     "items": {
@@ -8115,6 +9004,65 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.PermissionTestRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "object"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                }
+            }
+        },
+        "handlers.PermissionTestResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "has_access": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marina_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174001"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Access granted"
+                },
+                "module_info": {
+                    "type": "object",
+                    "properties": {
+                        "module_enabled": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "required_module": {
+                            "type": "string",
+                            "example": "customerVessels"
+                        }
+                    }
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
         "handlers.ProjectDetailsResponse": {
             "type": "object",
             "properties": {
@@ -8133,114 +9081,33 @@ const docTemplate = `{
         "models.Modules": {
             "type": "object",
             "properties": {
-                "customerVesselsRead": {
+                "customerVessels": {
                     "type": "boolean"
                 },
-                "customerVesselsWrite": {
+                "inventoryManagement": {
                     "type": "boolean"
                 },
-                "inventoryManagementRead": {
+                "marinaManagement": {
                     "type": "boolean"
                 },
-                "inventoryManagementWrite": {
+                "payments": {
                     "type": "boolean"
                 },
-                "marinaManagementRead": {
+                "pos": {
                     "type": "boolean"
                 },
-                "marinaManagementWrite": {
+                "salesManagement": {
                     "type": "boolean"
                 },
-                "paymentsRead": {
-                    "type": "boolean"
-                },
-                "paymentsWrite": {
-                    "type": "boolean"
-                },
-                "posRead": {
-                    "type": "boolean"
-                },
-                "posWrite": {
-                    "type": "boolean"
-                },
-                "salesManagementRead": {
-                    "type": "boolean"
-                },
-                "salesManagementWrite": {
-                    "type": "boolean"
-                },
-                "serviceManagementRead": {
-                    "type": "boolean"
-                },
-                "serviceManagementWrite": {
+                "serviceManagement": {
                     "type": "boolean"
                 }
             }
         },
         "models.Permissions": {
             "type": "object",
-            "properties": {
-                "deleteMarinas": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "deleteOrganizations": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "deleteRoles": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "deleteUsers": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "readMarinas": {
-                    "description": "Marina permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readOrganizations": {
-                    "description": "Organization permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readRoles": {
-                    "description": "Role permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readSettings": {
-                    "description": "Settings permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "readUsers": {
-                    "description": "User permissions",
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeMarinas": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeOrganizations": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeRoles": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeSettings": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "writeUsers": {
-                    "type": "boolean",
-                    "example": true
-                }
+            "additionalProperties": {
+                "type": "boolean"
             }
         },
         "models.WorkingHours": {
@@ -8276,6 +9143,23 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.AcceptInvitationRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "token"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "example": "SecureP@ssw0rd"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.AssignUserToMarinaRequest": {
             "type": "object",
             "required": [
@@ -8297,59 +9181,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.BatchSMSMessageRequest": {
-            "type": "object",
-            "required": [
-                "message",
-                "to"
-            ],
-            "properties": {
-                "expires_on": {
-                    "type": "string"
-                },
-                "media_urls": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                },
-                "priority": {
-                    "type": "string",
-                    "enum": [
-                        "Urgent",
-                        "High",
-                        "Normal",
-                        "Low"
-                    ]
-                },
-                "to": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "requests.BatchSMSRequest": {
-            "type": "object",
-            "required": [
-                "messages"
-            ],
-            "properties": {
-                "from_number": {
-                    "type": "string"
-                },
-                "messages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/requests.BatchSMSMessageRequest"
-                    }
-                }
-            }
-        },
         "requests.BoatCreateRequest": {
             "type": "object",
             "required": [
@@ -8357,11 +9188,41 @@ const docTemplate = `{
                 "ownerId"
             ],
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "beam": {
                     "type": "string"
                 },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
                 "color": {
                     "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
                 },
                 "draft": {
                     "type": "string"
@@ -8376,6 +9237,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
                     "type": "string"
                 },
                 "loa": {
@@ -8393,7 +9260,16 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
                 "ownerId": {
+                    "type": "string"
+                },
+                "ownerIntegrationId": {
                     "type": "string"
                 },
                 "registration": {
@@ -8509,6 +9385,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "is_cp_contact": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -8537,7 +9416,6 @@ const docTemplate = `{
                 "lastName",
                 "marinaId",
                 "organizationId",
-                "password",
                 "roleId"
             ],
             "properties": {
@@ -8577,20 +9455,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 12,
-                    "example": "SecureP@ssw0rd"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -8603,6 +9470,10 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",
@@ -8685,7 +9556,9 @@ const docTemplate = `{
             "required": [
                 "email",
                 "name",
-                "organizationId"
+                "notesMessagesPlanId",
+                "organizationId",
+                "storagePlanId"
             ],
             "properties": {
                 "address": {
@@ -8723,9 +9596,16 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 100
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
+                },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "organizationId": {
                     "type": "string",
@@ -8734,6 +9614,10 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "systemId": {
                     "type": "string",
@@ -8839,7 +9723,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
-                "permissions"
+                "permissions",
+                "type"
             ],
             "properties": {
                 "description": {
@@ -8860,6 +9745,10 @@ const docTemplate = `{
                 },
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "marina"
                 }
             }
         },
@@ -8903,9 +9792,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
@@ -8914,9 +9800,6 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 12,
                     "example": "SecureP@ssw0rd"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -8929,6 +9812,75 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                }
+            }
+        },
+        "requests.CreateUserWithInvitationRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstName",
+                "lastName",
+                "marinaId",
+                "organizationId",
+                "roleId"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "firstName": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "image": {
+                    "type": "string",
+                    "example": "/images/profiles/johndoe.jpg"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "isSuperuser": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "roleId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",
@@ -8981,6 +9933,12 @@ const docTemplate = `{
                 "altZip": {
                     "type": "string"
                 },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "cellPhone": {
                     "type": "string"
                 },
@@ -8991,6 +9949,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "country": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "emergencyContact": {
@@ -9022,6 +9983,76 @@ const docTemplate = `{
                 },
                 "useAltAddress": {
                     "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.CustomerIntakeRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstName",
+                "lastName",
+                "marinaId",
+                "organizationId"
+            ],
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "description": "Customer fields",
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
                 },
                 "workPhone": {
                     "type": "string"
@@ -9362,6 +10393,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "is_cp_contact": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -9524,13 +10558,24 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 100
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
                 },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "systemId": {
                     "type": "string",
@@ -9643,6 +10688,10 @@ const docTemplate = `{
                 },
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "marina"
                 }
             }
         },
@@ -9677,16 +10726,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "password": {
                     "type": "string",
                     "minLength": 12,
                     "example": "NewSecureP@ssw0rd"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -9699,6 +10742,10 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Manager"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -9728,6 +10775,12 @@ const docTemplate = `{
                 "title"
             ],
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "boatId": {
                     "type": "string"
                 },
@@ -9784,6 +10837,12 @@ const docTemplate = `{
                 "woId"
             ],
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "boatId": {
                     "type": "string"
                 },
@@ -9831,6 +10890,27 @@ const docTemplate = `{
                 },
                 "woId": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.AcceptInvitationResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {},
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -9902,35 +10982,6 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BatchSMSSendResponse": {
-            "type": "object",
-            "properties": {
-                "batch_id": {
-                    "type": "string"
-                },
-                "details": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.SMSStatusDetails"
-                    }
-                },
-                "failure_count": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "success_count": {
-                    "type": "integer"
-                },
-                "total_count": {
-                    "type": "integer"
-                }
-            }
-        },
         "responses.BoatListResponse": {
             "type": "object",
             "properties": {
@@ -9974,6 +11025,29 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.BoatSearch"
                     }
+                }
+            }
+        },
+        "responses.ConfirmTokenResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/responses.InviteResponse"
+                },
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -10023,6 +11097,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "is_cp_contact": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "marinaId": {
                     "type": "string",
@@ -10342,6 +11420,23 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.InviteResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "valid": {
+                    "type": "boolean"
+                }
+            }
+        },
         "responses.LoginResponse": {
             "description": "Authentication token response containing access token, refresh token and expiration",
             "type": "object",
@@ -10450,6 +11545,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "info@harborbay.com"
                 },
+                "emailUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -10474,9 +11573,16 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 100
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
+                },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "organizationId": {
                     "type": "string",
@@ -10486,9 +11592,21 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+15551234567"
                 },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "storageUsage": {
+                    "type": "number",
+                    "example": 0
+                },
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                },
+                "textUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "updatedAt": {
                     "type": "string"
@@ -10507,6 +11625,75 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.MarinaResponse"
+                }
+            }
+        },
+        "responses.MarinaUsageHistoryListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MarinaUsageHistoryResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "responses.MarinaUsageHistoryResponse": {
+            "description": "Marina usage history data including storage, email, and text usage",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "emailUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "storageUsage": {
+                    "type": "number",
+                    "example": 0
+                },
+                "textUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                }
+            }
+        },
+        "responses.MarinaUsageHistoryResponseWrapper": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.MarinaUsageHistoryResponse"
                 }
             }
         },
@@ -10536,6 +11723,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "info@harborbay.com"
                 },
+                "emailUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -10560,9 +11751,16 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 100
                 },
+                "modules": {
+                    "$ref": "#/definitions/models.Modules"
+                },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
+                },
+                "notesMessagesPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "organizationId": {
                     "type": "string",
@@ -10572,9 +11770,21 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+15551234567"
                 },
+                "storagePlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "storageUsage": {
+                    "type": "number",
+                    "example": 0
+                },
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                },
+                "textUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "updatedAt": {
                     "type": "string"
@@ -10826,6 +12036,10 @@ const docTemplate = `{
                 "permissions": {
                     "$ref": "#/definitions/models.Permissions"
                 },
+                "type": {
+                    "type": "string",
+                    "example": "marina"
+                },
                 "updatedAt": {
                     "type": "string",
                     "example": "2023-01-02T00:00:00Z"
@@ -10842,29 +12056,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "task_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.SMSStatusDetails": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "message_id": {
-                    "type": "string"
-                },
-                "recipient": {
-                    "type": "string"
-                },
-                "segment_count": {
-                    "type": "integer"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -10906,6 +12097,10 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string",
                     "example": "1234567890"
+                },
+                "customerName": {
+                    "type": "string",
+                    "example": "John's Marina"
                 },
                 "email": {
                     "type": "string",
@@ -10959,15 +12154,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
-                "modules": {
-                    "$ref": "#/definitions/models.Modules"
-                },
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
                 },
                 "phone": {
                     "type": "string",
@@ -10977,12 +12166,20 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
+                "roleName": {
+                    "type": "string",
+                    "example": "Admin"
+                },
                 "title": {
                     "type": "string",
                     "example": "Manager"
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",

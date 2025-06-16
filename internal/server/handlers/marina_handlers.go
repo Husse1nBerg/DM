@@ -12,6 +12,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -115,20 +116,22 @@ func (h *MarinaHandler) CreateMarina(c echo.Context) error {
 	}
 
 	params := db.CreateMarinaParams{
-		OrganizationID: req.OrganizationID,
-		Name:           req.Name,
-		Email:          req.Email,
-		Location:       req.Location,
-		Phone:          req.Phone,
-		Country:        req.Country,
-		Currency:       req.Currency,
-		WorkingHours:   workingHoursBytes,
-		Website:        req.Website,
-		Image:          req.Image,
-		MaxUsers:       &maxUsers,
-		IsActive:       &isActive,
-		IsTest:         &isTest,
-		AddressID:      addressID,
+		OrganizationID:      req.OrganizationID,
+		Name:                req.Name,
+		Email:               utils.LowerCase(req.Email),
+		Location:            req.Location,
+		Phone:               req.Phone,
+		Country:             req.Country,
+		Currency:            req.Currency,
+		WorkingHours:        workingHoursBytes,
+		Website:             req.Website,
+		Image:               req.Image,
+		MaxUsers:            &maxUsers,
+		IsActive:            &isActive,
+		IsTest:              &isTest,
+		AddressID:           addressID,
+		NotesMessagesPlanID: *req.NotesMessagesPlanID,
+		StoragePlanID:       *req.StoragePlanID,
 	}
 
 	marina, err := h.server.DB.Queries().CreateMarina(c.Request().Context(), params)
@@ -393,20 +396,23 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 
 	// Initialize update parameters with current values
 	updateParams := db.UpdateMarinaParams{
-		ID:           marinaID,
-		Name:         marina.Name,
-		Email:        marina.Email,
-		Location:     marina.Location,
-		Phone:        marina.Phone,
-		Country:      marina.Country,
-		Currency:     marina.Currency,
-		WorkingHours: marina.WorkingHours,
-		Website:      marina.Website,
-		Image:        marina.Image,
-		MaxUsers:     marina.MaxUsers,
-		IsActive:     marina.IsActive,
-		IsTest:       marina.IsTest,
-		AddressID:    marina.AddressID,
+		ID:                  marinaID,
+		Name:                marina.Name,
+		Email:               marina.Email,
+		Location:            marina.Location,
+		Phone:               marina.Phone,
+		Country:             marina.Country,
+		Currency:            marina.Currency,
+		WorkingHours:        marina.WorkingHours,
+		Website:             marina.Website,
+		Image:               marina.Image,
+		MaxUsers:            marina.MaxUsers,
+		IsActive:            marina.IsActive,
+		IsTest:              marina.IsTest,
+		AddressID:           marina.AddressID,
+		SystemID:            marina.SystemID,
+		NotesMessagesPlanID: marina.NotesMessagesPlanID,
+		StoragePlanID:       marina.StoragePlanID,
 	}
 
 	if isMultipart {
@@ -431,7 +437,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 			updateParams.Name = name
 		}
 		if email := c.FormValue("email"); email != "" {
-			updateParams.Email = email
+			updateParams.Email = utils.LowerCase(email)
 		}
 		if location := c.FormValue("location"); location != "" {
 			updateParams.Location = &location
@@ -467,6 +473,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		if systemID := c.FormValue("systemID"); systemID != "" {
 			updateParams.SystemID = &systemID
 		}
+		// (Plan ID updates only supported via JSON body)
 	} else {
 		// Parse and validate the JSON request body
 		req := new(requests.UpdateMarinaRequest)
@@ -484,7 +491,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 			updateParams.Name = *req.Name
 		}
 		if req.Email != nil {
-			updateParams.Email = *req.Email
+			updateParams.Email = utils.LowerCase(*req.Email)
 		}
 		if req.Location != nil {
 			updateParams.Location = req.Location
@@ -524,9 +531,17 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		if req.SystemID != nil {
 			updateParams.SystemID = req.SystemID
 		}
+		// Add support for updating plan IDs
+		if req.NotesMessagesPlanID != nil {
+			updateParams.NotesMessagesPlanID = *req.NotesMessagesPlanID
+		}
+		if req.StoragePlanID != nil {
+			updateParams.StoragePlanID = *req.StoragePlanID
+		}
 	}
 
 	// Update marina in database
+	h.server.Logger.Zap.Debug("UpdateMarina plan IDs", "NotesMessagesPlanID", updateParams.NotesMessagesPlanID, "StoragePlanID", updateParams.StoragePlanID)
 	updatedMarina, err := queries.UpdateMarina(c.Request().Context(), updateParams)
 	if err != nil {
 		h.server.Logger.Zap.Error("Error updating marina", err)
@@ -598,7 +613,7 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		params.Name = *req.Name
 	}
 	if req.Email != nil {
-		params.Email = *req.Email
+		params.Email = utils.LowerCase(*req.Email)
 	}
 	if req.Location != nil {
 		params.Location = req.Location

@@ -255,15 +255,163 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
 
-	dmeResponse, err := h.server.DME.UpdateBoat(ctx, &reqStruct, orgID, *systemID)
+	// Fetch the existing boat from DME
+	existingBoat, err := h.server.DME.RetrieveBoatByID(ctx, reqStruct.ID, orgID, *systemID)
 	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to update boat",
-			zap.Error(err),
-			zap.String("boatId", id))
+		h.server.Logger.DesugarZap.Error("RetrieveBoatByID error in UpdateBoat", zap.Error(err), zap.String("boatId", reqStruct.ID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to fetch existing boat: "+err.Error()).JSON(c)
+	}
+
+	// Overlay the incoming changes onto the existing boat
+	// Only update fields that are present in the request
+	if reqStruct.Name != "" {
+		existingBoat.Name = reqStruct.Name
+	}
+	if reqStruct.Registration != "" {
+		existingBoat.Registration = reqStruct.Registration
+	}
+	if reqStruct.Year != "" {
+		existingBoat.Year = reqStruct.Year
+	}
+	if reqStruct.Make != "" {
+		existingBoat.Make = reqStruct.Make
+	}
+	if reqStruct.Model != "" {
+		existingBoat.Model = reqStruct.Model
+	}
+	if reqStruct.HIN != "" {
+		existingBoat.HIN = reqStruct.HIN
+	}
+	if reqStruct.LOA != "" {
+		existingBoat.LOA = reqStruct.LOA
+	}
+	if reqStruct.LWL != "" {
+		existingBoat.LWL = reqStruct.LWL
+	}
+	if reqStruct.Draft != "" {
+		existingBoat.Draft = reqStruct.Draft
+	}
+	if reqStruct.Beam != "" {
+		existingBoat.Beam = reqStruct.Beam
+	}
+	if reqStruct.Height != "" {
+		existingBoat.Height = reqStruct.Height
+	}
+	if reqStruct.Color != "" {
+		existingBoat.Color = reqStruct.Color
+	}
+	if reqStruct.TrailerMake != "" {
+		existingBoat.TrailerMake = reqStruct.TrailerMake
+	}
+	if reqStruct.TrailerModel != "" {
+		existingBoat.TrailerModel = reqStruct.TrailerModel
+	}
+	if reqStruct.TrailerSerial != "" {
+		existingBoat.TrailerSerial = reqStruct.TrailerSerial
+	}
+	if reqStruct.TrailerRegistration != "" {
+		existingBoat.TrailerRegistration = reqStruct.TrailerRegistration
+	}
+	if reqStruct.TrailerLocation != "" {
+		existingBoat.TrailerLocation = reqStruct.TrailerLocation
+	}
+	if reqStruct.SummerSlip != "" {
+		existingBoat.SummerSlip = reqStruct.SummerSlip
+	}
+	if reqStruct.WinterSlip != "" {
+		existingBoat.WinterSlip = reqStruct.WinterSlip
+	}
+	if reqStruct.InsuranceCompany != "" {
+		existingBoat.InsuranceCompany = reqStruct.InsuranceCompany
+	}
+	if reqStruct.InsuranceExpDate != "" {
+		existingBoat.InsuranceExpDate = reqStruct.InsuranceExpDate
+	}
+	if reqStruct.SlipID != "" {
+		existingBoat.SlipID = reqStruct.SlipID
+	}
+	if reqStruct.Comments != "" {
+		existingBoat.Comments = reqStruct.Comments
+	}
+	if reqStruct.IntegrationID != "" {
+		existingBoat.IntegrationID = reqStruct.IntegrationID
+	}
+	if reqStruct.OwnerIntegrationID != "" {
+		existingBoat.OwnerIntegrationID = reqStruct.OwnerIntegrationID
+	}
+	if reqStruct.LastModified != "" {
+		existingBoat.LastModified = reqStruct.LastModified
+	}
+	if reqStruct.Attachments != nil {
+		existingBoat.Attachments = reqStruct.Attachments
+	}
+	existingBoat.DoNotLaunch = reqStruct.DoNotLaunch
+	if reqStruct.Motors != nil {
+		existingBoat.Motors = reqStruct.Motors
+	}
+	if reqStruct.BillingCodes != nil {
+		existingBoat.BillingCodes = reqStruct.BillingCodes
+	}
+	if reqStruct.BoatDescriptionCodes != nil {
+		existingBoat.BoatDescriptionCodes = reqStruct.BoatDescriptionCodes
+	}
+	if reqStruct.CustomInformation != nil {
+		existingBoat.CustomInformation = reqStruct.CustomInformation
+	}
+	if reqStruct.OperationsHistory != nil {
+		existingBoat.OperationsHistory = reqStruct.OperationsHistory
+	}
+	if (reqStruct.Slip != dme.Slip{}) {
+		existingBoat.Slip = reqStruct.Slip
+	}
+
+	// Debug: Log the merged boat object before sending to DME
+	h.server.Logger.DesugarZap.Debug("Merged boat object before DME.UpdateBoat", zap.Any("boatUpdate", existingBoat))
+
+	// Convert to BoatUpdate for DME
+	boatUpdate := dme.BoatUpdate{
+		ID:                   existingBoat.ID,
+		Name:                 existingBoat.Name,
+		Registration:         existingBoat.Registration,
+		Year:                 existingBoat.Year,
+		Make:                 existingBoat.Make,
+		Model:                existingBoat.Model,
+		HIN:                  existingBoat.HIN,
+		LOA:                  existingBoat.LOA,
+		LWL:                  existingBoat.LWL,
+		Draft:                existingBoat.Draft,
+		Beam:                 existingBoat.Beam,
+		Height:               existingBoat.Height,
+		Color:                existingBoat.Color,
+		TrailerMake:          existingBoat.TrailerMake,
+		TrailerModel:         existingBoat.TrailerModel,
+		TrailerSerial:        existingBoat.TrailerSerial,
+		TrailerRegistration:  existingBoat.TrailerRegistration,
+		TrailerLocation:      existingBoat.TrailerLocation,
+		SummerSlip:           existingBoat.SummerSlip,
+		WinterSlip:           existingBoat.WinterSlip,
+		InsuranceCompany:     existingBoat.InsuranceCompany,
+		InsuranceExpDate:     existingBoat.InsuranceExpDate,
+		SlipID:               existingBoat.SlipID,
+		Slip:                 existingBoat.Slip,
+		Motors:               existingBoat.Motors,
+		DoNotLaunch:          existingBoat.DoNotLaunch,
+		BillingCodes:         existingBoat.BillingCodes,
+		BoatDescriptionCodes: existingBoat.BoatDescriptionCodes,
+		CustomInformation:    existingBoat.CustomInformation,
+		OperationsHistory:    existingBoat.OperationsHistory,
+		IntegrationID:        existingBoat.IntegrationID,
+		OwnerIntegrationID:   existingBoat.OwnerIntegrationID,
+		LastModified:         existingBoat.LastModified,
+		Comments:             existingBoat.Comments,
+		Attachments:          existingBoat.Attachments,
+	}
+	dmeResponse, err := h.server.DME.UpdateBoat(ctx, &boatUpdate, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("DME.UpdateBoat error in UpdateBoat", zap.Error(err), zap.Any("boatUpdate", boatUpdate))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert DME response to API response
 	response := responses.ConvertBoat(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -310,29 +458,38 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 
 	// Convert request to dme.BoatCreate with all fields properly mapped
 	boat := &dme.BoatCreate{
-		Name:                req.Name,
-		OwnerID:             req.OwnerID,
-		Registration:        req.Registration,
-		Year:                req.Year,
-		Make:                req.Make,
-		Model:               req.Model,
-		HIN:                 req.Hin,
-		LOA:                 req.LOA,
-		LWL:                 req.LWL,
-		Draft:               req.Draft,
-		Beam:                req.Beam,
-		Height:              req.Height,
-		Color:               req.Color,
-		TrailerMake:         req.TrailerMake,
-		TrailerModel:        req.TrailerModel,
-		TrailerSerial:       req.TrailerSerial,
-		TrailerRegistration: req.TrailerRegistration,
-		TrailerLocation:     req.TrailerLocation,
-		SummerSlip:          req.SummerSlip,
-		WinterSlip:          req.WinterSlip,
-		InsuranceCompany:    req.InsuranceCompany,
-		InsuranceExpDate:    req.InsuranceExpDate,
-		SlipID:              req.SlipID,
+		Name:                 req.Name,
+		OwnerID:              req.OwnerID,
+		Registration:         req.Registration,
+		Year:                 req.Year,
+		Make:                 req.Make,
+		Model:                req.Model,
+		HIN:                  req.Hin,
+		LOA:                  req.LOA,
+		LWL:                  req.LWL,
+		Draft:                req.Draft,
+		Beam:                 req.Beam,
+		Height:               req.Height,
+		Color:                req.Color,
+		TrailerMake:          req.TrailerMake,
+		TrailerModel:         req.TrailerModel,
+		TrailerSerial:        req.TrailerSerial,
+		TrailerRegistration:  req.TrailerRegistration,
+		TrailerLocation:      req.TrailerLocation,
+		SummerSlip:           req.SummerSlip,
+		WinterSlip:           req.WinterSlip,
+		InsuranceCompany:     req.InsuranceCompany,
+		InsuranceExpDate:     req.InsuranceExpDate,
+		SlipID:               req.SlipID,
+		DoNotLaunch:          req.DoNotLaunch,
+		BillingCodes:         req.BillingCodes,
+		BoatDescriptionCodes: req.BoatDescriptionCodes,
+		CustomInformation:    req.CustomInformation,
+		OperationsHistory:    req.OperationsHistory,
+		IntegrationID:        req.IntegrationID,
+		OwnerIntegrationID:   req.OwnerIntegrationID,
+		LastModified:         req.LastModified,
+		Comments:             req.Comments,
 	}
 
 	dmeResponse, err := h.server.DME.CreateBoat(ctx, boat, orgID, *systemID)
