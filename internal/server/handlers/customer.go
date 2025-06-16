@@ -297,12 +297,15 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	if req.ShipmentMethodDescription != "" {
 		existingCustomer.ShipmentMethodDescription = req.ShipmentMethodDescription
 	}
+	if req.CustomInformation != nil {
+		existingCustomer.CustomInformation = req.CustomInformation
+	}
 	if req.Attachments != nil {
 		existingCustomer.Attachments = req.Attachments
 	}
 
-	// Convert existing customer to CustomerUpdate
-	customer := &dme.CustomerUpdate{
+	// Convert to CustomerUpdate
+	customer := dme.CustomerUpdate{
 		ID:                        existingCustomer.ID,
 		Name:                      existingCustomer.Name,
 		FirstName:                 existingCustomer.FirstName,
@@ -334,10 +337,11 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		CompanyName:               existingCustomer.CompanyName,
 		ShipmentMethod:            existingCustomer.ShipmentMethod,
 		ShipmentMethodDescription: existingCustomer.ShipmentMethodDescription,
+		CustomInformation:         existingCustomer.CustomInformation,
 		Attachments:               existingCustomer.Attachments,
 	}
 
-	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, customer, orgID, *systemID)
+	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, &customer, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to update customer",
 			zap.Error(err),
@@ -468,6 +472,7 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 		CompanyName:               req.CompanyName,
 		ShipmentMethod:            req.ShipmentMethod,
 		ShipmentMethodDescription: req.ShipmentMethodDescription,
+		CustomInformation:         req.CustomInformation,
 		Attachments:               req.Attachments,
 	}
 

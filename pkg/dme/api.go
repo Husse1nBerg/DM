@@ -158,6 +158,14 @@ func (c *Client) CreateCustomer(ctx context.Context, customer *CustomerCreate, o
 	var result CustomerCreateUpdateResponse
 	endpoint := "/DockMaster/Customers/UpdateCustomer"
 
+	// Initialize empty arrays if nil
+	if customer.CustomInformation == nil {
+		customer.CustomInformation = []CustomInformation{}
+	}
+	if customer.Attachments == nil {
+		customer.Attachments = []Attachment{}
+	}
+
 	err := c.DoJSONRequest(
 		ctx,
 		http.MethodPost,
