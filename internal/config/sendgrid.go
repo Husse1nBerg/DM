@@ -35,7 +35,7 @@ func LoadSendGridConfig() SendGridConfig {
 		templatesMap["welcome"] = "d-d823f4dd24504a7a9b3bbd7ae96e4510"
 	}
 	if templatesMap["invite"] == "" {
-		templatesMap["invite"] = "d-c9f51b77474a4d3bbf8e3df07af225a2"
+		templatesMap["invite"] = "d-4d89d4122eeb473cbc2a59b373976934"
 	}
 	if templatesMap["invite_customer"] == "" {
 		templatesMap["invite_customer"] = "d-c9f51b77474a4d3bbf8e3df07af225a2"
