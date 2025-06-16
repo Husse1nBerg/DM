@@ -51,3 +51,10 @@ SELECT EXISTS (
     WHERE um.user_id = $1
         AND um.marina_id = $2
 ) AS can_access;
+-- name: GetUserRoleInMarina :one
+SELECT u.role_id
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE u.id = $1
+    AND um.marina_id = $2
+    AND u.deleted_at IS NULL;

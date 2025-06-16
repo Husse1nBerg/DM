@@ -327,6 +327,7 @@ func (c *Client) SendMessageEmail(to []string, subject string, data MessageTempl
 		"content":          data.Content,
 		"recipient":        data.Recipient,
 		"sender":           data.Sender,
+		"home_url":         data.HomeURL,
 		"terms_conditions": data.TermsConditions,
 	}
 

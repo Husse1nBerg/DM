@@ -254,6 +254,7 @@ func (h *MessageHandler) ListMessagesCustomerHandler(c echo.Context) error {
 func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	// Parse and validate request
 	logger := h.server.Logger
+	cfg := h.server.Config
 
 	req := new(requests.CreateMessageRequest)
 	if err := c.Bind(req); err != nil {
@@ -270,10 +271,10 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	}
 
 	// Check message limit before sending
-	if err := h.checkMessageLimit(c, req.MarinaID, "email"); err != nil {
-		logger.Zap.Error("Message limit check failed", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-	}
+	// if err := h.checkMessageLimit(c, req.MarinaID, "email"); err != nil {
+	// 	logger.Zap.Error("Message limit check failed", err)
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
 
 	// Create the message
 	params := db.CreateMessageParams{
@@ -313,6 +314,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Content:   req.Body,
 		Recipient: req.Recipient,
 		Sender:    req.Sender,
+		HomeURL:   cfg.App.HomeURL(),
 	}
 	to := []string{req.Contact}
 	subject := "Message from " + req.Sender
@@ -399,9 +401,11 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	queries := h.server.DB.Queries()
 
 	// Check message limit before sending
-	if err := h.checkMessageLimit(c, req.MarinaID, req.Type); err != nil {
-		logger.Zap.Error("Message limit check failed", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	if req.Type != "email" {
+		if err := h.checkMessageLimit(c, req.MarinaID, req.Type); err != nil {
+			logger.Zap.Error("Message limit check failed", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+		}
 	}
 
 	var direction string

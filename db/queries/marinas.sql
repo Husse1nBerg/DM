@@ -19,7 +19,8 @@ INSERT INTO marinas (
         email_usage,
         text_usage,
         notes_messages_plan_id,
-        storage_plan_id
+        storage_plan_id,
+        modules
     )
 VALUES (
         $1,
@@ -41,7 +42,8 @@ VALUES (
         0,
         0,
         $16,
-        $17
+        $17,
+        $18
     )
 RETURNING *;
 -- name: GetMarinaByID :one
@@ -96,7 +98,8 @@ SET name = $2,
     email_usage = COALESCE($16, email_usage),
     text_usage = COALESCE($17, text_usage),
     notes_messages_plan_id = $18,
-    storage_plan_id = $19
+    storage_plan_id = $19,
+    modules = $20
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec

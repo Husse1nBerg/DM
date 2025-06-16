@@ -7,7 +7,6 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
-	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -107,12 +106,7 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing permissions").JSON(c)
 		}
 	} else {
-		// Use default admin permissions
-		defaultPermissions := models.DefaultAdminPermissions()
-		permissionsBytes, err = defaultPermissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default permissions").JSON(c)
-		}
+		return responses.NewErrorResponse(http.StatusBadRequest, "Permissions are required").JSON(c)
 	}
 
 	// Set default values for nullable fields if not provided

@@ -15,7 +15,6 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
-	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 )
@@ -654,16 +653,6 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 	isActive := true
 	isSuperuser := false
 
-	// Convert permissions and modules to bytes
-	var permissionsBytes, modulesBytes []byte
-
-	// Use default permissions from role
-	permissionsBytes = customerRole.Permissions
-
-	// Set default read-only modules
-	defaultModules := models.ReadOnlyModules()
-	modulesBytes, _ = defaultModules.ToBytes()
-
 	// Create customer user
 	params := db.CreateCustomerUserParams{
 		Username:            username,
@@ -678,8 +667,6 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 		IsCustomer:          utils.Pointer(true),
 		IsSuperuser:         &isSuperuser,
 		IsActive:            &isActive,
-		Modules:             modulesBytes,
-		Permissions:         permissionsBytes,
 		EmailVerified:       utils.PgTimeNow(),
 		LastLogin:           utils.PgTimeNow(),
 		FailedLoginAttempts: utils.Pointer(int32(0)),

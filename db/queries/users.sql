@@ -18,8 +18,6 @@ INSERT INTO users (
         role_id,
         is_superuser,
         is_active,
-        modules,
-        permissions,
         user_analytics
     )
 VALUES (
@@ -41,9 +39,7 @@ VALUES (
         $16,
         $17,
         $18,
-        $19,
-        $20,
-        $21
+        $19
     )
 RETURNING *;
 -- name: GetUserByID :one
@@ -157,9 +153,7 @@ SET first_name = $2,
     role_id = $15,
     is_superuser = $16,
     is_active = $17,
-    modules = $18,
-    permissions = $19,
-    user_analytics = $20,
+    user_analytics = $18,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
@@ -188,8 +182,6 @@ INSERT INTO users (
         is_customer,
         is_superuser,
         is_active,
-        modules,
-        permissions,
         user_analytics
     )
 VALUES (
@@ -212,9 +204,7 @@ VALUES (
         $17,
         $18,
         $19,
-        $20,
-        $21,
-        $22
+        $20
     )
 RETURNING *;
 -- name: ActivateUser :one

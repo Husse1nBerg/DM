@@ -11,7 +11,6 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
-	"github.com/dockworks/dm-web-backend/pkg/models"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/token"
@@ -156,38 +155,6 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		isSuperuser = *req.IsSuperuser
 	}
 
-	// Convert permissions and modules to bytes
-	var permissionsBytes, modulesBytes []byte
-
-	// Use provided permissions or default from role
-	if req.Permissions != nil {
-		var err error
-		permissionsBytes, err = req.Permissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-		}
-	} else {
-		// Set default permissions based on the role
-		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-		}
-		permissionsBytes = role.Permissions
-	}
-
-	// Use provided modules or default read-only modules
-	if req.Modules != nil {
-		var err error
-		modulesBytes, err = req.Modules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-		}
-	} else {
-		// Set default read-only modules if not provided
-		defaultModules := models.ReadOnlyModules()
-		modulesBytes, _ = defaultModules.ToBytes()
-	}
-
 	params := db.CreateUserParams{
 		Username:            username,
 		FirstName:           req.FirstName,
@@ -204,8 +171,6 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		RoleID:              req.RoleID,
 		IsSuperuser:         &isSuperuser,
 		IsActive:            &isActive,
-		Modules:             modulesBytes,
-		Permissions:         permissionsBytes,
 		UserAnalytics:       utils.Pointer(true),
 	}
 
@@ -736,8 +701,6 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		RoleID:              currentUser.RoleID,
 		IsSuperuser:         currentUser.IsSuperuser,
 		IsActive:            currentUser.IsActive,
-		Modules:             currentUser.Modules,
-		Permissions:         currentUser.Permissions,
 		UserAnalytics:       currentUser.UserAnalytics,
 	}
 
@@ -908,23 +871,6 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			updateParams.UserAnalytics = req.UserAnalytics
 		}
 
-		// Update permissions if provided
-		if req.Permissions != nil {
-			permissionsBytes, err := req.Permissions.ToBytes()
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-			}
-			updateParams.Permissions = permissionsBytes
-		}
-
-		// Update modules if provided
-		if req.Modules != nil {
-			modulesBytes, err := req.Modules.ToBytes()
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-			}
-			updateParams.Modules = modulesBytes
-		}
 	}
 
 	// Perform update
@@ -1393,38 +1339,6 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		isSuperuser = *req.IsSuperuser
 	}
 
-	// Convert permissions and modules to bytes
-	var permissionsBytes, modulesBytes []byte
-
-	// Use provided permissions or default from role
-	if req.Permissions != nil {
-		var err error
-		permissionsBytes, err = req.Permissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-		}
-	} else {
-		// Set default permissions based on the role
-		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-		}
-		permissionsBytes = role.Permissions
-	}
-
-	// Use provided modules or default read-only modules
-	if req.Modules != nil {
-		var err error
-		modulesBytes, err = req.Modules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-		}
-	} else {
-		// Set default read-only modules if not provided
-		defaultModules := models.ReadOnlyModules()
-		modulesBytes, _ = defaultModules.ToBytes()
-	}
-
 	params := db.CreateCustomerUserParams{
 		Username:       username,
 		FirstName:      req.FirstName,
@@ -1440,8 +1354,6 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		IsCustomer:     utils.Pointer(true),
 		IsSuperuser:    &isSuperuser,
 		IsActive:       &isActive,
-		Modules:        modulesBytes,
-		Permissions:    permissionsBytes,
 		UserAnalytics:  utils.Pointer(true),
 	}
 
@@ -1606,38 +1518,6 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		isSuperuser = *req.IsSuperuser
 	}
 
-	// Convert permissions and modules to bytes
-	var permissionsBytes, modulesBytes []byte
-
-	// Use provided permissions or default from role
-	if req.Permissions != nil {
-		var err error
-		permissionsBytes, err = req.Permissions.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
-		}
-	} else {
-		// Set default permissions based on the role
-		role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-		}
-		permissionsBytes = role.Permissions
-	}
-
-	// Use provided modules or default read-only modules
-	if req.Modules != nil {
-		var err error
-		modulesBytes, err = req.Modules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-		}
-	} else {
-		// Set default read-only modules if not provided
-		defaultModules := models.ReadOnlyModules()
-		modulesBytes, _ = defaultModules.ToBytes()
-	}
-
 	// Create user without password hash - they'll set it via invitation
 	params := db.CreateUserParams{
 		Username:            username,
@@ -1655,8 +1535,6 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		RoleID:              req.RoleID,
 		IsSuperuser:         &isSuperuser,
 		IsActive:            &isActive,
-		Modules:             modulesBytes,
-		Permissions:         permissionsBytes,
 		UserAnalytics:       utils.Pointer(true),
 	}
 
