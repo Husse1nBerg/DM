@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -115,6 +116,22 @@ func (h *MarinaHandler) CreateMarina(c echo.Context) error {
 		}
 	}
 
+	// Create default modules if not provided
+	var modulesBytes []byte
+	if req.Modules != nil {
+		modulesBytes, err = req.Modules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+		}
+	} else {
+		// Use default modules
+		defaultModules := models.DefaultModules()
+		modulesBytes, err = defaultModules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default modules").JSON(c)
+		}
+	}
+
 	params := db.CreateMarinaParams{
 		OrganizationID:      req.OrganizationID,
 		Name:                req.Name,
@@ -132,6 +149,7 @@ func (h *MarinaHandler) CreateMarina(c echo.Context) error {
 		AddressID:           addressID,
 		NotesMessagesPlanID: *req.NotesMessagesPlanID,
 		StoragePlanID:       *req.StoragePlanID,
+		Modules:             modulesBytes,
 	}
 
 	marina, err := h.server.DB.Queries().CreateMarina(c.Request().Context(), params)
@@ -413,6 +431,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		SystemID:            marina.SystemID,
 		NotesMessagesPlanID: marina.NotesMessagesPlanID,
 		StoragePlanID:       marina.StoragePlanID,
+		Modules:             marina.Modules,
 	}
 
 	if isMultipart {
@@ -473,7 +492,18 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		if systemID := c.FormValue("systemID"); systemID != "" {
 			updateParams.SystemID = &systemID
 		}
-		// (Plan ID updates only supported via JSON body)
+		// Handle modules in multipart form
+		if modulesStr := c.FormValue("modules"); modulesStr != "" {
+			var modules models.Modules
+			if err := json.Unmarshal([]byte(modulesStr), &modules); err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+			}
+			modulesBytes, err := modules.ToBytes()
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+			}
+			updateParams.Modules = modulesBytes
+		}
 	} else {
 		// Parse and validate the JSON request body
 		req := new(requests.UpdateMarinaRequest)
@@ -531,12 +561,26 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		if req.SystemID != nil {
 			updateParams.SystemID = req.SystemID
 		}
-		// Add support for updating plan IDs
 		if req.NotesMessagesPlanID != nil {
 			updateParams.NotesMessagesPlanID = *req.NotesMessagesPlanID
 		}
 		if req.StoragePlanID != nil {
 			updateParams.StoragePlanID = *req.StoragePlanID
+		}
+		if req.Modules != nil {
+			modulesBytes, err := req.Modules.ToBytes()
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+			}
+			updateParams.Modules = modulesBytes
+		} else {
+			// If modules are not provided, use default modules
+			defaultModules := models.DefaultModules()
+			modulesBytes, err := defaultModules.ToBytes()
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default modules").JSON(c)
+			}
+			updateParams.Modules = modulesBytes
 		}
 	}
 
@@ -821,98 +865,3 @@ func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
 
 	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
 }
-
-// func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
-// 	idStr := c.Param("id")
-// 	id, err := uuid.Parse(idStr)
-// 	if err != nil {
-// 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
-// 	}
-
-// 	// Check if marina exists and get current values
-// 	currentMarina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), id)
-// 	if err != nil {
-// 		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
-// 	}
-
-// 	var req requests.UpdateMarinaRequest
-// 	if err := c.Bind(&req); err != nil {
-// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-// 	}
-
-// 	if err := c.Validate(&req); err != nil {
-// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-// 	}
-
-// 	// Build update params with current values that will be overridden
-// 	params := db.UpdateMarinaParams{
-// 		ID:           id,
-// 		Name:         currentMarina.Name,
-// 		Email:        currentMarina.Email,
-// 		Location:     currentMarina.Location,
-// 		Phone:        currentMarina.Phone,
-// 		Country:      currentMarina.Country,
-// 		Currency:     currentMarina.Currency,
-// 		WorkingHours: currentMarina.WorkingHours,
-// 		Website:      currentMarina.Website,
-// 		Image:        currentMarina.Image,
-// 		MaxUsers:     currentMarina.MaxUsers,
-// 		IsActive:     currentMarina.IsActive,
-// 		IsTest:       currentMarina.IsTest,
-// 		AddressID:    currentMarina.AddressID,
-// 		SystemID:     currentMarina.SystemID,
-// 	}
-
-// 	// Update only fields that are provided
-// 	if req.Name != nil {
-// 		params.Name = *req.Name
-// 	}
-// 	if req.Email != nil {
-// 		params.Email = *req.Email
-// 	}
-// 	if req.Location != nil {
-// 		params.Location = req.Location
-// 	}
-// 	if req.Phone != nil {
-// 		params.Phone = req.Phone
-// 	}
-// 	if req.Country != nil {
-// 		params.Country = req.Country
-// 	}
-// 	if req.Currency != nil {
-// 		params.Currency = req.Currency
-// 	}
-// 	if req.WorkingHours != nil {
-// 		// Convert WorkingHours struct to []byte for database storage
-// 		workingHoursBytes, err := req.WorkingHours.ToBytes()
-// 		if err != nil {
-// 			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid working hours format").JSON(c)
-// 		}
-// 		params.WorkingHours = workingHoursBytes
-// 	}
-// 	if req.Website != nil {
-// 		params.Website = req.Website
-// 	}
-// 	if req.Image != nil {
-// 		params.Image = req.Image
-// 	}
-// 	if req.MaxUsers != nil {
-// 		params.MaxUsers = req.MaxUsers
-// 	}
-// 	if req.IsActive != nil {
-// 		params.IsActive = req.IsActive
-// 	}
-// 	if req.IsTest != nil {
-// 		params.IsTest = req.IsTest
-// 	}
-// 	if req.SystemID != nil {
-// 		params.SystemID = req.SystemID
-// 	}
-
-// 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
-// 	if err != nil {
-// 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-// 	}
-
-// 	return responses.NewMarinaResponseSuccess(updatedMarina).JSON(c)
-// }
