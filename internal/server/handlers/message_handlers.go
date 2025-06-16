@@ -347,11 +347,11 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 					"error", err)
 			}
 			// Increment message usage count
-			if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
-				logger.Zap.Errorw("Failed to update message usage",
-					"marina_id", req.MarinaID,
-					"error", err)
-			}
+			// if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
+			// 	logger.Zap.Errorw("Failed to update message usage",
+			// 		"marina_id", req.MarinaID,
+			// 		"error", err)
+			// }
 		} else {
 			logger.Zap.Errorw("Failed to send email",
 				"to", req.Contact,
@@ -540,11 +540,11 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 						"error", err)
 				}
 				// Increment message usage count
-				if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
-					logger.Zap.Errorw("Failed to update message usage",
-						"marina_id", req.MarinaID,
-						"error", err)
-				}
+				// if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
+				// 	logger.Zap.Errorw("Failed to update message usage",
+				// 		"marina_id", req.MarinaID,
+				// 		"error", err)
+				// }
 			} else {
 				logger.Zap.Errorw("Failed to send email",
 					"to", req.Contact,
