@@ -232,6 +232,19 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["DELETE /api/v1/message/marina"] = RoutePermission{Object: "messages", Action: "delete"}
 	routeMap["GET /api/v1/message/get"] = RoutePermission{Object: "messages", Action: "read"}
 
+	// Notes and Messages Plans routes
+	routeMap["GET /api/v1/plans/notes-messages"] = RoutePermission{Object: "plans", Action: "read"}
+	routeMap["GET /api/v1/plans/notes-messages/:planId"] = RoutePermission{Object: "plans", Action: "read"}
+	routeMap["GET /api/v1/plans/storage"] = RoutePermission{Object: "plans", Action: "read"}
+	routeMap["GET /api/v1/plans/storage/:planId"] = RoutePermission{Object: "plans", Action: "read"}
+
+	// Marina Usage History routes
+	routeMap["GET /api/v1/marina-usage-history/:id"] = RoutePermission{Object: "history", Action: "read"}
+	routeMap["GET /api/v1/marina-usage-history/marina/:marinaId"] = RoutePermission{Object: "history", Action: "read"}
+	routeMap["GET /api/v1/marina-usage-history/marina/:marinaId/range"] = RoutePermission{Object: "history", Action: "read"}
+	routeMap["GET /api/v1/marina-usage-history/marina/:marinaId/latest"] = RoutePermission{Object: "history", Action: "read"}
+	routeMap["GET /api/v1/marina-usage-history/marina/:marinaId/month"] = RoutePermission{Object: "history", Action: "read"}
+
 	// Email and SMS routes (communications)
 	routeMap["POST /api/v1/email/send-html"] = RoutePermission{Object: "admin", Action: "write"}
 	routeMap["POST /api/v1/email/send-template"] = RoutePermission{Object: "admin", Action: "write"}

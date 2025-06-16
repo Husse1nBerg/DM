@@ -149,6 +149,10 @@ func RunProdSeed() {
 				"work_orders.write":  true,
 				"work_orders.delete": true,
 				"work_orders.create": true,
+				// History module objects
+				"history.read": true,
+				// Plans module objects
+				"plans.read": true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -209,6 +213,10 @@ func RunProdSeed() {
 				"work_orders.write":  true,
 				"work_orders.delete": true,
 				"work_orders.create": true,
+				// History module objects
+				"history.read": true,
+				// Plans module objects
+				"plans.read": true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -268,6 +276,10 @@ func RunProdSeed() {
 				"work_orders.write":  true,
 				"work_orders.delete": false,
 				"work_orders.create": true,
+				// History module objects
+				"history.read": true,
+				// Plans module objects
+				"plans.read": true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -324,6 +336,10 @@ func RunProdSeed() {
 				"work_orders.write":  true,
 				"work_orders.delete": false,
 				"work_orders.create": true,
+				// History module objects
+				"history.read": true,
+				// Plans module objects
+				"plans.read": true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -349,6 +365,10 @@ func RunProdSeed() {
 				"boat_gallery.read": true,
 				// Service Management module objects
 				"work_orders.read": true,
+				// History module objects
+				"history.read": true,
+				// Plans module objects
+				"plans.read": true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -381,6 +401,10 @@ func RunProdSeed() {
 				"boat_gallery.read":   true,
 				"boat_gallery.write":  true,
 				"boat_gallery.create": true,
+				// History module objects
+				"history.read": true,
+				// Plans module objects
+				"plans.read": true,
 			},
 			isActive:       true,
 			isCustomerRole: true,
