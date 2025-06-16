@@ -202,40 +202,139 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
 
-	// Convert request to dme.CustomerUpdate
+	// Get existing customer first
+	existingCustomer, err := h.server.DME.CustomerRetrieve(ctx, req.ID, orgID, *systemID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve existing customer: "+err.Error()).JSON(c)
+	}
+
+	// Only update fields that are present in the request
+	if req.Name != "" {
+		existingCustomer.Name = req.Name
+	}
+	if req.FirstName != "" {
+		existingCustomer.FirstName = req.FirstName
+	}
+	if req.LastName != "" {
+		existingCustomer.LastName = req.LastName
+	}
+	if req.Email != "" {
+		existingCustomer.Email = req.Email
+	}
+	if req.Address1 != "" {
+		existingCustomer.Address1 = req.Address1
+	}
+	if req.Address2 != "" {
+		existingCustomer.Address2 = req.Address2
+	}
+	if req.Address3 != "" {
+		existingCustomer.Address3 = req.Address3
+	}
+	if req.City != "" {
+		existingCustomer.City = req.City
+	}
+	if req.State != "" {
+		existingCustomer.State = req.State
+	}
+	if req.Zip != "" {
+		existingCustomer.Zip = req.Zip
+	}
+	if req.Country != "" {
+		existingCustomer.Country = req.Country
+	}
+	if req.Phone != "" {
+		existingCustomer.Phone = req.Phone
+	}
+	if req.AltFirstName != "" {
+		existingCustomer.AltFirstName = req.AltFirstName
+	}
+	if req.AltLastName != "" {
+		existingCustomer.AltLastName = req.AltLastName
+	}
+	if req.AltAddress1 != "" {
+		existingCustomer.AltAddress1 = req.AltAddress1
+	}
+	if req.AltAddress2 != "" {
+		existingCustomer.AltAddress2 = req.AltAddress2
+	}
+	if req.AltAddress3 != "" {
+		existingCustomer.AltAddress3 = req.AltAddress3
+	}
+	if req.AltCity != "" {
+		existingCustomer.AltCity = req.AltCity
+	}
+	if req.AltState != "" {
+		existingCustomer.AltState = req.AltState
+	}
+	if req.AltZip != "" {
+		existingCustomer.AltZip = req.AltZip
+	}
+	if req.AltCountry != "" {
+		existingCustomer.AltCountry = req.AltCountry
+	}
+	if req.AltPhone != "" {
+		existingCustomer.AltPhone = req.AltPhone
+	}
+	existingCustomer.UseAltAddress = req.UseAltAddress
+	if req.WorkPhone != "" {
+		existingCustomer.WorkPhone = req.WorkPhone
+	}
+	if req.CellPhone != "" {
+		existingCustomer.CellPhone = req.CellPhone
+	}
+	if req.EmergencyContact != "" {
+		existingCustomer.EmergencyContact = req.EmergencyContact
+	}
+	if req.EmergencyPhone != "" {
+		existingCustomer.EmergencyPhone = req.EmergencyPhone
+	}
+	if req.CompanyName != "" {
+		existingCustomer.CompanyName = req.CompanyName
+	}
+	if req.ShipmentMethod != "" {
+		existingCustomer.ShipmentMethod = req.ShipmentMethod
+	}
+	if req.ShipmentMethodDescription != "" {
+		existingCustomer.ShipmentMethodDescription = req.ShipmentMethodDescription
+	}
+	if req.Attachments != nil {
+		existingCustomer.Attachments = req.Attachments
+	}
+
+	// Convert existing customer to CustomerUpdate
 	customer := &dme.CustomerUpdate{
-		ID:                        req.ID,
-		Name:                      req.Name,
-		FirstName:                 req.FirstName,
-		LastName:                  req.LastName,
-		Email:                     req.Email,
-		Address1:                  req.Address1,
-		Address2:                  req.Address2,
-		Address3:                  req.Address3,
-		City:                      req.City,
-		State:                     req.State,
-		Zip:                       req.Zip,
-		Country:                   req.Country,
-		Phone:                     req.Phone,
-		AltFirstName:              req.AltFirstName,
-		AltLastName:               req.AltLastName,
-		AltAddress1:               req.AltAddress1,
-		AltAddress2:               req.AltAddress2,
-		AltAddress3:               req.AltAddress3,
-		AltCity:                   req.AltCity,
-		AltState:                  req.AltState,
-		AltZip:                    req.AltZip,
-		AltCountry:                req.AltCountry,
-		AltPhone:                  req.AltPhone,
-		UseAltAddress:             req.UseAltAddress,
-		WorkPhone:                 req.WorkPhone,
-		CellPhone:                 req.CellPhone,
-		EmergencyContact:          req.EmergencyContact,
-		EmergencyPhone:            req.EmergencyPhone,
-		CompanyName:               req.CompanyName,
-		ShipmentMethod:            req.ShipmentMethod,
-		ShipmentMethodDescription: req.ShipmentMethodDescription,
-		Attachments:               req.Attachments,
+		ID:                        existingCustomer.ID,
+		Name:                      existingCustomer.Name,
+		FirstName:                 existingCustomer.FirstName,
+		LastName:                  existingCustomer.LastName,
+		Email:                     existingCustomer.Email,
+		Address1:                  existingCustomer.Address1,
+		Address2:                  existingCustomer.Address2,
+		Address3:                  existingCustomer.Address3,
+		City:                      existingCustomer.City,
+		State:                     existingCustomer.State,
+		Zip:                       existingCustomer.Zip,
+		Country:                   existingCustomer.Country,
+		Phone:                     existingCustomer.Phone,
+		AltFirstName:              existingCustomer.AltFirstName,
+		AltLastName:               existingCustomer.AltLastName,
+		AltAddress1:               existingCustomer.AltAddress1,
+		AltAddress2:               existingCustomer.AltAddress2,
+		AltAddress3:               existingCustomer.AltAddress3,
+		AltCity:                   existingCustomer.AltCity,
+		AltState:                  existingCustomer.AltState,
+		AltZip:                    existingCustomer.AltZip,
+		AltCountry:                existingCustomer.AltCountry,
+		AltPhone:                  existingCustomer.AltPhone,
+		UseAltAddress:             existingCustomer.UseAltAddress,
+		WorkPhone:                 existingCustomer.WorkPhone,
+		CellPhone:                 existingCustomer.CellPhone,
+		EmergencyContact:          existingCustomer.EmergencyContact,
+		EmergencyPhone:            existingCustomer.EmergencyPhone,
+		CompanyName:               existingCustomer.CompanyName,
+		ShipmentMethod:            existingCustomer.ShipmentMethod,
+		ShipmentMethodDescription: existingCustomer.ShipmentMethodDescription,
+		Attachments:               existingCustomer.Attachments,
 	}
 
 	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, customer, orgID, *systemID)
