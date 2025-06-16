@@ -381,6 +381,8 @@ func RunProdSeed() {
 				// Core module objects - limited access
 				"profile.read":        true,
 				"profile.write":       true,
+				"users.read":          true,
+				"users.write":         true,
 				"marinas.read":        true,
 				"addresses.read":      true,
 				"roles.read":          true,
