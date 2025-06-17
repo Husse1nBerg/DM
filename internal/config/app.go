@@ -23,8 +23,15 @@ func LoadAppConfig() AppConfig {
 	customerIntakeRoute := EnvOrDefault("CUSTOMER_INTAKE_ROUTE", "auth/customer-intake")
 	passwordResetRoute := EnvOrDefault("PASSWORD_RESET_ROUTE", "auth/password-reset")
 	termsConditionsRoute := EnvOrDefault("TERMS_CONDITIONS_ROUTE", "terms-conditions")
-	if frontendBaseURL == "" && (strings.ToLower(os.Getenv("ENV")) == "production" || strings.ToLower(os.Getenv("ENV")) == "prod") {
-		frontendBaseURL = "https://app.dockmaster.com"
+	if frontendBaseURL == "" {
+		switch strings.ToLower(os.Getenv("ENV")) {
+		case "production", "prod":
+			frontendBaseURL = "https://app.dockmaster.com"
+		case "beta":
+			frontendBaseURL = "https://dmweb-beta.dockmaster.com"
+		case "development", "dev":
+			frontendBaseURL = "https://dmweb-dev.dockmaster.com"
+		}
 	}
 
 	return AppConfig{

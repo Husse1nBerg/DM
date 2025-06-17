@@ -20,7 +20,7 @@ const (
 	defaultRoleID = "07a3c8fe-ddd4-4a3e-947f-0ab055f1bd79"
 )
 
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY5NTA1ZjBlLWI5OWEtNGVhNC1hMDE4LWM1YzZiNDIwYWQ2ZCIsIm9yZ2FuaXphdGlvbklkIjoiNmY2OTMzMDYtODVmOC00Zjg3LTljOGItNzA0MGU0MzFlN2JjIiwibWFyaW5hSWQiOiJmZmQxNjYwMi1kZTI3LTQwNDItYTQzMC04NjRjYzVhZmYxZTAiLCJuYW1lIjoiQW5kcmV3IFNhbWVoIiwiZW1haWwiOiJhbmRyZXcuc2FtZWhAZG9ja21hc3Rlci5jb20iLCJyb2xlSWQiOiJjYmEwZmMzOC0yNjBjLTQyMGUtOTQ0NC02YjJlYzYxMGVhYmUiLCJleHAiOjE3NTAxMTk2MTV9.UqvY-zbBUetZJ0cwGwtjEe2kOVoCMdT-1E2VQQUqoBA"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY5NTA1ZjBlLWI5OWEtNGVhNC1hMDE4LWM1YzZiNDIwYWQ2ZCIsIm9yZ2FuaXphdGlvbklkIjoiNmY2OTMzMDYtODVmOC00Zjg3LTljOGItNzA0MGU0MzFlN2JjIiwibWFyaW5hSWQiOiJmZmQxNjYwMi1kZTI3LTQwNDItYTQzMC04NjRjYzVhZmYxZTAiLCJuYW1lIjoiQW5kcmV3IFNhbWVoIiwiZW1haWwiOiJhbmRyZXcuc2FtZWhAZG9ja21hc3Rlci5jb20iLCJyb2xlSWQiOiJjYmEwZmMzOC0yNjBjLTQyMGUtOTQ0NC02YjJlYzYxMGVhYmUiLCJleHAiOjE3NTAxMjM5MjB9.If3T2MNZHYE0DHMo5EQZCPy9R6v7-hlDukOifwTzaL0"
 
 type OnboardingData struct {
 	Name        string
@@ -178,7 +178,7 @@ func processCsvFile(csvPath, authToken string) {
 
 		data := OnboardingData{
 			Name:        strings.TrimSpace(record[0]),
-			Email:       strings.TrimSpace(record[1]),
+			Email:       strings.ToLower(strings.TrimSpace(record[1])),
 			APIEmail:    strings.TrimSpace(record[2]),
 			APIPassword: strings.TrimSpace(record[3]),
 			SystemID:    strings.TrimSpace(record[4]),
@@ -429,10 +429,9 @@ func linkSystemIDToMarina(systemIDObjectID, marinaID, authToken string) error {
 }
 
 func sendUserInvitation(data OnboardingData, orgID, marinaID, authToken string) error {
-	fmt.Println("Sending user invitation for: not ", data.Email)
+	fmt.Println("Sending user invitation for: ", data.Email)
 	reqBody := UserInviteRequest{
-		Email: "andrey.safonov+bbw@aspiresoftware.com",
-		// Email:          data.Email,
+		Email:          data.Email,
 		FirstName:      "Admin",
 		LastName:       "User",
 		MarinaID:       marinaID,
