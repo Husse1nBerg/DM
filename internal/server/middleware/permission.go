@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/guard"
@@ -21,6 +22,7 @@ type RoutePermission struct {
 type PermissionMiddleware struct {
 	permissionService *guard.PermissionService
 	routeMap          map[string]RoutePermission
+	mu                sync.RWMutex // Add mutex for thread safety
 }
 
 // NewPermissionMiddleware creates a new permission middleware instance
@@ -57,8 +59,12 @@ func (pm *PermissionMiddleware) RequirePermission() echo.MiddlewareFunc {
 			// Get route information - use the route pattern, not the actual path
 			// This handles parameterized routes like /api/v1/customers/:id
 			route := c.Request().Method + " " + c.Path()
-			// Check if this route requires permission validation
+
+			// Use read lock to safely access the map
+			pm.mu.RLock()
 			permission, requiresPermission := pm.routeMap[route]
+			pm.mu.RUnlock()
+
 			if !requiresPermission {
 				// Route doesn't require permission validation, continue
 				return next(c)
@@ -260,17 +266,29 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 
 // WithCustomPermission allows overriding the default route mapping for specific routes
 func (pm *PermissionMiddleware) WithCustomPermission(route string, object string, action string) *PermissionMiddleware {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
 	pm.routeMap[route] = RoutePermission{Object: object, Action: action}
 	return pm
 }
 
 // SkipPermission allows skipping permission validation for specific routes
 func (pm *PermissionMiddleware) SkipPermission(route string) *PermissionMiddleware {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
 	delete(pm.routeMap, route)
 	return pm
 }
 
 // GetRoutePermissions returns all configured route permissions (useful for debugging)
 func (pm *PermissionMiddleware) GetRoutePermissions() map[string]RoutePermission {
-	return pm.routeMap
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	// Return a copy to prevent external modifications
+	routeMapCopy := make(map[string]RoutePermission, len(pm.routeMap))
+	for k, v := range pm.routeMap {
+		routeMapCopy[k] = v
+	}
+	return routeMapCopy
 }
