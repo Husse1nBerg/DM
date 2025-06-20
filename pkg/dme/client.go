@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -431,20 +432,24 @@ func (c *Client) DoRequest(ctx context.Context, method, endpoint string, body in
 func (c *Client) DoJSONRequest(ctx context.Context, method, endpoint string, body, result interface{}, organizationID uuid.UUID, systemID string, params map[string]string) error {
 	resp, err := c.DoRequest(ctx, method, endpoint, body, organizationID, systemID, params)
 	if err != nil {
-		c.logger.DesugarZap.Error("request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Error(err))
-		return fmt.Errorf("request failed: %w", err)
+		c.logger.DesugarZap.Error("DME API request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Error(err))
+		return fmt.Errorf("DME API request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		c.logger.DesugarZap.Error("request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode))
-		return fmt.Errorf("request failed with status: %d", resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			c.logger.DesugarZap.Error("DME API request failed to read response body", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.Error(err))
+		}
+		c.logger.DesugarZap.Error("DME API request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.String("response", string(body)))
+		return fmt.Errorf("DME APIrequest failed with status: %d", resp.StatusCode)
 	}
 
 	if result != nil {
 		if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
-			c.logger.DesugarZap.Error("failed to decode response", zap.String("method", method), zap.String("endpoint", endpoint), zap.Error(err))
-			return fmt.Errorf("failed to decode response: %w", err)
+			c.logger.DesugarZap.Error("DME API Request failed to decode response", zap.String("method", method), zap.String("endpoint", endpoint), zap.Error(err))
+			return fmt.Errorf("DME API request failed to decode response: %w", err)
 		}
 	}
 

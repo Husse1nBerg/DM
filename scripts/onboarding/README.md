@@ -17,20 +17,29 @@ For each row in the CSV file, the script will:
 
 The CSV file must have the following columns in this exact order:
 
-| Column | Description | Example |
-|--------|-------------|---------|
-| `org_name` | Organization name | "Marina Corp" |
-| `marina_name` | Marina name | "Sunset Marina" |
-| `dme_email` | DME API email/username | "api@marina.com" |
-| `dme_password` | DME API password | "secure_password123" |
-| `system_id` | DME System ID | "SYS001" |
-| `user_first_name` | User's first name | "John" |
-| `user_last_name` | User's last name | "Doe" |
-| `user_email` | User's email (also used for org/marina) | "john@marina.com" |
+| Column | Description | Required | Example |
+|--------|-------------|----------|---------|
+| `name` | Organization/Marina name | Yes | "Marina Corp" |
+| `email` | User's email (also used for org/marina) | Yes | "john@marina.com" |
+| `api_email` | DME API email/username | Yes | "api@marina.com" |
+| `api_password` | DME API password | Yes | "secure_password123" |
+| `system_id` | DME System ID | Yes | "SYS001" |
+| `first_name` | User's first name | No | "John" |
+| `last_name` | User's last name | No | "Doe" |
+| `phone_number` | User's phone number | No | "555-123-4567" |
+| `tier_customer_vessels` | Customer vessels tier | No (ignored) | "Free - $0" |
+| `tier_customer_portal` | Customer portal tier | No (ignored) | "Free - $0" |
+| `status` | Status field | No (ignored) | "" |
+
+**Optional Field Behavior:**
+- If `first_name` is empty or missing, defaults to "Admin"
+- If `last_name` is empty or missing, defaults to "User"
+- If `phone_number` is empty or missing, it's left blank
+- Tier and status columns are ignored completely
 
 ## CSV File Location
 
-The script looks for the CSV file at: `scripts/onboarding/onboarding_data.csv`
+The script looks for the CSV file at: `scripts/onboarding/onboarding_data2.csv`
 
 ## Running the Script
 
@@ -71,7 +80,10 @@ The script provides detailed logging including:
 ## Example CSV
 
 ```csv
-org_name,marina_name,dme_email,dme_password,system_id,user_first_name,user_last_name,user_email
-Marina Corp,Sunset Marina,api@marina.com,password123,SYS001,John,Doe,john@marina.com
-Harbor Inc,Harbor Marina,api@harbor.com,password456,SYS002,Jane,Smith,jane@harbor.com
-``` 
+name,email,api_email,api_password,system_id,first_name,last_name,phone_number,tier_customer_vessels,tier_customer_portal,status
+Marina Corp,john@marina.com,api@marina.com,password123,SYS001,John,Doe,555-123-4567,Free - $0,Free - $0,
+Harbor Inc,jane@harbor.com,api@harbor.com,password456,SYS002,Jane,Smith,555-987-6543,Free - $0,Free - $0,
+Boat Services,,api@boatservices.com,password789,SYS003,,,,,Free - $0,Free - $0,
+```
+
+In the third example above, the `first_name` and `last_name` are empty, so the script will use "Admin" and "User" as defaults. 
