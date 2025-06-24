@@ -245,7 +245,7 @@ func main() {
 				"profile.read":          true,
 				"profile.write":         true,
 				"users.read":            true,
-				"users.write":           false,
+				"users.write":           true,
 				"users.delete":          false,
 				"organizations.read":    true,
 				"organizations.write":   false,
@@ -304,6 +304,7 @@ func main() {
 				// Core module objects
 				"profile.read":        true,
 				"users.read":          true,
+				"users.write":         true,
 				"organizations.read":  true,
 				"marinas.read":        true,
 				"addresses.read":      true,
