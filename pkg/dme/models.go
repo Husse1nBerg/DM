@@ -230,6 +230,7 @@ type CustomerMinimal struct {
 	State      string `json:"state"`
 	PostalCode string `json:"postalCode"`
 	Country    string `json:"country"`
+	Inactive   bool   `json:"inactive"`
 }
 
 type CustomerListMinimal struct {
