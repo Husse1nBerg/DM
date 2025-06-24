@@ -87,6 +87,35 @@ type Document struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
+type EsignDocument struct {
+	ID             uuid.UUID
+	TemplateID     uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Type           string
+	Status         string
+	BlobUrl        string
+	BlobMetadata   []byte
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
+type EsignTemplate struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Name           string
+	Description    *string
+	Type           string
+	Status         string
+	BlobUrl        string
+	BlobMetadata   []byte
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
 type Invite struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
