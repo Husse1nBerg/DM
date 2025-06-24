@@ -410,8 +410,6 @@ definitions:
         type: string
       firstName:
         type: string
-      homePhone:
-        type: string
       id:
         type: string
       inactive:
@@ -419,6 +417,8 @@ definitions:
       lastName:
         type: string
       name:
+        type: string
+      phone:
         type: string
       postalCode:
         type: string
