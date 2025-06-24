@@ -41,6 +41,16 @@ type CustomerSettingsResponse struct {
 	EnablePortal bool      `json:"enablePortal"`
 }
 
+// CustomerListMinimalResponse represents a paginated minimal list of customers
+// Only includes the minimal fields required by the new API contract
+type CustomerListMinimalResponse struct {
+	Data        []dme.CustomerMinimal `json:"data"`
+	Total       int64                 `json:"total" example:"100"`
+	PerPage     int32                 `json:"perPage" example:"10"`
+	CurrentPage int32                 `json:"currentPage" example:"1"`
+	LastPage    int32                 `json:"lastPage" example:"10"`
+}
+
 // ConvertCustomerSettings converts DB CustomerSetting to CustomerSettingsResponse
 func ConvertCustomerSettings(settings db.CustomerSetting) *CustomerSettingsResponse {
 	enablePortal := false
@@ -88,6 +98,17 @@ func ConvertCustomerSearch(dmeResponse *[]dme.CustomerSearch) *CustomerSearchRes
 func ConvertCustomer(dmeResponse *dme.Customer) *CustomerResponse {
 	return &CustomerResponse{
 		Data: *dmeResponse,
+	}
+}
+
+// ConvertCustomerListMinimal converts DME CustomerListMinimal to CustomerListMinimalResponse
+func ConvertCustomerListMinimal(dmeResponse *dme.CustomerListMinimal) *CustomerListMinimalResponse {
+	return &CustomerListMinimalResponse{
+		Data:        dmeResponse.Content,
+		Total:       int64(dmeResponse.MaxPages * dmeResponse.PageSize),
+		PerPage:     int32(dmeResponse.PageSize),
+		CurrentPage: int32(dmeResponse.CurrentPage),
+		LastPage:    int32(dmeResponse.MaxPages),
 	}
 }
 

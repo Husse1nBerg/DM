@@ -70,10 +70,10 @@ func (c *Client) CustomerSearch(ctx context.Context, searchTerm string, directHi
 }
 
 // ListCustomers retrieves a full list of customers
-func (c *Client) CustomersList(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*CustomerList, error) {
-	var result CustomerList
+func (c *Client) CustomersList(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*CustomerListMinimal, error) {
+	var result CustomerListMinimal
 
-	endpoint := fmt.Sprintf("/Customers/ListNewOrChanged?Page=%d&PageSize=%d", page, pageSize)
+	endpoint := fmt.Sprintf("/Customers/ListByPage?Page=%d&PageSize=%d", page, pageSize)
 	err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get full customers list: %w", err)

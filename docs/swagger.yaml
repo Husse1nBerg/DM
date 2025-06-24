@@ -392,6 +392,41 @@ definitions:
       zip:
         type: string
     type: object
+  dme.CustomerMinimal:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      cellPhone:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      emailAddress:
+        type: string
+      firstName:
+        type: string
+      homePhone:
+        type: string
+      id:
+        type: string
+      inactive:
+        type: boolean
+      lastName:
+        type: string
+      name:
+        type: string
+      postalCode:
+        type: string
+      state:
+        type: string
+      workPhone:
+        type: string
+    type: object
   dme.CustomerSearch:
     properties:
       address:
@@ -2416,14 +2451,14 @@ definitions:
         example: "2023-01-01T00:00:00Z"
         type: string
     type: object
-  responses.CustomerListResponse:
+  responses.CustomerListMinimalResponse:
     properties:
       currentPage:
         example: 1
         type: integer
       data:
         items:
-          $ref: '#/definitions/dme.Customer'
+          $ref: '#/definitions/dme.CustomerMinimal'
         type: array
       lastPage:
         example: 10
@@ -4257,7 +4292,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves a paginated list of customers
+      description: Retrieves a paginated list of customers (minimal fields)
       parameters:
       - description: Page number
         in: query
@@ -4278,7 +4313,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.CustomerListResponse'
+            $ref: '#/definitions/responses.CustomerListMinimalResponse'
         "400":
           description: Bad Request
           schema:

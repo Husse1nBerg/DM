@@ -1280,7 +1280,7 @@ const docTemplate = `{
         },
         "/customers/list": {
             "get": {
-                "description": "Retrieves a paginated list of customers",
+                "description": "Retrieves a paginated list of customers (minimal fields)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1314,7 +1314,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerListResponse"
+                            "$ref": "#/definitions/responses.CustomerListMinimalResponse"
                         }
                     },
                     "400": {
@@ -9210,6 +9210,59 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.CustomerMinimal": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emailAddress": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "homePhone": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "postalCode": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "workPhone": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.CustomerSearch": {
             "type": "object",
             "properties": {
@@ -12125,7 +12178,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CustomerListResponse": {
+        "responses.CustomerListMinimalResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -12135,7 +12188,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Customer"
+                        "$ref": "#/definitions/dme.CustomerMinimal"
                     }
                 },
                 "lastPage": {

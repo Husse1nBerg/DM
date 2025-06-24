@@ -212,6 +212,34 @@ type WaitListEntry struct {
 	BoatName     string `json:"boatName"`
 }
 
+// CustomerMinimal represents a minimal customer information set for list by page
+// Only includes fields required by the new API contract
+type CustomerMinimal struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	HomePhone  string `json:"homePhone"`
+	WorkPhone  string `json:"workPhone"`
+	CellPhone  string `json:"cellPhone"`
+	Email      string `json:"emailAddress"`
+	Address1   string `json:"address1"`
+	Address2   string `json:"address2"`
+	Address3   string `json:"address3"`
+	City       string `json:"city"`
+	State      string `json:"state"`
+	PostalCode string `json:"postalCode"`
+	Country    string `json:"country"`
+	Inactive   bool   `json:"inactive"`
+}
+
+type CustomerListMinimal struct {
+	Content     []CustomerMinimal `json:"content"`
+	CurrentPage int               `json:"currentPage"`
+	MaxPages    int               `json:"maxPages"`
+	PageSize    int               `json:"pageSize"`
+}
+
 //
 // BOAT MODELS
 //
