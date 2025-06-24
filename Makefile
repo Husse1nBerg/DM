@@ -204,3 +204,6 @@ batch-invite:
 
 onboarding:
 	@go run scripts/onboarding/main.go -use-csv
+
+update-roles-permissions:
+	@go run scripts/update_roles_permissions/main.go

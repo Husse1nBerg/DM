@@ -9237,9 +9237,6 @@ const docTemplate = `{
                 "firstName": {
                     "type": "string"
                 },
-                "homePhone": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -9250,6 +9247,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 },
                 "postalCode": {

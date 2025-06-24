@@ -6,8 +6,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/dockworks/dm-web-backend/internal/config"
 	sqlc "github.com/dockworks/dm-web-backend/internal/db"
 	conn "github.com/dockworks/dm-web-backend/internal/pg"
@@ -15,90 +13,13 @@ import (
 	u "github.com/dockworks/dm-web-backend/pkg/utils"
 )
 
-// RunProdSeed seeds the production/development database with initial data
-func RunProdSeed() {
+func main() {
+	log.Println("Starting role permissions update...")
 	cfg := config.New()
 	ctx := context.Background()
 	db := conn.NewConnection(&cfg.DB)
 	q := db.Queries()
 
-	// Seed Organization
-	org, err := q.GetOrganizationByEmail(ctx, "dmweb@dockmaster.com")
-	if err != nil {
-		if err == pgx.ErrNoRows {
-
-			orgAddress, err := q.CreateAddress(ctx, sqlc.CreateAddressParams{})
-			if err != nil {
-				log.Fatalf("failed to create org address: %v", err)
-			}
-			org, err = q.CreateOrganization(ctx, sqlc.CreateOrganizationParams{
-				Email:     "dmweb@dockmaster.com",
-				Name:      "Dockmaster Web Org",
-				AddressID: orgAddress.ID,
-				IsActive:  u.Pointer(true),
-			})
-			if err != nil {
-				log.Fatalf("failed to create organization: %v", err)
-			}
-			log.Println("Created organization: Acme Corp")
-		} else {
-			log.Fatalf("failed to get organization: %v", err)
-		}
-	}
-
-	// Seed Marina
-	marina, err := q.GetMarinaByEmail(ctx, "marina@dockmaster.com")
-	if err != nil {
-		if err == pgx.ErrNoRows {
-
-			marinaAddress, err := q.CreateAddress(ctx, sqlc.CreateAddressParams{})
-			if err != nil {
-				log.Fatalf("failed to create marina address: %v", err)
-			}
-
-			// Create working hours using the new model
-			workingHours := models.DefaultWorkingHours()
-			workingHoursBytes, err := workingHours.ToBytes()
-			if err != nil {
-				log.Fatalf("failed to create working hours: %v", err)
-			}
-
-			// Create marina modules using the new model
-			marinaModules := models.DefaultModules()
-			marinaModulesBytes, err := marinaModules.ToBytes()
-			if err != nil {
-				log.Fatalf("failed to create marina modules: %v", err)
-			}
-
-			notesMessagesPlan, err := q.GetNotesMessagesPlanByName(ctx, "Free")
-			if err != nil {
-				log.Fatalf("failed to get notes/messages plan: %v", err)
-			}
-			storagePlan, err := q.GetStoragePlanByName(ctx, "Free")
-			if err != nil {
-				log.Fatalf("failed to get storage plan: %v", err)
-			}
-			marina, err = q.CreateMarina(ctx, sqlc.CreateMarinaParams{
-				Name:                "Dockmaster Web",
-				Email:               "marina@dockmaster.com",
-				IsActive:            u.Pointer(true),
-				AddressID:           marinaAddress.ID,
-				OrganizationID:      org.ID,
-				WorkingHours:        workingHoursBytes,
-				Modules:             marinaModulesBytes,
-				NotesMessagesPlanID: notesMessagesPlan.ID,
-				StoragePlanID:       storagePlan.ID,
-			})
-			if err != nil {
-				log.Fatalf("failed to create marina: %v", err)
-			}
-			log.Println("Created marina: Acme Marina")
-		} else {
-			log.Fatalf("failed to get marina: %v", err)
-		}
-	}
-
-	// Seed Roles with new permission structure
 	roles := []struct {
 		name           string
 		description    string
@@ -446,97 +367,38 @@ func RunProdSeed() {
 	}
 
 	for _, r := range roles {
-		// Convert permissions to bytes
 		permBytes, err := r.permissions.ToBytes()
 		if err != nil {
-			log.Fatalf("failed to convert permissions to bytes for role %s: %v", r.name, err)
+			log.Printf("failed to convert permissions to bytes for role %s: %v", r.name, err)
+			continue
 		}
 
 		existingRole, err := q.GetRoleByName(ctx, r.name)
 		if err != nil {
 			if err == pgx.ErrNoRows {
-				// Create new role if doesn't exist
-				_, err = q.CreateRole(ctx, sqlc.CreateRoleParams{
-					Name:           r.name,
-					Description:    u.Pointer(r.description),
-					Permissions:    permBytes,
-					IsActive:       u.Pointer(r.isActive),
-					IsCustomerRole: u.Pointer(r.isCustomerRole),
-					Type:           r.roleType,
-				})
-				if err != nil {
-					log.Fatalf("failed to create role %s: %v", r.name, err)
-				}
-				log.Printf("Created role: %s", r.name)
+				log.Printf("role %s does not exist, skipping", r.name)
+				continue
 			} else {
-				log.Fatalf("failed to get role: %v", err)
+				log.Printf("failed to get role %s: %v", r.name, err)
+				continue
 			}
-		} else {
-			// Update existing role with new permissions
-			_, err = q.UpdateRole(ctx, sqlc.UpdateRoleParams{
-				ID:             existingRole.ID,
-				Name:           r.name,
-				Description:    u.Pointer(r.description),
-				Permissions:    permBytes,
-				IsActive:       u.Pointer(r.isActive),
-				IsCustomerRole: u.Pointer(r.isCustomerRole),
-				Type:           r.roleType,
-			})
-			if err != nil {
-				log.Fatalf("failed to update role %s: %v", r.name, err)
-			}
-			log.Printf("Updated role: %s with new permission structure", r.name)
 		}
-	}
 
-	// Get admin role for user creation
-	role, err := q.GetRoleByName(ctx, "superuser")
-	if err != nil {
-		log.Fatalf("admin role not found after seed: %v", err)
-	}
-
-	// Seed Admin User
-	user, err := q.GetUserByEmail(ctx, cfg.App.AdminEmail)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(cfg.App.AdminPassword), bcrypt.DefaultCost)
-			if err != nil {
-				log.Fatalf("failed to encrypt password: %v", err)
-			}
-			user, err = q.CreateUser(ctx, sqlc.CreateUserParams{
-				Username:       "admin" + u.RandomString(6),
-				FirstName:      "Andrew",
-				LastName:       "Sameh",
-				Email:          cfg.App.AdminEmail,
-				PasswordHash:   u.Pointer(string(encryptedPassword)),
-				OrganizationID: org.ID,
-				RoleID:         role.ID,
-				MarinaID:       marina.ID,
-				IsSuperuser:    u.Pointer(true),
-				IsActive:       u.Pointer(true),
-			})
-			if err != nil {
-				log.Fatalf("failed to create admin user: %v", err)
-			}
-			log.Println("Created admin user: ", cfg.App.AdminEmail)
-		} else {
-			log.Fatalf("failed to get user: %v", err)
+		_, err = q.UpdateRole(ctx, sqlc.UpdateRoleParams{
+			ID:             existingRole.ID,
+			Name:           r.name,
+			Description:    u.Pointer(r.description),
+			Permissions:    permBytes,
+			IsActive:       u.Pointer(r.isActive),
+			IsCustomerRole: u.Pointer(r.isCustomerRole),
+			Type:           r.roleType,
+		})
+		if err != nil {
+			log.Printf("failed to update role %s: %v", r.name, err)
+			continue
 		}
-	} else {
-		log.Printf("User already exists:  %s", user.Email)
+		log.Printf("Updated role: %s with new permission structure", r.name)
 	}
-	err = q.AssignUserToMarina(ctx, sqlc.AssignUserToMarinaParams{
-		UserID:   user.ID,
-		MarinaID: marina.ID,
-	})
-	if err != nil {
-		log.Fatalf("failed to assign user to marina: %v", err)
-	}
-	log.Println("Seed completed successfully")
-}
 
-func main() {
-	log.Println("Starting production/development database seeding...")
-	RunProdSeed()
-	log.Println("Production/development database seeding completed successfully")
+	log.Println("Role permissions update completed.")
 }

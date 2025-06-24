@@ -219,7 +219,7 @@ type CustomerMinimal struct {
 	Name       string `json:"name"`
 	FirstName  string `json:"firstName"`
 	LastName   string `json:"lastName"`
-	HomePhone  string `json:"homePhone"`
+	Phone      string `json:"phone"`
 	WorkPhone  string `json:"workPhone"`
 	CellPhone  string `json:"cellPhone"`
 	Email      string `json:"emailAddress"`
