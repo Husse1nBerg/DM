@@ -25,6 +25,49 @@ services:
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
 
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    environment:
+      - VALKEY_USERNAME=${REDIS_USERNAME:-}
+      - VALKEY_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - valkey_data:/data
+    command: >
+      sh -c "
+        # Create valkey configuration file
+        mkdir -p /usr/local/etc/valkey
+        
+        # Base configuration
+        echo 'appendonly yes' > /usr/local/etc/valkey/valkey.conf
+        echo 'appendfsync everysec' >> /usr/local/etc/valkey/valkey.conf
+        echo 'save 900 1' >> /usr/local/etc/valkey/valkey.conf
+        echo 'save 300 10' >> /usr/local/etc/valkey/valkey.conf
+        echo 'save 60 10000' >> /usr/local/etc/valkey/valkey.conf
+        
+        # Configure authentication
+        if [ -n \"$${VALKEY_USERNAME}\" ] && [ -n \"$${VALKEY_PASSWORD}\" ]; then
+          echo \"ACL configuration with username and password\"
+          echo 'aclfile /usr/local/etc/valkey/users.acl' >> /usr/local/etc/valkey/valkey.conf
+          
+          # Create ACL file with user
+          echo \"user default nopass nocommands\" > /usr/local/etc/valkey/users.acl
+          echo \"user $${VALKEY_USERNAME} on >$${VALKEY_PASSWORD} ~* &* +@all\" >> /usr/local/etc/valkey/users.acl
+          
+          valkey-server /usr/local/etc/valkey/valkey.conf
+        elif [ -n \"$${VALKEY_PASSWORD}\" ]; then
+          echo \"Password-only authentication\"
+          echo \"requirepass $${VALKEY_PASSWORD}\" >> /usr/local/etc/valkey/valkey.conf
+          valkey-server /usr/local/etc/valkey/valkey.conf
+        else
+          echo \"No authentication configured\"
+          valkey-server /usr/local/etc/valkey/valkey.conf
+        fi
+      "
+
 volumes:
   postgres_data:
   postgres_test_data:
+  valkey_data:

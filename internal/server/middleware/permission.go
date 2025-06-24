@@ -148,10 +148,6 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["PUT /api/v1/marinas/:id"] = RoutePermission{Object: "marinas", Action: "write"}
 	routeMap["PUT /api/v1/marinas/:id/with-address"] = RoutePermission{Object: "marinas", Action: "write"}
 	routeMap["DELETE /api/v1/marinas/:id"] = RoutePermission{Object: "marinas", Action: "delete"}
-	routeMap["GET /api/v1/marinas/:id/contacts"] = RoutePermission{Object: "marinas", Action: "read"}
-	routeMap["POST /api/v1/marinas/:id/contacts"] = RoutePermission{Object: "marinas", Action: "create"}
-	routeMap["PUT /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "marinas", Action: "write"}
-	routeMap["DELETE /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "marinas", Action: "delete"}
 
 	// Address routes - using "addresses" object from core module
 	routeMap["POST /api/v1/addresses"] = RoutePermission{Object: "addresses", Action: "create"}
@@ -260,6 +256,12 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["POST /api/v1/test/permissions"] = RoutePermission{Object: "admin", Action: "read"}
 	routeMap["GET /api/v1/test/permissions/user"] = RoutePermission{Object: "admin", Action: "read"}
 	routeMap["GET /api/v1/test/permissions/routes"] = RoutePermission{Object: "admin", Action: "read"}
+
+	// Marina Contacts routes
+	routeMap["GET /api/v1/marinas/:id/contacts"] = RoutePermission{Object: "contacts", Action: "read"}
+	routeMap["POST /api/v1/marinas/:id/contacts"] = RoutePermission{Object: "contacts", Action: "write"}
+	routeMap["PUT /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "contacts", Action: "write"}
+	routeMap["DELETE /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "contacts", Action: "delete"}
 
 	return routeMap
 }

@@ -5,6 +5,7 @@ import (
 	db "github.com/dockworks/dm-web-backend/internal/pg"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
+	"github.com/dockworks/dm-web-backend/pkg/redis"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/telgorithm"
@@ -17,6 +18,7 @@ type Server struct {
 	Config          *config.Config
 	DB              db.DBService
 	Logger          *logger.Logger
+	Redis           *redis.Client
 	S3Service       *s3.S3Service
 	DocumentService *s3.S3Service
 	ImageService    *s3.ImageService
@@ -28,6 +30,9 @@ type Server struct {
 
 func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 	dbConn := db.NewConnection(&cfg.DB)
+
+	// Initialize Redis client
+	redisClient := redis.NewClient(cfg.Redis, logger)
 
 	// Initialize S3 service for images
 	s3Service, err := s3.NewS3Service(cfg.S3)
@@ -56,6 +61,7 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 		Echo:            echo.New(),
 		DB:              dbConn,
 		Logger:          logger,
+		Redis:           redisClient,
 		S3Service:       s3Service,
 		DocumentService: documentService,
 		ImageService:    imageService,
