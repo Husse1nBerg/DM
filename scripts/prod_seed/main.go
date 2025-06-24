@@ -440,6 +440,10 @@ func RunProdSeed() {
 				"history.read": true,
 				// Plans module objects
 				"plans.read": true,
+				// Contacts module objects
+				"contacts.read":   true,
+				"contacts.write":  false,
+				"contacts.delete": false,
 			},
 			isActive:       true,
 			isCustomerRole: true,
