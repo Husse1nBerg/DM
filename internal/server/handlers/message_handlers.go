@@ -432,6 +432,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	// Parse and validate request
 	logger := h.server.Logger
+	cfg := h.server.Config
 	req := new(requests.CreateMessageRequest)
 	if err := c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -552,6 +553,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 			Content:   req.Body,
 			Recipient: req.Recipient,
 			Sender:    req.Sender,
+			HomeURL:   cfg.App.HomeURL(),
 		}
 		to := []string{req.Contact}
 		subject := "Message from " + req.Sender
