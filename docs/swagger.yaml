@@ -392,6 +392,41 @@ definitions:
       zip:
         type: string
     type: object
+  dme.CustomerMinimal:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      cellPhone:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      emailAddress:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      inactive:
+        type: boolean
+      lastName:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      postalCode:
+        type: string
+      state:
+        type: string
+      workPhone:
+        type: string
+    type: object
   dme.CustomerSearch:
     properties:
       address:
@@ -464,6 +499,10 @@ definitions:
         type: string
       country:
         type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
       email:
         type: string
       emergencyContact:
@@ -1369,6 +1408,8 @@ definitions:
     - sender
     - type
     type: object
+  requests.CreateNotificationRequest:
+    type: object
   requests.CreateOrganizationRequest:
     properties:
       address:
@@ -1568,6 +1609,10 @@ definitions:
         type: string
       country:
         type: string
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
       email:
         type: string
       emergencyContact:
@@ -1687,6 +1732,9 @@ definitions:
     - email
     - password
     type: object
+  requests.NotificationData:
+    additionalProperties: true
+    type: object
   requests.OperationCode:
     properties:
       approved:
@@ -1741,6 +1789,18 @@ definitions:
         type: number
       techDesc:
         type: string
+    type: object
+  requests.RedisSetRequest:
+    properties:
+      expiration:
+        description: expiration in seconds, optional
+        type: integer
+      key:
+        type: string
+      value: {}
+    required:
+    - key
+    - value
     type: object
   requests.RefreshRequest:
     properties:
@@ -2391,14 +2451,14 @@ definitions:
         example: "2023-01-01T00:00:00Z"
         type: string
     type: object
-  responses.CustomerListResponse:
+  responses.CustomerListMinimalResponse:
     properties:
       currentPage:
         example: 1
         type: integer
       data:
         items:
-          $ref: '#/definitions/dme.Customer'
+          $ref: '#/definitions/dme.CustomerMinimal'
         type: array
       lastPage:
         example: 10
@@ -2942,6 +3002,71 @@ definitions:
       data:
         $ref: '#/definitions/responses.MessageResponse'
     type: object
+  responses.NotificationListResponse:
+    description: Paginated list of notifications
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.NotificationResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.NotificationResponse:
+    description: Notification data including type, title, content, and status information
+    properties:
+      content:
+        example: You have received a new message from the marina.
+        type: string
+      createdAt:
+        type: string
+      data:
+        $ref: '#/definitions/requests.NotificationData'
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      priority:
+        example: normal
+        type: string
+      read:
+        example: false
+        type: boolean
+      readAt:
+        type: string
+      title:
+        example: New Message Received
+        type: string
+      type:
+        example: message
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  responses.NotificationResponseWrapper:
+    description: Wrapper for a single notification response
+    properties:
+      data:
+        $ref: '#/definitions/responses.NotificationResponse'
+    type: object
   responses.OrganizationResponse:
     properties:
       address_id:
@@ -3020,6 +3145,45 @@ definitions:
         example: https://example.com
         type: string
     type: object
+  responses.RedisGetResponse:
+    properties:
+      key:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+      ttl:
+        description: time to live
+        type: string
+      value: {}
+    type: object
+  responses.RedisInfoResponse:
+    properties:
+      connected:
+        type: boolean
+      database:
+        type: integer
+      key_prefix:
+        type: string
+      latency:
+        type: string
+      message:
+        type: string
+      server_info:
+        type: string
+      success:
+        type: boolean
+    type: object
+  responses.RedisPingResponse:
+    properties:
+      latency:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   responses.RoleResponse:
     description: Role representation for API responses
     properties:
@@ -3058,6 +3222,13 @@ definitions:
         type: boolean
       task_id:
         type: string
+    type: object
+  responses.UnreadCountResponse:
+    description: Unread notification count
+    properties:
+      count:
+        example: 5
+        type: integer
     type: object
   responses.UserListResponse:
     properties:
@@ -3462,6 +3633,323 @@ paths:
       summary: Confirm an invitation token
       tags:
       - Invitations
+  /api/v1/test/redis/cache/key/{key}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a key from cache database (DB 0)
+      operationId: redis-delete-cache-key
+      parameters:
+      - description: Key to delete
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Key deleted successfully
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete cache key
+      tags:
+      - test
+    get:
+      consumes:
+      - application/json
+      description: Get a key from cache database (DB 0)
+      operationId: redis-get-cache-key
+      parameters:
+      - description: Key to retrieve
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Key retrieved successfully
+          schema:
+            $ref: '#/definitions/responses.RedisGetResponse'
+        "404":
+          description: Key not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get cache key
+      tags:
+      - test
+  /api/v1/test/redis/cache/operations:
+    post:
+      consumes:
+      - application/json
+      description: Test cache database operations (DB 0) - set, get, delete, TTL
+      operationId: redis-test-cache-operations
+      parameters:
+      - description: Cache test data
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RedisSetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cache operations completed successfully
+          schema:
+            $ref: '#/definitions/responses.RedisGetResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Test cache operations
+      tags:
+      - test
+  /api/v1/test/redis/connection:
+    get:
+      description: Test the connection to Redis/Valkey and get basic information
+      operationId: redis-test-connection
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Redis connection information
+          schema:
+            $ref: '#/definitions/responses.RedisInfoResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Test Redis connection
+      tags:
+      - test
+  /api/v1/test/redis/dual-databases:
+    get:
+      consumes:
+      - application/json
+      description: Tests connection to both cache (DB 0) and task (DB 1) databases
+      operationId: redis-test-dual-connection
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dual database connection status
+          schema:
+            $ref: '#/definitions/responses.RedisInfoResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Test dual database connection
+      tags:
+      - test
+  /api/v1/test/redis/operations:
+    post:
+      consumes:
+      - application/json
+      description: Test basic Redis operations (set, get, delete) with a sample key
+      operationId: redis-test-operations
+      parameters:
+      - description: Redis test data
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RedisSetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Test completed successfully
+          schema:
+            $ref: '#/definitions/responses.RedisGetResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Test Redis operations
+      tags:
+      - test
+  /api/v1/test/redis/ping:
+    get:
+      description: Simple ping test for Redis connection
+      operationId: redis-ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ping successful
+          schema:
+            $ref: '#/definitions/responses.RedisPingResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Ping Redis
+      tags:
+      - test
+  /api/v1/test/redis/queue/{queue}/length:
+    get:
+      consumes:
+      - application/json
+      description: Get the length of a queue from task database (DB 1)
+      operationId: redis-get-queue-length
+      parameters:
+      - description: Queue name
+        in: path
+        name: queue
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Queue length retrieved successfully
+          schema:
+            $ref: '#/definitions/responses.RedisGetResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get queue length
+      tags:
+      - test
+  /api/v1/test/redis/queue/operations:
+    post:
+      consumes:
+      - application/json
+      description: Test queue operations (enqueue, dequeue, length) in task database
+        (DB 1)
+      operationId: redis-test-queue-operations
+      parameters:
+      - description: Queue test data
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RedisSetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Queue operations completed successfully
+          schema:
+            $ref: '#/definitions/responses.RedisGetResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Test queue operations
+      tags:
+      - test
+  /api/v1/test/redis/task/key/{key}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a key from task database (DB 1)
+      operationId: redis-delete-task-key
+      parameters:
+      - description: Key to delete
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Key deleted successfully
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete task key
+      tags:
+      - test
+    get:
+      consumes:
+      - application/json
+      description: Get a key from task database (DB 1)
+      operationId: redis-get-task-key
+      parameters:
+      - description: Key to retrieve
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Key retrieved successfully
+          schema:
+            $ref: '#/definitions/responses.RedisGetResponse'
+        "404":
+          description: Key not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get task key
+      tags:
+      - test
+  /api/v1/test/redis/task/operations:
+    post:
+      consumes:
+      - application/json
+      description: Test task database operations (DB 1) - set, get, delete, TTL
+      operationId: redis-test-task-operations
+      parameters:
+      - description: Task test data
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RedisSetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task operations completed successfully
+          schema:
+            $ref: '#/definitions/responses.RedisGetResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Test task operations
+      tags:
+      - test
   /auth/login:
     post:
       consumes:
@@ -3804,7 +4292,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves a paginated list of customers
+      description: Retrieves a paginated list of customers (minimal fields)
       parameters:
       - description: Page number
         in: query
@@ -3825,7 +4313,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.CustomerListResponse'
+            $ref: '#/definitions/responses.CustomerListMinimalResponse'
         "400":
           description: Bad Request
           schema:
@@ -6476,6 +6964,320 @@ paths:
       summary: Update marina message
       tags:
       - Message
+  /notification:
+    post:
+      consumes:
+      - application/json
+      description: Create a new notification for a user
+      parameters:
+      - description: Notification information
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created notification
+          schema:
+            $ref: '#/definitions/responses.NotificationResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create notification
+      tags:
+      - Notification
+  /notification/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific notification
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Notification not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete notification
+      tags:
+      - Notification
+    get:
+      consumes:
+      - application/json
+      description: Get a specific notification by ID
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification details
+          schema:
+            $ref: '#/definitions/responses.NotificationResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Notification not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get notification
+      tags:
+      - Notification
+  /notification/{id}/read:
+    put:
+      consumes:
+      - application/json
+      description: Mark a specific notification as read
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated notification
+          schema:
+            $ref: '#/definitions/responses.NotificationResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Notification not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Mark notification as read
+      tags:
+      - Notification
+  /notification/list:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated notifications for the current user
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      - default: false
+        description: Show only unread notifications
+        in: query
+        name: unreadOnly
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of notifications
+          schema:
+            $ref: '#/definitions/responses.NotificationListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List notifications
+      tags:
+      - Notification
+  /notification/mark-all-read:
+    put:
+      consumes:
+      - application/json
+      description: Mark all notifications as read for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Mark all notifications as read
+      tags:
+      - Notification
+  /notification/stream:
+    get:
+      consumes:
+      - application/json
+      description: Subscribe to real-time notifications via Server-Sent Events
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: Server-Sent Events stream
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Real-time notification stream
+      tags:
+      - Notification
+  /notification/type/{type}:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated notifications of a specific type for the current
+        user
+      parameters:
+      - description: Notification type (message, invite, system, alert)
+        in: path
+        name: type
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of notifications
+          schema:
+            $ref: '#/definitions/responses.NotificationListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get notifications by type
+      tags:
+      - Notification
+  /notification/unread-count:
+    get:
+      consumes:
+      - application/json
+      description: Get the count of unread notifications for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Unread notification count
+          schema:
+            $ref: '#/definitions/responses.UnreadCountResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get unread count
+      tags:
+      - Notification
   /organizations:
     get:
       consumes:

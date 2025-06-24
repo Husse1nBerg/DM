@@ -9,6 +9,7 @@ import (
 type RedisConfig struct {
 	Host      string `mapstructure:"Host"`
 	Port      int    `mapstructure:"Port"`
+	Username  string `mapstructure:"Username"`
 	Password  string `mapstructure:"Password"`
 	KeyPrefix string `mapstructure:"KeyPrefix"`
 	MainDB    int    `mapstructure:"MainDB"`
@@ -59,6 +60,7 @@ func LoadRedisConfig() RedisConfig {
 	return RedisConfig{
 		Host:      host,
 		Port:      port,
+		Username:  os.Getenv("REDIS_USERNAME"),
 		Password:  os.Getenv("REDIS_PASSWORD"),
 		KeyPrefix: keyPrefix,
 		MainDB:    mainDB,

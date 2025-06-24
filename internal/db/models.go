@@ -175,6 +175,32 @@ type NotesMessagesPlan struct {
 	UpdatedAt     pgtype.Timestamp
 }
 
+type Notification struct {
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Type           string
+	Title          string
+	Content        string
+	Data           []byte
+	Read           *bool
+	ReadAt         pgtype.Timestamp
+	Priority       *string
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+}
+
+type NotificationPreference struct {
+	ID               uuid.UUID
+	UserID           uuid.UUID
+	NotificationType string
+	Enabled          *bool
+	DeliveryMethod   *string
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
 type Organization struct {
 	ID        uuid.UUID
 	Email     string

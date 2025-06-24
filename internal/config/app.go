@@ -17,7 +17,7 @@ type AppConfig struct {
 }
 
 func LoadAppConfig() AppConfig {
-	frontendBaseURL := os.Getenv("FRONTEND_BASE_URL")
+	frontendBaseURL := EnvOrDefault("FRONTEND_BASE_URL", "https://app.dockmaster.com")
 	invitationRoute := EnvOrDefault("INVITATION_ROUTE", "auth/invitation")
 	invitationCustomerRoute := EnvOrDefault("INVITATION_CUSTOMER_ROUTE", "auth/invitation")
 	customerIntakeRoute := EnvOrDefault("CUSTOMER_INTAKE_ROUTE", "auth/customer-intake")

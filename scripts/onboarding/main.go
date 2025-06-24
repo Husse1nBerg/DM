@@ -20,7 +20,7 @@ const (
 	defaultRoleID = "07a3c8fe-ddd4-4a3e-947f-0ab055f1bd79"
 )
 
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY5NTA1ZjBlLWI5OWEtNGVhNC1hMDE4LWM1YzZiNDIwYWQ2ZCIsIm9yZ2FuaXphdGlvbklkIjoiNmY2OTMzMDYtODVmOC00Zjg3LTljOGItNzA0MGU0MzFlN2JjIiwibWFyaW5hSWQiOiJmZmQxNjYwMi1kZTI3LTQwNDItYTQzMC04NjRjYzVhZmYxZTAiLCJuYW1lIjoiQW5kcmV3IFNhbWVoIiwiZW1haWwiOiJhbmRyZXcuc2FtZWhAZG9ja21hc3Rlci5jb20iLCJyb2xlSWQiOiJjYmEwZmMzOC0yNjBjLTQyMGUtOTQ0NC02YjJlYzYxMGVhYmUiLCJleHAiOjE3NTAxMjM5MjB9.If3T2MNZHYE0DHMo5EQZCPy9R6v7-hlDukOifwTzaL0"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY5NTA1ZjBlLWI5OWEtNGVhNC1hMDE4LWM1YzZiNDIwYWQ2ZCIsIm9yZ2FuaXphdGlvbklkIjoiNmY2OTMzMDYtODVmOC00Zjg3LTljOGItNzA0MGU0MzFlN2JjIiwibWFyaW5hSWQiOiJmZmQxNjYwMi1kZTI3LTQwNDItYTQzMC04NjRjYzVhZmYxZTAiLCJuYW1lIjoiQW5kcmV3IFNhbWVoIiwiZW1haWwiOiJhbmRyZXcuc2FtZWhAZG9ja21hc3Rlci5jb20iLCJyb2xlSWQiOiJjYmEwZmMzOC0yNjBjLTQyMGUtOTQ0NC02YjJlYzYxMGVhYmUiLCJleHAiOjE3NTAzNTM2Mzl9.6w0GD5DfU9m4E928NKIezOYJQIjT23_KfZiEKSiZres"
 
 type OnboardingData struct {
 	Name        string
@@ -28,6 +28,9 @@ type OnboardingData struct {
 	APIEmail    string
 	APIPassword string
 	SystemID    string
+	FirstName   string // Optional - will fallback to "Admin" if empty
+	LastName    string // Optional - will fallback to "User" if empty
+	PhoneNumber string // Optional - not currently used but available for future use
 }
 
 type Address struct {
@@ -121,8 +124,8 @@ func main() {
 		apiPassword = flag.String("api-password", "", "DME API password")
 		systemID    = flag.String("system-id", "", "System ID")
 		authToken   = flag.String("auth-token", token, "Authorization bearer token")
-		csvFile     = flag.String("csv", "scripts/onboarding/onboarding_data.csv", "CSV file path")
-		useCsv      = flag.Bool("use-csv", false, "Use CSV file instead of individual flags")
+		csvFile     = flag.String("csv", "scripts/onboarding/onboarding_data2.csv", "CSV file path")
+		useCsv      = flag.Bool("use-csv", true, "Use CSV file instead of individual flags")
 	)
 	flag.Parse()
 
@@ -184,7 +187,26 @@ func processCsvFile(csvPath, authToken string) {
 			SystemID:    strings.TrimSpace(record[4]),
 		}
 
-		log.Printf("Processing row %d: %s (%s)", i+2, data.Name, data.Email)
+		// Handle optional fields with fallbacks
+		if len(record) > 5 && strings.TrimSpace(record[5]) != "" {
+			data.FirstName = strings.TrimSpace(record[5])
+		} else {
+			data.FirstName = "Admin"
+		}
+
+		if len(record) > 6 && strings.TrimSpace(record[6]) != "" {
+			data.LastName = strings.TrimSpace(record[6])
+		} else {
+			data.LastName = "User"
+		}
+
+		if len(record) > 7 && strings.TrimSpace(record[7]) != "" {
+			data.PhoneNumber = strings.TrimSpace(record[7])
+		}
+
+		// Note: Ignoring tier and status columns as requested (columns 8, 9, 10)
+
+		log.Printf("Processing row %d: %s (%s) - User: %s %s", i+2, data.Name, data.Email, data.FirstName, data.LastName)
 
 		err := processOnboarding(data, authToken)
 		if err != nil {
@@ -432,8 +454,8 @@ func sendUserInvitation(data OnboardingData, orgID, marinaID, authToken string) 
 	fmt.Println("Sending user invitation for: ", data.Email)
 	reqBody := UserInviteRequest{
 		Email:          data.Email,
-		FirstName:      "Admin",
-		LastName:       "User",
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
 		MarinaID:       marinaID,
 		OrganizationID: orgID,
 		RoleID:         defaultRoleID,

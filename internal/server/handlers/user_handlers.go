@@ -11,6 +11,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/token"
@@ -21,11 +22,22 @@ import (
 )
 
 type UserHandler struct {
-	server *s.Server
+	server              *s.Server
+	notificationService *notifications.NotificationService
 }
 
 func NewUserHandler(server *s.Server) *UserHandler {
-	return &UserHandler{server: server}
+	// Initialize notification service
+	notificationService := notifications.NewNotificationService(
+		server.DB.Queries(),
+		server.Redis,
+		server.Logger,
+	)
+
+	return &UserHandler{
+		server:              server,
+		notificationService: notificationService,
+	}
 }
 
 // ListUsersHandler lists all existing users
@@ -1421,6 +1433,34 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 			"email", user.Email,
 			"task_id", taskID.String())
 
+		// // Create notification for marina staff about new user invitation
+		// marinaUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
+		// 	MarinaID:   req.MarinaID,
+		// 	IsCustomer: utils.Pointer(false), // Get marina staff, not customers
+		// })
+		// if err != nil {
+		// 	logger.Zap.Warnw("Failed to get marina users for invite notification", "marina_id", req.MarinaID, "error", err)
+		// } else {
+		// 	// Create notifications for marina staff about the new invite
+		// 	for _, userRow := range marinaUsers {
+		// 		// Only notify active users, and don't notify the user who just created the invite
+		// 		if userRow.IsActive != nil && *userRow.IsActive && userRow.ID != user.ID {
+		// 			notificationErr := g.notificationService.CreateInviteNotification(
+		// 				c.Request().Context(),
+		// 				userRow.ID,
+		// 				userRow.OrganizationID,
+		// 				userRow.MarinaID,
+		// 				user.FirstName+" "+user.LastName, // Invited user's name
+		// 			)
+		// 			if notificationErr != nil {
+		// 				logger.Zap.Warnw("Failed to create invite notification for marina user",
+		// 					"user_id", userRow.ID,
+		// 					"error", notificationErr)
+		// 			}
+		// 		}
+		// 	}
+		// }
+
 		// Log the email attempt (non-blocking)
 		go func() {
 			result := <-resultChan
@@ -1601,6 +1641,34 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		logger.Zap.Infow("Invite email queued",
 			"email", user.Email,
 			"task_id", taskID.String())
+
+		// // Create notification for marina staff about new user invitation
+		// marinaUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
+		// 	MarinaID:   req.MarinaID,
+		// 	IsCustomer: utils.Pointer(false), // Get marina staff, not customers
+		// })
+		// if err != nil {
+		// 	logger.Zap.Warnw("Failed to get marina users for invite notification", "marina_id", req.MarinaID, "error", err)
+		// } else {
+		// 	// Create notifications for marina staff about the new invite
+		// 	for _, userRow := range marinaUsers {
+		// 		// Only notify active users, and don't notify the user who just created the invite
+		// 		if userRow.IsActive != nil && *userRow.IsActive && userRow.ID != user.ID {
+		// 			notificationErr := g.notificationService.CreateInviteNotification(
+		// 				c.Request().Context(),
+		// 				userRow.ID,
+		// 				userRow.OrganizationID,
+		// 				userRow.MarinaID,
+		// 				user.FirstName+" "+user.LastName, // Invited user's name
+		// 			)
+		// 			if notificationErr != nil {
+		// 				logger.Zap.Warnw("Failed to create invite notification for marina user",
+		// 					"user_id", userRow.ID,
+		// 					"error", notificationErr)
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		// Log the email attempt (non-blocking)
 		go func() {
