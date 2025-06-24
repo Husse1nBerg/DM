@@ -12,7 +12,6 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/telgorithm"
-	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -343,33 +342,33 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 
 	// Create notification for marina staff about new customer message
 	// Find marina users to notify
-	marinaUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
-		MarinaID:   req.MarinaID,
-		IsCustomer: utils.Pointer(false), // Get marina staff, not customers
-	})
-	if err != nil {
-		logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", req.MarinaID, "error", err)
-	} else {
-		// Create notifications for marina staff
-		for _, userRow := range marinaUsers {
-			// Only notify active users
-			if userRow.IsActive != nil && *userRow.IsActive {
-				notificationErr := h.notificationService.CreateMessageNotification(
-					c.Request().Context(),
-					userRow.ID,
-					userRow.OrganizationID,
-					userRow.MarinaID,
-					req.Body,   // Message content preview
-					req.Sender, // Customer name
-				)
-				if notificationErr != nil {
-					logger.Zap.Warnw("Failed to create notification for marina user",
-						"user_id", userRow.ID,
-						"error", notificationErr)
-				}
-			}
-		}
-	}
+	// marinaUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
+	// 	MarinaID:   req.MarinaID,
+	// 	IsCustomer: utils.Pointer(false), // Get marina staff, not customers
+	// })
+	// if err != nil {
+	// 	logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", req.MarinaID, "error", err)
+	// } else {
+	// 	// Create notifications for marina staff
+	// 	for _, userRow := range marinaUsers {
+	// 		// Only notify active users
+	// 		if userRow.IsActive != nil && *userRow.IsActive {
+	// 			notificationErr := h.notificationService.CreateMessageNotification(
+	// 				c.Request().Context(),
+	// 				userRow.ID,
+	// 				userRow.OrganizationID,
+	// 				userRow.MarinaID,
+	// 				req.Body,   // Message content preview
+	// 				req.Sender, // Customer name
+	// 			)
+	// 			if notificationErr != nil {
+	// 				logger.Zap.Warnw("Failed to create notification for marina user",
+	// 					"user_id", userRow.ID,
+	// 					"error", notificationErr)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	// Process the result asynchronously to log success/failure and update message usage
 	go func() {
@@ -618,29 +617,29 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		}
 	}
 	// Get the user id of the customer
-	customers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
-		MarinaID:   req.MarinaID,
-		CustomerID: &req.CustomerID,
-	})
-	if err != nil {
-		logger.Zap.Errorw("Failed to get customer users", "error", err)
-	}
-	if len(customers) > 0 {
-		// Create notification for customer users about new marina message
-		for _, customer := range customers {
-			notificationErr := h.notificationService.CreateMessageNotification(
-				c.Request().Context(),
-				customer.ID,
-				customer.OrganizationID,
-				customer.MarinaID,
-				req.Body,
-				req.Sender,
-			)
-			if notificationErr != nil {
-				logger.Zap.Errorw("Failed to create notification for customer user", "error", notificationErr)
-			}
-		}
-	}
+	// customers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
+	// 	MarinaID:   req.MarinaID,
+	// 	CustomerID: &req.CustomerID,
+	// })
+	// if err != nil {
+	// 	logger.Zap.Errorw("Failed to get customer users", "error", err)
+	// }
+	// if len(customers) > 0 {
+	// 	// Create notification for customer users about new marina message
+	// 	for _, customer := range customers {
+	// 		notificationErr := h.notificationService.CreateMessageNotification(
+	// 			c.Request().Context(),
+	// 			customer.ID,
+	// 			customer.OrganizationID,
+	// 			customer.MarinaID,
+	// 			req.Body,
+	// 			req.Sender,
+	// 		)
+	// 		if notificationErr != nil {
+	// 			logger.Zap.Errorw("Failed to create notification for customer user", "error", notificationErr)
+	// 		}
+	// 	}
+	// }
 	response := responses.NewMessageResponseSuccess(message)
 	return c.JSON(http.StatusCreated, response)
 }
