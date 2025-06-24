@@ -244,6 +244,7 @@ func main() {
 				// Core module objects
 				"profile.read":          true,
 				"profile.write":         true,
+				"users.create":          true,
 				"users.read":            true,
 				"users.write":           true,
 				"users.delete":          false,
