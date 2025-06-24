@@ -13,8 +13,8 @@ import (
 
 // PermissionService handles authorization logic combining Casbin RBAC with marina module validation
 type PermissionService struct {
-	enforcer *casbin.Enforcer
-	adapter  *MarinaCasbinAdapter
+	model   model.Model
+	adapter *MarinaCasbinAdapter
 }
 
 // NewPermissionService creates a new permission service instance
@@ -41,17 +41,9 @@ m = r.sub == p.sub && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
 	adapter := NewMarinaCasbinAdapter(database)
 
-	// Create Casbin enforcer without adapter for in-memory policy management
-	// We load policies per-request from the database via our adapter, but use
-	// Casbin's in-memory storage for the actual enforcement
-	enforcer, err := casbin.NewEnforcer(m)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create casbin enforcer: %w", err)
-	}
-
 	return &PermissionService{
-		enforcer: enforcer,
-		adapter:  adapter,
+		model:   m,
+		adapter: adapter,
 	}, nil
 }
 
@@ -85,18 +77,23 @@ func (s *PermissionService) CanAccess(ctx context.Context, userID, marinaID, obj
 		return false, fmt.Errorf("failed to load user policies: %w", err)
 	}
 
-	// Step 4: Clear existing policies and load fresh ones
-	s.enforcer.ClearPolicy()
+	// Step 4: Create a per-request enforcer to avoid race conditions
+	enforcer, err := casbin.NewEnforcer(s.model)
+	if err != nil {
+		return false, fmt.Errorf("failed to create per-request enforcer: %w", err)
+	}
+
+	// Step 5: Load policies into the per-request enforcer
 	for _, policy := range policies {
 		if len(policy) == 4 {
 			// Regular policy: sub, dom, obj, act
-			s.enforcer.AddPolicy(policy[0], policy[1], policy[2], policy[3])
+			enforcer.AddPolicy(policy[0], policy[1], policy[2], policy[3])
 		}
 		// Note: We no longer handle role policies since we only use direct user policies
 	}
 
-	// Step 5: Use Casbin to check the permission
-	allowed, err := s.enforcer.Enforce(userID, marinaID, object, action)
+	// Step 6: Use Casbin to check the permission
+	allowed, err := enforcer.Enforce(userID, marinaID, object, action)
 	if err != nil {
 		return false, fmt.Errorf("failed to enforce permission: %w", err)
 	}
