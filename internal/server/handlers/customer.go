@@ -32,13 +32,13 @@ func NewCustomerHandler(server *s.Server) *CustomerHandler {
 }
 
 // @Summary List customers by page
-// @Description Retrieves a paginated list of customers
+// @Description Retrieves a paginated list of customers (minimal fields)
 // @Tags Customers
 // @Accept json
 // @Produce json
 // @Param page query int true "Page number" minimum(1)
 // @Param pageSize query int true "Page size" minimum(1) maximum(100)
-// @Success 200 {object} responses.CustomerListResponse
+// @Success 200 {object} responses.CustomerListMinimalResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
 // @Router /customers/list [get]
@@ -73,8 +73,7 @@ func (h *CustomerHandler) ListCustomersByPage(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert DME response to API response
-	response := responses.ConvertCustomerList(dmeResponse)
+	response := responses.ConvertCustomerListMinimal(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
