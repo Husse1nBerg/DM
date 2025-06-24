@@ -259,7 +259,7 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 
 	// Marina Contacts routes
 	routeMap["GET /api/v1/marinas/:id/contacts"] = RoutePermission{Object: "contacts", Action: "read"}
-	routeMap["POST /api/v1/marinas/:id/contacts"] = RoutePermission{Object: "contacts", Action: "create"}
+	routeMap["POST /api/v1/marinas/:id/contacts"] = RoutePermission{Object: "contacts", Action: "write"}
 	routeMap["PUT /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "contacts", Action: "write"}
 	routeMap["DELETE /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "contacts", Action: "delete"}
 
