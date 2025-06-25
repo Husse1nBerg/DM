@@ -979,7 +979,7 @@ const docTemplate = `{
         },
         "/boats/list": {
             "get": {
-                "description": "Retrieves a paginated list of boats",
+                "description": "Retrieves a paginated list of boats (minimal fields)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1013,7 +1013,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BoatListResponse"
+                            "$ref": "#/definitions/responses.BoatListMinimalResponse"
                         }
                     },
                     "400": {
@@ -8837,6 +8837,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.BoatMinimal": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "slip": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.BoatSearch": {
             "type": "object",
             "properties": {
@@ -12036,7 +12062,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BoatListResponse": {
+        "responses.BoatListMinimalResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -12046,7 +12072,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Boat"
+                        "$ref": "#/definitions/dme.BoatMinimal"
                     }
                 },
                 "lastPage": {

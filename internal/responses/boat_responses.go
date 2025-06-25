@@ -13,6 +13,16 @@ type BoatListResponse struct {
 	LastPage    int32      `json:"lastPage" example:"10"`
 }
 
+// BoatListMinimalResponse represents a paginated minimal list of boats
+// Only includes the minimal fields required by the new API contract
+type BoatListMinimalResponse struct {
+	Data        []dme.BoatMinimal `json:"data"`
+	Total       int64             `json:"total" example:"100"`
+	PerPage     int32             `json:"perPage" example:"10"`
+	CurrentPage int32             `json:"currentPage" example:"1"`
+	LastPage    int32             `json:"lastPage" example:"10"`
+}
+
 // BoatResponse represents a single boat response
 type BoatResponse struct {
 	Data dme.Boat `json:"data"`
@@ -57,6 +67,17 @@ func ConvertBoatSearch(dmeResponse *[]dme.BoatSearch) *BoatSearchResponse {
 func ConvertBoatCreateUpdate(boatID string) *BoatCreateUpdateResponse {
 	return &BoatCreateUpdateResponse{
 		BoatID: boatID,
+	}
+}
+
+// ConvertBoatListMinimal converts DME BoatListMinimal to BoatListMinimalResponse
+func ConvertBoatListMinimal(dmeResponse *dme.BoatListMinimal) *BoatListMinimalResponse {
+	return &BoatListMinimalResponse{
+		Data:        dmeResponse.Content,
+		Total:       int64(dmeResponse.MaxPages * dmeResponse.PageSize),
+		PerPage:     int32(dmeResponse.PageSize),
+		CurrentPage: int32(dmeResponse.CurrentPage),
+		LastPage:    int32(dmeResponse.MaxPages),
 	}
 }
 
