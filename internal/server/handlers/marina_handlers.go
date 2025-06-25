@@ -573,14 +573,6 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
 			}
 			updateParams.Modules = modulesBytes
-		} else {
-			// If modules are not provided, use default modules
-			defaultModules := models.DefaultModules()
-			modulesBytes, err := defaultModules.ToBytes()
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default modules").JSON(c)
-			}
-			updateParams.Modules = modulesBytes
 		}
 	}
 
@@ -710,14 +702,6 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		modulesBytes, err := req.Modules.ToBytes()
 		if err != nil {
 			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
-		}
-		params.Modules = modulesBytes
-	} else {
-		// If modules are not provided, use default modules
-		defaultModules := models.DefaultModules()
-		modulesBytes, err := defaultModules.ToBytes()
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default modules").JSON(c)
 		}
 		params.Modules = modulesBytes
 	}
