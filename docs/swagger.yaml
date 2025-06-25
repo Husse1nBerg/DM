@@ -2038,8 +2038,14 @@ definitions:
       email:
         example: info@harborbay.com
         type: string
+      externalAnnouncement:
+        example: This is an external announcement
+        type: string
       image:
         example: /images/marinas/harborbay.jpg
+        type: string
+      internalAnnouncement:
+        example: This is an internal announcement
         type: string
       isActive:
         example: true
@@ -2856,11 +2862,17 @@ definitions:
       emailUsage:
         example: 0
         type: integer
+      externalAnnouncement:
+        example: This is an external announcement
+        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       image:
         example: /images/marinas/harborbay.jpg
+        type: string
+      internalAnnouncement:
+        example: This is an internal announcement
         type: string
       isActive:
         example: true
@@ -2984,11 +2996,17 @@ definitions:
       emailUsage:
         example: 0
         type: integer
+      externalAnnouncement:
+        example: This is an external announcement
+        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       image:
         example: /images/marinas/harborbay.jpg
+        type: string
+      internalAnnouncement:
+        example: This is an internal announcement
         type: string
       isActive:
         example: true

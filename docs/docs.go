@@ -12361,9 +12361,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "info@harborbay.com"
                 },
+                "externalAnnouncement": {
+                    "type": "string",
+                    "example": "This is an external announcement"
+                },
                 "image": {
                     "type": "string",
                     "example": "/images/marinas/harborbay.jpg"
+                },
+                "internalAnnouncement": {
+                    "type": "string",
+                    "example": "This is an internal announcement"
                 },
                 "isActive": {
                     "type": "boolean",
@@ -13512,6 +13520,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 0
                 },
+                "externalAnnouncement": {
+                    "type": "string",
+                    "example": "This is an external announcement"
+                },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -13519,6 +13531,10 @@ const docTemplate = `{
                 "image": {
                     "type": "string",
                     "example": "/images/marinas/harborbay.jpg"
+                },
+                "internalAnnouncement": {
+                    "type": "string",
+                    "example": "This is an internal announcement"
                 },
                 "isActive": {
                     "type": "boolean",
@@ -13690,6 +13706,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 0
                 },
+                "externalAnnouncement": {
+                    "type": "string",
+                    "example": "This is an external announcement"
+                },
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -13697,6 +13717,10 @@ const docTemplate = `{
                 "image": {
                     "type": "string",
                     "example": "/images/marinas/harborbay.jpg"
+                },
+                "internalAnnouncement": {
+                    "type": "string",
+                    "example": "This is an internal announcement"
                 },
                 "isActive": {
                     "type": "boolean",
