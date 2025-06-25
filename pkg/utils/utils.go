@@ -25,6 +25,7 @@ func (s *StorageUsageGB) MarshalJSON() ([]byte, error) {
 var (
 	imageService    *s3.ImageService
 	documentService *s3.DocumentService
+	esignService    *s3.ESignService
 )
 
 // Now returns the current time as a pgtype.Timestamp UTC.
@@ -62,6 +63,11 @@ func SetDocumentService(service *s3.DocumentService) {
 	documentService = service
 }
 
+// SetESignService sets the e-signature service for use in response formatting
+func SetESignService(service *s3.ESignService) {
+	esignService = service
+}
+
 // GetFullImageURL converts an image path to a full URL using the image service
 func GetFullImageURL(imagePath *string) *string {
 	if imageService == nil || imagePath == nil || *imagePath == "" {
@@ -78,6 +84,16 @@ func GetFullDocumentURL(docPath *string) *string {
 	}
 
 	return documentService.GetFullDocumentURL(docPath)
+}
+
+// GetFullESignURL converts an e-signature path to a full URL
+
+func GetFullESignURL(esignPath *string) *string {
+	if esignService == nil || esignPath == nil || *esignPath == "" {
+		return esignPath
+	}
+
+	return esignService.GetFullDocumentURL(esignPath)
 }
 
 func GenerateUsername(firstName string) string {

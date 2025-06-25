@@ -1005,6 +1005,8 @@ definitions:
     properties:
       customerVessels:
         type: boolean
+      esign:
+        type: boolean
       inventoryManagement:
         type: boolean
       marinaManagement:
@@ -2053,8 +2055,14 @@ definitions:
       email:
         example: info@harborbay.com
         type: string
+      externalAnnouncement:
+        example: This is an external announcement
+        type: string
       image:
         example: /images/marinas/harborbay.jpg
+        type: string
+      internalAnnouncement:
+        example: This is an internal announcement
         type: string
       isActive:
         example: true
@@ -2674,6 +2682,110 @@ definitions:
         example: Validation failed
         type: string
     type: object
+  responses.EsignDocumentListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.EsignDocumentResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.EsignDocumentResponse:
+    description: E-signature document data including blob URL, metadata, and signature
+      status
+    properties:
+      blobUrl:
+        example: https://s3.amazonaws.com/bucket/documents/agreement-001.pdf
+        type: string
+      createdAt:
+        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
+          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      status:
+        example: draft
+        type: string
+      templateId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      type:
+        example: agreement
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.EsignTemplateListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.EsignTemplateResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.EsignTemplateResponse:
+    description: E-signature template data including blob URL and metadata
+    properties:
+      blobUrl:
+        example: https://s3.amazonaws.com/bucket/templates/agreement.pdf
+        type: string
+      createdAt:
+        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
+          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
+        type: string
+      description:
+        example: Standard customer agreement template for marina services
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Customer Agreement Template
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      status:
+        example: active
+        type: string
+      type:
+        example: agreement
+        type: string
+      updatedAt:
+        type: string
+    type: object
   responses.InviteResponse:
     properties:
       email:
@@ -2767,11 +2879,17 @@ definitions:
       emailUsage:
         example: 0
         type: integer
+      externalAnnouncement:
+        example: This is an external announcement
+        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       image:
         example: /images/marinas/harborbay.jpg
+        type: string
+      internalAnnouncement:
+        example: This is an internal announcement
         type: string
       isActive:
         example: true
@@ -2895,11 +3013,17 @@ definitions:
       emailUsage:
         example: 0
         type: integer
+      externalAnnouncement:
+        example: This is an external announcement
+        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       image:
         example: /images/marinas/harborbay.jpg
+        type: string
+      internalAnnouncement:
+        example: This is an internal announcement
         type: string
       isActive:
         example: true
@@ -5422,6 +5546,494 @@ paths:
       summary: Send template email
       tags:
       - Email
+  /esign/documents:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all e-signature documents for the authenticated user's
+        marina
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EsignDocumentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List e-signature documents
+      tags:
+      - E-signature Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new e-signature document for the authenticated user's
+        marina
+      parameters:
+      - description: Template ID (optional)
+        format: uuid
+        in: formData
+        name: templateId
+        type: string
+      - description: Document type
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: 'Document status (default: draft)'
+        in: formData
+        name: status
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignDocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create e-signature document
+      tags:
+      - E-signature Documents
+  /esign/documents/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes an e-signature document
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete e-signature document
+      tags:
+      - E-signature Documents
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an e-signature document by ID
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignDocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get e-signature document
+      tags:
+      - E-signature Documents
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates an existing e-signature document
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Document type
+        in: formData
+        name: type
+        type: string
+      - description: Document status
+        in: formData
+        name: status
+        type: string
+      - description: Document file (optional for update)
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignDocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update e-signature document
+      tags:
+      - E-signature Documents
+  /esign/templates:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all e-signature templates for the authenticated user's
+        marina
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EsignTemplateListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List e-signature templates
+      tags:
+      - E-signature Templates
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new e-signature template for the authenticated user's
+        marina
+      parameters:
+      - description: Template name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Template description
+        in: formData
+        name: description
+        type: string
+      - description: Template type
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: 'Template status (default: draft)'
+        in: formData
+        name: status
+        type: string
+      - description: Template file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignTemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create e-signature template
+      tags:
+      - E-signature Templates
+  /esign/templates/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes an e-signature template
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete e-signature template
+      tags:
+      - E-signature Templates
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an e-signature template by ID
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignTemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get e-signature template
+      tags:
+      - E-signature Templates
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates an existing e-signature template
+      parameters:
+      - description: Template ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Template name
+        in: formData
+        name: name
+        type: string
+      - description: Template description
+        in: formData
+        name: description
+        type: string
+      - description: Template type
+        in: formData
+        name: type
+        type: string
+      - description: Template status
+        in: formData
+        name: status
+        type: string
+      - description: Template file (optional for update)
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignTemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update e-signature template
+      tags:
+      - E-signature Templates
   /gallery/boat:
     post:
       consumes:

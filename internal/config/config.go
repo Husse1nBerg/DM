@@ -19,6 +19,7 @@ type Config struct {
 	DME             DMEConfig
 	S3              s3.S3Config
 	DocumentStorage s3.S3Config
+	ESign           s3.S3Config
 	SendGrid        SendGridConfig
 	Telgorithm      TelgorithmConfig
 }
@@ -50,6 +51,7 @@ func New() *Config {
 		DME:             LoadDMEConfig(),
 		S3:              LoadS3Config(),
 		DocumentStorage: LoadDocumentStorageConfig(),
+		ESign:           LoadESignConfig(),
 		SendGrid:        LoadSendGridConfig(),
 		Telgorithm:      LoadTelgorithmConfig(),
 	}

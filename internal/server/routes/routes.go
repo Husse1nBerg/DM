@@ -52,6 +52,7 @@ func RegisterRoutes(s *s.Server) {
 	permissionTestHandler := h.NewPermissionTestHandler(s)
 	redisHandler := h.NewRedisHandler(s)
 	notificationHandler := h.NewNotificationHandler(s)
+	esignHandler := h.NewEsignHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -252,6 +253,19 @@ func RegisterRoutes(s *s.Server) {
 	documents.GET("/user", documentHandler.UserGetDocumentsByEntity)
 	documents.GET("/:id", documentHandler.GetDocument)
 	documents.DELETE("/:id", documentHandler.DeleteDocument)
+
+	// E-signature routes
+	esign := permissionProtected.Group("/esign")
+	esign.GET("/templates", esignHandler.ListEsignTemplates)
+	esign.GET("/templates/:id", esignHandler.GetEsignTemplate)
+	esign.POST("/templates", esignHandler.CreateEsignTemplate)
+	esign.PUT("/templates/:id", esignHandler.UpdateEsignTemplate)
+	esign.DELETE("/templates/:id", esignHandler.DeleteEsignTemplate)
+	esign.POST("/documents", esignHandler.CreateEsignDocument)
+	esign.GET("/documents", esignHandler.ListEsignDocuments)
+	esign.GET("/documents/:id", esignHandler.GetEsignDocument)
+	esign.PUT("/documents/:id", esignHandler.UpdateEsignDocument)
+	esign.DELETE("/documents/:id", esignHandler.DeleteEsignDocument)
 
 	// Work Order routes
 	workOrders := permissionProtected.Group("/work-orders")

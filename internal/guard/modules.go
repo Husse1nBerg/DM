@@ -13,6 +13,9 @@ var ModuleObjects = map[string]ModuleConfig{
 	"core": {
 		Objects: []string{"profile", "users", "organizations", "marinas", "addresses", "roles", "marina_gallery", "history", "plans", "settings", "contacts"},
 	},
+	"esign": {
+		Objects: []string{"esign_templates", "esign_documents"},
+	},
 	"customerVessels": {
 		Objects: []string{"customers", "vessels", "messages", "documents", "boat_gallery"},
 	},
