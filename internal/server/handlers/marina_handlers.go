@@ -573,14 +573,6 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
 			}
 			updateParams.Modules = modulesBytes
-		} else {
-			// If modules are not provided, use default modules
-			defaultModules := models.DefaultModules()
-			modulesBytes, err := defaultModules.ToBytes()
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default modules").JSON(c)
-			}
-			updateParams.Modules = modulesBytes
 		}
 	}
 
@@ -635,21 +627,24 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 
 	// Build update params with current values that will be overridden
 	params := db.UpdateMarinaParams{
-		ID:           id,
-		Name:         currentMarina.Name,
-		Email:        currentMarina.Email,
-		Location:     currentMarina.Location,
-		Phone:        currentMarina.Phone,
-		Country:      currentMarina.Country,
-		Currency:     currentMarina.Currency,
-		WorkingHours: currentMarina.WorkingHours,
-		Website:      currentMarina.Website,
-		Image:        currentMarina.Image,
-		MaxUsers:     currentMarina.MaxUsers,
-		IsActive:     currentMarina.IsActive,
-		IsTest:       currentMarina.IsTest,
-		AddressID:    currentMarina.AddressID,
-		SystemID:     currentMarina.SystemID,
+		ID:                  id,
+		Name:                currentMarina.Name,
+		Email:               currentMarina.Email,
+		Location:            currentMarina.Location,
+		Phone:               currentMarina.Phone,
+		Country:             currentMarina.Country,
+		Currency:            currentMarina.Currency,
+		WorkingHours:        currentMarina.WorkingHours,
+		Website:             currentMarina.Website,
+		Image:               currentMarina.Image,
+		MaxUsers:            currentMarina.MaxUsers,
+		IsActive:            currentMarina.IsActive,
+		IsTest:              currentMarina.IsTest,
+		AddressID:           currentMarina.AddressID,
+		SystemID:            currentMarina.SystemID,
+		NotesMessagesPlanID: currentMarina.NotesMessagesPlanID,
+		StoragePlanID:       currentMarina.StoragePlanID,
+		Modules:             currentMarina.Modules,
 	}
 
 	// Update only fields that are provided
@@ -696,6 +691,19 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 	}
 	if req.SystemID != nil {
 		params.SystemID = req.SystemID
+	}
+	if req.NotesMessagesPlanID != nil {
+		params.NotesMessagesPlanID = *req.NotesMessagesPlanID
+	}
+	if req.StoragePlanID != nil {
+		params.StoragePlanID = *req.StoragePlanID
+	}
+	if req.Modules != nil {
+		modulesBytes, err := req.Modules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+		}
+		params.Modules = modulesBytes
 	}
 
 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
