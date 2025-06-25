@@ -8859,7 +8859,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "slip": {
-                    "type": "string"
+                    "$ref": "#/definitions/dme.Slip"
                 }
             }
         },

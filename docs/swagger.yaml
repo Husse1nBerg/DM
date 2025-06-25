@@ -160,7 +160,7 @@ definitions:
       ownerId:
         type: string
       slip:
-        type: string
+        $ref: '#/definitions/dme.Slip'
     type: object
   dme.BoatSearch:
     properties:

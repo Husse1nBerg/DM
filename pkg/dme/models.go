@@ -260,7 +260,7 @@ type BoatMinimal struct {
 	OwnerID      string `json:"ownerId"`
 	Make         string `json:"make"`
 	Model        string `json:"model"`
-	Slip         string `json:"slip"`
+	Slip         Slip   `json:"slip"`
 	LastModified string `json:"lastModified"`
 }
 
