@@ -1,5 +1,17 @@
 -- name: CreateEsignDocument :one
 INSERT INTO esign_documents (
+    organization_id,
+    marina_id,
+    type,
+    status,
+    blob_url,
+    blob_metadata
+) VALUES (
+    $1, $2, $3, $4, $5, $6
+) RETURNING *;
+
+-- name: CreateEsignDocumentWithTemplate :one
+INSERT INTO esign_documents (
     template_id,
     organization_id,
     marina_id,

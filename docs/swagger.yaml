@@ -988,6 +988,8 @@ definitions:
     properties:
       customerVessels:
         type: boolean
+      esign:
+        type: boolean
       inventoryManagement:
         type: boolean
       marinaManagement:
@@ -2657,6 +2659,25 @@ definitions:
         example: Validation failed
         type: string
     type: object
+  responses.EsignDocumentListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.EsignDocumentResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
   responses.EsignDocumentResponse:
     description: E-signature document data including blob URL, metadata, and signature
       status
@@ -2688,6 +2709,25 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  responses.EsignTemplateListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.EsignTemplateResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
     type: object
   responses.EsignTemplateResponse:
     description: E-signature template data including blob URL and metadata
@@ -5478,18 +5518,18 @@ paths:
       description: Retrieves all e-signature documents for the authenticated user's
         marina
       parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
       - default: 10
-        description: Limit results
+        description: Page size
         in: query
         maximum: 100
         minimum: 1
-        name: limit
-        type: integer
-      - default: 0
-        description: Offset results
-        in: query
-        minimum: 0
-        name: offset
+        name: pageSize
         type: integer
       produces:
       - application/json
@@ -5497,14 +5537,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/responses.EsignDocumentResponse'
-                  type: array
-              type: object
+            $ref: '#/definitions/responses.EsignDocumentListResponse'
         "400":
           description: Bad Request
           schema:
@@ -5723,18 +5756,18 @@ paths:
       description: Retrieves all e-signature templates for the authenticated user's
         marina
       parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
       - default: 10
-        description: Limit results
+        description: Page size
         in: query
         maximum: 100
         minimum: 1
-        name: limit
-        type: integer
-      - default: 0
-        description: Offset results
-        in: query
-        minimum: 0
-        name: offset
+        name: pageSize
         type: integer
       produces:
       - application/json
@@ -5742,14 +5775,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/responses.EsignTemplateResponse'
-                  type: array
-              type: object
+            $ref: '#/definitions/responses.EsignTemplateListResponse'
         "400":
           description: Bad Request
           schema:

@@ -3020,20 +3020,20 @@ const docTemplate = `{
                 "summary": "List e-signature documents",
                 "parameters": [
                     {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
                         "default": 10,
-                        "description": "Limit results",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 0,
-                        "type": "integer",
-                        "default": 0,
-                        "description": "Offset results",
-                        "name": "offset",
+                        "description": "Page size",
+                        "name": "pageSize",
                         "in": "query"
                     }
                 ],
@@ -3041,22 +3041,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/responses.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/responses.EsignDocumentResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/responses.EsignDocumentListResponse"
                         }
                     },
                     "400": {
@@ -3409,20 +3394,20 @@ const docTemplate = `{
                 "summary": "List e-signature templates",
                 "parameters": [
                     {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
                         "default": 10,
-                        "description": "Limit results",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 0,
-                        "type": "integer",
-                        "default": 0,
-                        "description": "Offset results",
-                        "name": "offset",
+                        "description": "Page size",
+                        "name": "pageSize",
                         "in": "query"
                     }
                 ],
@@ -3430,22 +3415,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/responses.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/responses.EsignTemplateResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/responses.EsignTemplateListResponse"
                         }
                     },
                     "400": {
@@ -10904,6 +10874,9 @@ const docTemplate = `{
                 "customerVessels": {
                     "type": "boolean"
                 },
+                "esign": {
+                    "type": "boolean"
+                },
                 "inventoryManagement": {
                     "type": "boolean"
                 },
@@ -13270,6 +13243,33 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.EsignDocumentListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.EsignDocumentResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
         "responses.EsignDocumentResponse": {
             "description": "E-signature document data including blob URL, metadata, and signature status",
             "type": "object",
@@ -13308,6 +13308,33 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.EsignTemplateListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.EsignTemplateResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },

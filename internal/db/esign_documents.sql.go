@@ -33,6 +33,54 @@ func (q *Queries) CountEsignDocumentsByMarina(ctx context.Context, arg CountEsig
 
 const createEsignDocument = `-- name: CreateEsignDocument :one
 INSERT INTO esign_documents (
+    organization_id,
+    marina_id,
+    type,
+    status,
+    blob_url,
+    blob_metadata
+) VALUES (
+    $1, $2, $3, $4, $5, $6
+) RETURNING id, template_id, organization_id, marina_id, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+`
+
+type CreateEsignDocumentParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Type           string
+	Status         string
+	BlobUrl        string
+	BlobMetadata   []byte
+}
+
+func (q *Queries) CreateEsignDocument(ctx context.Context, arg CreateEsignDocumentParams) (EsignDocument, error) {
+	row := q.db.QueryRow(ctx, createEsignDocument,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Type,
+		arg.Status,
+		arg.BlobUrl,
+		arg.BlobMetadata,
+	)
+	var i EsignDocument
+	err := row.Scan(
+		&i.ID,
+		&i.TemplateID,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.Type,
+		&i.Status,
+		&i.BlobUrl,
+		&i.BlobMetadata,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const createEsignDocumentWithTemplate = `-- name: CreateEsignDocumentWithTemplate :one
+INSERT INTO esign_documents (
     template_id,
     organization_id,
     marina_id,
@@ -45,7 +93,7 @@ INSERT INTO esign_documents (
 ) RETURNING id, template_id, organization_id, marina_id, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
 `
 
-type CreateEsignDocumentParams struct {
+type CreateEsignDocumentWithTemplateParams struct {
 	TemplateID     uuid.UUID
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
@@ -55,8 +103,8 @@ type CreateEsignDocumentParams struct {
 	BlobMetadata   []byte
 }
 
-func (q *Queries) CreateEsignDocument(ctx context.Context, arg CreateEsignDocumentParams) (EsignDocument, error) {
-	row := q.db.QueryRow(ctx, createEsignDocument,
+func (q *Queries) CreateEsignDocumentWithTemplate(ctx context.Context, arg CreateEsignDocumentWithTemplateParams) (EsignDocument, error) {
+	row := q.db.QueryRow(ctx, createEsignDocumentWithTemplate,
 		arg.TemplateID,
 		arg.OrganizationID,
 		arg.MarinaID,

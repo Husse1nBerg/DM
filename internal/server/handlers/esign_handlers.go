@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
+	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
@@ -51,9 +51,9 @@ func (h *EsignHandler) getUserInfoFromContext(c echo.Context) (userID uuid.UUID,
 //	@Tags			E-signature Templates
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Limit results"	default(10)	minimum(1)	maximum(100)
-//	@Param			offset	query		int	false	"Offset results"	default(0)	minimum(0)
-//	@Success		200		{object}	responses.BaseResponse{data=[]responses.EsignTemplateResponse}
+//	@Param			page	query		int	false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize	query		int	false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Success		200		{object}	responses.EsignTemplateListResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		401		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
@@ -72,35 +72,45 @@ func (h *EsignHandler) ListEsignTemplates(c echo.Context) error {
 	}
 	marinaID := user.MarinaID
 
-	// Parse pagination parameters
-	limit := int32(10)
-	offset := int32(0)
-
-	if limitStr := c.QueryParam("limit"); limitStr != "" {
-		if limitVal, err := strconv.Atoi(limitStr); err == nil && limitVal > 0 && limitVal <= 100 {
-			limit = int32(limitVal)
-		}
+	// Parse pagination parameters using standard pattern
+	var req requests.PaginationQuery
+	if err := c.Bind(&req); err != nil {
+		req.Page = 1
+		req.PageSize = 10
 	}
 
-	if offsetStr := c.QueryParam("offset"); offsetStr != "" {
-		if offsetVal, err := strconv.Atoi(offsetStr); err == nil && offsetVal >= 0 {
-			offset = int32(offsetVal)
-		}
+	// Set defaults if not provided
+	if req.Page <= 0 {
+		req.Page = 1
 	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+
+	// Get total count for pagination
+	total, err := h.server.DB.Queries().CountEsignTemplatesByMarina(c.Request().Context(), db.CountEsignTemplatesByMarinaParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error counting e-signature templates", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting templates").JSON(c)
+	}
+	totalInt := int64(total)
 
 	// Get templates for the marina
 	templates, err := h.server.DB.Queries().ListEsignTemplatesByMarina(c.Request().Context(), db.ListEsignTemplatesByMarinaParams{
 		OrganizationID: organizationID,
 		MarinaID:       marinaID,
-		Limit:          limit,
-		Offset:         offset,
+		Limit:          req.PageSize,
+		Offset:         (req.Page - 1) * req.PageSize,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching e-signature templates", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching templates").JSON(c)
 	}
 
-	return responses.NewEsignTemplatesResponseSuccess(templates).JSON(c)
+	return responses.NewEsignTemplatesPaginatedResponse(templates, totalInt, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateEsignTemplate creates a new e-signature template
@@ -142,7 +152,7 @@ func (h *EsignHandler) CreateEsignTemplate(c echo.Context) error {
 
 	templateType := c.FormValue("type")
 	if templateType == "" {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Template type is required").JSON(c)
+		templateType = "template"
 	}
 
 	status := c.FormValue("status")
@@ -375,9 +385,9 @@ func (h *EsignHandler) DeleteEsignTemplate(c echo.Context) error {
 //	@Tags			E-signature Documents
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Limit results"	default(10)	minimum(1)	maximum(100)
-//	@Param			offset	query		int	false	"Offset results"	default(0)	minimum(0)
-//	@Success		200		{object}	responses.BaseResponse{data=[]responses.EsignDocumentResponse}
+//	@Param			page	query		int	false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize	query		int	false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Success		200		{object}	responses.EsignDocumentListResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		401		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
@@ -396,35 +406,45 @@ func (h *EsignHandler) ListEsignDocuments(c echo.Context) error {
 	}
 	marinaID := user.MarinaID
 
-	// Parse pagination parameters
-	limit := int32(10)
-	offset := int32(0)
-
-	if limitStr := c.QueryParam("limit"); limitStr != "" {
-		if limitVal, err := strconv.Atoi(limitStr); err == nil && limitVal > 0 && limitVal <= 100 {
-			limit = int32(limitVal)
-		}
+	// Parse pagination parameters using standard pattern
+	var req requests.PaginationQuery
+	if err := c.Bind(&req); err != nil {
+		req.Page = 1
+		req.PageSize = 10
 	}
 
-	if offsetStr := c.QueryParam("offset"); offsetStr != "" {
-		if offsetVal, err := strconv.Atoi(offsetStr); err == nil && offsetVal >= 0 {
-			offset = int32(offsetVal)
-		}
+	// Set defaults if not provided
+	if req.Page <= 0 {
+		req.Page = 1
 	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+
+	// Get total count for pagination
+	total, err := h.server.DB.Queries().CountEsignDocumentsByMarina(c.Request().Context(), db.CountEsignDocumentsByMarinaParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error counting e-signature documents", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting documents").JSON(c)
+	}
+	totalInt := int64(total)
 
 	// Get documents for the marina
 	documents, err := h.server.DB.Queries().ListEsignDocumentsByMarina(c.Request().Context(), db.ListEsignDocumentsByMarinaParams{
 		OrganizationID: organizationID,
 		MarinaID:       marinaID,
-		Limit:          limit,
-		Offset:         offset,
+		Limit:          req.PageSize,
+		Offset:         (req.Page - 1) * req.PageSize,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching e-signature documents", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching documents").JSON(c)
 	}
 
-	return responses.NewEsignDocumentsResponseSuccess(documents).JSON(c)
+	return responses.NewEsignDocumentsPaginatedResponse(documents, totalInt, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateEsignDocument creates a new e-signature document
@@ -460,24 +480,13 @@ func (h *EsignHandler) CreateEsignDocument(c echo.Context) error {
 	// Parse form values
 	documentType := c.FormValue("type")
 	if documentType == "" {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Document type is required").JSON(c)
+		documentType = "document"
 	}
 
 	status := c.FormValue("status")
 	if status == "" {
 		status = "draft" // Default status
 	}
-
-	// Parse optional template ID
-	var templateID uuid.UUID
-	templateIDStr := c.FormValue("templateId")
-	if templateIDStr != "" {
-		templateID, err = uuid.Parse(templateIDStr)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid template ID format").JSON(c)
-		}
-	}
-
 	// Get file from form
 	file, header, err := c.Request().FormFile("file")
 	if err != nil {
@@ -493,16 +502,39 @@ func (h *EsignHandler) CreateEsignDocument(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 	}
 
-	// Create document
-	document, err := h.server.DB.Queries().CreateEsignDocument(c.Request().Context(), db.CreateEsignDocumentParams{
-		TemplateID:     templateID,
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-		Type:           documentType,
-		Status:         status,
-		BlobUrl:        filePath,
-		BlobMetadata:   nil, // Ignoring blob metadata for now as requested
-	})
+	// Parse optional template ID
+	templateIDStr := c.FormValue("templateId")
+	var document db.EsignDocument
+
+	if templateIDStr != "" {
+		// Parse template ID
+		templateID, parseErr := uuid.Parse(templateIDStr)
+		if parseErr != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid template ID format").JSON(c)
+		}
+
+		// Create document with template
+		document, err = h.server.DB.Queries().CreateEsignDocumentWithTemplate(c.Request().Context(), db.CreateEsignDocumentWithTemplateParams{
+			TemplateID:     templateID,
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Type:           documentType,
+			Status:         status,
+			BlobUrl:        filePath,
+			BlobMetadata:   nil, // Ignoring blob metadata for now as requested
+		})
+	} else {
+		// Create document without template
+		document, err = h.server.DB.Queries().CreateEsignDocument(c.Request().Context(), db.CreateEsignDocumentParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Type:           documentType,
+			Status:         status,
+			BlobUrl:        filePath,
+			BlobMetadata:   nil, // Ignoring blob metadata for now as requested
+		})
+	}
+
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature document", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating document").JSON(c)

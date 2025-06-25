@@ -123,3 +123,39 @@ func NewEsignDocumentsResponseSuccess(documents []db.EsignDocument) BaseResponse
 	}
 	return NewSuccessResponse(documentResponses)
 }
+
+// NewEsignTemplatesPaginatedResponse creates a paginated response with e-signature templates
+func NewEsignTemplatesPaginatedResponse(templates []db.EsignTemplate, total int64, perPage, currentPage int32) BaseResponse {
+	templateResponses := make([]EsignTemplateResponse, len(templates))
+	for i, template := range templates {
+		templateResponses[i] = ConvertEsignTemplateToResponse(template)
+	}
+	return NewPaginatedResponse(templateResponses, total, perPage, currentPage)
+}
+
+// NewEsignDocumentsPaginatedResponse creates a paginated response with e-signature documents
+func NewEsignDocumentsPaginatedResponse(documents []db.EsignDocument, total int64, perPage, currentPage int32) BaseResponse {
+	documentResponses := make([]EsignDocumentResponse, len(documents))
+	for i, document := range documents {
+		documentResponses[i] = ConvertEsignDocumentToResponse(document)
+	}
+	return NewPaginatedResponse(documentResponses, total, perPage, currentPage)
+}
+
+// EsignTemplateListResponse is purely for Swagger documentation
+type EsignTemplateListResponse struct {
+	Data        []EsignTemplateResponse `json:"data"`
+	Total       int64                   `json:"total" example:"42"`
+	PerPage     int32                   `json:"perPage" example:"10"`
+	CurrentPage int32                   `json:"currentPage" example:"1"`
+	LastPage    int32                   `json:"lastPage" example:"5"`
+}
+
+// EsignDocumentListResponse is purely for Swagger documentation
+type EsignDocumentListResponse struct {
+	Data        []EsignDocumentResponse `json:"data"`
+	Total       int64                   `json:"total" example:"42"`
+	PerPage     int32                   `json:"perPage" example:"10"`
+	CurrentPage int32                   `json:"currentPage" example:"1"`
+	LastPage    int32                   `json:"lastPage" example:"5"`
+}
