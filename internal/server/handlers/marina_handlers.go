@@ -656,12 +656,12 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		IsTest:               currentMarina.IsTest,
 		AddressID:            currentMarina.AddressID,
 		SystemID:             currentMarina.SystemID,
-		NotesMessagesPlanID: currentMarina.NotesMessagesPlanID,
-		StoragePlanID:       currentMarina.StoragePlanID,
-		Modules:             currentMarina.Modules,
+		NotesMessagesPlanID:  currentMarina.NotesMessagesPlanID,
+		StoragePlanID:        currentMarina.StoragePlanID,
+		Modules:              currentMarina.Modules,
 		InternalAnnouncement: currentMarina.InternalAnnouncement,
-		ExternalAnnouncement: currentMarina.ExternalAnnouncement
-  }
+		ExternalAnnouncement: currentMarina.ExternalAnnouncement,
+	}
 
 	// Update only fields that are provided
 	if req.Name != nil {
