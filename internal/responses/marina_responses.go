@@ -12,30 +12,32 @@ import (
 // MarinaResponse represents a marina in the system
 // @Description Marina data including location, contact information, and operational details
 type MarinaResponse struct {
-	ID                  uuid.UUID             `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrganizationID      uuid.UUID             `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Name                string                `json:"name" example:"Harbor Bay Marina"`
-	Email               string                `json:"email" example:"info@harborbay.com"`
-	Location            *string               `json:"location,omitempty" example:"Miami Beach"`
-	Phone               *string               `json:"phone,omitempty" example:"+15551234567"`
-	Country             *string               `json:"country,omitempty" example:"USA"`
-	Currency            *string               `json:"currency,omitempty" example:"USD"`
-	WorkingHours        *models.WorkingHours  `json:"workingHours,omitempty"`
-	Website             *string               `json:"website,omitempty" example:"https://harborbay.com"`
-	Image               *string               `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
-	MaxUsers            *int32                `json:"maxUsers,omitempty" example:"100"`
-	IsActive            *bool                 `json:"isActive,omitempty" example:"true"`
-	IsTest              *bool                 `json:"isTest,omitempty" example:"false"`
-	CreatedAt           *time.Time            `json:"createdAt,omitempty"`
-	UpdatedAt           *time.Time            `json:"updatedAt,omitempty"`
-	AddressID           uuid.UUID             `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
-	SystemID            *string               `json:"systemId,omitempty" example:"SYS123456"`
-	StorageUsage        *utils.StorageUsageGB `json:"storageUsage,omitempty" example:"0.00"`
-	EmailUsage          *int16                `json:"emailUsage,omitempty" example:"0"`
-	TextUsage           *int16                `json:"textUsage,omitempty" example:"0"`
-	NotesMessagesPlanID uuid.UUID             `json:"notesMessagesPlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
-	StoragePlanID       uuid.UUID             `json:"storagePlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
-	Modules             *models.Modules       `json:"modules,omitempty"`
+	ID                   uuid.UUID             `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID       uuid.UUID             `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Name                 string                `json:"name" example:"Harbor Bay Marina"`
+	Email                string                `json:"email" example:"info@harborbay.com"`
+	Location             *string               `json:"location,omitempty" example:"Miami Beach"`
+	Phone                *string               `json:"phone,omitempty" example:"+15551234567"`
+	Country              *string               `json:"country,omitempty" example:"USA"`
+	Currency             *string               `json:"currency,omitempty" example:"USD"`
+	WorkingHours         *models.WorkingHours  `json:"workingHours,omitempty"`
+	Website              *string               `json:"website,omitempty" example:"https://harborbay.com"`
+	Image                *string               `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
+	MaxUsers             *int32                `json:"maxUsers,omitempty" example:"100"`
+	IsActive             *bool                 `json:"isActive,omitempty" example:"true"`
+	IsTest               *bool                 `json:"isTest,omitempty" example:"false"`
+	CreatedAt            *time.Time            `json:"createdAt,omitempty"`
+	UpdatedAt            *time.Time            `json:"updatedAt,omitempty"`
+	AddressID            uuid.UUID             `json:"addressId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	SystemID             *string               `json:"systemId,omitempty" example:"SYS123456"`
+	StorageUsage         *utils.StorageUsageGB `json:"storageUsage,omitempty" example:"0.00"`
+	EmailUsage           *int16                `json:"emailUsage,omitempty" example:"0"`
+	TextUsage            *int16                `json:"textUsage,omitempty" example:"0"`
+	NotesMessagesPlanID  uuid.UUID             `json:"notesMessagesPlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
+	StoragePlanID        uuid.UUID             `json:"storagePlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
+	Modules              *models.Modules       `json:"modules,omitempty"`
+	InternalAnnouncement *string               `json:"internalAnnouncement,omitempty" example:"This is an internal announcement"`
+	ExternalAnnouncement *string               `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -75,30 +77,32 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 	}
 
 	return MarinaResponse{
-		ID:                  marina.ID,
-		OrganizationID:      marina.OrganizationID,
-		Name:                marina.Name,
-		Email:               marina.Email,
-		Location:            marina.Location,
-		Phone:               marina.Phone,
-		Country:             marina.Country,
-		Currency:            marina.Currency,
-		WorkingHours:        workingHours,
-		Website:             marina.Website,
-		Image:               utils.GetFullImageURL(marina.Image),
-		MaxUsers:            marina.MaxUsers,
-		IsActive:            marina.IsActive,
-		IsTest:              marina.IsTest,
-		CreatedAt:           utils.PgTimeToTimePtr(marina.CreatedAt),
-		UpdatedAt:           utils.PgTimeToTimePtr(marina.UpdatedAt),
-		AddressID:           marina.AddressID,
-		SystemID:            marina.SystemID,
-		StorageUsage:        storageUsageGB,
-		EmailUsage:          marina.EmailUsage,
-		TextUsage:           marina.TextUsage,
-		NotesMessagesPlanID: marina.NotesMessagesPlanID,
-		StoragePlanID:       marina.StoragePlanID,
-		Modules:             modules,
+		ID:                   marina.ID,
+		OrganizationID:       marina.OrganizationID,
+		Name:                 marina.Name,
+		Email:                marina.Email,
+		Location:             marina.Location,
+		Phone:                marina.Phone,
+		Country:              marina.Country,
+		Currency:             marina.Currency,
+		WorkingHours:         workingHours,
+		Website:              marina.Website,
+		Image:                utils.GetFullImageURL(marina.Image),
+		MaxUsers:             marina.MaxUsers,
+		IsActive:             marina.IsActive,
+		IsTest:               marina.IsTest,
+		CreatedAt:            utils.PgTimeToTimePtr(marina.CreatedAt),
+		UpdatedAt:            utils.PgTimeToTimePtr(marina.UpdatedAt),
+		AddressID:            marina.AddressID,
+		SystemID:             marina.SystemID,
+		StorageUsage:         storageUsageGB,
+		EmailUsage:           marina.EmailUsage,
+		TextUsage:            marina.TextUsage,
+		NotesMessagesPlanID:  marina.NotesMessagesPlanID,
+		StoragePlanID:        marina.StoragePlanID,
+		Modules:              modules,
+		InternalAnnouncement: marina.InternalAnnouncement,
+		ExternalAnnouncement: marina.ExternalAnnouncement,
 	}
 }
 
