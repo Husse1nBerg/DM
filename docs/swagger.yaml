@@ -145,6 +145,23 @@ definitions:
       description:
         type: string
     type: object
+  dme.BoatMinimal:
+    properties:
+      id:
+        type: string
+      lastModified:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      name:
+        type: string
+      ownerId:
+        type: string
+      slip:
+        $ref: '#/definitions/dme.Slip'
+    type: object
   dme.BoatSearch:
     properties:
       arrivalDate:
@@ -2359,14 +2376,14 @@ definitions:
       total:
         type: integer
     type: object
-  responses.BoatListResponse:
+  responses.BoatListMinimalResponse:
     properties:
       currentPage:
         example: 1
         type: integer
       data:
         items:
-          $ref: '#/definitions/dme.Boat'
+          $ref: '#/definitions/dme.BoatMinimal'
         type: array
       lastPage:
         example: 10
@@ -4215,7 +4232,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves a paginated list of boats
+      description: Retrieves a paginated list of boats (minimal fields)
       parameters:
       - description: Page number
         in: query
@@ -4236,7 +4253,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.BoatListResponse'
+            $ref: '#/definitions/responses.BoatListMinimalResponse'
         "400":
           description: Bad Request
           schema:

@@ -252,6 +252,25 @@ type BoatList struct {
 	PageSize    int    `json:"pageSize"`
 }
 
+// BoatMinimal represents a minimal boat information set for list by page
+// Only includes fields required by the new API contract
+type BoatMinimal struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	OwnerID      string `json:"ownerId"`
+	Make         string `json:"make"`
+	Model        string `json:"model"`
+	Slip         Slip   `json:"slip"`
+	LastModified string `json:"lastModified"`
+}
+
+type BoatListMinimal struct {
+	Content     []BoatMinimal `json:"content"`
+	CurrentPage int           `json:"currentPage"`
+	MaxPages    int           `json:"maxPages"`
+	PageSize    int           `json:"pageSize"`
+}
+
 // Motor represents motor information
 type Motor struct {
 	Number    int     `json:"number"`

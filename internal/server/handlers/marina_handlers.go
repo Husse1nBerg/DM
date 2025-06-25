@@ -581,14 +581,6 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 				return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
 			}
 			updateParams.Modules = modulesBytes
-		} else {
-			// If modules are not provided, use default modules
-			defaultModules := models.DefaultModules()
-			modulesBytes, err := defaultModules.ToBytes()
-			if err != nil {
-				return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating default modules").JSON(c)
-			}
-			updateParams.Modules = modulesBytes
 		}
 		if req.InternalAnnouncement != nil {
 			updateParams.InternalAnnouncement = req.InternalAnnouncement
@@ -664,9 +656,12 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		IsTest:               currentMarina.IsTest,
 		AddressID:            currentMarina.AddressID,
 		SystemID:             currentMarina.SystemID,
+		NotesMessagesPlanID: currentMarina.NotesMessagesPlanID,
+		StoragePlanID:       currentMarina.StoragePlanID,
+		Modules:             currentMarina.Modules,
 		InternalAnnouncement: currentMarina.InternalAnnouncement,
-		ExternalAnnouncement: currentMarina.ExternalAnnouncement,
-	}
+		ExternalAnnouncement: currentMarina.ExternalAnnouncement
+  }
 
 	// Update only fields that are provided
 	if req.Name != nil {
@@ -719,6 +714,20 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 	if req.ExternalAnnouncement != nil {
 		params.ExternalAnnouncement = req.ExternalAnnouncement
 	}
+	if req.NotesMessagesPlanID != nil {
+		params.NotesMessagesPlanID = *req.NotesMessagesPlanID
+	}
+	if req.StoragePlanID != nil {
+		params.StoragePlanID = *req.StoragePlanID
+	}
+	if req.Modules != nil {
+		modulesBytes, err := req.Modules.ToBytes()
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid modules format").JSON(c)
+		}
+		params.Modules = modulesBytes
+	}
+
 	updatedMarina, err := h.server.DB.Queries().UpdateMarina(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating marina").JSON(c)

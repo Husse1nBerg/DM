@@ -176,7 +176,7 @@ func main() {
 				"profile.write":         true,
 				"users.read":            true,
 				"users.write":           true,
-				"users.delete":          false,
+				"users.delete":          true,
 				"users.create":          true,
 				"organizations.read":    true,
 				"organizations.write":   false,
@@ -244,9 +244,10 @@ func main() {
 				// Core module objects
 				"profile.read":          true,
 				"profile.write":         true,
+				"users.create":          true,
 				"users.read":            true,
-				"users.write":           false,
-				"users.delete":          false,
+				"users.write":           true,
+				"users.delete":          true, // This is for deleting external users. Internal users are secured by settings permissions
 				"organizations.read":    true,
 				"organizations.write":   false,
 				"organizations.delete":  false,
@@ -304,6 +305,7 @@ func main() {
 				// Core module objects
 				"profile.read":        true,
 				"users.read":          true,
+				"users.write":         true,
 				"organizations.read":  true,
 				"marinas.read":        true,
 				"addresses.read":      true,
@@ -359,6 +361,10 @@ func main() {
 				"history.read": true,
 				// Plans module objects
 				"plans.read": true,
+				// Contacts module objects
+				"contacts.read":   true,
+				"contacts.write":  false,
+				"contacts.delete": false,
 			},
 			isActive:       true,
 			isCustomerRole: true,
