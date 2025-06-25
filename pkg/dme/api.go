@@ -191,9 +191,9 @@ func (c *Client) CreateCustomer(ctx context.Context, customer *CustomerCreate, o
 // -----
 
 // BoatsList retrieves a list of boats
-func (c *Client) BoatsList(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*BoatList, error) {
-	var result BoatList
-	endpoint := fmt.Sprintf("/Boats/ListNewOrChanged?Page=%d&PageSize=%d", page, pageSize)
+func (c *Client) BoatsList(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*BoatListMinimal, error) {
+	var result BoatListMinimal
+	endpoint := fmt.Sprintf("/Boats/ListByPage?Page=%d&PageSize=%d", page, pageSize)
 
 	err := c.DoJSONRequest(
 		ctx,

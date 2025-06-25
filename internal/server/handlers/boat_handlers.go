@@ -28,13 +28,13 @@ func NewBoatHandler(server *s.Server) *BoatHandler {
 }
 
 // @Summary List boats by page
-// @Description Retrieves a paginated list of boats
+// @Description Retrieves a paginated list of boats (minimal fields)
 // @Tags Boats
 // @Accept json
 // @Produce json
 // @Param page query int true "Page number" minimum(1)
 // @Param pageSize query int true "Page size" minimum(1) maximum(100)
-// @Success 200 {object} responses.BoatListResponse
+// @Success 200 {object} responses.BoatListMinimalResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
 // @Router /boats/list [get]
@@ -70,7 +70,7 @@ func (h *BoatHandler) ListBoatsByPage(c echo.Context) error {
 	}
 
 	// Convert response to API response format
-	response := responses.ConvertBoatList(dmeResponse.Content, dmeResponse.CurrentPage, dmeResponse.MaxPages, dmeResponse.PageSize)
+	response := responses.ConvertBoatListMinimal(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
