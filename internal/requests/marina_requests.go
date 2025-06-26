@@ -30,23 +30,25 @@ type CreateMarinaRequest struct {
 
 // UpdateMarinaRequest represents the parameters that can be updated for a marina
 type UpdateMarinaRequest struct {
-	Name                *string               `json:"name,omitempty" example:"Harbor Bay Marina"`
-	Email               *string               `json:"email,omitempty" validate:"omitempty,email" example:"info@harborbay.com"`
-	Location            *string               `json:"location,omitempty" example:"Miami Beach"`
-	Phone               *string               `json:"phone,omitempty" example:"+15551234567"`
-	Country             *string               `json:"country,omitempty" example:"USA"`
-	Currency            *string               `json:"currency,omitempty" example:"USD"`
-	WorkingHours        *models.WorkingHours  `json:"workingHours,omitempty"`
-	Website             *string               `json:"website,omitempty" example:"https://harborbay.com"`
-	Image               *string               `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
-	MaxUsers            *int32                `json:"maxUsers,omitempty" example:"100"`
-	IsActive            *bool                 `json:"isActive,omitempty" example:"true"`
-	IsTest              *bool                 `json:"isTest,omitempty" example:"false"`
-	Address             *UpdateAddressRequest `json:"address,omitempty"`
-	SystemID            *string               `json:"systemId,omitempty" example:"SYS123456"`
-	NotesMessagesPlanID *uuid.UUID            `json:"notesMessagesPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
-	StoragePlanID       *uuid.UUID            `json:"storagePlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
-	Modules             *models.Modules       `json:"modules,omitempty"`
+	Name                 *string               `json:"name,omitempty" example:"Harbor Bay Marina"`
+	Email                *string               `json:"email,omitempty" validate:"omitempty,email" example:"info@harborbay.com"`
+	Location             *string               `json:"location,omitempty" example:"Miami Beach"`
+	Phone                *string               `json:"phone,omitempty" example:"+15551234567"`
+	Country              *string               `json:"country,omitempty" example:"USA"`
+	Currency             *string               `json:"currency,omitempty" example:"USD"`
+	WorkingHours         *models.WorkingHours  `json:"workingHours,omitempty"`
+	Website              *string               `json:"website,omitempty" example:"https://harborbay.com"`
+	Image                *string               `json:"image,omitempty" example:"/images/marinas/harborbay.jpg"`
+	MaxUsers             *int32                `json:"maxUsers,omitempty" example:"100"`
+	IsActive             *bool                 `json:"isActive,omitempty" example:"true"`
+	IsTest               *bool                 `json:"isTest,omitempty" example:"false"`
+	Address              *UpdateAddressRequest `json:"address,omitempty"`
+	SystemID             *string               `json:"systemId,omitempty" example:"SYS123456"`
+	NotesMessagesPlanID  *uuid.UUID            `json:"notesMessagesPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
+	StoragePlanID        *uuid.UUID            `json:"storagePlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
+	Modules              *models.Modules       `json:"modules,omitempty"`
+	InternalAnnouncement *string               `json:"internalAnnouncement,omitempty" example:"This is an internal announcement"`
+	ExternalAnnouncement *string               `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
 }
 
 // MarinaIDParam represents the URL parameter for marina ID

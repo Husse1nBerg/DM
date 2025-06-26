@@ -8,6 +8,7 @@ import (
 // Modules represents the feature access control modules for users
 type Modules struct {
 	CustomerVessels     bool `json:"customerVessels"`
+	ESign               bool `json:"esign"`
 	Payments            bool `json:"payments"`
 	ServiceManagement   bool `json:"serviceManagement"`
 	InventoryManagement bool `json:"inventoryManagement"`
@@ -42,6 +43,7 @@ func (m *Modules) String() string {
 func DefaultModules() *Modules {
 	return &Modules{
 		CustomerVessels:     true,
+		ESign:               false,
 		ServiceManagement:   false,
 		Payments:            false,
 		InventoryManagement: false,

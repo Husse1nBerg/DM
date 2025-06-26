@@ -414,24 +414,26 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 
 	// Initialize update parameters with current values
 	updateParams := db.UpdateMarinaParams{
-		ID:                  marinaID,
-		Name:                marina.Name,
-		Email:               marina.Email,
-		Location:            marina.Location,
-		Phone:               marina.Phone,
-		Country:             marina.Country,
-		Currency:            marina.Currency,
-		WorkingHours:        marina.WorkingHours,
-		Website:             marina.Website,
-		Image:               marina.Image,
-		MaxUsers:            marina.MaxUsers,
-		IsActive:            marina.IsActive,
-		IsTest:              marina.IsTest,
-		AddressID:           marina.AddressID,
-		SystemID:            marina.SystemID,
-		NotesMessagesPlanID: marina.NotesMessagesPlanID,
-		StoragePlanID:       marina.StoragePlanID,
-		Modules:             marina.Modules,
+		ID:                   marinaID,
+		Name:                 marina.Name,
+		Email:                marina.Email,
+		Location:             marina.Location,
+		Phone:                marina.Phone,
+		Country:              marina.Country,
+		Currency:             marina.Currency,
+		WorkingHours:         marina.WorkingHours,
+		Website:              marina.Website,
+		Image:                marina.Image,
+		MaxUsers:             marina.MaxUsers,
+		IsActive:             marina.IsActive,
+		IsTest:               marina.IsTest,
+		AddressID:            marina.AddressID,
+		SystemID:             marina.SystemID,
+		NotesMessagesPlanID:  marina.NotesMessagesPlanID,
+		StoragePlanID:        marina.StoragePlanID,
+		Modules:              marina.Modules,
+		InternalAnnouncement: marina.InternalAnnouncement,
+		ExternalAnnouncement: marina.ExternalAnnouncement,
 	}
 
 	if isMultipart {
@@ -491,6 +493,12 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		}
 		if systemID := c.FormValue("systemID"); systemID != "" {
 			updateParams.SystemID = &systemID
+		}
+		if internalAnnouncement := c.FormValue("internalAnnouncement"); internalAnnouncement != "" {
+			updateParams.InternalAnnouncement = &internalAnnouncement
+		}
+		if externalAnnouncement := c.FormValue("externalAnnouncement"); externalAnnouncement != "" {
+			updateParams.ExternalAnnouncement = &externalAnnouncement
 		}
 		// Handle modules in multipart form
 		if modulesStr := c.FormValue("modules"); modulesStr != "" {
@@ -574,6 +582,12 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 			}
 			updateParams.Modules = modulesBytes
 		}
+		if req.InternalAnnouncement != nil {
+			updateParams.InternalAnnouncement = req.InternalAnnouncement
+		}
+		if req.ExternalAnnouncement != nil {
+			updateParams.ExternalAnnouncement = req.ExternalAnnouncement
+		}
 	}
 
 	// Update marina in database
@@ -627,24 +641,26 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 
 	// Build update params with current values that will be overridden
 	params := db.UpdateMarinaParams{
-		ID:                  id,
-		Name:                currentMarina.Name,
-		Email:               currentMarina.Email,
-		Location:            currentMarina.Location,
-		Phone:               currentMarina.Phone,
-		Country:             currentMarina.Country,
-		Currency:            currentMarina.Currency,
-		WorkingHours:        currentMarina.WorkingHours,
-		Website:             currentMarina.Website,
-		Image:               currentMarina.Image,
-		MaxUsers:            currentMarina.MaxUsers,
-		IsActive:            currentMarina.IsActive,
-		IsTest:              currentMarina.IsTest,
-		AddressID:           currentMarina.AddressID,
-		SystemID:            currentMarina.SystemID,
-		NotesMessagesPlanID: currentMarina.NotesMessagesPlanID,
-		StoragePlanID:       currentMarina.StoragePlanID,
-		Modules:             currentMarina.Modules,
+		ID:                   id,
+		Name:                 currentMarina.Name,
+		Email:                currentMarina.Email,
+		Location:             currentMarina.Location,
+		Phone:                currentMarina.Phone,
+		Country:              currentMarina.Country,
+		Currency:             currentMarina.Currency,
+		WorkingHours:         currentMarina.WorkingHours,
+		Website:              currentMarina.Website,
+		Image:                currentMarina.Image,
+		MaxUsers:             currentMarina.MaxUsers,
+		IsActive:             currentMarina.IsActive,
+		IsTest:               currentMarina.IsTest,
+		AddressID:            currentMarina.AddressID,
+		SystemID:             currentMarina.SystemID,
+		NotesMessagesPlanID:  currentMarina.NotesMessagesPlanID,
+		StoragePlanID:        currentMarina.StoragePlanID,
+		Modules:              currentMarina.Modules,
+		InternalAnnouncement: currentMarina.InternalAnnouncement,
+		ExternalAnnouncement: currentMarina.ExternalAnnouncement,
 	}
 
 	// Update only fields that are provided
@@ -691,6 +707,12 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 	}
 	if req.SystemID != nil {
 		params.SystemID = req.SystemID
+	}
+	if req.InternalAnnouncement != nil {
+		params.InternalAnnouncement = req.InternalAnnouncement
+	}
+	if req.ExternalAnnouncement != nil {
+		params.ExternalAnnouncement = req.ExternalAnnouncement
 	}
 	if req.NotesMessagesPlanID != nil {
 		params.NotesMessagesPlanID = *req.NotesMessagesPlanID

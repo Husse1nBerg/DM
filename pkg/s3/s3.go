@@ -106,3 +106,32 @@ func (s *S3Service) DeleteFileFromS3(ctx context.Context, key string) error {
 
 	return nil
 }
+
+// UpdateFile updates an existing file in S3 at the specified key
+func (s *S3Service) UpdateFile(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader, key string) error {
+	// Read file content
+	fileBytes := make([]byte, fileHeader.Size)
+	_, err := file.Read(fileBytes)
+	if err != nil {
+		return fmt.Errorf("failed to read file content: %w", err)
+	}
+
+	// Reset file pointer to beginning
+	file.Seek(0, 0)
+
+	// Create the upload input parameters
+	uploadInput := &s3.PutObjectInput{
+		Bucket:      aws.String(s.bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(fileBytes),
+		ContentType: aws.String(fileHeader.Header.Get("Content-Type")),
+	}
+
+	// Upload the file (this will overwrite the existing file)
+	_, err = s.client.PutObject(ctx, uploadInput)
+	if err != nil {
+		return fmt.Errorf("failed to update file in S3: %w", err)
+	}
+
+	return nil
+}

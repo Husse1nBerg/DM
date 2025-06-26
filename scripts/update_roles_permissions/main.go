@@ -176,7 +176,7 @@ func main() {
 				"profile.write":         true,
 				"users.read":            true,
 				"users.write":           true,
-				"users.delete":          false,
+				"users.delete":          true,
 				"users.create":          true,
 				"organizations.read":    true,
 				"organizations.write":   false,
@@ -247,7 +247,7 @@ func main() {
 				"users.create":          true,
 				"users.read":            true,
 				"users.write":           true,
-				"users.delete":          false,
+				"users.delete":          true, // This is for deleting external users. Internal users are secured by settings permissions
 				"organizations.read":    true,
 				"organizations.write":   false,
 				"organizations.delete":  false,
