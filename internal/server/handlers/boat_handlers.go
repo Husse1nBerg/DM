@@ -51,8 +51,13 @@ func (h *BoatHandler) ListBoatsByPage(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
@@ -97,8 +102,13 @@ func (h *BoatHandler) RetrieveBoat(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
@@ -138,8 +148,13 @@ func (h *BoatHandler) RetrieveBoatsForCustomer(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
@@ -185,8 +200,13 @@ func (h *BoatHandler) SearchBoats(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
@@ -246,8 +266,13 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
@@ -447,8 +472,13 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
