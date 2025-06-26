@@ -40,7 +40,6 @@ type RedisInfoResponse struct {
 	Message    string `json:"message,omitempty"`
 	Latency    string `json:"latency,omitempty"`
 	KeyPrefix  string `json:"key_prefix"`
-	Database   int    `json:"database"`
 }
 
 // NewRedisSetResponse creates a new successful Redis SET response
@@ -88,7 +87,7 @@ func NewRedisPingResponse(latency time.Duration) *RedisPingResponse {
 }
 
 // NewRedisInfoResponse creates a new Redis info response
-func NewRedisInfoResponse(connected bool, serverInfo string, latency time.Duration, keyPrefix string, database int) *RedisInfoResponse {
+func NewRedisInfoResponse(connected bool, serverInfo string, latency time.Duration, keyPrefix string) *RedisInfoResponse {
 	return &RedisInfoResponse{
 		Success:    true,
 		Connected:  connected,
@@ -96,6 +95,5 @@ func NewRedisInfoResponse(connected bool, serverInfo string, latency time.Durati
 		Message:    "Redis information retrieved successfully",
 		Latency:    latency.String(),
 		KeyPrefix:  keyPrefix,
-		Database:   database,
 	}
 }
