@@ -22,6 +22,7 @@ type Server struct {
 	S3Service       *s3.S3Service
 	DocumentService *s3.S3Service
 	ImageService    *s3.ImageService
+	ESignService    *s3.ESignService
 	DocURLService   *s3.DocumentService
 	DME             *dme.Client
 	SendGrid        *sendgrid.Client
@@ -52,9 +53,17 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 	// Initialize document URL service with document storage and BaseURL from config
 	docURLService := s3.NewDocumentService(documentService, cfg.DocumentStorage.BaseURL)
 
+	// Initialize e-signature service with S3 and BaseURL from config
+	esignS3Service, err := s3.NewS3Service(cfg.ESign)
+	if err != nil {
+		logger.Zap.Error("Failed to initialize e-signature service", err, "initialization")
+	}
+	esignService := s3.NewESignService(esignS3Service, cfg.ESign.BaseURL)
+
 	// Set the image service in the responses package
 	utils.SetImageService(imageService)
 	utils.SetDocumentService(docURLService)
+	utils.SetESignService(esignService)
 
 	return &Server{
 		Config:          cfg,
@@ -65,6 +74,7 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 		S3Service:       s3Service,
 		DocumentService: documentService,
 		ImageService:    imageService,
+		ESignService:    esignService,
 		DocURLService:   docURLService,
 		DME:             dme.NewClientFromConfig(cfg, logger, dbConn),
 		SendGrid:        sendgrid.NewClient(cfg),

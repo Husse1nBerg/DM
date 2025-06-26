@@ -263,6 +263,18 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["PUT /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "contacts", Action: "write"}
 	routeMap["DELETE /api/v1/marinas/:id/contacts/:contactId"] = RoutePermission{Object: "contacts", Action: "delete"}
 
+	// E-sign routes
+	routeMap["GET /api/v1/esign/templates"] = RoutePermission{Object: "esign_templates", Action: "read"}
+	routeMap["GET /api/v1/esign/templates/:id"] = RoutePermission{Object: "esign_templates", Action: "read"}
+	routeMap["POST /api/v1/esign/templates"] = RoutePermission{Object: "esign_templates", Action: "create"}
+	routeMap["PUT /api/v1/esign/templates/:id"] = RoutePermission{Object: "esign_templates", Action: "write"}
+	routeMap["DELETE /api/v1/esign/templates/:id"] = RoutePermission{Object: "esign_templates", Action: "delete"}
+	routeMap["GET /api/v1/esign/documents"] = RoutePermission{Object: "esign_documents", Action: "read"}
+	routeMap["GET /api/v1/esign/documents/:id"] = RoutePermission{Object: "esign_documents", Action: "read"}
+	routeMap["POST /api/v1/esign/documents"] = RoutePermission{Object: "esign_documents", Action: "create"}
+	routeMap["PUT /api/v1/esign/documents/:id"] = RoutePermission{Object: "esign_documents", Action: "write"}
+	routeMap["DELETE /api/v1/esign/documents/:id"] = RoutePermission{Object: "esign_documents", Action: "delete"}
+
 	return routeMap
 }
 

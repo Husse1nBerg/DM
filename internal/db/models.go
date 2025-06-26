@@ -87,6 +87,35 @@ type Document struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
+type EsignDocument struct {
+	ID             uuid.UUID
+	TemplateID     uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Type           string
+	Status         string
+	BlobUrl        string
+	BlobMetadata   []byte
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
+type EsignTemplate struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Name           string
+	Description    *string
+	Type           string
+	Status         string
+	BlobUrl        string
+	BlobMetadata   []byte
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
 type Invite struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
@@ -98,31 +127,33 @@ type Invite struct {
 }
 
 type Marina struct {
-	ID                  uuid.UUID
-	OrganizationID      uuid.UUID
-	Name                string
-	Email               string
-	Location            *string
-	Phone               *string
-	Country             *string
-	Currency            *string
-	WorkingHours        []byte
-	Website             *string
-	Image               *string
-	MaxUsers            *int32
-	IsActive            *bool
-	IsTest              *bool
-	CreatedAt           pgtype.Timestamp
-	UpdatedAt           pgtype.Timestamp
-	DeletedAt           pgtype.Timestamp
-	AddressID           uuid.UUID
-	SystemID            *string
-	StorageUsage        *int64
-	EmailUsage          *int16
-	TextUsage           *int16
-	NotesMessagesPlanID uuid.UUID
-	StoragePlanID       uuid.UUID
-	Modules             []byte
+	ID                   uuid.UUID
+	OrganizationID       uuid.UUID
+	Name                 string
+	Email                string
+	Location             *string
+	Phone                *string
+	Country              *string
+	Currency             *string
+	WorkingHours         []byte
+	Website              *string
+	Image                *string
+	MaxUsers             *int32
+	IsActive             *bool
+	IsTest               *bool
+	CreatedAt            pgtype.Timestamp
+	UpdatedAt            pgtype.Timestamp
+	DeletedAt            pgtype.Timestamp
+	AddressID            uuid.UUID
+	SystemID             *string
+	StorageUsage         *int64
+	EmailUsage           *int16
+	TextUsage            *int16
+	NotesMessagesPlanID  uuid.UUID
+	StoragePlanID        uuid.UUID
+	Modules              []byte
+	InternalAnnouncement *string
+	ExternalAnnouncement *string
 }
 
 type MarinaGallery struct {

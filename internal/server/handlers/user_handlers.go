@@ -604,11 +604,14 @@ func (g *UserHandler) AssignUserToMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
-		MarinaID:     req.MarinaID,
-		CustomerID:   *req.CustomerID,
-		EnablePortal: utils.Pointer(true),
-	})
+	// Only upsert customer settings if this is a customer user with a customer ID
+	if *user.IsCustomer && req.CustomerID != nil {
+		queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
+			MarinaID:     req.MarinaID,
+			CustomerID:   *req.CustomerID,
+			EnablePortal: utils.Pointer(true),
+		})
+	}
 
 	return c.NoContent(http.StatusNoContent)
 }

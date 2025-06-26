@@ -99,7 +99,9 @@ SET name = $2,
     text_usage = COALESCE($17, text_usage),
     notes_messages_plan_id = $18,
     storage_plan_id = $19,
-    modules = $20
+    modules = $20,
+    internal_announcement = $21,
+    external_announcement = $22
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec
