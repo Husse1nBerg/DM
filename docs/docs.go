@@ -14134,9 +14134,6 @@ const docTemplate = `{
                 "connected": {
                     "type": "boolean"
                 },
-                "database": {
-                    "type": "integer"
-                },
                 "key_prefix": {
                     "type": "string"
                 },

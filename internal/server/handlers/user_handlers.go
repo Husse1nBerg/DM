@@ -134,9 +134,37 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 
 	email := utils.LowerCase(req.Email)
 	// Check if the email is already taken
-	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+		// Email exists, check if user is already assigned to this marina
+		canAccess, err := queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if canAccess {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
+		}
+		// Assign the existing user to the marina with CustomerID
+		assignUserToMarina := db.AssignUserToMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		}
+		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Upsert customer settings as in the original logic
+		_, err = queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
+			MarinaID:     req.MarinaID,
+			EnablePortal: utils.Pointer(true),
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		return responses.NewMessageResponse(http.StatusOK, "User assigned to marina").JSON(c)
 	}
 	username := req.Username
 	if username == "" {
@@ -1329,9 +1357,56 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 
 	// Check if the email is already taken
 	email := utils.LowerCase(req.Email)
-	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+		// Email exists, check if user is already assigned to this marina
+		canAccess, err := queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if canAccess {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
+		}
+		// Assign the existing user to the marina with CustomerID
+		assignUserToMarina := db.AssignUserToMarinaParams{
+			UserID:     userByEmail.ID,
+			MarinaID:   req.MarinaID,
+			CustomerID: req.CustomerID,
+		}
+		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Upsert customer settings as in the original logic
+		_, err = queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
+			MarinaID:     req.MarinaID,
+			CustomerID:   *req.CustomerID,
+			EnablePortal: utils.Pointer(true),
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Send assigned_to_marina email
+		orgLogo := ""
+		if organization.Image != nil {
+			orgLogo = *organization.Image
+		}
+		assignedData := sendgrid.AssignedToMarinaTemplateData{
+			CustomerLogo:    orgLogo,
+			BusinessName:    marina.Name,
+			UserName:        userByEmail.FirstName,
+			HomeURL:         cfg.App.HomeURL(),
+			TermsConditions: cfg.App.TermsConditionsURL(),
+		}
+		_, _, _ = g.server.SendGrid.SendAssignedToMarinaEmail(
+			[]string{userByEmail.Email},
+			"You have been assigned to a new marina",
+			assignedData,
+		)
+		return responses.NewMessageResponse(http.StatusOK, "User assigned to marina").JSON(c)
 	}
 	username := req.Username
 	if username == "" {
@@ -1535,9 +1610,46 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 
 	// Check if the email is already taken
 	email := utils.LowerCase(req.Email)
-	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+		// Email exists, check if user is already assigned to this marina
+		canAccess, err := queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if canAccess {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
+		}
+		// Assign the existing user to the marina
+		assignUserToMarina := db.AssignUserToMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		}
+		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Send assigned_to_marina email
+		orgLogo := ""
+		if organization.Image != nil {
+			orgLogo = *organization.Image
+		}
+		assignedData := sendgrid.AssignedToMarinaTemplateData{
+			CustomerLogo:    orgLogo,
+			BusinessName:    marina.Name,
+			UserName:        userByEmail.FirstName,
+			HomeURL:         cfg.App.HomeURL(),
+			TermsConditions: cfg.App.TermsConditionsURL(),
+		}
+		_, _, _ = g.server.SendGrid.SendAssignedToMarinaEmail(
+			[]string{userByEmail.Email},
+			"You have been assigned to a new marina",
+			assignedData,
+		)
+		return responses.NewMessageResponse(http.StatusOK, "User assigned to marina").JSON(c)
 	}
 	username := req.Username
 	if username == "" {
