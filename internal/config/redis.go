@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type RedisConfig struct {
-	Host      string `mapstructure:"Host"`
-	Port      int    `mapstructure:"Port"`
-	Username  string `mapstructure:"Username"`
-	Password  string `mapstructure:"Password"`
-	KeyPrefix string `mapstructure:"KeyPrefix"`
-	MainDB    int    `mapstructure:"MainDB"`
-	TaskDB    int    `mapstructure:"TaskDB"`
+	Host       string `mapstructure:"Host"`
+	Port       int    `mapstructure:"Port"`
+	Username   string `mapstructure:"Username"`
+	Password   string `mapstructure:"Password"`
+	KeyPrefix  string `mapstructure:"KeyPrefix"`
+	TLSEnabled bool   `mapstructure:"TLSEnabled"`
 }
 
 func LoadRedisConfig() RedisConfig {
@@ -24,25 +24,6 @@ func LoadRedisConfig() RedisConfig {
 		parsedPort, err := strconv.Atoi(portStr)
 		if err == nil {
 			port = parsedPort
-		}
-	}
-
-	// Default database indices
-	mainDB := 0
-	mainDBStr := os.Getenv("REDIS_DB")
-	if mainDBStr != "" {
-		parsedMainDB, err := strconv.Atoi(mainDBStr)
-		if err == nil {
-			mainDB = parsedMainDB
-		}
-	}
-
-	taskDB := 1
-	taskDBStr := os.Getenv("REDIS_TASK_DB")
-	if taskDBStr != "" {
-		parsedTaskDB, err := strconv.Atoi(taskDBStr)
-		if err == nil {
-			taskDB = parsedTaskDB
 		}
 	}
 
@@ -57,14 +38,23 @@ func LoadRedisConfig() RedisConfig {
 		keyPrefix = "dm:"
 	}
 
+	// TLS configuration
+	tlsEnabled := true // Default to true for AWS ElastiCache
+	tlsEnabledStr := os.Getenv("REDIS_TLS_ENABLED")
+	if tlsEnabledStr != "" {
+		// Only disable TLS if explicitly set to false or 0
+		if strings.ToLower(tlsEnabledStr) == "false" || tlsEnabledStr == "0" {
+			tlsEnabled = false
+		}
+	}
+
 	return RedisConfig{
-		Host:      host,
-		Port:      port,
-		Username:  os.Getenv("REDIS_USERNAME"),
-		Password:  os.Getenv("REDIS_PASSWORD"),
-		KeyPrefix: keyPrefix,
-		MainDB:    mainDB,
-		TaskDB:    taskDB,
+		Host:       host,
+		Port:       port,
+		Username:   os.Getenv("REDIS_USERNAME"),
+		Password:   os.Getenv("REDIS_PASSWORD"),
+		KeyPrefix:  keyPrefix,
+		TLSEnabled: tlsEnabled,
 	}
 }
 

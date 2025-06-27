@@ -50,7 +50,6 @@ func (h *RedisHandler) TestRedisConnection(c echo.Context) error {
 		serverInfo,
 		latency,
 		h.server.Config.Redis.KeyPrefix,
-		h.server.Config.Redis.MainDB,
 	)
 
 	return c.JSON(http.StatusOK, response)
@@ -180,7 +179,6 @@ func (h *RedisHandler) TestDualDatabaseConnection(c echo.Context) error {
 		"Both cache and task databases are connected",
 		latency,
 		h.server.Config.Redis.KeyPrefix,
-		h.server.Config.Redis.MainDB,
 	)
 
 	h.server.Logger.Zap.Debugw("Dual database connection test completed",

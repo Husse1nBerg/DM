@@ -56,8 +56,8 @@ func main() {
 	testNotificationScenario(ctx, redisClient)
 
 	fmt.Println("\n🎉 All dual database tests passed!")
-	fmt.Printf("📊 Redis Config: Host=%s, Cache DB=%d, Task DB=%d, KeyPrefix=%s\n",
-		cfg.Redis.Host, cfg.Redis.MainDB, cfg.Redis.TaskDB, cfg.Redis.KeyPrefix)
+	fmt.Printf("📊 Redis Config: Host=%s, KeyPrefix=%s\n",
+		cfg.Redis.Host, cfg.Redis.KeyPrefix)
 }
 
 func testCacheOperations(ctx context.Context, client *redis.Client) {

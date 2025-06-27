@@ -55,14 +55,24 @@ func (h *CustomerHandler) ListCustomersByPage(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
 
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
 
 	dmeResponse, err := h.server.DME.CustomersList(ctx, req.Page, req.PageSize, orgID, *systemID)
 	if err != nil {
@@ -100,14 +110,24 @@ func (h *CustomerHandler) RetrieveCustomer(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
 
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
 
 	dmeResponse, err := h.server.DME.CustomerRetrieve(ctx, req.CustomerID, orgID, *systemID)
 	if err != nil {
@@ -146,14 +166,24 @@ func (h *CustomerHandler) SearchCustomers(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
 
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
 
 	dmeResponse, err := h.server.DME.CustomerSearch(ctx, req.SearchString, req.DirectHit, orgID, *systemID)
 	if err != nil {
@@ -192,14 +222,24 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
 
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
 
 	// Get existing customer first
 	existingCustomer, err := h.server.DME.CustomerRetrieve(ctx, req.ID, orgID, *systemID)
@@ -376,14 +416,24 @@ func (h *CustomerHandler) ListCustomersShortByPage(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
 
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
 
 	dmeResponse, err := h.server.DME.CustomersListShort(ctx, req.Page, req.PageSize, orgID, *systemID)
 	if err != nil {
@@ -430,14 +480,24 @@ func (h *CustomerHandler) CreateCustomer(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaIDStr := claims.MarinaId
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaIDStr)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}
 
 	orgID := marina.OrganizationID
 	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
 
 	// Convert request to dme.CustomerCreate
 	customer := &dme.CustomerCreate{
