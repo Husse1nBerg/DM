@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -21,21 +22,36 @@ type Client struct {
 
 // NewClient creates a new Redis client instance with separate cache and task databases
 func NewClient(cfg config.RedisConfig, logger *logger.Logger) *Client {
-	// Cache database (DB 0) - for fast, temporary data
-	cacheClient := redis.NewClient(&redis.Options{
+	// Base Redis options
+	baseOptions := &redis.Options{
 		Addr:     cfg.Addr(),
 		Username: cfg.Username,
 		Password: cfg.Password,
-		DB:       cfg.MainDB, // Usually 0
-	})
+		DB:       0, // Always use DB 0 for cluster compatibility
+	}
 
-	// Task database (DB 1) - for queues and persistent tasks
-	taskClient := redis.NewClient(&redis.Options{
-		Addr:     cfg.Addr(),
-		Username: cfg.Username,
-		Password: cfg.Password,
-		DB:       cfg.TaskDB, // Usually 1
-	})
+	// Configure TLS if enabled
+	if cfg.TLSEnabled {
+		baseOptions.TLSConfig = &tls.Config{
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: false,
+		}
+	}
+
+	// Cache database (DB 0) - for fast, temporary data
+	cacheOptions := *baseOptions
+	cacheClient := redis.NewClient(&cacheOptions)
+
+	// Task database - use same connection as cache for cluster compatibility
+	// We'll differentiate using key prefixes instead of separate databases
+	taskOptions := *baseOptions
+	taskClient := redis.NewClient(&taskOptions)
+
+	logger.Zap.Infow("Redis client initialized",
+		"host", cfg.Host,
+		"port", cfg.Port,
+		"tls_enabled", cfg.TLSEnabled,
+		"cluster_mode", "compatible")
 
 	return &Client{
 		cache:  cacheClient,
@@ -162,7 +178,7 @@ func (c *Client) TTLTask(ctx context.Context, key string) (time.Duration, error)
 
 // EnqueueTask adds a task to a queue (LPUSH)
 func (c *Client) EnqueueTask(ctx context.Context, queue string, task interface{}) error {
-	queueKey := c.config.KeyPrefix + "queue:" + queue
+	queueKey := c.config.KeyPrefix + "task:queue:" + queue
 
 	// JSON encode the task if it's not a string
 	var taskData string
@@ -189,7 +205,7 @@ func (c *Client) EnqueueTask(ctx context.Context, queue string, task interface{}
 
 // DequeueTask removes and returns a task from a queue (RPOP)
 func (c *Client) DequeueTask(ctx context.Context, queue string) (string, error) {
-	queueKey := c.config.KeyPrefix + "queue:" + queue
+	queueKey := c.config.KeyPrefix + "task:queue:" + queue
 
 	val, err := c.tasks.RPop(ctx, queueKey).Result()
 	if err != nil {
@@ -206,7 +222,7 @@ func (c *Client) DequeueTask(ctx context.Context, queue string) (string, error) 
 
 // QueueLength returns the length of a queue
 func (c *Client) QueueLength(ctx context.Context, queue string) (int64, error) {
-	queueKey := c.config.KeyPrefix + "queue:" + queue
+	queueKey := c.config.KeyPrefix + "task:queue:" + queue
 
 	length, err := c.tasks.LLen(ctx, queueKey).Result()
 	if err != nil {
@@ -289,7 +305,13 @@ func (c *Client) TTL(ctx context.Context, key string) (time.Duration, error) {
 // === INTERNAL HELPER METHODS ===
 
 func (c *Client) setToDatabase(ctx context.Context, db *redis.Client, dbName, key string, value interface{}, expiration time.Duration) error {
-	prefixedKey := c.config.KeyPrefix + key
+	// Create different prefixes for cache vs task operations to simulate separate databases
+	var prefixedKey string
+	if dbName == "cache" {
+		prefixedKey = c.config.KeyPrefix + "cache:" + key
+	} else {
+		prefixedKey = c.config.KeyPrefix + "task:" + key
+	}
 
 	// Handle different value types
 	var val interface{}
@@ -316,7 +338,13 @@ func (c *Client) setToDatabase(ctx context.Context, db *redis.Client, dbName, ke
 }
 
 func (c *Client) getFromDatabase(ctx context.Context, db *redis.Client, dbName, key string) (string, error) {
-	prefixedKey := c.config.KeyPrefix + key
+	// Create different prefixes for cache vs task operations
+	var prefixedKey string
+	if dbName == "cache" {
+		prefixedKey = c.config.KeyPrefix + "cache:" + key
+	} else {
+		prefixedKey = c.config.KeyPrefix + "task:" + key
+	}
 
 	val, err := db.Get(ctx, prefixedKey).Result()
 	if err != nil {
@@ -336,10 +364,14 @@ func (c *Client) deleteFromDatabase(ctx context.Context, db *redis.Client, dbNam
 		return nil
 	}
 
-	// Add prefix to all keys
+	// Add appropriate prefixes to all keys
 	prefixedKeys := make([]string, len(keys))
 	for i, key := range keys {
-		prefixedKeys[i] = c.config.KeyPrefix + key
+		if dbName == "cache" {
+			prefixedKeys[i] = c.config.KeyPrefix + "cache:" + key
+		} else {
+			prefixedKeys[i] = c.config.KeyPrefix + "task:" + key
+		}
 	}
 
 	deleted, err := db.Del(ctx, prefixedKeys...).Result()
@@ -353,7 +385,13 @@ func (c *Client) deleteFromDatabase(ctx context.Context, db *redis.Client, dbNam
 }
 
 func (c *Client) existsInDatabase(ctx context.Context, db *redis.Client, dbName, key string) (bool, error) {
-	prefixedKey := c.config.KeyPrefix + key
+	// Create different prefixes for cache vs task operations
+	var prefixedKey string
+	if dbName == "cache" {
+		prefixedKey = c.config.KeyPrefix + "cache:" + key
+	} else {
+		prefixedKey = c.config.KeyPrefix + "task:" + key
+	}
 
 	count, err := db.Exists(ctx, prefixedKey).Result()
 	if err != nil {
@@ -365,7 +403,13 @@ func (c *Client) existsInDatabase(ctx context.Context, db *redis.Client, dbName,
 }
 
 func (c *Client) ttlInDatabase(ctx context.Context, db *redis.Client, dbName, key string) (time.Duration, error) {
-	prefixedKey := c.config.KeyPrefix + key
+	// Create different prefixes for cache vs task operations
+	var prefixedKey string
+	if dbName == "cache" {
+		prefixedKey = c.config.KeyPrefix + "cache:" + key
+	} else {
+		prefixedKey = c.config.KeyPrefix + "task:" + key
+	}
 
 	ttl, err := db.TTL(ctx, prefixedKey).Result()
 	if err != nil {
