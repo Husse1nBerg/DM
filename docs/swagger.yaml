@@ -9109,6 +9109,48 @@ paths:
       summary: Get marina users
       tags:
       - User
+  /user/marina/{marinaId}/not-assigned:
+    get:
+      consumes:
+      - application/json
+      description: Get users who are not assigned to a specific marina (through user_marinas
+        table)
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users not assigned to the marina
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get users not assigned to a marina
+      tags:
+      - User
   /user/marina/assign:
     post:
       consumes:

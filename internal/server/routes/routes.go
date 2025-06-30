@@ -128,6 +128,7 @@ func RegisterRoutes(s *s.Server) {
 	users.GET("/organization/:organizationId", userHandler.GetUsersByOrganizationHandler)
 	users.GET("/marina/:marinaId", userHandler.GetUsersByMarinaHandler)
 	users.GET("/marina/:marinaId/assigned", userHandler.GetMarinaUsersList)
+	users.GET("/marina/:marinaId/not-assigned", userHandler.GetUsersNotAssignedToMarinaHandler)
 
 	// User-marina assignments
 	users.POST("/marina/assign", userHandler.AssignUserToMarinaHandler)
