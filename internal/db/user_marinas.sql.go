@@ -28,6 +28,27 @@ func (q *Queries) AssignUserToMarina(ctx context.Context, arg AssignUserToMarina
 	return err
 }
 
+const countCustomerMarinaUsers = `-- name: CountCustomerMarinaUsers :one
+SELECT COUNT(*)
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE um.marina_id = $1
+    AND um.customer_id = $2
+    AND u.deleted_at IS NULL
+`
+
+type CountCustomerMarinaUsersParams struct {
+	MarinaID   uuid.UUID
+	CustomerID *string
+}
+
+func (q *Queries) CountCustomerMarinaUsers(ctx context.Context, arg CountCustomerMarinaUsersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCustomerMarinaUsers, arg.MarinaID, arg.CustomerID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const customerMarinaUser = `-- name: CustomerMarinaUser :one
 SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics
 FROM users u
@@ -74,6 +95,76 @@ func (q *Queries) CustomerMarinaUser(ctx context.Context, arg CustomerMarinaUser
 		&i.UserAnalytics,
 	)
 	return i, err
+}
+
+const getCustomerMarinaUsersPaginated = `-- name: GetCustomerMarinaUsersPaginated :many
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE um.marina_id = $1
+    AND um.customer_id = $2
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type GetCustomerMarinaUsersPaginatedParams struct {
+	MarinaID   uuid.UUID
+	CustomerID *string
+	Limit      int32
+	Offset     int32
+}
+
+func (q *Queries) GetCustomerMarinaUsersPaginated(ctx context.Context, arg GetCustomerMarinaUsersPaginatedParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getCustomerMarinaUsersPaginated,
+		arg.MarinaID,
+		arg.CustomerID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getMarinaUsersList = `-- name: GetMarinaUsersList :many

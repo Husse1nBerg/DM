@@ -58,3 +58,19 @@ FROM users u
 WHERE u.id = $1
     AND um.marina_id = $2
     AND u.deleted_at IS NULL;
+-- name: GetCustomerMarinaUsersPaginated :many
+SELECT u.*
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE um.marina_id = $1
+    AND um.customer_id = $2
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4;
+-- name: CountCustomerMarinaUsers :one
+SELECT COUNT(*)
+FROM users u
+    JOIN user_marinas um ON u.id = um.user_id
+WHERE um.marina_id = $1
+    AND um.customer_id = $2
+    AND u.deleted_at IS NULL;

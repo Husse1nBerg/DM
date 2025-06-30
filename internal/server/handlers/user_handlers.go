@@ -1845,26 +1845,26 @@ func (g *UserHandler) GetUsersByCustomerIDHandler(c echo.Context) error {
 	queries := g.server.DB.Queries()
 
 	// Get paginated users by marina
-	params := db.GetMarinaCustomerUserByCustomerIDPaginatedParams{
+	params := db.GetCustomerMarinaUsersPaginatedParams{
 		MarinaID:   marinaID,
 		CustomerID: customerID,
 		Limit:      pagination.PageSize,
 		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetMarinaCustomerUserByCustomerIDPaginated(c.Request().Context(), params)
+	users, err := queries.GetCustomerMarinaUsersPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Get total count for pagination
-	allUsers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
+	allUsers, err := queries.CountCustomerMarinaUsers(c.Request().Context(), db.CountCustomerMarinaUsersParams{
 		MarinaID:   marinaID,
 		CustomerID: customerID,
 	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-	total := int64(len(allUsers))
+	total := allUsers
 
 	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
 }
