@@ -1868,3 +1868,51 @@ func (g *UserHandler) GetUsersByCustomerIDHandler(c echo.Context) error {
 
 	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
 }
+
+// GetUsersNotAssignedToMarinaHandler gets users not assigned to a specific marina
+//
+//	@Summary		Get users not assigned to a marina
+//	@Description	Get users who are not assigned to a specific marina (through user_marinas table)
+//	@Tags		User
+//	@Accept		json
+//	@Produce	json
+//	@Param		marinaId	path	string	true	"Marina ID"
+//	@Param		page		query	int	false	"Page number" default(1)
+//	@Param		pageSize	query	int	false	"Page size" default(10)
+//	@Success	200	{object} responses.UserListResponse "List of users not assigned to the marina"
+//	@Failure	400	{object} responses.Error "Bad request"
+//	@Failure	500	{object} responses.Error "Server error"
+//	@Security	ApiKeyAuth
+//
+//	@Router		/user/marina/{marinaId}/not-assigned [get]
+func (g *UserHandler) GetUsersNotAssignedToMarinaHandler(c echo.Context) error {
+	// Parse marina ID
+	marinaIDStr := c.Param("marinaId")
+	marinaID, err := uuid.Parse(marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
+	}
+
+	// Parse pagination params
+	pagination := new(requests.PaginationQuery)
+	if err := c.Bind(pagination); err != nil {
+		pagination.Page = 1
+		pagination.PageSize = 10
+	}
+
+	queries := g.server.DB.Queries()
+	params := db.GetUsersNotAssignedToMarinaPaginatedParams{
+		MarinaID: marinaID,
+		Limit:    pagination.PageSize,
+		Offset:   (pagination.Page - 1) * pagination.PageSize,
+	}
+	users, err := queries.GetUsersNotAssignedToMarinaPaginated(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total, err := queries.CountUsersNotAssignedToMarina(c.Request().Context(), marinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
+}

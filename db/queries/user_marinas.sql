@@ -74,3 +74,23 @@ FROM users u
 WHERE um.marina_id = $1
     AND um.customer_id = $2
     AND u.deleted_at IS NULL;
+-- name: GetUsersNotAssignedToMarinaPaginated :many
+SELECT u.*
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM user_marinas um
+    WHERE um.user_id = u.id
+      AND um.marina_id = $1
+  )
+ORDER BY u.created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: CountUsersNotAssignedToMarina :one
+SELECT COUNT(*)
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM user_marinas um
+    WHERE um.user_id = u.id
+      AND um.marina_id = $1
+  );
