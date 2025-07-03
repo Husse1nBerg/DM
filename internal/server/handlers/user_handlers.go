@@ -479,20 +479,20 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 
 	queries := g.server.DB.Queries()
 
-	// Get paginated users by marina
-	params := db.GetUsersByMarinaPaginatedParams{
+	// Use user_marinas table for filtering
+	params := db.GetMarinaUsersListPaginatedParams{
 		MarinaID:   marinaID,
 		IsCustomer: isCustomer,
 		Limit:      pagination.PageSize,
 		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	userRows, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
+	userRows, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Get total count for pagination
-	allUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
+	allUsers, err := queries.GetMarinaUsersList(c.Request().Context(), db.GetMarinaUsersListParams{
 		MarinaID:   marinaID,
 		IsCustomer: isCustomer,
 	})
@@ -501,10 +501,28 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 	}
 	total := int64(len(allUsers))
 
+	// Filter by customer_id: if isCustomer==true, customer_id must not be nil; if isCustomer==false, customer_id must be nil
+	filteredUserRows := make([]db.GetMarinaUsersListPaginatedRow, 0, len(userRows))
+	if isCustomer != nil {
+		for _, user := range userRows {
+			if *isCustomer {
+				if user.CustomerID != nil {
+					filteredUserRows = append(filteredUserRows, user)
+				}
+			} else {
+				if user.CustomerID == nil {
+					filteredUserRows = append(filteredUserRows, user)
+				}
+			}
+		}
+	} else {
+		filteredUserRows = userRows
+	}
+
 	// Create user responses with server instance for DME client
-	userResponses := make([]responses.UserResponse, len(userRows))
-	for i, user := range userRows {
-		response := responses.NewUserResponseFromRow(user, g.server)
+	userResponses := make([]responses.UserResponse, len(filteredUserRows))
+	for i, user := range filteredUserRows {
+		response := responses.NewUserResponseFromMarinaListRow(user, g.server)
 		if response != nil {
 			userResponses[i] = *response
 		}
