@@ -479,54 +479,33 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 
 	queries := g.server.DB.Queries()
 
-	// Use user_marinas table for filtering
-	params := db.GetMarinaUsersListPaginatedParams{
-		MarinaID:   marinaID,
-		IsCustomer: isCustomer,
-		Limit:      pagination.PageSize,
-		Offset:     (pagination.Page - 1) * pagination.PageSize,
-	}
-	userRows, err := queries.GetMarinaUsersListPaginated(c.Request().Context(), params)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-	}
-
-	// Get total count for pagination
-	allUsers, err := queries.GetMarinaUsersList(c.Request().Context(), db.GetMarinaUsersListParams{
-		MarinaID:   marinaID,
-		IsCustomer: isCustomer,
-	})
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-	}
-	total := int64(len(allUsers))
-
-	// Filter by customer_id: if isCustomer==true, customer_id must not be nil; if isCustomer==false, customer_id must be nil
-	filteredUserRows := make([]db.GetMarinaUsersListPaginatedRow, 0, len(userRows))
+	// Use the new ListUserMarinasAssignmentsPaginated query
+	var isCustomerVal bool
 	if isCustomer != nil {
-		for _, user := range userRows {
-			if *isCustomer {
-				if user.CustomerID != nil {
-					filteredUserRows = append(filteredUserRows, user)
-				}
-			} else {
-				if user.CustomerID == nil {
-					filteredUserRows = append(filteredUserRows, user)
-				}
-			}
-		}
-	} else {
-		filteredUserRows = userRows
+		isCustomerVal = *isCustomer
+	}
+	params := db.ListUserMarinasAssignmentsPaginatedParams{
+		MarinaID: marinaID,
+		Column2:  isCustomerVal,
+		Limit:    pagination.PageSize,
+		Offset:   (pagination.Page - 1) * pagination.PageSize,
+	}
+	rows, err := queries.ListUserMarinasAssignmentsPaginated(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Create user responses with server instance for DME client
-	userResponses := make([]responses.UserResponse, len(filteredUserRows))
-	for i, user := range filteredUserRows {
-		response := responses.NewUserResponseFromMarinaListRow(user, g.server)
+	// Map to response DTOs
+	userResponses := make([]responses.UserResponse, len(rows))
+	for i, row := range rows {
+		response := responses.NewUserResponseFromUserMarinasAssignmentRow(row, g.server)
 		if response != nil {
 			userResponses[i] = *response
 		}
 	}
+
+	total := int64(len(rows))
+
 	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
@@ -594,9 +573,27 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 	}
 	total := int64(len(allUsers))
 
+	// Filter by customer_id: if isCustomer==true, customer_id must not be nil; if isCustomer==false, customer_id must be nil
+	filteredUserRows := make([]db.GetMarinaUsersListPaginatedRow, 0, len(userRows))
+	if isCustomer != nil {
+		for _, user := range userRows {
+			if *isCustomer {
+				if user.CustomerID != nil {
+					filteredUserRows = append(filteredUserRows, user)
+				}
+			} else {
+				if user.CustomerID == nil {
+					filteredUserRows = append(filteredUserRows, user)
+				}
+			}
+		}
+	} else {
+		filteredUserRows = userRows
+	}
+
 	// Create user responses with server instance for DME client
-	userResponses := make([]responses.UserResponse, len(userRows))
-	for i, user := range userRows {
+	userResponses := make([]responses.UserResponse, len(filteredUserRows))
+	for i, user := range filteredUserRows {
 		response := responses.NewUserResponseFromMarinaListRow(user, g.server)
 		if response != nil {
 			userResponses[i] = *response

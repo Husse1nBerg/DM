@@ -587,6 +587,116 @@ func (q *Queries) GetUsersNotAssignedToMarinaPaginated(ctx context.Context, arg 
 	return items, nil
 }
 
+const listUserMarinasAssignmentsPaginated = `-- name: ListUserMarinasAssignmentsPaginated :many
+SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
+FROM user_marinas um
+JOIN users u ON u.id = um.user_id
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE um.marina_id = $1
+  AND ($2::bool IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
+  AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type ListUserMarinasAssignmentsPaginatedParams struct {
+	MarinaID uuid.UUID
+	Column2  bool
+	Limit    int32
+	Offset   int32
+}
+
+type ListUserMarinasAssignmentsPaginatedRow struct {
+	UserID              uuid.UUID
+	MarinaID            uuid.UUID
+	AssignedAt          pgtype.Timestamp
+	CustomerID          *string
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID_2          uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	CustomerID_2        *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
+	RoleName            *string
+}
+
+func (q *Queries) ListUserMarinasAssignmentsPaginated(ctx context.Context, arg ListUserMarinasAssignmentsPaginatedParams) ([]ListUserMarinasAssignmentsPaginatedRow, error) {
+	rows, err := q.db.Query(ctx, listUserMarinasAssignmentsPaginated,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUserMarinasAssignmentsPaginatedRow
+	for rows.Next() {
+		var i ListUserMarinasAssignmentsPaginatedRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.MarinaID,
+			&i.AssignedAt,
+			&i.CustomerID,
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID_2,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID_2,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+			&i.RoleName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const unassignUserFromMarina = `-- name: UnassignUserFromMarina :exec
 DELETE FROM user_marinas
 WHERE user_id = $1
