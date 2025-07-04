@@ -37,6 +37,17 @@ type Contact struct {
 	IsCpContact *bool
 }
 
+type Criterium struct {
+	ID          uuid.UUID
+	MarinaID    uuid.UUID
+	Name        string
+	Description *string
+	Criteria    []byte
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	DeletedAt   pgtype.Timestamp
+}
+
 type CustomerSetting struct {
 	ID           uuid.UUID
 	MarinaID     uuid.UUID
