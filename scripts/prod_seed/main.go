@@ -179,6 +179,52 @@ func RunProdSeed() {
 				"esign_documents.create": true,
 				"esign_documents.write":  true,
 				"esign_documents.delete": true,
+				// Admin module objects
+				"admin.read":   true,
+				"admin.write":  true,
+				"admin.delete": true,
+				"admin.create": true,
+			},
+			isActive:       true,
+			isCustomerRole: false,
+			roleType:       "internal",
+		},
+		{
+			name:        "superuser_viewer",
+			description: "Superuser viewer",
+			permissions: models.Permissions{
+				// Core module objects
+				"profile.read":        true,
+				"users.read":          true,
+				"users.write":         true,
+				"organizations.read":  true,
+				"marinas.read":        true,
+				"addresses.read":      true,
+				"roles.read":          true,
+				"marina_gallery.read": true,
+				// Customer & Vessels module objects
+				"customers.read":    true,
+				"vessels.read":      true,
+				"messages.read":     true,
+				"documents.read":    true,
+				"boat_gallery.read": true,
+				// Service Management module objects
+				"work_orders.read": true,
+				// History module objects
+				"history.read": true,
+				// Plans module objects
+				"plans.read": true,
+				// E-sign module objects
+				"esign_templates.read":   true,
+				"esign_templates.create": false,
+				"esign_templates.write":  false,
+				"esign_templates.delete": false,
+				"esign_documents.read":   true,
+				"esign_documents.create": false,
+				"esign_documents.write":  false,
+				"esign_documents.delete": false,
+				// Admin module objects
+				"admin.read": true,
 			},
 			isActive:       true,
 			isCustomerRole: false,

@@ -50,6 +50,28 @@ func (q *Queries) CreateInvite(ctx context.Context, arg CreateInviteParams) (Inv
 	return i, err
 }
 
+const expireInvitesByEmail = `-- name: ExpireInvitesByEmail :exec
+UPDATE invites
+SET expires_at = CURRENT_TIMESTAMP
+WHERE email = $1 AND used = FALSE
+`
+
+func (q *Queries) ExpireInvitesByEmail(ctx context.Context, email string) error {
+	_, err := q.db.Exec(ctx, expireInvitesByEmail, email)
+	return err
+}
+
+const expireInvitesByUserID = `-- name: ExpireInvitesByUserID :exec
+UPDATE invites
+SET expires_at = CURRENT_TIMESTAMP
+WHERE user_id = $1 AND used = FALSE
+`
+
+func (q *Queries) ExpireInvitesByUserID(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, expireInvitesByUserID, userID)
+	return err
+}
+
 const getInviteByToken = `-- name: GetInviteByToken :one
 SELECT id, user_id, email, token, expires_at, used, created_at FROM invites
 WHERE token = $1 AND used = FALSE AND expires_at > CURRENT_TIMESTAMP
@@ -68,6 +90,62 @@ func (q *Queries) GetInviteByToken(ctx context.Context, token string) (Invite, e
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getInviteByUserID = `-- name: GetInviteByUserID :one
+SELECT id, user_id, email, token, expires_at, used, created_at FROM invites
+WHERE user_id = $1 AND used = FALSE AND expires_at > CURRENT_TIMESTAMP
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetInviteByUserID(ctx context.Context, userID uuid.UUID) (Invite, error) {
+	row := q.db.QueryRow(ctx, getInviteByUserID, userID)
+	var i Invite
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Email,
+		&i.Token,
+		&i.ExpiresAt,
+		&i.Used,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getInvitesByEmail = `-- name: GetInvitesByEmail :many
+SELECT id, user_id, email, token, expires_at, used, created_at FROM invites
+WHERE email = $1 AND used = FALSE AND expires_at > CURRENT_TIMESTAMP
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetInvitesByEmail(ctx context.Context, email string) ([]Invite, error) {
+	rows, err := q.db.Query(ctx, getInvitesByEmail, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Invite
+	for rows.Next() {
+		var i Invite
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Email,
+			&i.Token,
+			&i.ExpiresAt,
+			&i.Used,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const markInviteAsUsed = `-- name: MarkInviteAsUsed :one

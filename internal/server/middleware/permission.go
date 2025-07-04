@@ -286,6 +286,10 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["DELETE /api/v1/criteria/:criteriaId"] = RoutePermission{Object: "customers", Action: "delete"}
 	routeMap["POST /api/v1/criteria/:criteriaId/duplicate"] = RoutePermission{Object: "customers", Action: "create"}
 
+	// Admin routes
+	routeMap["GET /api/v1/admin/users/marina/:marinaId"] = RoutePermission{Object: "admin", Action: "read"}
+	routeMap["GET /api/v1/admin/roles/list"] = RoutePermission{Object: "admin", Action: "read"}
+
 	return routeMap
 }
 

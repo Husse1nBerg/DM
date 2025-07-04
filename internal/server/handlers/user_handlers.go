@@ -132,6 +132,11 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
 	}
 
+	role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
 	email := utils.LowerCase(req.Email)
 	// Check if the email is already taken
 	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
@@ -188,11 +193,11 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	failedLoginAttempts := int32(0)
 	isActive := true
 	isSuperuser := false
+	if role.Type == "internal" {
+		isSuperuser = true
+	}
 	if req.IsActive != nil {
 		isActive = *req.IsActive
-	}
-	if req.IsSuperuser != nil {
-		isSuperuser = *req.IsSuperuser
 	}
 
 	params := db.CreateUserParams{
@@ -1440,9 +1445,6 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	if req.IsActive != nil {
 		isActive = *req.IsActive
 	}
-	if req.IsSuperuser != nil {
-		isSuperuser = *req.IsSuperuser
-	}
 
 	params := db.CreateCustomerUserParams{
 		Username:       username,
@@ -1623,6 +1625,11 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
 	}
 
+	role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
 	// Check if the email is already taken
 	email := utils.LowerCase(req.Email)
 	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
@@ -1681,11 +1688,11 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 	failedLoginAttempts := int32(0)
 	isActive := true
 	isSuperuser := false
+	if role.Type == "internal" {
+		isSuperuser = true
+	}
 	if req.IsActive != nil {
 		isActive = *req.IsActive
-	}
-	if req.IsSuperuser != nil {
-		isSuperuser = *req.IsSuperuser
 	}
 
 	// Create user without password hash - they'll set it via invitation

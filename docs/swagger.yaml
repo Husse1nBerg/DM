@@ -1833,6 +1833,15 @@ definitions:
     - key
     - value
     type: object
+  requests.RefreshInviteRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
   requests.RefreshRequest:
     properties:
       token:
@@ -3404,6 +3413,22 @@ definitions:
       success:
         type: boolean
     type: object
+  responses.RefreshInviteResponse:
+    properties:
+      currentPage:
+        type: integer
+      data:
+        $ref: '#/definitions/responses.InviteResponse'
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
   responses.RoleResponse:
     description: Role representation for API responses
     properties:
@@ -3781,6 +3806,85 @@ paths:
       summary: Update address
       tags:
       - Addresses
+  /admin/role/list:
+    get:
+      consumes:
+      - application/json
+      description: Get all roles with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of roles
+          schema:
+            items:
+              $ref: '#/definitions/responses.RoleResponse'
+            type: array
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List roles
+      tags:
+      - Admin
+  /admin/user/marina/{marinaId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all users in a specific marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Filter by customer status. If not provided, returns all users
+        in: query
+        name: isCustomer
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of users in the marina
+          schema:
+            $ref: '#/definitions/responses.UserListResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get users by marina
+      tags:
+      - Admin
   /api/v1/invite/accept:
     post:
       consumes:
@@ -3851,6 +3955,43 @@ paths:
           schema:
             $ref: '#/definitions/responses.BaseResponse'
       summary: Confirm an invitation token
+      tags:
+      - Invitations
+  /api/v1/invite/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Expires existing invitations and creates a new one for the specified
+        user
+      parameters:
+      - description: Refresh invitation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RefreshInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RefreshInviteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Refresh an invitation
       tags:
       - Invitations
   /api/v1/test/redis/cache/key/{key}:

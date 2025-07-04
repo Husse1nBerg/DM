@@ -95,8 +95,22 @@ LIMIT $2 OFFSET $3;
 SELECT *
 FROM users
 WHERE organization_id = $1
+    AND is_superuser = FALSE
+    AND deleted_at IS NULL;
+-- name: GetUsersByOrganizationAdmin :many
+SELECT *
+FROM users
+WHERE organization_id = $1
     AND deleted_at IS NULL;
 -- name: GetUsersByMarina :many
+SELECT u.*, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.is_superuser = FALSE
+    AND u.deleted_at IS NULL;
+-- name: GetUsersByMarinaAdmin :many
 SELECT u.*, r.name as role_name
 FROM users u
 LEFT JOIN roles r ON u.role_id = r.id
@@ -113,6 +127,14 @@ LIMIT $1 OFFSET $2;
 SELECT *
 FROM users
 WHERE organization_id = $1
+    AND is_superuser = FALSE
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: GetUsersByOrganizationPaginatedAdmin :many
+SELECT *
+FROM users
+WHERE organization_id = $1
     AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
@@ -122,10 +144,31 @@ FROM users u
 LEFT JOIN roles r ON u.role_id = r.id
 WHERE u.marina_id = $1
     AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.is_superuser = FALSE
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4;
+-- name: GetUsersByMarinaPaginatedAdmin :many
+SELECT u.*, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
 LIMIT $3 OFFSET $4;
 -- name: GetUsersByMarinaUsersListPaginated :many
+SELECT u.*, r.name as role_name
+FROM users u
+JOIN user_marinas um ON u.id = um.user_id
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.is_superuser = FALSE
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4;
+-- name: GetUsersByMarinaUsersListPaginatedAdmin :many
 SELECT u.*, r.name as role_name
 FROM users u
 JOIN user_marinas um ON u.id = um.user_id
