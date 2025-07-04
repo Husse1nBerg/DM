@@ -355,6 +355,67 @@ func (h *CriteriaHandler) SearchCriteria(c echo.Context) error {
 	return responses.NewCriteriaListResponse(criteria).JSON(c)
 }
 
+// DuplicateCriteria creates a copy of an existing criteria with "Copy of" prepended to the name
+//
+//	@Summary		Duplicate criteria
+//	@Description	Creates a copy of an existing criteria with "Copy of" prepended to the name
+//	@Tags			Criteria
+//	@Accept			json
+//	@Produce		json
+//	@Param			criteriaId	path		string	true	"Criteria ID to duplicate"	Format(uuid)
+//	@Success		201			{object}	responses.CriteriaResponse
+//	@Failure		400			{object}	responses.Error
+//	@Failure		404			{object}	responses.Error
+//	@Failure		500			{object}	responses.Error
+//	@Security		ApiKeyAuth
+//	@Router			/criteria/{criteriaId}/duplicate [post]
+func (h *CriteriaHandler) DuplicateCriteria(c echo.Context) error {
+	criteriaIDStr := c.Param("criteriaId")
+	criteriaID, err := uuid.Parse(criteriaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid criteria ID").JSON(c)
+	}
+
+	marinaID, err := h.extractMarinaIDFromToken(c)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid token").JSON(c)
+	}
+
+	// Get the existing criteria
+	existingCriteria, err := h.server.DB.Queries().GetCriteriaByID(c.Request().Context(), criteriaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusNotFound, "Criteria not found").JSON(c)
+	}
+
+	// Verify that the criteria belongs to the user's marina
+	if existingCriteria.MarinaID != marinaID {
+		return responses.NewErrorResponse(http.StatusNotFound, "Criteria not found").JSON(c)
+	}
+
+	// Create the duplicate with "Copy of" prepended to the name
+	duplicateName := "Copy of " + existingCriteria.Name
+
+	// Convert description to pointer
+	var description *string
+	if existingCriteria.Description != nil {
+		description = existingCriteria.Description
+	}
+
+	params := db.CreateCriteriaParams{
+		MarinaID:    marinaID,
+		Name:        duplicateName,
+		Description: description,
+		Criteria:    existingCriteria.Criteria,
+	}
+
+	duplicatedCriteria, err := h.server.DB.Queries().CreateCriteria(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusCreated, responses.NewCriteriaResponse(duplicatedCriteria))
+}
+
 // SearchCriteriaPaginated searches criteria by name with pagination for the authenticated user's marina
 //
 //	@Summary		Search criteria (paginated)

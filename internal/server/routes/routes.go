@@ -183,6 +183,7 @@ func RegisterRoutes(s *s.Server) {
 	criteria.GET("/:criteriaId", criteriaHandler.GetCriteria)
 	criteria.PUT("/:criteriaId", criteriaHandler.UpdateCriteria)
 	criteria.DELETE("/:criteriaId", criteriaHandler.DeleteCriteria)
+	criteria.POST("/:criteriaId/duplicate", criteriaHandler.DuplicateCriteria)
 
 	// Address routes
 	addresses := permissionProtected.Group("/addresses")
