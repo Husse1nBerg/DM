@@ -53,6 +53,7 @@ func RegisterRoutes(s *s.Server) {
 	redisHandler := h.NewRedisHandler(s)
 	notificationHandler := h.NewNotificationHandler(s)
 	esignHandler := h.NewEsignHandler(s)
+	criteriaHandler := h.NewCriteriaHandler(s)
 
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
@@ -171,6 +172,18 @@ func RegisterRoutes(s *s.Server) {
 	marinas.POST("/:id/contacts", contactHandler.CreateContact)
 	marinas.PUT("/:id/contacts/:contactId", contactHandler.UpdateContact)
 	marinas.DELETE("/:id/contacts/:contactId", contactHandler.DeleteContact)
+
+	// Criteria routes
+	criteria := permissionProtected.Group("/criteria")
+	criteria.GET("", criteriaHandler.ListCriteria)
+	criteria.GET("/paginated", criteriaHandler.ListCriteriaPaginated)
+	criteria.POST("", criteriaHandler.CreateCriteria)
+	criteria.GET("/search", criteriaHandler.SearchCriteria)
+	criteria.GET("/search/paginated", criteriaHandler.SearchCriteriaPaginated)
+	criteria.GET("/:criteriaId", criteriaHandler.GetCriteria)
+	criteria.PUT("/:criteriaId", criteriaHandler.UpdateCriteria)
+	criteria.DELETE("/:criteriaId", criteriaHandler.DeleteCriteria)
+	criteria.POST("/:criteriaId/duplicate", criteriaHandler.DuplicateCriteria)
 
 	// Address routes
 	addresses := permissionProtected.Group("/addresses")

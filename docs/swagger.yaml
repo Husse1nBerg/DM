@@ -1229,6 +1229,18 @@ definitions:
     - name
     - type
     type: object
+  requests.CreateCriteriaRequest:
+    properties:
+      criteria: {}
+      description:
+        type: string
+      name:
+        maxLength: 255
+        type: string
+    required:
+    - criteria
+    - name
+    type: object
   requests.CreateCustomerUserRequest:
     properties:
       customerId:
@@ -1968,6 +1980,14 @@ definitions:
     - name
     - type
     type: object
+  requests.UpdateCriteriaRequest:
+    properties:
+      criteria: {}
+      description:
+        type: string
+      name:
+        type: string
+    type: object
   requests.UpdateCustomerMessageRequest:
     properties:
       body:
@@ -2471,6 +2491,67 @@ definitions:
         type: string
       type:
         example: EMERGENCY
+        type: string
+      updatedAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    type: object
+  responses.CriteriaListResponse:
+    description: Criteria list response model
+    properties:
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.CriteriaResponse'
+        type: array
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  responses.CriteriaPaginatedResponse:
+    description: Criteria paginated response model
+    properties:
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.CriteriaResponse'
+        type: array
+      details: {}
+      error: {}
+      lastPage:
+        type: integer
+      message: {}
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  responses.CriteriaResponse:
+    description: Criteria response model
+    properties:
+      createdAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      criteria: {}
+      description:
+        example: Filter for active customers
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      marinaId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: Customer Filter
         type: string
       updatedAt:
         example: "2023-01-01T00:00:00Z"
@@ -4356,6 +4437,316 @@ paths:
       summary: Update boat
       tags:
       - Boats
+  /criteria:
+    get:
+      consumes:
+      - application/json
+      description: Lists all criteria for the authenticated user's marina
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CriteriaListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List criteria
+      tags:
+      - Criteria
+    post:
+      consumes:
+      - application/json
+      description: Creates a new criteria for the authenticated user's marina
+      parameters:
+      - description: Criteria details
+        in: body
+        name: criteria
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateCriteriaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.CriteriaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create criteria
+      tags:
+      - Criteria
+  /criteria/{criteriaId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a criteria (soft delete)
+      parameters:
+      - description: Criteria ID
+        format: uuid
+        in: path
+        name: criteriaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete criteria
+      tags:
+      - Criteria
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a single criteria by ID
+      parameters:
+      - description: Criteria ID
+        format: uuid
+        in: path
+        name: criteriaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CriteriaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get criteria
+      tags:
+      - Criteria
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing criteria
+      parameters:
+      - description: Criteria ID
+        format: uuid
+        in: path
+        name: criteriaId
+        required: true
+        type: string
+      - description: Criteria details
+        in: body
+        name: criteria
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateCriteriaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CriteriaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update criteria
+      tags:
+      - Criteria
+  /criteria/{criteriaId}/duplicate:
+    post:
+      consumes:
+      - application/json
+      description: Creates a copy of an existing criteria with "Copy of" prepended
+        to the name
+      parameters:
+      - description: Criteria ID to duplicate
+        format: uuid
+        in: path
+        name: criteriaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.CriteriaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Duplicate criteria
+      tags:
+      - Criteria
+  /criteria/paginated:
+    get:
+      consumes:
+      - application/json
+      description: Lists criteria for the authenticated user's marina with pagination
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CriteriaPaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List criteria (paginated)
+      tags:
+      - Criteria
+  /criteria/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches criteria by name for the authenticated user's marina
+      parameters:
+      - description: Search query
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CriteriaListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Search criteria
+      tags:
+      - Criteria
+  /criteria/search/paginated:
+    get:
+      consumes:
+      - application/json
+      description: Searches criteria by name with pagination for the authenticated
+        user's marina
+      parameters:
+      - description: Search query
+        in: query
+        name: query
+        required: true
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CriteriaPaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Search criteria (paginated)
+      tags:
+      - Criteria
   /customer-intake:
     post:
       consumes:
