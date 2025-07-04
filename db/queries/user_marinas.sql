@@ -81,6 +81,18 @@ WHERE u.deleted_at IS NULL
   AND NOT EXISTS (
     SELECT 1 FROM user_marinas um
     WHERE um.user_id = u.id
+      AND u.is_superuser = FALSE
+      AND um.marina_id = $1
+  )
+ORDER BY u.created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: GetUsersNotAssignedToMarinaPaginatedAdmin :many
+SELECT u.*
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM user_marinas um
+    WHERE um.user_id = u.id
       AND um.marina_id = $1
   )
 ORDER BY u.created_at DESC
@@ -92,9 +104,32 @@ WHERE u.deleted_at IS NULL
   AND NOT EXISTS (
     SELECT 1 FROM user_marinas um
     WHERE um.user_id = u.id
+      AND u.is_superuser = FALSE
       AND um.marina_id = $1
   );
+
+-- name: CountUsersNotAssignedToMarinaAdmin :one
+SELECT COUNT(*)
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM user_marinas um
+    WHERE um.user_id = u.id
+      AND um.marina_id = $1
+  );
+
 -- name: ListUserMarinasAssignmentsPaginated :many
+SELECT um.*, u.*, r.name as role_name
+FROM user_marinas um
+JOIN users u ON u.id = um.user_id
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE um.marina_id = $1
+  AND ($2::bool IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
+  AND u.is_superuser = FALSE
+  AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4;
+-- name: ListUserMarinasAssignmentsPaginatedAdmin :many
 SELECT um.*, u.*, r.name as role_name
 FROM user_marinas um
 JOIN users u ON u.id = um.user_id

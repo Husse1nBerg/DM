@@ -54,7 +54,7 @@ func RegisterRoutes(s *s.Server) {
 	notificationHandler := h.NewNotificationHandler(s)
 	esignHandler := h.NewEsignHandler(s)
 	criteriaHandler := h.NewCriteriaHandler(s)
-
+	adminHandler := h.NewAdminHandler(s)
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
 	s.Echo.Use(echozap.ZapLogger(s.Logger.DesugarZap))
@@ -103,6 +103,10 @@ func RegisterRoutes(s *s.Server) {
 	if permissionMiddleware != nil {
 		permissionProtected.Use(permissionMiddleware.RequirePermission())
 	}
+
+	// Protected invite routes
+	protectedInvite := permissionProtected.Group("/invite")
+	protectedInvite.POST("/refresh", inviteHandler.RefreshInvite)
 
 	// User routes
 	users := permissionProtected.Group("/user")
@@ -368,4 +372,8 @@ func RegisterRoutes(s *s.Server) {
 	notifications.GET("/type/:type", notificationHandler.GetNotificationsByTypeHandler)
 	notifications.DELETE("/:id", notificationHandler.DeleteNotificationHandler)
 
+	// Admin routes
+	admin := permissionProtected.Group("/admin")
+	admin.GET("/user/marina/:marinaId", adminHandler.GetUsersByMarinaHandler)
+	admin.GET("/role/list", adminHandler.ListRolesHandler)
 }

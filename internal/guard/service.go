@@ -216,7 +216,7 @@ func (s *PermissionService) IsAdmin(ctx context.Context, userID string, marinaID
 	if err != nil {
 		return false, fmt.Errorf("failed to get role: %w", err)
 	}
-	if role.Name == "superuser" || *user.IsSuperuser {
+	if role.Name == "superuser" {
 		return true, nil
 	}
 

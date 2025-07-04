@@ -928,6 +928,7 @@ FROM users u
 LEFT JOIN roles r ON u.role_id = r.id
 WHERE u.marina_id = $1
     AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.is_superuser = FALSE
     AND u.deleted_at IS NULL
 `
 
@@ -1014,12 +1015,105 @@ func (q *Queries) GetUsersByMarina(ctx context.Context, arg GetUsersByMarinaPara
 	return items, nil
 }
 
+const getUsersByMarinaAdmin = `-- name: GetUsersByMarinaAdmin :many
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+`
+
+type GetUsersByMarinaAdminParams struct {
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+}
+
+type GetUsersByMarinaAdminRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
+	RoleName            *string
+}
+
+func (q *Queries) GetUsersByMarinaAdmin(ctx context.Context, arg GetUsersByMarinaAdminParams) ([]GetUsersByMarinaAdminRow, error) {
+	rows, err := q.db.Query(ctx, getUsersByMarinaAdmin, arg.MarinaID, arg.IsCustomer)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersByMarinaAdminRow
+	for rows.Next() {
+		var i GetUsersByMarinaAdminRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+			&i.RoleName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUsersByMarinaPaginated = `-- name: GetUsersByMarinaPaginated :many
 SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM users u
 LEFT JOIN roles r ON u.role_id = r.id
 WHERE u.marina_id = $1
     AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.is_superuser = FALSE
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
 LIMIT $3 OFFSET $4
@@ -1115,6 +1209,107 @@ func (q *Queries) GetUsersByMarinaPaginated(ctx context.Context, arg GetUsersByM
 	return items, nil
 }
 
+const getUsersByMarinaPaginatedAdmin = `-- name: GetUsersByMarinaPaginatedAdmin :many
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
+FROM users u
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE u.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type GetUsersByMarinaPaginatedAdminParams struct {
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+	Limit      int32
+	Offset     int32
+}
+
+type GetUsersByMarinaPaginatedAdminRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
+	RoleName            *string
+}
+
+func (q *Queries) GetUsersByMarinaPaginatedAdmin(ctx context.Context, arg GetUsersByMarinaPaginatedAdminParams) ([]GetUsersByMarinaPaginatedAdminRow, error) {
+	rows, err := q.db.Query(ctx, getUsersByMarinaPaginatedAdmin,
+		arg.MarinaID,
+		arg.IsCustomer,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersByMarinaPaginatedAdminRow
+	for rows.Next() {
+		var i GetUsersByMarinaPaginatedAdminRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+			&i.RoleName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUsersByMarinaUsersListPaginated = `-- name: GetUsersByMarinaUsersListPaginated :many
 SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM users u
@@ -1122,6 +1317,7 @@ JOIN user_marinas um ON u.id = um.user_id
 LEFT JOIN roles r ON u.role_id = r.id
 WHERE um.marina_id = $1
     AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.is_superuser = FALSE
     AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
 LIMIT $3 OFFSET $4
@@ -1217,10 +1413,113 @@ func (q *Queries) GetUsersByMarinaUsersListPaginated(ctx context.Context, arg Ge
 	return items, nil
 }
 
+const getUsersByMarinaUsersListPaginatedAdmin = `-- name: GetUsersByMarinaUsersListPaginatedAdmin :many
+SELECT u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
+FROM users u
+JOIN user_marinas um ON u.id = um.user_id
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE um.marina_id = $1
+    AND (u.is_customer = $2 OR $2 IS NULL)
+    AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type GetUsersByMarinaUsersListPaginatedAdminParams struct {
+	MarinaID   uuid.UUID
+	IsCustomer *bool
+	Limit      int32
+	Offset     int32
+}
+
+type GetUsersByMarinaUsersListPaginatedAdminRow struct {
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	RoleID              uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	CustomerID          *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
+	RoleName            *string
+}
+
+func (q *Queries) GetUsersByMarinaUsersListPaginatedAdmin(ctx context.Context, arg GetUsersByMarinaUsersListPaginatedAdminParams) ([]GetUsersByMarinaUsersListPaginatedAdminRow, error) {
+	rows, err := q.db.Query(ctx, getUsersByMarinaUsersListPaginatedAdmin,
+		arg.MarinaID,
+		arg.IsCustomer,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersByMarinaUsersListPaginatedAdminRow
+	for rows.Next() {
+		var i GetUsersByMarinaUsersListPaginatedAdminRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+			&i.RoleName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUsersByOrganization = `-- name: GetUsersByOrganization :many
 SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, customer_id, is_customer, joined_at, user_analytics
 FROM users
 WHERE organization_id = $1
+    AND is_superuser = FALSE
     AND deleted_at IS NULL
 `
 
@@ -1271,10 +1570,65 @@ func (q *Queries) GetUsersByOrganization(ctx context.Context, organizationID uui
 	return items, nil
 }
 
+const getUsersByOrganizationAdmin = `-- name: GetUsersByOrganizationAdmin :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, customer_id, is_customer, joined_at, user_analytics
+FROM users
+WHERE organization_id = $1
+    AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUsersByOrganizationAdmin(ctx context.Context, organizationID uuid.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByOrganizationAdmin, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUsersByOrganizationPaginated = `-- name: GetUsersByOrganizationPaginated :many
 SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, customer_id, is_customer, joined_at, user_analytics
 FROM users
 WHERE organization_id = $1
+    AND is_superuser = FALSE
     AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -1288,6 +1642,68 @@ type GetUsersByOrganizationPaginatedParams struct {
 
 func (q *Queries) GetUsersByOrganizationPaginated(ctx context.Context, arg GetUsersByOrganizationPaginatedParams) ([]User, error) {
 	rows, err := q.db.Query(ctx, getUsersByOrganizationPaginated, arg.OrganizationID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersByOrganizationPaginatedAdmin = `-- name: GetUsersByOrganizationPaginatedAdmin :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, customer_id, is_customer, joined_at, user_analytics
+FROM users
+WHERE organization_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetUsersByOrganizationPaginatedAdminParams struct {
+	OrganizationID uuid.UUID
+	Limit          int32
+	Offset         int32
+}
+
+func (q *Queries) GetUsersByOrganizationPaginatedAdmin(ctx context.Context, arg GetUsersByOrganizationPaginatedAdminParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getUsersByOrganizationPaginatedAdmin, arg.OrganizationID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
