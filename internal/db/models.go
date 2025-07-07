@@ -112,6 +112,21 @@ type EsignDocument struct {
 	DeletedAt      pgtype.Timestamp
 }
 
+type EsignSubmission struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	DocumentID     uuid.UUID
+	Status         string
+	BlobUrl        string
+	BlobMetadata   []byte
+	CustomerID     *string
+	Email          string
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
 type EsignTemplate struct {
 	ID             uuid.UUID
 	OrganizationID uuid.UUID

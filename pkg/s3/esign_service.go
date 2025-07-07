@@ -51,3 +51,7 @@ func (d *ESignService) DeleteFileFromS3(ctx context.Context, key string) error {
 func (d *ESignService) UpdateFile(ctx context.Context, file multipart.File, fileHeader *multipart.FileHeader, key string) error {
 	return d.s3Service.UpdateFile(ctx, file, fileHeader, key)
 }
+
+func (d *ESignService) DuplicateFile(ctx context.Context, key string) (string, error) {
+	return d.s3Service.DuplicateFile(ctx, key)
+}

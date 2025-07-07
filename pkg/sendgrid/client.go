@@ -467,3 +467,35 @@ func (c *Client) SendAssignedToMarinaEmail(to []string, subject string, data Ass
 	taskID, resultChan := c.SendTemplateEmail(email)
 	return taskID, resultChan, nil
 }
+
+// SendESignSubmissionEmail sends a message email using the message template
+func (c *Client) SendESignSubmissionEmail(to []string, subject string, data ESignSubmissionTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["esign_submission"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("esign submission template not found in configuration")
+	}
+
+	// Convert the strongly typed data to a map
+	templateData := map[string]interface{}{
+		"recipient":        data.Recipient,
+		"sender":           data.Sender,
+		"document_url":     data.DocumentURL,
+		"terms_conditions": data.TermsConditions,
+	}
+
+	email := &TemplateEmail{
+		Subject: subject,
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		ReplyTo:      data.ReplyTo,
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}

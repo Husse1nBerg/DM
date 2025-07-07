@@ -135,3 +135,37 @@ func (s *S3Service) UpdateFile(ctx context.Context, file multipart.File, fileHea
 
 	return nil
 }
+
+// DuplicateFile creates a copy of an existing file in S3 with a new UUID
+// It parses the source key to extract entity type and extension, then generates a new key
+// Returns the new key path for the duplicated file
+func (s *S3Service) DuplicateFile(ctx context.Context, sourceKey string) (string, error) {
+	// Parse the source key to extract entity type and extension
+	// Expected format: entityType/uuid.ext
+	parts := filepath.Dir(sourceKey) // Get the directory part (entity type)
+	ext := filepath.Ext(sourceKey)   // Get the extension
+
+	// Generate a new UUID for the duplicate
+	newUUID := uuid.New().String()
+
+	// Create the new key with the same entity type but new UUID
+	newKey := fmt.Sprintf("%s/%s%s", parts, newUUID, ext)
+
+	// Create the copy source string (bucket/key format)
+	copySource := fmt.Sprintf("%s/%s", s.bucket, sourceKey)
+
+	// Create the copy input parameters
+	copyInput := &s3.CopyObjectInput{
+		Bucket:     aws.String(s.bucket),
+		CopySource: aws.String(copySource),
+		Key:        aws.String(newKey),
+	}
+
+	// Copy the file
+	_, err := s.client.CopyObject(ctx, copyInput)
+	if err != nil {
+		return "", fmt.Errorf("failed to duplicate file in S3: %w", err)
+	}
+
+	return newKey, nil
+}

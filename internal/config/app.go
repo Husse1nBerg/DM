@@ -14,6 +14,7 @@ type AppConfig struct {
 	CustomerIntakeRoute     string `mapstructure:"CustomerIntakeRoute"`
 	PasswordResetRoute      string `mapstructure:"PasswordResetRoute"`
 	TermsConditionsRoute    string `mapstructure:"TermsConditionsRoute"`
+	EsignDocumentRoute      string `mapstructure:"EsignDocumentRoute"`
 }
 
 func LoadAppConfig() AppConfig {
@@ -23,6 +24,7 @@ func LoadAppConfig() AppConfig {
 	customerIntakeRoute := EnvOrDefault("CUSTOMER_INTAKE_ROUTE", "auth/customer-intake")
 	passwordResetRoute := EnvOrDefault("PASSWORD_RESET_ROUTE", "auth/password-reset")
 	termsConditionsRoute := EnvOrDefault("TERMS_CONDITIONS_ROUTE", "terms-conditions")
+	esignDocumentRoute := EnvOrDefault("ESIGN_DOCUMENT_ROUTE", "esign/submissions")
 	if frontendBaseURL == "" {
 		switch strings.ToLower(os.Getenv("ENV")) {
 		case "production", "prod":
@@ -43,6 +45,7 @@ func LoadAppConfig() AppConfig {
 		CustomerIntakeRoute:     customerIntakeRoute,
 		PasswordResetRoute:      passwordResetRoute,
 		TermsConditionsRoute:    termsConditionsRoute,
+		EsignDocumentRoute:      esignDocumentRoute,
 	}
 }
 
@@ -72,4 +75,8 @@ func (c *AppConfig) CustomerIntakeURL() string {
 
 func (c *AppConfig) HomeURL() string {
 	return c.RemoveSlashes(c.FrontendBaseURL)
+}
+
+func (c *AppConfig) EsignDocumentURL(id string) string {
+	return c.RemoveSlashes(c.FrontendBaseURL) + "/" + c.RemoveSlashes(c.EsignDocumentRoute) + "/" + id
 }
