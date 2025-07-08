@@ -699,19 +699,25 @@ func (g *UserHandler) UnassignUserFromMarinaHandler(c echo.Context) error {
 
 	// If the user's current active marina is the one being unassigned
 	if user.MarinaID == req.MarinaID {
-		// Get all marinas the user is assigned to (excluding the one being unassigned)
+		// Get all marinas the user is assigned to (including the one being unassigned)
 		marinas, err := queries.GetUserMarinasList(ctx, req.UserID)
 		if err != nil {
 			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 		}
+		if len(marinas) <= 1 {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Cannot unassign the last marina from the user. Deactivate the user instead.").JSON(c)
+		}
 		var newActiveMarinaID uuid.UUID
 		for _, m := range marinas {
 			if m.ID != req.MarinaID {
-				newActiveMarinaID = m.ID
-				break
+				// Check if the marina is active
+				if m.IsActive != nil && *m.IsActive {
+					newActiveMarinaID = m.ID
+					break
+				}
 			}
 		}
-		// If another marina is found, switch to it
+		// If another active marina is found, switch to it
 		if newActiveMarinaID != uuid.Nil {
 			updateParams := db.UpdateUserParams{
 				ID:                  user.ID,
@@ -737,6 +743,8 @@ func (g *UserHandler) UnassignUserFromMarinaHandler(c echo.Context) error {
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 			}
+		} else {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Cannot unassign: the user has no other active marinas to switch to").JSON(c)
 		}
 	}
 
