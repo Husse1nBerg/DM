@@ -128,6 +128,11 @@ func RegisterRoutes(s *s.Server) {
 	// Customer intake (public endpoint)
 	base.POST("/customer-intake", customerHandler.CustomerIntake)
 
+	// Public E-signature routes
+	publicEsign := base.Group("/public/esign")
+	publicEsign.GET("/submissions/:id", esignHandler.GetEsignSubmissionPublic)
+	publicEsign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmissionPublic)
+
 	// User by role, organization, marina
 	users.GET("/role/:roleId", userHandler.GetUsersByRoleHandler)
 	users.GET("/organization/:organizationId", userHandler.GetUsersByOrganizationHandler)
@@ -284,6 +289,13 @@ func RegisterRoutes(s *s.Server) {
 	esign.GET("/documents/:id", esignHandler.GetEsignDocument)
 	esign.PUT("/documents/:id", esignHandler.UpdateEsignDocument)
 	esign.DELETE("/documents/:id", esignHandler.DeleteEsignDocument)
+	esign.GET("/documents/:documentId/submissions", esignHandler.ListEsignSubmissionsByDocument)
+	esign.POST("/submissions", esignHandler.CreateEsignSubmission)
+	esign.GET("/submissions", esignHandler.ListEsignSubmissions)
+	esign.GET("/submissions/:id", esignHandler.GetEsignSubmission)
+	esign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmission)
+	esign.DELETE("/submissions/:id", esignHandler.DeleteEsignSubmission)
+	esign.GET("/submissions/status", esignHandler.ListEsignSubmissionsByStatus)
 
 	// Work Order routes
 	workOrders := permissionProtected.Group("/work-orders")

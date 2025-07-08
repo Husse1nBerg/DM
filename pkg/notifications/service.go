@@ -369,6 +369,32 @@ func (s *NotificationService) CreateMessageNotification(ctx context.Context, use
 	return err
 }
 
+// CreateESignNotification creates a notification for e-sign submissions
+func (s *NotificationService) CreateESignNotification(ctx context.Context, userID, organizationID, marinaID uuid.UUID, documentURL, submissionID, email string) error {
+	title := "New E-Sign Submission Update"
+	content := fmt.Sprintf("You have received a new e-sign submission update from %s", email)
+
+	data := requests.NotificationData{
+		"document_url":  documentURL,
+		"submission_id": submissionID,
+		"email":         email,
+	}
+
+	req := requests.CreateNotificationRequest{
+		UserID:         userID,
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		Type:           "esign",
+		Title:          title,
+		Content:        content,
+		Data:           data,
+		Priority:       nil, // Use default priority
+	}
+
+	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	return err
+}
+
 // CreateInviteNotification creates a notification for invitations
 func (s *NotificationService) CreateInviteNotification(ctx context.Context, userID, organizationID, marinaID uuid.UUID, inviterName string) error {
 	title := "Invitation Received"

@@ -1348,6 +1348,29 @@ definitions:
     - organizationId
     - systemId
     type: object
+  requests.CreateEsignSubmissionRequest:
+    properties:
+      customerId:
+        example: CUST123
+        type: string
+      documentId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      email:
+        example: customer@example.com
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - documentId
+    - email
+    - marinaId
+    - organizationId
+    type: object
   requests.CreateMarinaRequest:
     properties:
       address:
@@ -2819,6 +2842,60 @@ definitions:
         type: string
       type:
         example: agreement
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.EsignSubmissionListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.EsignSubmissionResponse'
+        type: array
+      lastPage:
+        example: 5
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 42
+        type: integer
+    type: object
+  responses.EsignSubmissionResponse:
+    description: E-signature submission data including blob URL, metadata, and submission
+      status
+    properties:
+      blobUrl:
+        example: https://s3.amazonaws.com/bucket/submissions/submission-001.pdf
+        type: string
+      createdAt:
+        type: string
+      customerId:
+        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
+          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
+        example: CUST123
+        type: string
+      documentId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      email:
+        example: customer@example.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      status:
+        example: pending
         type: string
       updatedAt:
         type: string
@@ -6174,6 +6251,55 @@ paths:
       summary: Create e-signature document
       tags:
       - E-signature Documents
+  /esign/documents/{documentId}/submissions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all submissions for a specific document
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: documentId
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EsignSubmissionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List submissions by document
+      tags:
+      - E-signature Submissions
   /esign/documents/{id}:
     delete:
       consumes:
@@ -6314,6 +6440,293 @@ paths:
       summary: Update e-signature document
       tags:
       - E-signature Documents
+  /esign/submissions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all e-signature submissions for the authenticated user's
+        marina
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EsignSubmissionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List e-signature submissions
+      tags:
+      - E-signature Submissions
+    post:
+      consumes:
+      - application/json
+      description: Creates a new e-signature submission by duplicating the document
+        file
+      parameters:
+      - description: Create e-signature submission request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateEsignSubmissionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignSubmissionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create e-signature submission
+      tags:
+      - E-signature Submissions
+  /esign/submissions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft deletes an e-signature submission
+      parameters:
+      - description: Submission ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete e-signature submission
+      tags:
+      - E-signature Submissions
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an e-signature submission by ID
+      parameters:
+      - description: Submission ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignSubmissionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get e-signature submission
+      tags:
+      - E-signature Submissions
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates an existing e-signature submission
+      parameters:
+      - description: Submission ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Submission status
+        in: formData
+        name: status
+        type: string
+      - description: Customer ID
+        in: formData
+        name: customerId
+        type: string
+      - description: Customer email
+        in: formData
+        name: email
+        type: string
+      - description: Submission file (optional for update)
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignSubmissionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update e-signature submission
+      tags:
+      - E-signature Submissions
+  /esign/submissions/status:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves submissions filtered by status for the authenticated
+        user's marina
+      parameters:
+      - description: Submission status
+        enum:
+        - pending
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EsignSubmissionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List submissions by status
+      tags:
+      - E-signature Submissions
   /esign/templates:
     get:
       consumes:
@@ -8871,6 +9284,92 @@ paths:
       summary: Project details
       tags:
       - Generic
+  /public/esign/submissions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an e-signature submission by ID without authentication
+      parameters:
+      - description: Submission ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignSubmissionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get e-signature submission (public)
+      tags:
+      - E-signature Submissions
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates an e-signature submission status and file without authentication
+      parameters:
+      - description: Submission ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Submission status
+        in: formData
+        name: status
+        required: true
+        type: string
+      - description: New submission file
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignSubmissionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Update e-signature submission (public)
+      tags:
+      - E-signature Submissions
   /role:
     post:
       consumes:

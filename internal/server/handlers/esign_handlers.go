@@ -1,14 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -16,13 +20,19 @@ import (
 
 // EsignHandler handles operations related to e-signature templates and documents
 type EsignHandler struct {
-	server       *s.Server
-	esignService *s3.ESignService
+	server              *s.Server
+	esignService        *s3.ESignService
+	notificationService *notifications.NotificationService
 }
 
 // NewEsignHandler creates a new e-signature handler
 func NewEsignHandler(server *s.Server) *EsignHandler {
-	return &EsignHandler{server: server, esignService: server.ESignService}
+	notificationService := notifications.NewNotificationService(
+		server.DB.Queries(),
+		server.Redis,
+		server.Logger,
+	)
+	return &EsignHandler{server: server, esignService: server.ESignService, notificationService: notificationService}
 }
 
 // getUserInfoFromContext extracts user information from JWT token
@@ -38,6 +48,21 @@ func (h *EsignHandler) getUserInfoFromContext(c echo.Context) (userID uuid.UUID,
 	organizationID = claims.OrgId
 	marinaID = claims.MarinaId
 	return
+}
+
+// updateEsignUsage updates the marina's e-signature usage count
+func (h *EsignHandler) updateEsignUsage(ctx context.Context, marinaID uuid.UUID) error {
+	increment := int16(1)
+
+	_, err := h.server.DB.Queries().IncrementMarinaEmailUsage(ctx, db.IncrementMarinaEmailUsageParams{
+		ID:      marinaID,
+		Column2: increment,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error updating marina email usage", err)
+		return err
+	}
+	return nil
 }
 
 // ====================
@@ -698,4 +723,654 @@ func (h *EsignHandler) DeleteEsignDocument(c echo.Context) error {
 	}
 
 	return responses.NewSuccessResponse(nil).JSON(c)
+}
+
+// ====================
+// E-SIGNATURE SUBMISSIONS
+// ====================
+
+// ListEsignSubmissions retrieves all e-signature submissions for the user's marina
+//
+//	@Summary		List e-signature submissions
+//	@Description	Retrieves all e-signature submissions for the authenticated user's marina
+//	@Tags			E-signature Submissions
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize	query		int	false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Success		200		{object}	responses.EsignSubmissionListResponse
+//	@Failure		400		{object}	responses.BaseResponse
+//	@Failure		401		{object}	responses.BaseResponse
+//	@Failure		500		{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/esign/submissions [get]
+func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
+	userID, organizationID, _, err := h.getUserInfoFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina by user ID", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+	marinaID := user.MarinaID
+
+	// Parse pagination parameters using standard pattern
+	var req requests.PaginationQuery
+	if err := c.Bind(&req); err != nil {
+		req.Page = 1
+		req.PageSize = 10
+	}
+
+	// Set defaults if not provided
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+
+	// Get total count for pagination
+	total, err := h.server.DB.Queries().CountEsignSubmissionsByMarina(c.Request().Context(), db.CountEsignSubmissionsByMarinaParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error counting e-signature submissions", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
+	}
+	totalInt := int64(total)
+
+	// Get submissions for the marina
+	submissions, err := h.server.DB.Queries().ListEsignSubmissionsByMarina(c.Request().Context(), db.ListEsignSubmissionsByMarinaParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		Limit:          req.PageSize,
+		Offset:         (req.Page - 1) * req.PageSize,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching e-signature submissions", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
+	}
+
+	return responses.NewEsignSubmissionsPaginatedResponse(submissions, totalInt, req.PageSize, req.Page).JSON(c)
+}
+
+// CreateEsignSubmission creates a new e-signature submission
+//
+//	@Summary		Create e-signature submission
+//	@Description	Creates a new e-signature submission by duplicating the document file
+//	@Tags			E-signature Submissions
+//	@Accept			json
+//	@Produce		json
+//	@Param			request			body		requests.CreateEsignSubmissionRequest	true	"Create e-signature submission request"
+//	@Success		201				{object}	responses.BaseResponse{data=responses.EsignSubmissionResponse}
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		401				{object}	responses.BaseResponse
+//	@Failure		404				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/esign/submissions [post]
+func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
+	userID, organizationID, _, err := h.getUserInfoFromContext(c)
+	logger := h.server.Logger
+	if err != nil {
+		return err
+	}
+
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina by user ID", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+	marinaID := user.MarinaID
+
+	// Parse request body
+	var req requests.CreateEsignSubmissionRequest
+	if err := c.Bind(&req); err != nil {
+		h.server.Logger.Zap.Error("Error parsing request body", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request body").JSON(c)
+	}
+
+	// Validate request
+	if err := c.Validate(&req); err != nil {
+		h.server.Logger.Zap.Error("Error validating request", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed: "+err.Error()).JSON(c)
+	}
+
+	// Get the document to duplicate
+	document, err := h.server.DB.Queries().GetEsignDocumentByID(c.Request().Context(), req.DocumentID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching document by ID", err)
+		return responses.NewErrorResponse(http.StatusNotFound, "Document not found").JSON(c)
+	}
+
+	// Duplicate the document file in S3
+	duplicatedFilePath, err := h.esignService.DuplicateFile(c.Request().Context(), document.BlobUrl)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error duplicating document file", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error duplicating document file: "+err.Error()).JSON(c)
+	}
+
+	// Create submission with duplicated file
+	submission, err := h.server.DB.Queries().CreateEsignSubmission(c.Request().Context(), db.CreateEsignSubmissionParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		DocumentID:     req.DocumentID,
+		Status:         "pending", // Default status
+		BlobUrl:        duplicatedFilePath,
+		BlobMetadata:   nil, // Ignoring blob metadata for now as requested
+		CustomerID:     req.CustomerID,
+		Email:          req.Email,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error creating e-signature submission", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating submission").JSON(c)
+	}
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina by ID", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+	// Create email data
+	email := sendgrid.ESignSubmissionTemplateData{
+		DocumentURL:     h.server.Config.App.EsignDocumentURL(submission.ID.String()),
+		Recipient:       "",
+		Sender:          marina.Name,
+		ReplyTo:         marina.Email,
+		TermsConditions: h.server.Config.App.TermsConditionsURL(),
+	}
+	to := []string{req.Email}
+	subject := "New e-signature submission"
+
+	// Send email asynchronously
+	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Log the task
+	logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Email)
+
+	// Process the result asynchronously to log success/failure and update message usage
+	go func() {
+		result := <-resultChan
+		if result.Status == sendgrid.StatusSent {
+			logger.Zap.Infow("Email sent successfully",
+				"to", req.Email,
+				"task_id", result.ID.String(),
+				"message_id", result.ID,
+				"status", result.Status)
+
+			// Increment message usage count
+			if err := h.updateEsignUsage(context.Background(), marinaID); err != nil {
+				logger.Zap.Errorw("Failed to update message usage",
+					"marina_id", marinaID,
+					"error", err)
+			}
+		} else {
+			logger.Zap.Errorw("Failed to send email",
+				"to", req.Email,
+				"task_id", result.ID.String(),
+				"error", result.Error)
+		}
+	}()
+
+	response := responses.NewEsignSubmissionResponseSuccess(submission)
+	response.Code = http.StatusCreated
+	return response.JSON(c)
+}
+
+// GetEsignSubmission retrieves an e-signature submission by ID
+//
+//	@Summary		Get e-signature submission
+//	@Description	Retrieves an e-signature submission by ID
+//	@Tags			E-signature Submissions
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Submission ID"	Format(uuid)
+//	@Success		200	{object}	responses.BaseResponse{data=responses.EsignSubmissionResponse}
+//	@Failure		400	{object}	responses.BaseResponse
+//	@Failure		401	{object}	responses.BaseResponse
+//	@Failure		404	{object}	responses.BaseResponse
+//	@Failure		500	{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/esign/submissions/{id} [get]
+func (h *EsignHandler) GetEsignSubmission(c echo.Context) error {
+	_, _, _, err := h.getUserInfoFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	// Parse submission ID
+	submissionIDStr := c.Param("id")
+	submissionID, err := uuid.Parse(submissionIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid submission ID format").JSON(c)
+	}
+
+	// Get submission
+	submission, err := h.server.DB.Queries().GetEsignSubmissionByID(c.Request().Context(), submissionID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching e-signature submission", err)
+		return responses.NewErrorResponse(http.StatusNotFound, "Submission not found").JSON(c)
+	}
+
+	return responses.NewEsignSubmissionResponseSuccess(submission).JSON(c)
+}
+
+// UpdateEsignSubmission updates an existing e-signature submission
+//
+//	@Summary		Update e-signature submission
+//	@Description	Updates an existing e-signature submission
+//	@Tags			E-signature Submissions
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			id				path		string	true	"Submission ID"	Format(uuid)
+//	@Param			status			formData	string	false	"Submission status"
+//	@Param			customerId		formData	string	false	"Customer ID"
+//	@Param			email			formData	string	false	"Customer email"
+//	@Param			file			formData	file	false	"Submission file (optional for update)"
+//	@Success		200				{object}	responses.BaseResponse{data=responses.EsignSubmissionResponse}
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		401				{object}	responses.BaseResponse
+//	@Failure		404				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/esign/submissions/{id} [put]
+func (h *EsignHandler) UpdateEsignSubmission(c echo.Context) error {
+	_, _, _, err := h.getUserInfoFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	// Parse submission ID
+	submissionIDStr := c.Param("id")
+	submissionID, err := uuid.Parse(submissionIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid submission ID format").JSON(c)
+	}
+
+	// Get existing submission
+	existingSubmission, err := h.server.DB.Queries().GetEsignSubmissionByID(c.Request().Context(), submissionID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching existing submission", err)
+		return responses.NewErrorResponse(http.StatusNotFound, "Submission not found").JSON(c)
+	}
+
+	// Parse form values with fallbacks to existing values
+	status := c.FormValue("status")
+	if status == "" {
+		status = existingSubmission.Status
+	}
+
+	// email := c.FormValue("email")
+	// if email == "" {
+	// 	email = existingSubmission.Email
+	// }
+
+	customerID := c.FormValue("customerId")
+	var customerIDPtr *string
+	if customerID != "" {
+		customerIDPtr = &customerID
+	} else {
+		customerIDPtr = existingSubmission.CustomerID
+	}
+
+	// Handle file upload (optional for update)
+	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
+	file, header, err := c.Request().FormFile("file")
+	if err == nil {
+		// New file provided, upload it
+		defer file.Close()
+
+		err := h.esignService.UpdateFile(c.Request().Context(), file, header, blobUrl)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error uploading file to S3", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
+		}
+	}
+
+	// Update submission
+	submission, err := h.server.DB.Queries().UpdateEsignSubmission(c.Request().Context(), db.UpdateEsignSubmissionParams{
+		ID:           submissionID,
+		Status:       status,
+		BlobUrl:      blobUrl,
+		BlobMetadata: nil, // Ignoring blob metadata for now as requested
+		CustomerID:   customerIDPtr,
+		Email:        existingSubmission.Email,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error updating e-signature submission", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating submission").JSON(c)
+	}
+
+	return responses.NewEsignSubmissionResponseSuccess(submission).JSON(c)
+}
+
+// DeleteEsignSubmission soft deletes an e-signature submission
+//
+//	@Summary		Delete e-signature submission
+//	@Description	Soft deletes an e-signature submission
+//	@Tags			E-signature Submissions
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Submission ID"	Format(uuid)
+//	@Success		204	{object}	responses.BaseResponse
+//	@Failure		400	{object}	responses.BaseResponse
+//	@Failure		401	{object}	responses.BaseResponse
+//	@Failure		404	{object}	responses.BaseResponse
+//	@Failure		500	{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/esign/submissions/{id} [delete]
+func (h *EsignHandler) DeleteEsignSubmission(c echo.Context) error {
+	_, _, _, err := h.getUserInfoFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	// Parse submission ID
+	submissionIDStr := c.Param("id")
+	submissionID, err := uuid.Parse(submissionIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid submission ID format").JSON(c)
+	}
+
+	// Soft delete submission
+	err = h.server.DB.Queries().SoftDeleteEsignSubmission(c.Request().Context(), submissionID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error deleting e-signature submission", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error deleting submission").JSON(c)
+	}
+
+	return responses.NewSuccessResponse(nil).JSON(c)
+}
+
+// ListEsignSubmissionsByDocument retrieves submissions for a specific document
+//
+//	@Summary		List submissions by document
+//	@Description	Retrieves all submissions for a specific document
+//	@Tags			E-signature Submissions
+//	@Accept			json
+//	@Produce		json
+//	@Param			documentId	path		string	true	"Document ID"	Format(uuid)
+//	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Success		200			{object}	responses.EsignSubmissionListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		401			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/esign/documents/{documentId}/submissions [get]
+func (h *EsignHandler) ListEsignSubmissionsByDocument(c echo.Context) error {
+	_, _, _, err := h.getUserInfoFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	// Parse document ID
+	documentIDStr := c.Param("documentId")
+	documentID, err := uuid.Parse(documentIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid document ID format").JSON(c)
+	}
+
+	// Parse pagination parameters
+	var req requests.PaginationQuery
+	if err := c.Bind(&req); err != nil {
+		req.Page = 1
+		req.PageSize = 10
+	}
+
+	// Set defaults if not provided
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+
+	// Get total count for pagination
+	total, err := h.server.DB.Queries().CountEsignSubmissionsByDocument(c.Request().Context(), documentID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error counting e-signature submissions", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
+	}
+	totalInt := int64(total)
+
+	// Get submissions for the document
+	submissions, err := h.server.DB.Queries().ListEsignSubmissionsByDocument(c.Request().Context(), db.ListEsignSubmissionsByDocumentParams{
+		DocumentID: documentID,
+		Limit:      req.PageSize,
+		Offset:     (req.Page - 1) * req.PageSize,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching e-signature submissions", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
+	}
+
+	return responses.NewEsignSubmissionsPaginatedResponse(submissions, totalInt, req.PageSize, req.Page).JSON(c)
+}
+
+// ListEsignSubmissionsByStatus retrieves submissions filtered by status
+//
+//	@Summary		List submissions by status
+//	@Description	Retrieves submissions filtered by status for the authenticated user's marina
+//	@Tags			E-signature Submissions
+//	@Accept			json
+//	@Produce		json
+//	@Param			status		query		string	true	"Submission status"	Enums(pending, signed, questions, sent)
+//	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Success		200			{object}	responses.EsignSubmissionListResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		401			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/esign/submissions/status [get]
+func (h *EsignHandler) ListEsignSubmissionsByStatus(c echo.Context) error {
+	userID, organizationID, _, err := h.getUserInfoFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina by user ID", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+	marinaID := user.MarinaID
+
+	// Parse status parameter
+	status := c.QueryParam("status")
+	if status == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Status parameter is required").JSON(c)
+	}
+
+	// Parse pagination parameters
+	var req requests.PaginationQuery
+	if err := c.Bind(&req); err != nil {
+		req.Page = 1
+		req.PageSize = 10
+	}
+
+	// Set defaults if not provided
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+
+	// Get total count for pagination
+	total, err := h.server.DB.Queries().CountEsignSubmissionsByStatus(c.Request().Context(), db.CountEsignSubmissionsByStatusParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		Status:         status,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error counting e-signature submissions", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
+	}
+	totalInt := int64(total)
+
+	// Get submissions for the marina with status filter
+	submissions, err := h.server.DB.Queries().ListEsignSubmissionsByStatus(c.Request().Context(), db.ListEsignSubmissionsByStatusParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		Status:         status,
+		Limit:          req.PageSize,
+		Offset:         (req.Page - 1) * req.PageSize,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching e-signature submissions", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
+	}
+
+	return responses.NewEsignSubmissionsPaginatedResponse(submissions, totalInt, req.PageSize, req.Page).JSON(c)
+}
+
+// GetEsignSubmissionPublic retrieves an e-signature submission by ID (public endpoint)
+//
+//	@Summary		Get e-signature submission (public)
+//	@Description	Retrieves an e-signature submission by ID without authentication
+//	@Tags			E-signature Submissions
+//	@Accept			json
+//	@Produce		json
+//	@Param			id				path		string	true	"Submission ID"	Format(uuid)
+//	@Success		200				{object}	responses.BaseResponse{data=responses.EsignSubmissionResponse}
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		404				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
+//	@Router			/public/esign/submissions/{id} [get]
+func (h *EsignHandler) GetEsignSubmissionPublic(c echo.Context) error {
+	submissionIDStr := c.Param("id")
+	if submissionIDStr == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Submission ID is required").JSON(c)
+	}
+
+	submissionID, err := uuid.Parse(submissionIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid submission ID format").JSON(c)
+	}
+
+	// Get the submission
+	submission, err := h.server.DB.Queries().GetEsignSubmissionByID(c.Request().Context(), submissionID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching e-signature submission", err)
+		return responses.NewErrorResponse(http.StatusNotFound, "Submission not found").JSON(c)
+	}
+
+	response := responses.NewEsignSubmissionResponseSuccess(submission)
+	return response.JSON(c)
+}
+
+// UpdateEsignSubmissionPublic updates an e-signature submission (public endpoint)
+//
+//	@Summary		Update e-signature submission (public)
+//	@Description	Updates an e-signature submission status and file without authentication
+//	@Tags			E-signature Submissions
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			id				path		string	true	"Submission ID"	Format(uuid)
+//	@Param			status			formData	string	true	"Submission status"
+//	@Param			file			formData	file	false	"New submission file"
+//	@Success		200				{object}	responses.BaseResponse{data=responses.EsignSubmissionResponse}
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		404				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
+//	@Router			/public/esign/submissions/{id} [put]
+func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
+	// Parse submission ID
+	submissionIDStr := c.Param("id")
+	submissionID, err := uuid.Parse(submissionIDStr)
+	logger := h.server.Logger
+	queries := h.server.DB.Queries()
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid submission ID format").JSON(c)
+	}
+
+	// Get existing submission
+	existingSubmission, err := h.server.DB.Queries().GetEsignSubmissionByID(c.Request().Context(), submissionID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching existing submission", err)
+		return responses.NewErrorResponse(http.StatusNotFound, "Submission not found").JSON(c)
+	}
+
+	// Parse form values with fallbacks to existing values
+	status := c.FormValue("status")
+	if status == "" {
+		status = existingSubmission.Status
+	}
+
+	// Handle file upload (optional for update)
+	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
+	file, header, err := c.Request().FormFile("file")
+	if err == nil {
+		// New file provided, upload it
+		defer file.Close()
+
+		err := h.esignService.UpdateFile(c.Request().Context(), file, header, blobUrl)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error uploading file to S3", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
+		}
+	}
+
+	// Update submission
+	submission, err := h.server.DB.Queries().UpdateEsignSubmission(c.Request().Context(), db.UpdateEsignSubmissionParams{
+		ID:           submissionID,
+		Status:       status,
+		BlobUrl:      blobUrl,
+		BlobMetadata: nil, // Ignoring blob metadata for now as requested
+		CustomerID:   existingSubmission.CustomerID,
+		Email:        existingSubmission.Email,
+	})
+
+	if err != nil {
+		h.server.Logger.Zap.Error("Error updating e-signature submission", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating submission").JSON(c)
+	}
+
+	// Create notification for marina staff about new customer message
+	// Find marina users to notify
+	marinaUsers, err := queries.GetUsersByMarinaAdmin(c.Request().Context(), db.GetUsersByMarinaAdminParams{
+		IsCustomer: utils.Pointer(false),
+		MarinaID:   submission.MarinaID,
+	})
+	logger.Zap.Infow("Marina users", "marina_id", submission.MarinaID, "count", len(marinaUsers))
+	if err != nil {
+		logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", submission.MarinaID, "error", err)
+	} else {
+		// Create notifications for marina staff
+		for _, userRow := range marinaUsers {
+			// Only notify active users
+			if userRow.IsActive != nil && *userRow.IsActive {
+				notificationErr := h.notificationService.CreateESignNotification(
+					c.Request().Context(),
+					userRow.ID,
+					userRow.OrganizationID,
+					userRow.MarinaID,
+					submission.BlobUrl,
+					submission.ID.String(),
+					submission.Email,
+				)
+				if notificationErr != nil {
+					logger.Zap.Warnw("Failed to create e-sign notification for marina user",
+						"user_id", userRow.ID,
+						"error", notificationErr)
+				}
+				logger.Zap.Infow("E-sign notification created for marina user",
+					"user_id", userRow.ID,
+					"user_name", userRow.FirstName+" "+userRow.LastName,
+					"submission_id", submission.ID,
+					"email", submission.Email)
+
+			}
+		}
+	}
+
+	return responses.NewEsignSubmissionResponseSuccess(submission).JSON(c)
 }

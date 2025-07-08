@@ -101,3 +101,11 @@ type AssignedToMarinaTemplateData struct {
 	HomeURL         string `json:"home_url"`
 	TermsConditions string `json:"terms_conditions"`
 }
+
+type ESignSubmissionTemplateData struct {
+	Recipient       string `json:"recipient"`        // Recipient name
+	Sender          string `json:"sender"`           // Sender name
+	ReplyTo         string `json:"reply_to"`         // Reply to email address
+	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+	DocumentURL     string `json:"document_url"`     // URL for the document
+}

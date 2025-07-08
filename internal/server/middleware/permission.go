@@ -274,6 +274,13 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["POST /api/v1/esign/documents"] = RoutePermission{Object: "esign_documents", Action: "create"}
 	routeMap["PUT /api/v1/esign/documents/:id"] = RoutePermission{Object: "esign_documents", Action: "write"}
 	routeMap["DELETE /api/v1/esign/documents/:id"] = RoutePermission{Object: "esign_documents", Action: "delete"}
+	routeMap["GET /api/v1/esign/documents/:documentId/submissions"] = RoutePermission{Object: "esign_submissions", Action: "read"}
+	routeMap["GET /api/v1/esign/submissions"] = RoutePermission{Object: "esign_submissions", Action: "read"}
+	routeMap["GET /api/v1/esign/submissions/:id"] = RoutePermission{Object: "esign_submissions", Action: "read"}
+	routeMap["POST /api/v1/esign/submissions"] = RoutePermission{Object: "esign_submissions", Action: "create"}
+	routeMap["PUT /api/v1/esign/submissions/:id"] = RoutePermission{Object: "esign_submissions", Action: "write"}
+	routeMap["DELETE /api/v1/esign/submissions/:id"] = RoutePermission{Object: "esign_submissions", Action: "delete"}
+	routeMap["GET /api/v1/esign/submissions/status"] = RoutePermission{Object: "esign_submissions", Action: "read"}
 
 	// Criteria routes
 	routeMap["GET /api/v1/criteria"] = RoutePermission{Object: "customers", Action: "read"}
