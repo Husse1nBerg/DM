@@ -77,11 +77,18 @@ func (pm *PermissionMiddleware) RequirePermission() echo.MiddlewareFunc {
 			}
 
 			claims := userToken.Claims.(*token.JwtCustomClaims)
-			userID := claims.ID.String()
-			marinaID := claims.MarinaId.String()
+			userID := claims.ID
+
+			// Fetch the user's current marina_id from the database
+			queries := pm.permissionService.Adapter.DB
+			user, err := queries.GetUserByID(c.Request().Context(), userID)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user for permission check: "+err.Error()).JSON(c)
+			}
+			marinaID := user.MarinaID.String()
 
 			// Check permission
-			hasAccess, err := pm.permissionService.CanAccess(c.Request().Context(), userID, marinaID, permission.Object, permission.Action)
+			hasAccess, err := pm.permissionService.CanAccess(c.Request().Context(), userID.String(), marinaID, permission.Object, permission.Action)
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to check permissions: "+err.Error()).JSON(c)
 			}

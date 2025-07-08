@@ -39,15 +39,20 @@ func NewEsignHandler(server *s.Server) *EsignHandler {
 func (h *EsignHandler) getUserInfoFromContext(c echo.Context) (userID uuid.UUID, organizationID uuid.UUID, marinaID uuid.UUID, err error) {
 	userToken := c.Get("user").(*jwt.Token)
 	if userToken == nil {
-		err = responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
-		return
+		return uuid.Nil, uuid.Nil, uuid.Nil, responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
 	}
 
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID = claims.ID
 	organizationID = claims.OrgId
-	marinaID = claims.MarinaId
-	return
+	// Fetch the user's current marina_id from the database
+	queries := h.server.DB.Queries()
+	user, dbErr := queries.GetUserByID(c.Request().Context(), claims.ID)
+	if dbErr != nil {
+		return uuid.Nil, uuid.Nil, uuid.Nil, responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+dbErr.Error()).JSON(c)
+	}
+	marinaID = user.MarinaID
+	return userID, organizationID, marinaID, nil
 }
 
 // updateEsignUsage updates the marina's e-signature usage count

@@ -688,13 +688,72 @@ func (g *UserHandler) UnassignUserFromMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	queries := g.server.DB.Queries()
+	ctx := c.Request().Context()
+
+	// Get the user to check their current active marina
+	user, err := queries.GetUserByID(ctx, req.UserID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// If the user's current active marina is the one being unassigned
+	if user.MarinaID == req.MarinaID {
+		// Get all marinas the user is assigned to (including the one being unassigned)
+		marinas, err := queries.GetUserMarinasList(ctx, req.UserID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if len(marinas) <= 1 {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Cannot unassign the last marina from the user. Deactivate the user instead.").JSON(c)
+		}
+		var newActiveMarinaID uuid.UUID
+		for _, m := range marinas {
+			if m.ID != req.MarinaID {
+				// Check if the marina is active
+				if m.IsActive != nil && *m.IsActive {
+					newActiveMarinaID = m.ID
+					break
+				}
+			}
+		}
+		// If another active marina is found, switch to it
+		if newActiveMarinaID != uuid.Nil {
+			updateParams := db.UpdateUserParams{
+				ID:                  user.ID,
+				FirstName:           user.FirstName,
+				LastName:            user.LastName,
+				Email:               user.Email,
+				EmailVerified:       user.EmailVerified,
+				Phone:               user.Phone,
+				Title:               user.Title,
+				Image:               user.Image,
+				PasswordHash:        user.PasswordHash,
+				LastLogin:           user.LastLogin,
+				FailedLoginAttempts: user.FailedLoginAttempts,
+				LockedUntil:         user.LockedUntil,
+				LastPasswordReset:   user.LastPasswordReset,
+				MarinaID:            newActiveMarinaID,
+				RoleID:              user.RoleID,
+				IsSuperuser:         user.IsSuperuser,
+				IsActive:            user.IsActive,
+				UserAnalytics:       user.UserAnalytics,
+			}
+			_, err := queries.UpdateUser(ctx, updateParams)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			}
+		} else {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Cannot unassign: the user has no other active marinas to switch to").JSON(c)
+		}
+	}
+
 	params := db.UnassignUserFromMarinaParams{
 		UserID:   req.UserID,
 		MarinaID: req.MarinaID,
 	}
 
-	queries := g.server.DB.Queries()
-	err := queries.UnassignUserFromMarina(c.Request().Context(), params)
+	err = queries.UnassignUserFromMarina(ctx, params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
