@@ -139,3 +139,20 @@ WHERE um.marina_id = $1
   AND u.deleted_at IS NULL
 ORDER BY u.created_at DESC
 LIMIT $3 OFFSET $4;
+-- name: ListUserMarinasAssignmentsPaginatedAdminOnly :many
+SELECT um.*, u.*, r.name as role_name
+FROM user_marinas um
+JOIN users u ON u.id = um.user_id
+LEFT JOIN roles r ON u.role_id = r.id
+WHERE um.marina_id = $1
+  AND u.is_superuser = TRUE 
+  AND u.deleted_at IS NULL
+ORDER BY u.created_at DESC
+LIMIT $2 OFFSET $3;
+-- name: CountUserMarinasAssignmentsPaginatedAdminOnly :one
+SELECT COUNT(*)
+FROM user_marinas um
+JOIN users u ON u.id = um.user_id
+WHERE um.marina_id = $1
+  AND u.is_superuser = TRUE 
+  AND u.deleted_at IS NULL;

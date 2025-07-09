@@ -46,14 +46,6 @@ func (g *AdminHandler) GetUsersByMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	// Parse isCustomer parameter
-	isCustomerStr := c.QueryParam("isCustomer")
-	var isCustomer *bool
-	if isCustomerStr != "" {
-		value := isCustomerStr == "true"
-		isCustomer = &value
-	}
-
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -63,18 +55,12 @@ func (g *AdminHandler) GetUsersByMarinaHandler(c echo.Context) error {
 
 	queries := g.server.DB.Queries()
 
-	// Use the new ListUserMarinasAssignmentsPaginated query
-	var isCustomerVal bool
-	if isCustomer != nil {
-		isCustomerVal = *isCustomer
-	}
-	params := db.ListUserMarinasAssignmentsPaginatedAdminParams{
+	params := db.ListUserMarinasAssignmentsPaginatedAdminOnlyParams{
 		MarinaID: marinaID,
-		Column2:  isCustomerVal,
 		Limit:    pagination.PageSize,
 		Offset:   (pagination.Page - 1) * pagination.PageSize,
 	}
-	rows, err := queries.ListUserMarinasAssignmentsPaginatedAdmin(c.Request().Context(), params)
+	rows, err := queries.ListUserMarinasAssignmentsPaginatedAdminOnly(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -82,13 +68,16 @@ func (g *AdminHandler) GetUsersByMarinaHandler(c echo.Context) error {
 	// Map to response DTOs
 	userResponses := make([]responses.UserResponse, len(rows))
 	for i, row := range rows {
-		response := responses.NewUserResponseFromUserMarinasAssignmentRowAdmin(row, g.server)
+		response := responses.NewUserResponseFromUserMarinasAssignmentRowAdminOnly(row, g.server)
 		if response != nil {
 			userResponses[i] = *response
 		}
 	}
 
-	total := int64(len(rows))
+	total, err := queries.CountUserMarinasAssignmentsPaginatedAdminOnly(c.Request().Context(), params.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
 
 	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
