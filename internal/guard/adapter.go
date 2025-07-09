@@ -14,13 +14,13 @@ import (
 // MarinaCasbinAdapter implements the persist.Adapter interface for Casbin
 // It reads policies from existing database tables without storing duplicate data
 type MarinaCasbinAdapter struct {
-	db *db.Queries
+	DB *db.Queries
 }
 
 // NewMarinaCasbinAdapter creates a new adapter instance
 func NewMarinaCasbinAdapter(database *db.Queries) *MarinaCasbinAdapter {
 	return &MarinaCasbinAdapter{
-		db: database,
+		DB: database,
 	}
 }
 
@@ -50,7 +50,7 @@ func (a *MarinaCasbinAdapter) LoadPoliciesForUser(ctx context.Context, userID, m
 	}
 
 	// Get user's role in the specified marina
-	userRoleID, err := a.db.GetUserRoleInMarina(ctx, db.GetUserRoleInMarinaParams{
+	userRoleID, err := a.DB.GetUserRoleInMarina(ctx, db.GetUserRoleInMarinaParams{
 		ID:       userUUID,
 		MarinaID: marinaUUID,
 	})
@@ -59,7 +59,7 @@ func (a *MarinaCasbinAdapter) LoadPoliciesForUser(ctx context.Context, userID, m
 	}
 
 	// Get role permissions
-	role, err := a.db.GetRoleByID(ctx, userRoleID)
+	role, err := a.DB.GetRoleByID(ctx, userRoleID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get role: %w", err)
 	}
@@ -71,7 +71,7 @@ func (a *MarinaCasbinAdapter) LoadPoliciesForUser(ctx context.Context, userID, m
 	}
 
 	// Get marina enabled modules
-	marina, err := a.db.GetMarinaByID(ctx, marinaUUID)
+	marina, err := a.DB.GetMarinaByID(ctx, marinaUUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get marina: %w", err)
 	}

@@ -25,6 +25,8 @@ func LoadSendGridConfig() SendGridConfig {
 	templatesMap["invite"] = os.Getenv("SENDGRID_TEMPLATE_INVITE")
 	templatesMap["invite_customer"] = os.Getenv("SENDGRID_TEMPLATE_INVITE_CUSTOMER")
 	templatesMap["message_external"] = os.Getenv("SENDGRID_TEMPLATE_MESSAGE_EXTERNAL")
+	templatesMap["assigned_to_marina"] = os.Getenv("SENDGRID_TEMPLATE_ASSIGNED_TO_MARINA")
+	templatesMap["esign_submission"] = os.Getenv("SENDGRID_TEMPLATE_ESIGN_SUBMISSION")
 	if templatesMap["message"] == "" {
 		templatesMap["message"] = "d-2a2afe50d47d417c99019692dc20079a"
 	}
@@ -43,7 +45,12 @@ func LoadSendGridConfig() SendGridConfig {
 	if templatesMap["message_external"] == "" {
 		templatesMap["message_external"] = "d-6c7a11bc1f3147018986af40b98ca69a"
 	}
-
+	if templatesMap["assigned_to_marina"] == "" {
+		templatesMap["assigned_to_marina"] = "d-a79d23ec7a564423bc15f844c9f25e23"
+	}
+	if templatesMap["esign_submission"] == "" {
+		templatesMap["esign_submission"] = "d-b14c44271dbb4893a34730bc59cb3c62"
+	}
 	return SendGridConfig{
 		APIKey:       os.Getenv("SENDGRID_API_KEY"),
 		FromEmail:    EnvOrDefault("SENDGRID_FROM_EMAIL", "no-reply@dockmaster.com"),
