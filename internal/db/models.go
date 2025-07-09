@@ -192,6 +192,7 @@ type Marina struct {
 	InternalAnnouncement *string
 	ExternalAnnouncement *string
 	DocumentPlanID       uuid.UUID
+	DocumentUsage        *int64
 }
 
 type MarinaGallery struct {

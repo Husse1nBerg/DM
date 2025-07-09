@@ -1373,6 +1373,9 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       email:
         example: info@harborbay.com
         type: string
@@ -1417,6 +1420,7 @@ definitions:
       workingHours:
         $ref: '#/definitions/models.WorkingHours'
     required:
+    - documentPlanId
     - email
     - name
     - notesMessagesPlanId
@@ -2095,6 +2099,9 @@ definitions:
         type: string
       currency:
         example: USD
+        type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       email:
         example: info@harborbay.com
@@ -3032,6 +3039,12 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      documentUsage:
+        example: 0
+        type: integer
       email:
         example: info@harborbay.com
         type: string
@@ -3166,6 +3179,12 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      documentUsage:
+        example: 0
+        type: integer
       email:
         example: info@harborbay.com
         type: string

@@ -12961,6 +12961,7 @@ const docTemplate = `{
         "requests.CreateMarinaRequest": {
             "type": "object",
             "required": [
+                "documentPlanId",
                 "email",
                 "name",
                 "notesMessagesPlanId",
@@ -12978,6 +12979,10 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "email": {
                     "type": "string",
@@ -13995,6 +14000,10 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "email": {
                     "type": "string",
@@ -15308,6 +15317,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "USD"
                 },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "documentUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "email": {
                     "type": "string",
                     "example": "info@harborbay.com"
@@ -15493,6 +15510,14 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "documentUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "email": {
                     "type": "string",

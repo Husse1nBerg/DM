@@ -12954,6 +12954,7 @@
         "requests.CreateMarinaRequest": {
             "type": "object",
             "required": [
+                "documentPlanId",
                 "email",
                 "name",
                 "notesMessagesPlanId",
@@ -12971,6 +12972,10 @@
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "email": {
                     "type": "string",
@@ -13988,6 +13993,10 @@
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "email": {
                     "type": "string",
@@ -15301,6 +15310,14 @@
                     "type": "string",
                     "example": "USD"
                 },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "documentUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "email": {
                     "type": "string",
                     "example": "info@harborbay.com"
@@ -15486,6 +15503,14 @@
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "documentUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "email": {
                     "type": "string",

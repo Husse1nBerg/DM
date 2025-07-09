@@ -149,6 +149,7 @@ func (h *MarinaHandler) CreateMarina(c echo.Context) error {
 		AddressID:           addressID,
 		NotesMessagesPlanID: *req.NotesMessagesPlanID,
 		StoragePlanID:       *req.StoragePlanID,
+		DocumentPlanID:      *req.DocumentPlanID,
 		Modules:             modulesBytes,
 	}
 
@@ -431,6 +432,7 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		SystemID:             marina.SystemID,
 		NotesMessagesPlanID:  marina.NotesMessagesPlanID,
 		StoragePlanID:        marina.StoragePlanID,
+		DocumentPlanID:       marina.DocumentPlanID,
 		Modules:              marina.Modules,
 		InternalAnnouncement: marina.InternalAnnouncement,
 		ExternalAnnouncement: marina.ExternalAnnouncement,
@@ -588,6 +590,9 @@ func (h *MarinaHandler) UpdateMarina(c echo.Context) error {
 		if req.ExternalAnnouncement != nil {
 			updateParams.ExternalAnnouncement = req.ExternalAnnouncement
 		}
+		if req.DocumentPlanID != nil {
+			updateParams.DocumentPlanID = *req.DocumentPlanID
+		}
 	}
 
 	// Update marina in database
@@ -658,6 +663,7 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 		SystemID:             currentMarina.SystemID,
 		NotesMessagesPlanID:  currentMarina.NotesMessagesPlanID,
 		StoragePlanID:        currentMarina.StoragePlanID,
+		DocumentPlanID:       currentMarina.DocumentPlanID,
 		Modules:              currentMarina.Modules,
 		InternalAnnouncement: currentMarina.InternalAnnouncement,
 		ExternalAnnouncement: currentMarina.ExternalAnnouncement,
@@ -719,6 +725,9 @@ func (h *MarinaHandler) UpdateMarinaWithAddress(c echo.Context) error {
 	}
 	if req.StoragePlanID != nil {
 		params.StoragePlanID = *req.StoragePlanID
+	}
+	if req.DocumentPlanID != nil {
+		params.DocumentPlanID = *req.DocumentPlanID
 	}
 	if req.Modules != nil {
 		modulesBytes, err := req.Modules.ToBytes()
