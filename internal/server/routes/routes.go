@@ -132,6 +132,7 @@ func RegisterRoutes(s *s.Server) {
 	publicEsign := base.Group("/public/esign")
 	publicEsign.GET("/submissions/:id", esignHandler.GetEsignSubmissionPublic)
 	publicEsign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmissionPublic)
+	publicEsign.POST("/dme/documents", esignHandler.CreateEsignDocumentDME)
 
 	// User by role, organization, marina
 	users.GET("/role/:roleId", userHandler.GetUsersByRoleHandler)
