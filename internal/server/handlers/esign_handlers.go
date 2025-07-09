@@ -336,16 +336,18 @@ func (h *EsignHandler) UpdateEsignTemplate(c echo.Context) error {
 
 	// Handle file upload (optional for update)
 	blobUrl := existingTemplate.BlobUrl // Keep existing URL by default
+
+	// Get file from form
 	file, header, err := c.Request().FormFile("file")
 	if err == nil {
-		// New file provided, upload it
 		defer file.Close()
-
-		err := h.esignService.UpdateFile(c.Request().Context(), file, header, blobUrl)
+		// Upload the file to S3 using document storage service
+		filePath, err := h.esignService.UploadFileToS3(c.Request().Context(), file, header, "esign_template")
 		if err != nil {
 			h.server.Logger.Zap.Error("Error uploading file to S3", err)
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 		}
+		blobUrl = filePath
 	}
 
 	// Update template
@@ -664,16 +666,18 @@ func (h *EsignHandler) UpdateEsignDocument(c echo.Context) error {
 
 	// Handle file upload (optional for update)
 	blobUrl := existingDocument.BlobUrl // Keep existing URL by default
+
+	// Get file from form
 	file, header, err := c.Request().FormFile("file")
 	if err == nil {
-		// New file provided, upload it
 		defer file.Close()
-
-		err := h.esignService.UpdateFile(c.Request().Context(), file, header, blobUrl)
+		// Upload the file to S3 using document storage service
+		filePath, err := h.esignService.UploadFileToS3(c.Request().Context(), file, header, "esign_document")
 		if err != nil {
 			h.server.Logger.Zap.Error("Error uploading file to S3", err)
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 		}
+		blobUrl = filePath
 	}
 
 	// Update document
@@ -1026,16 +1030,18 @@ func (h *EsignHandler) UpdateEsignSubmission(c echo.Context) error {
 
 	// Handle file upload (optional for update)
 	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
+
+	// Get file from form
 	file, header, err := c.Request().FormFile("file")
 	if err == nil {
-		// New file provided, upload it
 		defer file.Close()
-
-		err := h.esignService.UpdateFile(c.Request().Context(), file, header, blobUrl)
+		// Upload the file to S3 using document storage service
+		filePath, err := h.esignService.UploadFileToS3(c.Request().Context(), file, header, "esign_submission")
 		if err != nil {
 			h.server.Logger.Zap.Error("Error uploading file to S3", err)
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 		}
+		blobUrl = filePath
 	}
 
 	// Update submission
@@ -1312,16 +1318,18 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 
 	// Handle file upload (optional for update)
 	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
+
+	// Get file from form
 	file, header, err := c.Request().FormFile("file")
 	if err == nil {
-		// New file provided, upload it
 		defer file.Close()
-
-		err := h.esignService.UpdateFile(c.Request().Context(), file, header, blobUrl)
+		// Upload the file to S3 using document storage service
+		filePath, err := h.esignService.UploadFileToS3(c.Request().Context(), file, header, "esign_submission")
 		if err != nil {
 			h.server.Logger.Zap.Error("Error uploading file to S3", err)
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 		}
+		blobUrl = filePath
 	}
 
 	// Update submission
