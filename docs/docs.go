@@ -185,6 +185,128 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/role/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all roles with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List roles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of roles",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.RoleResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/user/marina/{marinaId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all users in a specific marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get users by marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by customer status. If not provided, returns all users",
+                        "name": "isCustomer",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of users in the marina",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/invite/accept": {
             "post": {
                 "description": "Accepts an invitation and sets the user's password",
@@ -271,6 +393,63 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.ConfirmTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/invite/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Expires existing invitations and creates a new one for the specified user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Refresh an invitation",
+                "parameters": [
+                    {
+                        "description": "Refresh invitation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RefreshInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RefreshInviteResponse"
                         }
                     },
                     "400": {
@@ -1159,6 +1338,488 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/criteria": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Lists all criteria for the authenticated user's marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "List criteria",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new criteria for the authenticated user's marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "Create criteria",
+                "parameters": [
+                    {
+                        "description": "Criteria details",
+                        "name": "criteria",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateCriteriaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/criteria/paginated": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Lists criteria for the authenticated user's marina with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "List criteria (paginated)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaPaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/criteria/search": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Searches criteria by name for the authenticated user's marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "Search criteria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/criteria/search/paginated": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Searches criteria by name with pagination for the authenticated user's marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "Search criteria (paginated)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaPaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/criteria/{criteriaId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a single criteria by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "Get criteria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Criteria ID",
+                        "name": "criteriaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing criteria",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "Update criteria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Criteria ID",
+                        "name": "criteriaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Criteria details",
+                        "name": "criteria",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateCriteriaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes a criteria (soft delete)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "Delete criteria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Criteria ID",
+                        "name": "criteriaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/criteria/{criteriaId}/duplicate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a copy of an existing criteria with \"Copy of\" prepended to the name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Criteria"
+                ],
+                "summary": "Duplicate criteria",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Criteria ID to duplicate",
+                        "name": "criteriaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CriteriaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -3150,6 +3811,79 @@ const docTemplate = `{
                 }
             }
         },
+        "/esign/documents/{documentId}/submissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all submissions for a specific document",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "List submissions by document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Document ID",
+                        "name": "documentId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EsignSubmissionListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/esign/documents/{id}": {
             "get": {
                 "security": [
@@ -3335,6 +4069,452 @@ const docTemplate = `{
                         "type": "string",
                         "format": "uuid",
                         "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/esign/submissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all e-signature submissions for the authenticated user's marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "List e-signature submissions",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EsignSubmissionListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new e-signature submission by duplicating the document file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Create e-signature submission",
+                "parameters": [
+                    {
+                        "description": "Create e-signature submission request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateEsignSubmissionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/esign/submissions/status": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves submissions filtered by status for the authenticated user's marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "List submissions by status",
+                "parameters": [
+                    {
+                        "enum": [
+                            "pending",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Submission status",
+                        "name": "status",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EsignSubmissionListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/esign/submissions/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves an e-signature submission by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Get e-signature submission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Submission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing e-signature submission",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Update e-signature submission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Submission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Submission status",
+                        "name": "status",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Submission file (optional for update)",
+                        "name": "file",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Soft deletes an e-signature submission",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Delete e-signature submission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Submission ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -7351,6 +8531,143 @@ const docTemplate = `{
                 }
             }
         },
+        "/public/esign/submissions/{id}": {
+            "get": {
+                "description": "Retrieves an e-signature submission by ID without authentication",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Get e-signature submission (public)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Submission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates an e-signature submission status and file without authentication",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Update e-signature submission (public)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Submission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Submission status",
+                        "name": "status",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "New submission file",
+                        "name": "file",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/role": {
             "post": {
                 "security": [
@@ -8463,6 +9780,69 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "List of users assigned to the marina",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/marina/{marinaId}/not-assigned": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get users who are not assigned to a specific marina (through user_marinas table)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get users not assigned to a marina",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users not assigned to the marina",
                         "schema": {
                             "$ref": "#/definitions/responses.UserListResponse"
                         }
@@ -11226,6 +12606,23 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CreateCriteriaRequest": {
+            "type": "object",
+            "required": [
+                "criteria",
+                "name"
+            ],
+            "properties": {
+                "criteria": {},
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
         "requests.CreateCustomerUserRequest": {
             "type": "object",
             "required": [
@@ -11367,6 +12764,37 @@ const docTemplate = `{
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                }
+            }
+        },
+        "requests.CreateEsignSubmissionRequest": {
+            "type": "object",
+            "required": [
+                "documentId",
+                "email",
+                "marinaId",
+                "organizationId"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "string",
+                    "example": "CUST123"
+                },
+                "documentId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "customer@example.com"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
             }
         },
@@ -12055,6 +13483,19 @@ const docTemplate = `{
                 "value": {}
             }
         },
+        "requests.RefreshInviteRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
         "requests.RefreshRequest": {
             "type": "object",
             "required": [
@@ -12261,6 +13702,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/requests.ContactType"
                         }
                     ]
+                }
+            }
+        },
+        "requests.UpdateCriteriaRequest": {
+            "type": "object",
+            "properties": {
+                "criteria": {},
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -12981,6 +14434,91 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.CriteriaListResponse": {
+            "description": "Criteria list response model",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.CriteriaResponse"
+                    }
+                },
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.CriteriaPaginatedResponse": {
+            "description": "Criteria paginated response model",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.CriteriaResponse"
+                    }
+                },
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.CriteriaResponse": {
+            "description": "Criteria response model",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "criteria": {},
+                "description": {
+                    "type": "string",
+                    "example": "Filter for active customers"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Customer Filter"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                }
+            }
+        },
         "responses.CustomerListMinimalResponse": {
             "type": "object",
             "properties": {
@@ -13339,6 +14877,78 @@ const docTemplate = `{
                 "type": {
                     "type": "string",
                     "example": "agreement"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.EsignSubmissionListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "responses.EsignSubmissionResponse": {
+            "description": "E-signature submission data including blob URL, metadata, and submission status",
+            "type": "object",
+            "properties": {
+                "blobUrl": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "description": "BlobMetadata   *json.RawMessage ` + "`" + `json:\"blobMetadata,omitempty\" example:\"{\\\"size\\\": 1024, \\\"contentType\\\": \\\"application/pdf\\\"}\"` + "`" + `",
+                    "type": "string",
+                    "example": "CUST123"
+                },
+                "documentId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "customer@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -14134,9 +15744,6 @@ const docTemplate = `{
                 "connected": {
                     "type": "boolean"
                 },
-                "database": {
-                    "type": "integer"
-                },
                 "key_prefix": {
                     "type": "string"
                 },
@@ -14165,6 +15772,29 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "responses.RefreshInviteResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/responses.InviteResponse"
+                },
+                "details": {},
+                "error": {},
+                "lastPage": {
+                    "type": "integer"
+                },
+                "message": {},
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

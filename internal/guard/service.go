@@ -14,7 +14,7 @@ import (
 // PermissionService handles authorization logic combining Casbin RBAC with marina module validation
 type PermissionService struct {
 	model   model.Model
-	adapter *MarinaCasbinAdapter
+	Adapter *MarinaCasbinAdapter
 }
 
 // NewPermissionService creates a new permission service instance
@@ -43,7 +43,7 @@ m = r.sub == p.sub && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
 	return &PermissionService{
 		model:   m,
-		adapter: adapter,
+		Adapter: adapter,
 	}, nil
 }
 
@@ -72,7 +72,7 @@ func (s *PermissionService) CanAccess(ctx context.Context, userID, marinaID, obj
 	}
 
 	// Step 3: Load policies for this specific user and marina
-	policies, err := s.adapter.LoadPoliciesForUser(ctx, userID, marinaID)
+	policies, err := s.Adapter.LoadPoliciesForUser(ctx, userID, marinaID)
 	if err != nil {
 		return false, fmt.Errorf("failed to load user policies: %w", err)
 	}
@@ -122,7 +122,7 @@ func (s *PermissionService) GetMarinaEnabledModules(ctx context.Context, marinaI
 	}
 
 	// Get marina from database
-	marina, err := s.adapter.db.GetMarinaByID(ctx, marinaUUID)
+	marina, err := s.Adapter.DB.GetMarinaByID(ctx, marinaUUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get marina: %w", err)
 	}
@@ -149,7 +149,7 @@ func (s *PermissionService) GetMarinaEnabledModules(ctx context.Context, marinaI
 
 // GetUserPermissions returns all permissions for a user in a specific marina
 func (s *PermissionService) GetUserPermissions(ctx context.Context, userID, marinaID string) ([][]string, error) {
-	return s.adapter.LoadPoliciesForUser(ctx, userID, marinaID)
+	return s.Adapter.LoadPoliciesForUser(ctx, userID, marinaID)
 }
 
 // Helper methods for common permission patterns
@@ -188,7 +188,7 @@ func (s *PermissionService) MarinaHasModule(ctx context.Context, marinaID, modul
 	}
 
 	// Get marina from database
-	marina, err := s.adapter.db.GetMarinaByID(ctx, marinaUUID)
+	marina, err := s.Adapter.DB.GetMarinaByID(ctx, marinaUUID)
 	if err != nil {
 		return false, fmt.Errorf("failed to get marina: %w", err)
 	}
@@ -208,15 +208,15 @@ func (s *PermissionService) IsAdmin(ctx context.Context, userID string, marinaID
 	if err != nil {
 		return false, fmt.Errorf("invalid user ID: %w", err)
 	}
-	user, err := s.adapter.db.GetUserByID(ctx, userUUID)
+	user, err := s.Adapter.DB.GetUserByID(ctx, userUUID)
 	if err != nil {
 		return false, fmt.Errorf("failed to get user: %w", err)
 	}
-	role, err := s.adapter.db.GetRoleByID(ctx, user.RoleID)
+	role, err := s.Adapter.DB.GetRoleByID(ctx, user.RoleID)
 	if err != nil {
 		return false, fmt.Errorf("failed to get role: %w", err)
 	}
-	if role.Name == "superuser" || *user.IsSuperuser {
+	if role.Name == "superuser" {
 		return true, nil
 	}
 

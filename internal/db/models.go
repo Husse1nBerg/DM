@@ -37,6 +37,17 @@ type Contact struct {
 	IsCpContact *bool
 }
 
+type Criterium struct {
+	ID          uuid.UUID
+	MarinaID    uuid.UUID
+	Name        string
+	Description *string
+	Criteria    []byte
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	DeletedAt   pgtype.Timestamp
+}
+
 type CustomerSetting struct {
 	ID           uuid.UUID
 	MarinaID     uuid.UUID
@@ -96,6 +107,21 @@ type EsignDocument struct {
 	Status         string
 	BlobUrl        string
 	BlobMetadata   []byte
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	DeletedAt      pgtype.Timestamp
+}
+
+type EsignSubmission struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	DocumentID     uuid.UUID
+	Status         string
+	BlobUrl        string
+	BlobMetadata   []byte
+	CustomerID     *string
+	Email          string
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
 	DeletedAt      pgtype.Timestamp

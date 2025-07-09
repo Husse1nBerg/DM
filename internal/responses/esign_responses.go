@@ -39,6 +39,22 @@ type EsignDocumentResponse struct {
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
+// EsignSubmissionResponse represents an e-signature submission in the system
+// @Description E-signature submission data including blob URL, metadata, and submission status
+type EsignSubmissionResponse struct {
+	ID             uuid.UUID `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID uuid.UUID `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID       uuid.UUID `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
+	DocumentID     uuid.UUID `json:"documentId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	Status         string    `json:"status" example:"pending"`
+	BlobURL        string    `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
+	// BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
+	CustomerID *string    `json:"customerId,omitempty" example:"CUST123"`
+	Email      string     `json:"email" example:"customer@example.com"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt  *time.Time `json:"updatedAt,omitempty"`
+}
+
 // Convert a database EsignTemplate to a response model
 func ConvertEsignTemplateToResponse(template db.EsignTemplate) EsignTemplateResponse {
 	blobURL := utils.GetFullESignURL(&template.BlobUrl)
@@ -96,6 +112,30 @@ func ConvertEsignDocumentToResponse(document db.EsignDocument) EsignDocumentResp
 	}
 }
 
+// Convert a database EsignSubmission to a response model
+func ConvertEsignSubmissionToResponse(submission db.EsignSubmission) EsignSubmissionResponse {
+	blobURL := utils.GetFullESignURL(&submission.BlobUrl)
+	// var blobMetadata *json.RawMessage
+	// if len(submission.BlobMetadata) > 0 {
+	// 	raw := json.RawMessage(submission.BlobMetadata)
+	// 	blobMetadata = &raw
+	// }
+
+	return EsignSubmissionResponse{
+		ID:             submission.ID,
+		OrganizationID: submission.OrganizationID,
+		MarinaID:       submission.MarinaID,
+		DocumentID:     submission.DocumentID,
+		Status:         submission.Status,
+		BlobURL:        *blobURL,
+		// BlobMetadata:   blobMetadata,
+		CustomerID: submission.CustomerID,
+		Email:      submission.Email,
+		CreatedAt:  utils.PgTimeToTimePtr(submission.CreatedAt),
+		UpdatedAt:  utils.PgTimeToTimePtr(submission.UpdatedAt),
+	}
+}
+
 // NewEsignTemplateResponseSuccess creates a successful response with an e-signature template
 func NewEsignTemplateResponseSuccess(template db.EsignTemplate) BaseResponse {
 	return NewSuccessResponse(ConvertEsignTemplateToResponse(template))
@@ -124,6 +164,20 @@ func NewEsignDocumentsResponseSuccess(documents []db.EsignDocument) BaseResponse
 	return NewSuccessResponse(documentResponses)
 }
 
+// NewEsignSubmissionResponseSuccess creates a successful response with an e-signature submission
+func NewEsignSubmissionResponseSuccess(submission db.EsignSubmission) BaseResponse {
+	return NewSuccessResponse(ConvertEsignSubmissionToResponse(submission))
+}
+
+// NewEsignSubmissionsResponseSuccess creates a successful response with a list of e-signature submissions
+func NewEsignSubmissionsResponseSuccess(submissions []db.EsignSubmission) BaseResponse {
+	submissionResponses := make([]EsignSubmissionResponse, len(submissions))
+	for i, submission := range submissions {
+		submissionResponses[i] = ConvertEsignSubmissionToResponse(submission)
+	}
+	return NewSuccessResponse(submissionResponses)
+}
+
 // NewEsignTemplatesPaginatedResponse creates a paginated response with e-signature templates
 func NewEsignTemplatesPaginatedResponse(templates []db.EsignTemplate, total int64, perPage, currentPage int32) BaseResponse {
 	templateResponses := make([]EsignTemplateResponse, len(templates))
@@ -142,6 +196,15 @@ func NewEsignDocumentsPaginatedResponse(documents []db.EsignDocument, total int6
 	return NewPaginatedResponse(documentResponses, total, perPage, currentPage)
 }
 
+// NewEsignSubmissionsPaginatedResponse creates a paginated response with e-signature submissions
+func NewEsignSubmissionsPaginatedResponse(submissions []db.EsignSubmission, total int64, perPage, currentPage int32) BaseResponse {
+	submissionResponses := make([]EsignSubmissionResponse, len(submissions))
+	for i, submission := range submissions {
+		submissionResponses[i] = ConvertEsignSubmissionToResponse(submission)
+	}
+	return NewPaginatedResponse(submissionResponses, total, perPage, currentPage)
+}
+
 // EsignTemplateListResponse is purely for Swagger documentation
 type EsignTemplateListResponse struct {
 	Data        []EsignTemplateResponse `json:"data"`
@@ -158,4 +221,13 @@ type EsignDocumentListResponse struct {
 	PerPage     int32                   `json:"perPage" example:"10"`
 	CurrentPage int32                   `json:"currentPage" example:"1"`
 	LastPage    int32                   `json:"lastPage" example:"5"`
+}
+
+// EsignSubmissionListResponse is purely for Swagger documentation
+type EsignSubmissionListResponse struct {
+	Data        []EsignSubmissionResponse `json:"data"`
+	Total       int64                     `json:"total" example:"42"`
+	PerPage     int32                     `json:"perPage" example:"10"`
+	CurrentPage int32                     `json:"currentPage" example:"1"`
+	LastPage    int32                     `json:"lastPage" example:"5"`
 }

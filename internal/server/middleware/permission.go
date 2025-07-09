@@ -77,11 +77,18 @@ func (pm *PermissionMiddleware) RequirePermission() echo.MiddlewareFunc {
 			}
 
 			claims := userToken.Claims.(*token.JwtCustomClaims)
-			userID := claims.ID.String()
-			marinaID := claims.MarinaId.String()
+			userID := claims.ID
+
+			// Fetch the user's current marina_id from the database
+			queries := pm.permissionService.Adapter.DB
+			user, err := queries.GetUserByID(c.Request().Context(), userID)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user for permission check: "+err.Error()).JSON(c)
+			}
+			marinaID := user.MarinaID.String()
 
 			// Check permission
-			hasAccess, err := pm.permissionService.CanAccess(c.Request().Context(), userID, marinaID, permission.Object, permission.Action)
+			hasAccess, err := pm.permissionService.CanAccess(c.Request().Context(), userID.String(), marinaID, permission.Object, permission.Action)
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to check permissions: "+err.Error()).JSON(c)
 			}
@@ -274,6 +281,28 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["POST /api/v1/esign/documents"] = RoutePermission{Object: "esign_documents", Action: "create"}
 	routeMap["PUT /api/v1/esign/documents/:id"] = RoutePermission{Object: "esign_documents", Action: "write"}
 	routeMap["DELETE /api/v1/esign/documents/:id"] = RoutePermission{Object: "esign_documents", Action: "delete"}
+	routeMap["GET /api/v1/esign/documents/:documentId/submissions"] = RoutePermission{Object: "esign_submissions", Action: "read"}
+	routeMap["GET /api/v1/esign/submissions"] = RoutePermission{Object: "esign_submissions", Action: "read"}
+	routeMap["GET /api/v1/esign/submissions/:id"] = RoutePermission{Object: "esign_submissions", Action: "read"}
+	routeMap["POST /api/v1/esign/submissions"] = RoutePermission{Object: "esign_submissions", Action: "create"}
+	routeMap["PUT /api/v1/esign/submissions/:id"] = RoutePermission{Object: "esign_submissions", Action: "write"}
+	routeMap["DELETE /api/v1/esign/submissions/:id"] = RoutePermission{Object: "esign_submissions", Action: "delete"}
+	routeMap["GET /api/v1/esign/submissions/status"] = RoutePermission{Object: "esign_submissions", Action: "read"}
+
+	// Criteria routes
+	routeMap["GET /api/v1/criteria"] = RoutePermission{Object: "customers", Action: "read"}
+	routeMap["GET /api/v1/criteria/paginated"] = RoutePermission{Object: "customers", Action: "read"}
+	routeMap["POST /api/v1/criteria"] = RoutePermission{Object: "customers", Action: "create"}
+	routeMap["GET /api/v1/criteria/search"] = RoutePermission{Object: "customers", Action: "read"}
+	routeMap["GET /api/v1/criteria/search/paginated"] = RoutePermission{Object: "customers", Action: "read"}
+	routeMap["GET /api/v1/criteria/:criteriaId"] = RoutePermission{Object: "customers", Action: "read"}
+	routeMap["PUT /api/v1/criteria/:criteriaId"] = RoutePermission{Object: "customers", Action: "write"}
+	routeMap["DELETE /api/v1/criteria/:criteriaId"] = RoutePermission{Object: "customers", Action: "delete"}
+	routeMap["POST /api/v1/criteria/:criteriaId/duplicate"] = RoutePermission{Object: "customers", Action: "create"}
+
+	// Admin routes
+	routeMap["GET /api/v1/admin/users/marina/:marinaId"] = RoutePermission{Object: "admin", Action: "read"}
+	routeMap["GET /api/v1/admin/roles/list"] = RoutePermission{Object: "admin", Action: "read"}
 
 	return routeMap
 }

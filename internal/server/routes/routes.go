@@ -53,7 +53,8 @@ func RegisterRoutes(s *s.Server) {
 	redisHandler := h.NewRedisHandler(s)
 	notificationHandler := h.NewNotificationHandler(s)
 	esignHandler := h.NewEsignHandler(s)
-
+	criteriaHandler := h.NewCriteriaHandler(s)
+	adminHandler := h.NewAdminHandler(s)
 	// Middlewares
 	s.Echo.Use(middleware.RequestID())
 	s.Echo.Use(echozap.ZapLogger(s.Logger.DesugarZap))
@@ -103,6 +104,10 @@ func RegisterRoutes(s *s.Server) {
 		permissionProtected.Use(permissionMiddleware.RequirePermission())
 	}
 
+	// Protected invite routes
+	protectedInvite := permissionProtected.Group("/invite")
+	protectedInvite.POST("/refresh", inviteHandler.RefreshInvite)
+
 	// User routes
 	users := permissionProtected.Group("/user")
 	users.GET("/profile", userHandler.GetMyUserHandler)
@@ -123,11 +128,17 @@ func RegisterRoutes(s *s.Server) {
 	// Customer intake (public endpoint)
 	base.POST("/customer-intake", customerHandler.CustomerIntake)
 
+	// Public E-signature routes
+	publicEsign := base.Group("/public/esign")
+	publicEsign.GET("/submissions/:id", esignHandler.GetEsignSubmissionPublic)
+	publicEsign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmissionPublic)
+
 	// User by role, organization, marina
 	users.GET("/role/:roleId", userHandler.GetUsersByRoleHandler)
 	users.GET("/organization/:organizationId", userHandler.GetUsersByOrganizationHandler)
 	users.GET("/marina/:marinaId", userHandler.GetUsersByMarinaHandler)
 	users.GET("/marina/:marinaId/assigned", userHandler.GetMarinaUsersList)
+	users.GET("/marina/:marinaId/not-assigned", userHandler.GetUsersNotAssignedToMarinaHandler)
 
 	// User-marina assignments
 	users.POST("/marina/assign", userHandler.AssignUserToMarinaHandler)
@@ -170,6 +181,18 @@ func RegisterRoutes(s *s.Server) {
 	marinas.POST("/:id/contacts", contactHandler.CreateContact)
 	marinas.PUT("/:id/contacts/:contactId", contactHandler.UpdateContact)
 	marinas.DELETE("/:id/contacts/:contactId", contactHandler.DeleteContact)
+
+	// Criteria routes
+	criteria := permissionProtected.Group("/criteria")
+	criteria.GET("", criteriaHandler.ListCriteria)
+	criteria.GET("/paginated", criteriaHandler.ListCriteriaPaginated)
+	criteria.POST("", criteriaHandler.CreateCriteria)
+	criteria.GET("/search", criteriaHandler.SearchCriteria)
+	criteria.GET("/search/paginated", criteriaHandler.SearchCriteriaPaginated)
+	criteria.GET("/:criteriaId", criteriaHandler.GetCriteria)
+	criteria.PUT("/:criteriaId", criteriaHandler.UpdateCriteria)
+	criteria.DELETE("/:criteriaId", criteriaHandler.DeleteCriteria)
+	criteria.POST("/:criteriaId/duplicate", criteriaHandler.DuplicateCriteria)
 
 	// Address routes
 	addresses := permissionProtected.Group("/addresses")
@@ -266,6 +289,13 @@ func RegisterRoutes(s *s.Server) {
 	esign.GET("/documents/:id", esignHandler.GetEsignDocument)
 	esign.PUT("/documents/:id", esignHandler.UpdateEsignDocument)
 	esign.DELETE("/documents/:id", esignHandler.DeleteEsignDocument)
+	esign.GET("/documents/:documentId/submissions", esignHandler.ListEsignSubmissionsByDocument)
+	esign.POST("/submissions", esignHandler.CreateEsignSubmission)
+	esign.GET("/submissions", esignHandler.ListEsignSubmissions)
+	esign.GET("/submissions/:id", esignHandler.GetEsignSubmission)
+	esign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmission)
+	esign.DELETE("/submissions/:id", esignHandler.DeleteEsignSubmission)
+	esign.GET("/submissions/status", esignHandler.ListEsignSubmissionsByStatus)
 
 	// Work Order routes
 	workOrders := permissionProtected.Group("/work-orders")
@@ -354,4 +384,8 @@ func RegisterRoutes(s *s.Server) {
 	notifications.GET("/type/:type", notificationHandler.GetNotificationsByTypeHandler)
 	notifications.DELETE("/:id", notificationHandler.DeleteNotificationHandler)
 
+	// Admin routes
+	admin := permissionProtected.Group("/admin")
+	admin.GET("/user/marina/:marinaId", adminHandler.GetUsersByMarinaHandler)
+	admin.GET("/role/list", adminHandler.ListRolesHandler)
 }

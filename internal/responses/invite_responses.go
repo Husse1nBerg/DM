@@ -17,3 +17,8 @@ type ConfirmTokenResponse struct {
 type AcceptInvitationResponse struct {
 	BaseResponse
 }
+
+type RefreshInviteResponse struct {
+	BaseResponse
+	Data InviteResponse `json:"data"`
+}

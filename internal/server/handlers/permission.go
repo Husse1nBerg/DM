@@ -74,7 +74,14 @@ func (h *PermissionTestHandler) TestPermission(c echo.Context) error {
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID.String()
-	marinaID := claims.MarinaId.String()
+
+	// Fetch the user's current marina_id from the database
+	queries := h.server.DB.Queries()
+	user, err := queries.GetUserByID(ctx, claims.ID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+err.Error()).JSON(c)
+	}
+	marinaID := user.MarinaID.String()
 
 	// Check permission
 	hasAccess, err := permissionService.CanAccess(ctx, userID, marinaID, req.Object, req.Action)
@@ -154,7 +161,14 @@ func (h *PermissionTestHandler) TestPermissionBatch(c echo.Context) error {
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID.String()
-	marinaID := claims.MarinaId.String()
+
+	// Fetch the user's current marina_id from the database
+	queries := h.server.DB.Queries()
+	user, err := queries.GetUserByID(ctx, claims.ID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+err.Error()).JSON(c)
+	}
+	marinaID := user.MarinaID.String()
 
 	permissionService, err := guard.NewPermissionService(h.server.DB.Queries())
 	if err != nil {
@@ -233,7 +247,14 @@ func (h *PermissionTestHandler) GetUserPermissions(c echo.Context) error {
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID.String()
-	marinaID := claims.MarinaId.String()
+
+	// Fetch the user's current marina_id from the database
+	queries := h.server.DB.Queries()
+	user, err := queries.GetUserByID(ctx, claims.ID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+err.Error()).JSON(c)
+	}
+	marinaID := user.MarinaID.String()
 
 	permissionService, err := guard.NewPermissionService(h.server.DB.Queries())
 	if err != nil {

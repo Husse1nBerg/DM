@@ -132,11 +132,44 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
 	}
 
+	role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
 	email := utils.LowerCase(req.Email)
 	// Check if the email is already taken
-	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+		// Email exists, check if user is already assigned to this marina
+		canAccess, err := queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if canAccess {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
+		}
+		// Assign the existing user to the marina with CustomerID
+		assignUserToMarina := db.AssignUserToMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		}
+		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Upsert customer settings as in the original logic
+		_, err = queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
+			MarinaID:     req.MarinaID,
+			EnablePortal: utils.Pointer(true),
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		return responses.NewMessageResponse(http.StatusOK, "User assigned to marina").JSON(c)
 	}
 	username := req.Username
 	if username == "" {
@@ -160,11 +193,11 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	failedLoginAttempts := int32(0)
 	isActive := true
 	isSuperuser := false
+	if role.Type == "internal" {
+		isSuperuser = true
+	}
 	if req.IsActive != nil {
 		isActive = *req.IsActive
-	}
-	if req.IsSuperuser != nil {
-		isSuperuser = *req.IsSuperuser
 	}
 
 	params := db.CreateUserParams{
@@ -451,36 +484,33 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 
 	queries := g.server.DB.Queries()
 
-	// Get paginated users by marina
-	params := db.GetUsersByMarinaPaginatedParams{
-		MarinaID:   marinaID,
-		IsCustomer: isCustomer,
-		Limit:      pagination.PageSize,
-		Offset:     (pagination.Page - 1) * pagination.PageSize,
+	// Use the new ListUserMarinasAssignmentsPaginated query
+	var isCustomerVal bool
+	if isCustomer != nil {
+		isCustomerVal = *isCustomer
 	}
-	userRows, err := queries.GetUsersByMarinaPaginated(c.Request().Context(), params)
+	params := db.ListUserMarinasAssignmentsPaginatedParams{
+		MarinaID: marinaID,
+		Column2:  isCustomerVal,
+		Limit:    pagination.PageSize,
+		Offset:   (pagination.Page - 1) * pagination.PageSize,
+	}
+	rows, err := queries.ListUserMarinasAssignmentsPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Get total count for pagination
-	allUsers, err := queries.GetUsersByMarina(c.Request().Context(), db.GetUsersByMarinaParams{
-		MarinaID:   marinaID,
-		IsCustomer: isCustomer,
-	})
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-	}
-	total := int64(len(allUsers))
-
-	// Create user responses with server instance for DME client
-	userResponses := make([]responses.UserResponse, len(userRows))
-	for i, user := range userRows {
-		response := responses.NewUserResponseFromRow(user, g.server)
+	// Map to response DTOs
+	userResponses := make([]responses.UserResponse, len(rows))
+	for i, row := range rows {
+		response := responses.NewUserResponseFromUserMarinasAssignmentRow(row, g.server)
 		if response != nil {
 			userResponses[i] = *response
 		}
 	}
+
+	total := int64(len(rows))
+
 	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
@@ -548,9 +578,27 @@ func (g *UserHandler) GetMarinaUsersList(c echo.Context) error {
 	}
 	total := int64(len(allUsers))
 
+	// Filter by customer_id: if isCustomer==true, customer_id must not be nil; if isCustomer==false, customer_id must be nil
+	filteredUserRows := make([]db.GetMarinaUsersListPaginatedRow, 0, len(userRows))
+	if isCustomer != nil {
+		for _, user := range userRows {
+			if *isCustomer {
+				if user.CustomerID != nil {
+					filteredUserRows = append(filteredUserRows, user)
+				}
+			} else {
+				if user.CustomerID == nil {
+					filteredUserRows = append(filteredUserRows, user)
+				}
+			}
+		}
+	} else {
+		filteredUserRows = userRows
+	}
+
 	// Create user responses with server instance for DME client
-	userResponses := make([]responses.UserResponse, len(userRows))
-	for i, user := range userRows {
+	userResponses := make([]responses.UserResponse, len(filteredUserRows))
+	for i, user := range filteredUserRows {
 		response := responses.NewUserResponseFromMarinaListRow(user, g.server)
 		if response != nil {
 			userResponses[i] = *response
@@ -640,13 +688,72 @@ func (g *UserHandler) UnassignUserFromMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	queries := g.server.DB.Queries()
+	ctx := c.Request().Context()
+
+	// Get the user to check their current active marina
+	user, err := queries.GetUserByID(ctx, req.UserID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// If the user's current active marina is the one being unassigned
+	if user.MarinaID == req.MarinaID {
+		// Get all marinas the user is assigned to (including the one being unassigned)
+		marinas, err := queries.GetUserMarinasList(ctx, req.UserID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if len(marinas) <= 1 {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Cannot unassign the last marina from the user. Deactivate the user instead.").JSON(c)
+		}
+		var newActiveMarinaID uuid.UUID
+		for _, m := range marinas {
+			if m.ID != req.MarinaID {
+				// Check if the marina is active
+				if m.IsActive != nil && *m.IsActive {
+					newActiveMarinaID = m.ID
+					break
+				}
+			}
+		}
+		// If another active marina is found, switch to it
+		if newActiveMarinaID != uuid.Nil {
+			updateParams := db.UpdateUserParams{
+				ID:                  user.ID,
+				FirstName:           user.FirstName,
+				LastName:            user.LastName,
+				Email:               user.Email,
+				EmailVerified:       user.EmailVerified,
+				Phone:               user.Phone,
+				Title:               user.Title,
+				Image:               user.Image,
+				PasswordHash:        user.PasswordHash,
+				LastLogin:           user.LastLogin,
+				FailedLoginAttempts: user.FailedLoginAttempts,
+				LockedUntil:         user.LockedUntil,
+				LastPasswordReset:   user.LastPasswordReset,
+				MarinaID:            newActiveMarinaID,
+				RoleID:              user.RoleID,
+				IsSuperuser:         user.IsSuperuser,
+				IsActive:            user.IsActive,
+				UserAnalytics:       user.UserAnalytics,
+			}
+			_, err := queries.UpdateUser(ctx, updateParams)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			}
+		} else {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Cannot unassign: the user has no other active marinas to switch to").JSON(c)
+		}
+	}
+
 	params := db.UnassignUserFromMarinaParams{
 		UserID:   req.UserID,
 		MarinaID: req.MarinaID,
 	}
 
-	queries := g.server.DB.Queries()
-	err := queries.UnassignUserFromMarina(c.Request().Context(), params)
+	err = queries.UnassignUserFromMarina(ctx, params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -1329,9 +1436,59 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 
 	// Check if the email is already taken
 	email := utils.LowerCase(req.Email)
-	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+		// Email exists, check if user is already assigned to this marina
+		canAccess, err := queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if canAccess {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
+		}
+		if userByEmail.IsCustomer != nil && (*userByEmail.IsCustomer == true) {
+			return responses.NewErrorResponse(http.StatusBadRequest, "User is created as other type of user").JSON(c)
+		}
+		// Assign the existing user to the marina with CustomerID
+		assignUserToMarina := db.AssignUserToMarinaParams{
+			UserID:     userByEmail.ID,
+			MarinaID:   req.MarinaID,
+			CustomerID: req.CustomerID,
+		}
+		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Upsert customer settings as in the original logic
+		_, err = queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
+			MarinaID:     req.MarinaID,
+			CustomerID:   *req.CustomerID,
+			EnablePortal: utils.Pointer(true),
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Send assigned_to_marina email
+		orgLogo := ""
+		if organization.Image != nil {
+			orgLogo = *organization.Image
+		}
+		assignedData := sendgrid.AssignedToMarinaTemplateData{
+			CustomerLogo:    orgLogo,
+			BusinessName:    marina.Name,
+			UserName:        userByEmail.FirstName,
+			HomeURL:         cfg.App.HomeURL(),
+			TermsConditions: cfg.App.TermsConditionsURL(),
+		}
+		_, _, _ = g.server.SendGrid.SendAssignedToMarinaEmail(
+			[]string{userByEmail.Email},
+			"You have been assigned to a new marina",
+			assignedData,
+		)
+		return responses.NewMessageResponse(http.StatusOK, "User assigned to marina").JSON(c)
 	}
 	username := req.Username
 	if username == "" {
@@ -1349,9 +1506,6 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	isSuperuser := false
 	if req.IsActive != nil {
 		isActive = *req.IsActive
-	}
-	if req.IsSuperuser != nil {
-		isSuperuser = *req.IsSuperuser
 	}
 
 	params := db.CreateCustomerUserParams{
@@ -1533,11 +1687,56 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Marina and organization are not linked").JSON(c)
 	}
 
+	role, err := queries.GetRoleByID(c.Request().Context(), req.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role not found").JSON(c)
+	}
+
 	// Check if the email is already taken
 	email := utils.LowerCase(req.Email)
-	_, err = queries.GetUserByEmail(c.Request().Context(), email)
+	userByEmail, err := queries.GetUserByEmail(c.Request().Context(), email)
 	if err == nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken").JSON(c)
+		// Email exists, check if user is already assigned to this marina
+		canAccess, err := queries.UserCanAccessMarina(c.Request().Context(), db.UserCanAccessMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if canAccess {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
+		}
+		if userByEmail.IsCustomer != nil && (*userByEmail.IsCustomer == false) {
+			return responses.NewErrorResponse(http.StatusBadRequest, "User is created as other type of user").JSON(c)
+		}
+		// Assign the existing user to the marina
+		assignUserToMarina := db.AssignUserToMarinaParams{
+			UserID:   userByEmail.ID,
+			MarinaID: req.MarinaID,
+		}
+		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		// Send assigned_to_marina email
+		orgLogo := ""
+		if organization.Image != nil {
+			orgLogo = *organization.Image
+		}
+		assignedData := sendgrid.AssignedToMarinaTemplateData{
+			CustomerLogo:    orgLogo,
+			BusinessName:    marina.Name,
+			UserName:        userByEmail.FirstName,
+			HomeURL:         cfg.App.HomeURL(),
+			TermsConditions: cfg.App.TermsConditionsURL(),
+		}
+		_, _, _ = g.server.SendGrid.SendAssignedToMarinaEmail(
+			[]string{userByEmail.Email},
+			"You have been assigned to a new marina",
+			assignedData,
+		)
+		return responses.NewMessageResponse(http.StatusOK, "User assigned to marina").JSON(c)
 	}
 	username := req.Username
 	if username == "" {
@@ -1554,11 +1753,11 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 	failedLoginAttempts := int32(0)
 	isActive := true
 	isSuperuser := false
+	if role.Type == "internal" {
+		isSuperuser = true
+	}
 	if req.IsActive != nil {
 		isActive = *req.IsActive
-	}
-	if req.IsSuperuser != nil {
-		isSuperuser = *req.IsSuperuser
 	}
 
 	// Create user without password hash - they'll set it via invitation
@@ -1733,26 +1932,74 @@ func (g *UserHandler) GetUsersByCustomerIDHandler(c echo.Context) error {
 	queries := g.server.DB.Queries()
 
 	// Get paginated users by marina
-	params := db.GetMarinaCustomerUserByCustomerIDPaginatedParams{
+	params := db.GetCustomerMarinaUsersPaginatedParams{
 		MarinaID:   marinaID,
 		CustomerID: customerID,
 		Limit:      pagination.PageSize,
 		Offset:     (pagination.Page - 1) * pagination.PageSize,
 	}
-	users, err := queries.GetMarinaCustomerUserByCustomerIDPaginated(c.Request().Context(), params)
+	users, err := queries.GetCustomerMarinaUsersPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Get total count for pagination
-	allUsers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
+	allUsers, err := queries.CountCustomerMarinaUsers(c.Request().Context(), db.CountCustomerMarinaUsersParams{
 		MarinaID:   marinaID,
 		CustomerID: customerID,
 	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-	total := int64(len(allUsers))
+	total := allUsers
 
+	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
+}
+
+// GetUsersNotAssignedToMarinaHandler gets users not assigned to a specific marina
+//
+//	@Summary		Get users not assigned to a marina
+//	@Description	Get users who are not assigned to a specific marina (through user_marinas table)
+//	@Tags		User
+//	@Accept		json
+//	@Produce	json
+//	@Param		marinaId	path	string	true	"Marina ID"
+//	@Param		page		query	int	false	"Page number" default(1)
+//	@Param		pageSize	query	int	false	"Page size" default(10)
+//	@Success	200	{object} responses.UserListResponse "List of users not assigned to the marina"
+//	@Failure	400	{object} responses.Error "Bad request"
+//	@Failure	500	{object} responses.Error "Server error"
+//	@Security	ApiKeyAuth
+//
+//	@Router		/user/marina/{marinaId}/not-assigned [get]
+func (g *UserHandler) GetUsersNotAssignedToMarinaHandler(c echo.Context) error {
+	// Parse marina ID
+	marinaIDStr := c.Param("marinaId")
+	marinaID, err := uuid.Parse(marinaIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
+	}
+
+	// Parse pagination params
+	pagination := new(requests.PaginationQuery)
+	if err := c.Bind(pagination); err != nil {
+		pagination.Page = 1
+		pagination.PageSize = 10
+	}
+
+	queries := g.server.DB.Queries()
+	params := db.GetUsersNotAssignedToMarinaPaginatedParams{
+		MarinaID: marinaID,
+		Limit:    pagination.PageSize,
+		Offset:   (pagination.Page - 1) * pagination.PageSize,
+	}
+	users, err := queries.GetUsersNotAssignedToMarinaPaginated(c.Request().Context(), params)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	total, err := queries.CountUsersNotAssignedToMarina(c.Request().Context(), marinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
 	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
 }
