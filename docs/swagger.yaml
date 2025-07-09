@@ -9135,6 +9135,69 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /plans/document:
+    get:
+      consumes:
+      - application/json
+      description: Get all document plans with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of plans
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List document plans
+      tags:
+      - Plans
+  /plans/document/{planId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific document plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: planId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan details
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid plan ID
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Plan not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get document plan
+      tags:
+      - Plans
   /plans/notes-messages:
     get:
       consumes:

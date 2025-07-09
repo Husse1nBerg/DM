@@ -98,6 +98,17 @@ type Document struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
+type DocumentPlan struct {
+	ID            uuid.UUID
+	Name          string
+	MonthlyPrice  float64
+	DocumentLimit *int32
+	UserLimit     *string
+	IsMostPopular *bool
+	CreatedAt     pgtype.Timestamp
+	UpdatedAt     pgtype.Timestamp
+}
+
 type EsignDocument struct {
 	ID             uuid.UUID
 	TemplateID     uuid.UUID
@@ -180,6 +191,7 @@ type Marina struct {
 	Modules              []byte
 	InternalAnnouncement *string
 	ExternalAnnouncement *string
+	DocumentPlanID       uuid.UUID
 }
 
 type MarinaGallery struct {

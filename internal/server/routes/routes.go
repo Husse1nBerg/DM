@@ -344,6 +344,11 @@ func RegisterRoutes(s *s.Server) {
 	storagePlans.GET("", planHandler.ListStoragePlans)
 	storagePlans.GET("/:planId", planHandler.GetStoragePlan)
 
+	// Document Plans
+	documentPlans := plans.Group("/document")
+	documentPlans.GET("", planHandler.ListDocumentPlans)
+	documentPlans.GET("/:planId", planHandler.GetDocumentPlan)
+
 	// Test routes (for testing the permission system)
 	test := permissionProtected.Group("/test")
 	test.POST("/permissions", permissionTestHandler.TestPermission)
