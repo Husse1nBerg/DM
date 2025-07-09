@@ -519,21 +519,6 @@ func (h *EsignHandler) CreateEsignDocument(c echo.Context) error {
 	if status == "" {
 		status = "draft" // Default status
 	}
-	// Get file from form
-	file, header, err := c.Request().FormFile("file")
-	if err != nil {
-		h.server.Logger.Zap.Error("Error getting file", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, "Document file is required").JSON(c)
-	}
-	defer file.Close()
-
-	// Upload the file to S3 using document storage service
-	filePath, err := h.esignService.UploadFileToS3(c.Request().Context(), file, header, "esign_document")
-	if err != nil {
-		h.server.Logger.Zap.Error("Error uploading file to S3", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
-	}
-
 	// Parse optional template ID
 	templateIDStr := c.FormValue("templateId")
 	var document db.EsignDocument
@@ -545,6 +530,19 @@ func (h *EsignHandler) CreateEsignDocument(c echo.Context) error {
 			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid template ID format").JSON(c)
 		}
 
+		template, err := h.server.DB.Queries().GetEsignTemplateByID(c.Request().Context(), templateID)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching template", err)
+			return responses.NewErrorResponse(http.StatusNotFound, "Template not found").JSON(c)
+		}
+
+		// Duplicate the document file in S3
+		duplicatedFilePath, err := h.esignService.DuplicateFile(c.Request().Context(), template.BlobUrl)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error duplicating document file", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error duplicating document file: "+err.Error()).JSON(c)
+		}
+
 		// Create document with template
 		document, err = h.server.DB.Queries().CreateEsignDocumentWithTemplate(c.Request().Context(), db.CreateEsignDocumentWithTemplateParams{
 			TemplateID:     templateID,
@@ -552,10 +550,30 @@ func (h *EsignHandler) CreateEsignDocument(c echo.Context) error {
 			MarinaID:       marinaID,
 			Type:           documentType,
 			Status:         status,
-			BlobUrl:        filePath,
+			BlobUrl:        duplicatedFilePath,
 			BlobMetadata:   nil, // Ignoring blob metadata for now as requested
 		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error creating e-signature document with template", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating document").JSON(c)
+		}
 	} else {
+
+		// Get file from form
+		file, header, err := c.Request().FormFile("file")
+		if err != nil {
+			h.server.Logger.Zap.Error("Error getting file", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Document file is required").JSON(c)
+		}
+		defer file.Close()
+
+		// Upload the file to S3 using document storage service
+		filePath, err := h.esignService.UploadFileToS3(c.Request().Context(), file, header, "esign_document")
+		if err != nil {
+			h.server.Logger.Zap.Error("Error uploading file to S3", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
+		}
+
 		// Create document without template
 		document, err = h.server.DB.Queries().CreateEsignDocument(c.Request().Context(), db.CreateEsignDocumentParams{
 			OrganizationID: organizationID,
@@ -565,11 +583,10 @@ func (h *EsignHandler) CreateEsignDocument(c echo.Context) error {
 			BlobUrl:        filePath,
 			BlobMetadata:   nil, // Ignoring blob metadata for now as requested
 		})
-	}
-
-	if err != nil {
-		h.server.Logger.Zap.Error("Error creating e-signature document", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating document").JSON(c)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error creating e-signature document", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating document").JSON(c)
+		}
 	}
 
 	response := responses.NewEsignDocumentResponseSuccess(document)
