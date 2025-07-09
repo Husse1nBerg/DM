@@ -247,6 +247,37 @@ func NewUserResponseFromUserMarinasAssignmentRowAdmin(r db.ListUserMarinasAssign
 	return response
 }
 
+func NewUserResponseFromUserMarinasAssignmentRowAdminOnly(r db.ListUserMarinasAssignmentsPaginatedAdminOnlyRow, server *server.Server) *UserResponse {
+	response := &UserResponse{
+		ID:                  r.ID,
+		Username:            r.Username,
+		FirstName:           r.FirstName,
+		LastName:            r.LastName,
+		Email:               r.Email,
+		EmailVerified:       utils.PgTimeToTimePtr(r.EmailVerified),
+		Phone:               r.Phone,
+		Title:               r.Title,
+		Image:               utils.GetFullImageURL(r.Image),
+		LastLogin:           utils.PgTimeToTimePtr(r.LastLogin),
+		FailedLoginAttempts: r.FailedLoginAttempts,
+		LockedUntil:         utils.PgTimeToTimePtr(r.LockedUntil),
+		LastPasswordReset:   utils.PgTimeToTimePtr(r.LastPasswordReset),
+		OrganizationID:      r.OrganizationID,
+		MarinaID:            r.MarinaID_2,
+		RoleID:              r.RoleID,
+		IsSuperuser:         r.IsSuperuser,
+		IsActive:            r.IsActive,
+		UserAnalytics:       r.UserAnalytics,
+		CreatedAt:           utils.PgTimeToTimePtr(r.CreatedAt),
+		UpdatedAt:           utils.PgTimeToTimePtr(r.UpdatedAt),
+		CustomerID:          r.CustomerID_2,
+		IsCustomer:          r.IsCustomer,
+		RoleName:            r.RoleName,
+	}
+
+	return response
+}
+
 func NewUsersPaginatedResponseFromRows(users []db.GetUsersByMarinaPaginatedRow, total int64, perPage, page int32) BaseResponse {
 	userResponses := make([]UserResponse, len(users))
 	for i, user := range users {

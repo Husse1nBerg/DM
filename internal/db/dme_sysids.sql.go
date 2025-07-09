@@ -295,6 +295,31 @@ func (q *Queries) GetDMESysIDsByOrgID(ctx context.Context, organizationID uuid.U
 	return items, nil
 }
 
+const getDMESysIdBySystemID = `-- name: GetDMESysIdBySystemID :one
+SELECT d.id, d.organization_id, d.marina_id, d.name, d.description, d.system_id, d.is_active, d.created_at, d.updated_at, d.deleted_at
+FROM dme_sysids d
+WHERE d.system_id = $1
+    AND d.deleted_at IS NULL
+`
+
+func (q *Queries) GetDMESysIdBySystemID(ctx context.Context, systemID string) (DmeSysid, error) {
+	row := q.db.QueryRow(ctx, getDMESysIdBySystemID, systemID)
+	var i DmeSysid
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.Name,
+		&i.Description,
+		&i.SystemID,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const hardDeleteDMESysID = `-- name: HardDeleteDMESysID :exec
 DELETE FROM dme_sysids
 WHERE id = $1
