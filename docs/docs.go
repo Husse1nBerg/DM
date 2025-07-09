@@ -8531,6 +8531,81 @@ const docTemplate = `{
                 }
             }
         },
+        "/public/esign/dme/documents": {
+            "post": {
+                "description": "Creates a new e-signature document for the DME system",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Documents"
+                ],
+                "summary": "Create e-signature document for DME",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Document status (default: dme_draft)",
+                        "name": "status",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Document type (default: document)",
+                        "name": "type",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignDocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/public/esign/submissions/{id}": {
             "get": {
                 "description": "Retrieves an e-signature submission by ID without authentication",
@@ -12771,9 +12846,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "documentId",
-                "email",
-                "marinaId",
-                "organizationId"
+                "email"
             ],
             "properties": {
                 "customerId": {
@@ -12787,14 +12860,6 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "customer@example.com"
-                },
-                "marinaId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "organizationId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
             }
         },

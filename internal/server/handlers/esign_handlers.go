@@ -1404,3 +1404,82 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 
 	return responses.NewEsignSubmissionResponseSuccess(submission).JSON(c)
 }
+
+// CreateEsignDocument creates a new e-signature document
+//
+//	@Summary		Create e-signature document for DME
+//	@Description	Creates a new e-signature document for the DME system
+//	@Tags			E-signature Documents
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			systemId		formData	string	true	"System ID"
+//	@Param			status			formData	string	false	"Document status (default: dme_draft)"
+//	@Param			type			formData	string	false	"Document type (default: document)"
+//	@Param			file			formData	file	true	"Document file"
+//	@Success		201				{object}	responses.BaseResponse{data=responses.EsignDocumentResponse}
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
+//	@Router			/public/esign/dme/documents [post]
+func (h *EsignHandler) CreateEsignDocumentDME(c echo.Context) error {
+	systemID := c.FormValue("systemId")
+	if systemID == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required").JSON(c)
+	}
+
+	sysid, err := h.server.DB.Queries().GetDMESysIdBySystemID(c.Request().Context(), systemID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching DME sysid by system ID - Not found", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "System Id is not linked to any marina").JSON(c)
+	}
+
+	if sysid.MarinaID == uuid.Nil {
+		h.server.Logger.Zap.Error("No marina linked to DME sysid", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "System Id is not linked to any marina").JSON(c)
+	}
+
+	organizationID := sysid.OrganizationID
+	marinaID := sysid.MarinaID
+
+	// Parse form values
+	documentType := c.FormValue("type")
+	if documentType == "" {
+		documentType = "document"
+	}
+
+	status := c.FormValue("status")
+	if status == "" {
+		status = "dme_draft" // Default status
+	}
+	// Get file from form
+	file, header, err := c.Request().FormFile("file")
+	if err != nil {
+		h.server.Logger.Zap.Error("Error getting file", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Document file is required").JSON(c)
+	}
+	defer file.Close()
+
+	// Upload the file to S3 using document storage service
+	filePath, err := h.esignService.UploadFileToS3(c.Request().Context(), file, header, "esign_document")
+	if err != nil {
+		h.server.Logger.Zap.Error("Error uploading file to S3", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
+	}
+
+	// Create document without template
+	document, err := h.server.DB.Queries().CreateEsignDocument(c.Request().Context(), db.CreateEsignDocumentParams{
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		Type:           documentType,
+		Status:         status,
+		BlobUrl:        filePath,
+		BlobMetadata:   nil, // Ignoring blob metadata for now as requested
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error creating e-signature document", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating document").JSON(c)
+	}
+
+	response := responses.NewEsignDocumentResponseSuccess(document)
+	response.Code = http.StatusCreated
+	return response.JSON(c)
+}

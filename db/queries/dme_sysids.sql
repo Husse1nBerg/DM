@@ -122,3 +122,8 @@ WHERE id = $1;
 -- name: HardDeleteDMESysID :exec
 DELETE FROM dme_sysids
 WHERE id = $1;
+-- name: GetDMESysIdBySystemID :one
+SELECT d.*
+FROM dme_sysids d
+WHERE d.system_id = $1
+    AND d.deleted_at IS NULL;

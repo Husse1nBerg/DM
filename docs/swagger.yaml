@@ -1359,17 +1359,9 @@ definitions:
       email:
         example: customer@example.com
         type: string
-      marinaId:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
     required:
     - documentId
     - email
-    - marinaId
-    - organizationId
     type: object
   requests.CreateMarinaRequest:
     properties:
@@ -9284,6 +9276,53 @@ paths:
       summary: Project details
       tags:
       - Generic
+  /public/esign/dme/documents:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new e-signature document for the DME system
+      parameters:
+      - description: System ID
+        in: formData
+        name: systemId
+        required: true
+        type: string
+      - description: 'Document status (default: dme_draft)'
+        in: formData
+        name: status
+        type: string
+      - description: 'Document type (default: document)'
+        in: formData
+        name: type
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignDocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Create e-signature document for DME
+      tags:
+      - E-signature Documents
   /public/esign/submissions/{id}:
     get:
       consumes:
