@@ -1449,6 +1449,9 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		if canAccess {
 			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
 		}
+		if userByEmail.IsCustomer != nil && (*userByEmail.IsCustomer == true) {
+			return responses.NewErrorResponse(http.StatusBadRequest, "User is created as other type of user").JSON(c)
+		}
 		// Assign the existing user to the marina with CustomerID
 		assignUserToMarina := db.AssignUserToMarinaParams{
 			UserID:     userByEmail.ID,
@@ -1703,6 +1706,9 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		}
 		if canAccess {
 			return responses.NewErrorResponse(http.StatusBadRequest, "Email already taken for this marina").JSON(c)
+		}
+		if userByEmail.IsCustomer != nil && (*userByEmail.IsCustomer == false) {
+			return responses.NewErrorResponse(http.StatusBadRequest, "User is created as other type of user").JSON(c)
 		}
 		// Assign the existing user to the marina
 		assignUserToMarina := db.AssignUserToMarinaParams{
