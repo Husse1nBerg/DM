@@ -20,7 +20,9 @@ INSERT INTO marinas (
         text_usage,
         notes_messages_plan_id,
         storage_plan_id,
-        modules
+        document_plan_id,
+        modules,
+        document_usage
     )
 VALUES (
         $1,
@@ -43,7 +45,9 @@ VALUES (
         0,
         $16,
         $17,
-        $18
+        $18,
+        $19,
+        0
     )
 RETURNING *;
 -- name: GetMarinaByID :one
@@ -99,9 +103,11 @@ SET name = $2,
     text_usage = COALESCE($17, text_usage),
     notes_messages_plan_id = $18,
     storage_plan_id = $19,
-    modules = $20,
-    internal_announcement = $21,
-    external_announcement = $22
+    document_plan_id = $20,
+    modules = $21,
+    document_usage = COALESCE($22, document_usage),
+    internal_announcement = $23,
+    external_announcement = $24
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec
@@ -162,6 +168,23 @@ WHERE id = $1
 RETURNING *;
 -- name: GetMarinaTextUsage :one
 SELECT COALESCE(text_usage, 0)::smallint
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL;
+-- name: IncrementMarinaDocumentUsage :one
+UPDATE marinas
+SET document_usage = COALESCE(document_usage, 0)::bigint + $2::bigint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: DecrementMarinaDocumentUsage :one
+UPDATE marinas
+SET document_usage = GREATEST(COALESCE(document_usage, 0)::bigint - $2::bigint, 0)::bigint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: GetMarinaDocumentUsage :one
+SELECT COALESCE(document_usage, 0)::bigint
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL;

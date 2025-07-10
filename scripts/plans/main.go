@@ -198,6 +198,86 @@ func RunPlansSeed() {
 			log.Printf("Updated storage plan: %s", p.name)
 		}
 	}
+
+	// Seed Document Plans
+	documentPlans := []struct {
+		name          string
+		monthlyPrice  float64
+		documentLimit *int32
+		userLimit     *string
+		isMostPopular bool
+	}{
+		{
+			name:          "Free Version",
+			monthlyPrice:  0.00,
+			documentLimit: u.Pointer(int32(10)),
+			userLimit:     u.Pointer("Unlimited Users"),
+			isMostPopular: false,
+		},
+		{
+			name:          "Starter",
+			monthlyPrice:  110.00,
+			documentLimit: u.Pointer(int32(500)),
+			userLimit:     u.Pointer("Unlimited Users"),
+			isMostPopular: false,
+		},
+		{
+			name:          "Intermediate",
+			monthlyPrice:  199.00,
+			documentLimit: u.Pointer(int32(1500)),
+			userLimit:     u.Pointer("Unlimited Users"),
+			isMostPopular: true,
+		},
+		{
+			name:          "Advanced",
+			monthlyPrice:  500.00,
+			documentLimit: nil,
+			userLimit:     u.Pointer("Unlimited Users"),
+			isMostPopular: false,
+		},
+		{
+			name:          "Pay as You Go",
+			monthlyPrice:  0.00,
+			documentLimit: nil,
+			userLimit:     u.Pointer("Unlimited Users"),
+			isMostPopular: false,
+		},
+	}
+
+	for _, p := range documentPlans {
+		existingPlan, err := q.GetDocumentPlanByName(ctx, p.name)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				_, err = q.CreateDocumentPlan(ctx, sqlc.CreateDocumentPlanParams{
+					Name:          p.name,
+					MonthlyPrice:  p.monthlyPrice,
+					DocumentLimit: p.documentLimit,
+					UserLimit:     p.userLimit,
+					IsMostPopular: u.Pointer(p.isMostPopular),
+				})
+				if err != nil {
+					log.Fatalf("failed to create document plan %s: %v", p.name, err)
+				}
+				log.Printf("Created document plan: %s", p.name)
+			} else {
+				log.Fatalf("failed to get document plan %s: %v", p.name, err)
+			}
+		} else {
+			// Update existing plan
+			_, err = q.UpdateDocumentPlan(ctx, sqlc.UpdateDocumentPlanParams{
+				ID:            existingPlan.ID,
+				Name:          p.name,
+				MonthlyPrice:  p.monthlyPrice,
+				DocumentLimit: p.documentLimit,
+				UserLimit:     p.userLimit,
+				IsMostPopular: u.Pointer(p.isMostPopular),
+			})
+			if err != nil {
+				log.Fatalf("failed to update document plan %s: %v", p.name, err)
+			}
+			log.Printf("Updated document plan: %s", p.name)
+		}
+	}
 }
 
 func main() {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -67,6 +68,38 @@ func (h *EsignHandler) updateEsignUsage(ctx context.Context, marinaID uuid.UUID)
 		h.server.Logger.Zap.Error("Error updating marina email usage", err)
 		return err
 	}
+	return nil
+}
+
+// checkDocumentLimit checks if the marina has reached its document usage limit
+func (h *EsignHandler) checkDocumentLimit(ctx context.Context, marinaID uuid.UUID) error {
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina", err)
+		return fmt.Errorf("marina not found")
+	}
+	documentPlan, err := h.server.DB.Queries().GetDocumentPlanByID(ctx, marina.DocumentPlanID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching document plan", err)
+		return fmt.Errorf("document plan not found")
+	}
+	currentUsage := int64(0)
+	if marina.DocumentUsage != nil {
+		currentUsage = *marina.DocumentUsage
+	}
+	maxLimit := documentPlan.DocumentLimit
+	if maxLimit == nil {
+		return nil
+	}
+	if currentUsage >= int64(*maxLimit) {
+		h.server.Logger.Zap.Info("Limit would be exceeded",
+			"currentUsage", currentUsage,
+			"maxLimit", *maxLimit)
+
+		return fmt.Errorf("limit exceeded: current usage %d has reached the %s limit of %d",
+			currentUsage, "documents", *maxLimit)
+	}
+
 	return nil
 }
 
@@ -853,6 +886,11 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 	}
 	marinaID := user.MarinaID
 
+	// Check document usage limit
+	if err := h.checkDocumentLimit(c.Request().Context(), marinaID); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	}
+
 	// Parse request body
 	var req requests.CreateEsignSubmissionRequest
 	if err := c.Bind(&req); err != nil {
@@ -895,6 +933,18 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		h.server.Logger.Zap.Error("Error creating e-signature submission", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating submission").JSON(c)
 	}
+
+	// Increment document usage immediately after successful submission
+	_, err = h.server.DB.Queries().IncrementMarinaDocumentUsage(c.Request().Context(), db.IncrementMarinaDocumentUsageParams{
+		ID:      marinaID,
+		Column2: 1,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error incrementing document usage", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error incrementing document usage").JSON(c)
+	}
+
+	// Fetch marina again for email sender info
 	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaID)
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching marina by ID", err)
@@ -920,7 +970,7 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 	// Log the task
 	logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Email)
 
-	// Process the result asynchronously to log success/failure and update message usage
+	// Process the result asynchronously to log success/failure (no longer increments usage here)
 	go func() {
 		result := <-resultChan
 		if result.Status == sendgrid.StatusSent {
@@ -930,12 +980,6 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 				"message_id", result.ID,
 				"status", result.Status)
 
-			// Increment message usage count
-			if err := h.updateEsignUsage(context.Background(), marinaID); err != nil {
-				logger.Zap.Errorw("Failed to update message usage",
-					"marina_id", marinaID,
-					"error", err)
-			}
 		} else {
 			logger.Zap.Errorw("Failed to send email",
 				"to", req.Email,
