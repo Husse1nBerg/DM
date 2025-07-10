@@ -206,14 +206,15 @@ type MarinaGallery struct {
 }
 
 type MarinaUsageHistory struct {
-	ID           uuid.UUID
-	MarinaID     uuid.UUID
-	StorageUsage int64
-	EmailUsage   int16
-	TextUsage    int16
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
-	MonthDate    pgtype.Date
+	ID            uuid.UUID
+	MarinaID      uuid.UUID
+	StorageUsage  int64
+	EmailUsage    int16
+	TextUsage     int16
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	MonthDate     pgtype.Date
+	DocumentUsage *int64
 }
 
 type Message struct {

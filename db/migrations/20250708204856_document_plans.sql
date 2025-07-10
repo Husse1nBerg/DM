@@ -13,11 +13,13 @@ CREATE TABLE document_plans (
 
 ALTER TABLE marinas ADD COLUMN document_plan_id UUID REFERENCES document_plans(id);
 ALTER TABLE marinas ADD COLUMN document_usage BIGINT DEFAULT 0;
+ALTER TABLE marina_usage_history ADD COLUMN document_usage BIGINT DEFAULT 0;
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
 ALTER TABLE marinas DROP COLUMN document_plan_id;
 ALTER TABLE marinas DROP COLUMN document_usage;
+ALTER TABLE marina_usage_history DROP COLUMN document_usage;
 DROP TABLE IF EXISTS document_plans;
 -- +goose StatementEnd
