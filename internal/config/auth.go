@@ -13,6 +13,7 @@ type AuthConfig struct {
 	RefreshSecret   string
 	LoginAttempts   int32
 	LockoutDuration int32
+	DMEApiKey       string
 }
 
 // generateSecureToken creates a random token for use as a secret key
@@ -39,6 +40,8 @@ func LoadAuthConfig() AuthConfig {
 		log.Println("Warning: Using generated REFRESH_SECRET. Consider setting a permanent value in your .env file")
 	}
 
+	// Load API key from environment
+	dmeApiKey := os.Getenv("DME_API_KEY")
 	LoginAttemptsValue := int32(6)
 	if val := os.Getenv("LOGIN_ATTEMPTS"); val != "" {
 		if parsed, err := strconv.ParseInt(val, 10, 32); err == nil {
@@ -58,5 +61,6 @@ func LoadAuthConfig() AuthConfig {
 		RefreshSecret:   refreshSecret,
 		LoginAttempts:   LoginAttemptsValue,
 		LockoutDuration: LockoutDurationValue,
+		DMEApiKey:       dmeApiKey,
 	}
 }

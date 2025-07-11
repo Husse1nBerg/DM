@@ -1463,7 +1463,8 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 //	@Success		201				{object}	responses.BaseResponse{data=responses.EsignDocumentResponse}
 //	@Failure		400				{object}	responses.BaseResponse
 //	@Failure		500				{object}	responses.BaseResponse
-//	@Router			/public/esign/dme/documents [post]
+//	@Param			X-API-Key		header		string	true	"DME API Key"
+//	@Router			/external/dme/esign/documents [post]
 func (h *EsignHandler) CreateEsignDocumentDME(c echo.Context) error {
 	systemID := c.FormValue("systemId")
 	if systemID == "" {
