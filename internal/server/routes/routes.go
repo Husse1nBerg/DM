@@ -84,6 +84,16 @@ func RegisterRoutes(s *s.Server) {
 	invite.GET("/confirm", inviteHandler.ConfirmToken)
 	invite.POST("/accept", inviteHandler.AcceptInvitation)
 
+	// Public E-signature routes
+	publicEsign := base.Group("/public/esign")
+	publicEsign.GET("/submissions/:id", esignHandler.GetEsignSubmissionPublic)
+	publicEsign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmissionPublic)
+
+	// DME E-signature routes
+	dmeRoutes := base.Group("/external/dme")
+	dmeRoutes.Use(pm.RequireAPIKey(s.Config))
+	dmeRoutes.POST("/esign/documents", esignHandler.CreateEsignDocumentDME)
+
 	protected := base.Group("")
 	// Configure middleware with the custom claims type
 	config := echojwt.Config{
@@ -127,12 +137,6 @@ func RegisterRoutes(s *s.Server) {
 
 	// Customer intake (public endpoint)
 	base.POST("/customer-intake", customerHandler.CustomerIntake)
-
-	// Public E-signature routes
-	publicEsign := base.Group("/public/esign")
-	publicEsign.GET("/submissions/:id", esignHandler.GetEsignSubmissionPublic)
-	publicEsign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmissionPublic)
-	publicEsign.POST("/dme/documents", esignHandler.CreateEsignDocumentDME)
 
 	// User by role, organization, marina
 	users.GET("/role/:roleId", userHandler.GetUsersByRoleHandler)

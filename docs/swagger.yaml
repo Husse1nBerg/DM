@@ -6988,6 +6988,58 @@ paths:
       summary: Update e-signature template
       tags:
       - E-signature Templates
+  /external/dme/esign/documents:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new e-signature document for the DME system
+      parameters:
+      - description: System ID
+        in: formData
+        name: systemId
+        required: true
+        type: string
+      - description: 'Document status (default: dme_draft)'
+        in: formData
+        name: status
+        type: string
+      - description: 'Document type (default: document)'
+        in: formData
+        name: type
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: DME API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignDocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Create e-signature document for DME
+      tags:
+      - E-signature Documents
   /gallery/boat:
     post:
       consumes:
@@ -9358,53 +9410,6 @@ paths:
       summary: Project details
       tags:
       - Generic
-  /public/esign/dme/documents:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Creates a new e-signature document for the DME system
-      parameters:
-      - description: System ID
-        in: formData
-        name: systemId
-        required: true
-        type: string
-      - description: 'Document status (default: dme_draft)'
-        in: formData
-        name: status
-        type: string
-      - description: 'Document type (default: document)'
-        in: formData
-        name: type
-        type: string
-      - description: Document file
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/responses.EsignDocumentResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      summary: Create e-signature document for DME
-      tags:
-      - E-signature Documents
   /public/esign/submissions/{id}:
     get:
       consumes:
