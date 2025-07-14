@@ -35,6 +35,8 @@ type MarinaResponse struct {
 	TextUsage            *int16                `json:"textUsage,omitempty" example:"0"`
 	NotesMessagesPlanID  uuid.UUID             `json:"notesMessagesPlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
 	StoragePlanID        uuid.UUID             `json:"storagePlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
+	DocumentPlanID       uuid.UUID             `json:"documentPlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the document plan for this marina"`
+	DocumentUsage        *int64                `json:"documentUsage,omitempty" example:"0" description:"Current document usage for this marina"`
 	Modules              *models.Modules       `json:"modules,omitempty"`
 	InternalAnnouncement *string               `json:"internalAnnouncement,omitempty" example:"This is an internal announcement"`
 	ExternalAnnouncement *string               `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
@@ -100,6 +102,8 @@ func ConvertMarinaToResponse(marina db.Marina) MarinaResponse {
 		TextUsage:            marina.TextUsage,
 		NotesMessagesPlanID:  marina.NotesMessagesPlanID,
 		StoragePlanID:        marina.StoragePlanID,
+		DocumentPlanID:       marina.DocumentPlanID,
+		DocumentUsage:        marina.DocumentUsage,
 		Modules:              modules,
 		InternalAnnouncement: marina.InternalAnnouncement,
 		ExternalAnnouncement: marina.ExternalAnnouncement,

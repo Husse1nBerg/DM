@@ -43,6 +43,24 @@ type UpdateStoragePlanRequest struct {
 	IsMostPopular  *bool    `json:"isMostPopular,omitempty" example:"false"`
 }
 
+// CreateDocumentPlanRequest represents the request to create a new document plan
+type CreateDocumentPlanRequest struct {
+	Name          string  `json:"name" validate:"required" example:"Basic Document Plan"`
+	MonthlyPrice  float64 `json:"monthlyPrice" validate:"required,min=0" example:"9.99"`
+	DocumentLimit *int32  `json:"documentLimit,omitempty" example:"1000"`
+	UserLimit     *string `json:"userLimit,omitempty" example:"Unlimited Users"`
+	IsMostPopular *bool   `json:"isMostPopular,omitempty" example:"false"`
+}
+
+// UpdateDocumentPlanRequest represents the request to update an existing document plan
+type UpdateDocumentPlanRequest struct {
+	Name          *string  `json:"name,omitempty" example:"Basic Document Plan"`
+	MonthlyPrice  *float64 `json:"monthlyPrice,omitempty" validate:"omitempty,min=0" example:"9.99"`
+	DocumentLimit *int32   `json:"documentLimit,omitempty" example:"1000"`
+	UserLimit     *string  `json:"userLimit,omitempty" example:"Unlimited Users"`
+	IsMostPopular *bool    `json:"isMostPopular,omitempty" example:"false"`
+}
+
 // PlanIDParam represents the URL parameter for plan ID
 type PlanIDParam struct {
 	PlanID uuid.UUID `param:"planId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -68,6 +86,18 @@ func (r *CreateStoragePlanRequest) Validate() error {
 
 // Validate performs custom validation on the update storage plan request
 func (r *UpdateStoragePlanRequest) Validate() error {
+	validate := validator.New()
+	return validate.Struct(r)
+}
+
+// Validate performs custom validation on the create document plan request
+func (r *CreateDocumentPlanRequest) Validate() error {
+	validate := validator.New()
+	return validate.Struct(r)
+}
+
+// Validate performs custom validation on the update document plan request
+func (r *UpdateDocumentPlanRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)
 }

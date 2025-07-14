@@ -4946,6 +4946,88 @@ const docTemplate = `{
                 }
             }
         },
+        "/external/dme/esign/documents": {
+            "post": {
+                "description": "Creates a new e-signature document for the DME system",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Documents"
+                ],
+                "summary": "Create e-signature document for DME",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Document status (default: dme_draft)",
+                        "name": "status",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Document type (default: document)",
+                        "name": "type",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "DME API Key",
+                        "name": "X-API-Key",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignDocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/gallery/boat": {
             "post": {
                 "security": [
@@ -8318,6 +8400,101 @@ const docTemplate = `{
                 }
             }
         },
+        "/plans/document": {
+            "get": {
+                "description": "Get all document plans with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "List document plans",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of plans",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/document/{planId}": {
+            "get": {
+                "description": "Get a specific document plan by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plans"
+                ],
+                "summary": "Get document plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Plan ID",
+                        "name": "planId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Plan details",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid plan ID",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Plan not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/plans/notes-messages": {
             "get": {
                 "description": "Get all notes and messages plans with pagination",
@@ -8526,81 +8703,6 @@ const docTemplate = `{
                         "description": "Project details information",
                         "schema": {
                             "$ref": "#/definitions/handlers.ProjectDetailsResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/public/esign/dme/documents": {
-            "post": {
-                "description": "Creates a new e-signature document for the DME system",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "E-signature Documents"
-                ],
-                "summary": "Create e-signature document for DME",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "System ID",
-                        "name": "systemId",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Document status (default: dme_draft)",
-                        "name": "status",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Document type (default: document)",
-                        "name": "type",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "file",
-                        "description": "Document file",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/responses.BaseResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/responses.EsignDocumentResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
                         }
                     }
                 }
@@ -12866,6 +12968,7 @@ const docTemplate = `{
         "requests.CreateMarinaRequest": {
             "type": "object",
             "required": [
+                "documentPlanId",
                 "email",
                 "name",
                 "notesMessagesPlanId",
@@ -12883,6 +12986,10 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "email": {
                     "type": "string",
@@ -13900,6 +14007,10 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "email": {
                     "type": "string",
@@ -15213,6 +15324,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "USD"
                 },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "documentUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "email": {
                     "type": "string",
                     "example": "info@harborbay.com"
@@ -15398,6 +15517,14 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlanId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "documentUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "email": {
                     "type": "string",
