@@ -35,6 +35,19 @@ type StoragePlanResponse struct {
 	UpdatedAt      *time.Time `json:"updatedAt,omitempty" example:"2024-01-02T00:00:00Z"`
 }
 
+// DocumentPlanResponse represents a document plan in the system
+// @Description Document plan data including limits and pricing
+type DocumentPlanResponse struct {
+	ID            uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Name          string     `json:"name" example:"Basic Document Plan"`
+	MonthlyPrice  float64    `json:"monthlyPrice" example:"9.99"`
+	DocumentLimit *int32     `json:"documentLimit,omitempty" example:"1000"`
+	UserLimit     *string    `json:"userLimit,omitempty" example:"Unlimited Users"`
+	IsMostPopular *bool      `json:"isMostPopular" example:"false"`
+	CreatedAt     time.Time  `json:"createdAt" example:"2024-01-01T00:00:00Z"`
+	UpdatedAt     *time.Time `json:"updatedAt,omitempty" example:"2024-01-02T00:00:00Z"`
+}
+
 // ConvertNotesMessagesPlanToResponse converts a database notes and messages plan to a response model
 func ConvertNotesMessagesPlanToResponse(plan db.NotesMessagesPlan) NotesMessagesPlanResponse {
 	return NotesMessagesPlanResponse{
@@ -64,6 +77,20 @@ func ConvertStoragePlanToResponse(plan db.StoragePlan) StoragePlanResponse {
 	}
 }
 
+// ConvertDocumentPlanToResponse converts a database document plan to a response model
+func ConvertDocumentPlanToResponse(plan db.DocumentPlan) DocumentPlanResponse {
+	return DocumentPlanResponse{
+		ID:            plan.ID,
+		Name:          plan.Name,
+		MonthlyPrice:  plan.MonthlyPrice,
+		DocumentLimit: plan.DocumentLimit,
+		UserLimit:     plan.UserLimit,
+		IsMostPopular: plan.IsMostPopular,
+		CreatedAt:     plan.CreatedAt.Time,
+		UpdatedAt:     utils.PgTimeToTimePtr(plan.UpdatedAt),
+	}
+}
+
 // NewNotesMessagesPlanResponseSuccess creates a new successful notes and messages plan response
 func NewNotesMessagesPlanResponseSuccess(plan db.NotesMessagesPlan) BaseResponse {
 	return NewSuccessResponse(ConvertNotesMessagesPlanToResponse(plan))
@@ -72,6 +99,11 @@ func NewNotesMessagesPlanResponseSuccess(plan db.NotesMessagesPlan) BaseResponse
 // NewStoragePlanResponseSuccess creates a new successful storage plan response
 func NewStoragePlanResponseSuccess(plan db.StoragePlan) BaseResponse {
 	return NewSuccessResponse(ConvertStoragePlanToResponse(plan))
+}
+
+// NewDocumentPlanResponseSuccess creates a new successful document plan response
+func NewDocumentPlanResponseSuccess(plan db.DocumentPlan) BaseResponse {
+	return NewSuccessResponse(ConvertDocumentPlanToResponse(plan))
 }
 
 // NewNotesMessagesPlansPaginatedResponse creates a paginated response for notes and messages plans
@@ -88,6 +120,15 @@ func NewStoragePlansPaginatedResponse(plans []db.StoragePlan, total int64, perPa
 	planResponses := make([]StoragePlanResponse, len(plans))
 	for i, plan := range plans {
 		planResponses[i] = ConvertStoragePlanToResponse(plan)
+	}
+	return NewPaginatedResponse(planResponses, total, perPage, currentPage)
+}
+
+// NewDocumentPlansPaginatedResponse creates a paginated response for document plans
+func NewDocumentPlansPaginatedResponse(plans []db.DocumentPlan, total int64, perPage, currentPage int32) BaseResponse {
+	planResponses := make([]DocumentPlanResponse, len(plans))
+	for i, plan := range plans {
+		planResponses[i] = ConvertDocumentPlanToResponse(plan)
 	}
 	return NewPaginatedResponse(planResponses, total, perPage, currentPage)
 }

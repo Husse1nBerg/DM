@@ -25,7 +25,7 @@ func SaveMarinaUsageHistory() {
 	savedCount := 0
 	for _, marina := range marinas {
 		// Skip if marina has no usage data
-		if marina.StorageUsage == nil && marina.EmailUsage == nil && marina.TextUsage == nil {
+		if marina.StorageUsage == nil && marina.EmailUsage == nil && marina.TextUsage == nil && marina.DocumentUsage == nil {
 			continue
 		}
 
@@ -33,6 +33,7 @@ func SaveMarinaUsageHistory() {
 		storageUsage := int64(0)
 		emailUsage := int16(0)
 		textUsage := int16(0)
+		documentUsage := int64(0)
 
 		if marina.StorageUsage != nil {
 			storageUsage = *marina.StorageUsage
@@ -43,13 +44,17 @@ func SaveMarinaUsageHistory() {
 		if marina.TextUsage != nil {
 			textUsage = *marina.TextUsage
 		}
+		if marina.DocumentUsage != nil {
+			documentUsage = *marina.DocumentUsage
+		}
 
 		// Create usage history record
 		params := sqlc.CreateMarinaUsageHistoryParams{
-			MarinaID:     marina.ID,
-			StorageUsage: storageUsage,
-			EmailUsage:   emailUsage,
-			TextUsage:    textUsage,
+			MarinaID:      marina.ID,
+			StorageUsage:  storageUsage,
+			EmailUsage:    emailUsage,
+			TextUsage:     textUsage,
+			DocumentUsage: &documentUsage,
 		}
 
 		_, err := q.CreateMarinaUsageHistory(ctx, params)
@@ -61,6 +66,7 @@ func SaveMarinaUsageHistory() {
 		// Reset current usage values to 0
 		zeroEmail := int16(0)
 		zeroText := int16(0)
+		zeroDocument := int64(0)
 
 		updateParams := sqlc.UpdateMarinaParams{
 			ID:                  marina.ID,
@@ -83,6 +89,8 @@ func SaveMarinaUsageHistory() {
 			NotesMessagesPlanID: marina.NotesMessagesPlanID,
 			EmailUsage:          &zeroEmail,
 			TextUsage:           &zeroText,
+			DocumentPlanID:      marina.DocumentPlanID,
+			DocumentUsage:       &zeroDocument,
 		}
 
 		_, err = q.UpdateMarina(ctx, updateParams)
@@ -92,8 +100,8 @@ func SaveMarinaUsageHistory() {
 		}
 
 		savedCount++
-		log.Printf("Saved usage history and reset values for marina: %s (Storage: %d bytes, Email: %d, Text: %d)",
-			marina.Name, storageUsage, emailUsage, textUsage)
+		log.Printf("Saved usage history and reset values for marina: %s (Storage: %d bytes, Email: %d, Text: %d, Document: %d)",
+			marina.Name, storageUsage, emailUsage, textUsage, documentUsage)
 	}
 
 	log.Printf("Usage history save complete. Processed %d marinas.", savedCount)

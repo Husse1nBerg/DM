@@ -17,17 +17,19 @@ INSERT INTO marina_usage_history (
     marina_id,
     storage_usage,
     email_usage,
-    text_usage
+    text_usage,
+    document_usage
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date
+    $1, $2, $3, $4, $5
+) RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage
 `
 
 type CreateMarinaUsageHistoryParams struct {
-	MarinaID     uuid.UUID
-	StorageUsage int64
-	EmailUsage   int16
-	TextUsage    int16
+	MarinaID      uuid.UUID
+	StorageUsage  int64
+	EmailUsage    int16
+	TextUsage     int16
+	DocumentUsage *int64
 }
 
 func (q *Queries) CreateMarinaUsageHistory(ctx context.Context, arg CreateMarinaUsageHistoryParams) (MarinaUsageHistory, error) {
@@ -36,6 +38,7 @@ func (q *Queries) CreateMarinaUsageHistory(ctx context.Context, arg CreateMarina
 		arg.StorageUsage,
 		arg.EmailUsage,
 		arg.TextUsage,
+		arg.DocumentUsage,
 	)
 	var i MarinaUsageHistory
 	err := row.Scan(
@@ -47,6 +50,7 @@ func (q *Queries) CreateMarinaUsageHistory(ctx context.Context, arg CreateMarina
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MonthDate,
+		&i.DocumentUsage,
 	)
 	return i, err
 }
@@ -62,7 +66,7 @@ func (q *Queries) DeleteMarinaUsageHistory(ctx context.Context, id uuid.UUID) er
 }
 
 const getLatestMarinaUsageHistory = `-- name: GetLatestMarinaUsageHistory :one
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE marina_id = $1
 ORDER BY created_at DESC
 LIMIT 1
@@ -80,12 +84,13 @@ func (q *Queries) GetLatestMarinaUsageHistory(ctx context.Context, marinaID uuid
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MonthDate,
+		&i.DocumentUsage,
 	)
 	return i, err
 }
 
 const getMarinaUsageHistoryByDateRange = `-- name: GetMarinaUsageHistoryByDateRange :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE marina_id = $1
 AND created_at >= $2
 AND created_at <= $3
@@ -116,6 +121,7 @@ func (q *Queries) GetMarinaUsageHistoryByDateRange(ctx context.Context, arg GetM
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.MonthDate,
+			&i.DocumentUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -128,7 +134,7 @@ func (q *Queries) GetMarinaUsageHistoryByDateRange(ctx context.Context, arg GetM
 }
 
 const getMarinaUsageHistoryByID = `-- name: GetMarinaUsageHistoryByID :one
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE id = $1
 `
 
@@ -144,12 +150,13 @@ func (q *Queries) GetMarinaUsageHistoryByID(ctx context.Context, id uuid.UUID) (
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MonthDate,
+		&i.DocumentUsage,
 	)
 	return i, err
 }
 
 const getMarinaUsageHistoryByMarinaID = `-- name: GetMarinaUsageHistoryByMarinaID :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE marina_id = $1
 ORDER BY created_at DESC
 `
@@ -172,6 +179,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaID(ctx context.Context, marinaID 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.MonthDate,
+			&i.DocumentUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -184,7 +192,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaID(ctx context.Context, marinaID 
 }
 
 const getMarinaUsageHistoryByMonth = `-- name: GetMarinaUsageHistoryByMonth :one
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE marina_id = $1
 AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', $2::timestamp)
 ORDER BY created_at DESC
@@ -208,6 +216,7 @@ func (q *Queries) GetMarinaUsageHistoryByMonth(ctx context.Context, arg GetMarin
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MonthDate,
+		&i.DocumentUsage,
 	)
 	return i, err
 }
@@ -218,16 +227,18 @@ SET
     storage_usage = $2,
     email_usage = $3,
     text_usage = $4,
+    document_usage = $5,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date
+RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage
 `
 
 type UpdateMarinaUsageHistoryParams struct {
-	ID           uuid.UUID
-	StorageUsage int64
-	EmailUsage   int16
-	TextUsage    int16
+	ID            uuid.UUID
+	StorageUsage  int64
+	EmailUsage    int16
+	TextUsage     int16
+	DocumentUsage *int64
 }
 
 func (q *Queries) UpdateMarinaUsageHistory(ctx context.Context, arg UpdateMarinaUsageHistoryParams) (MarinaUsageHistory, error) {
@@ -236,6 +247,7 @@ func (q *Queries) UpdateMarinaUsageHistory(ctx context.Context, arg UpdateMarina
 		arg.StorageUsage,
 		arg.EmailUsage,
 		arg.TextUsage,
+		arg.DocumentUsage,
 	)
 	var i MarinaUsageHistory
 	err := row.Scan(
@@ -247,6 +259,7 @@ func (q *Queries) UpdateMarinaUsageHistory(ctx context.Context, arg UpdateMarina
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MonthDate,
+		&i.DocumentUsage,
 	)
 	return i, err
 }

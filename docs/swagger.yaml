@@ -1373,6 +1373,9 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       email:
         example: info@harborbay.com
         type: string
@@ -1417,6 +1420,7 @@ definitions:
       workingHours:
         $ref: '#/definitions/models.WorkingHours'
     required:
+    - documentPlanId
     - email
     - name
     - notesMessagesPlanId
@@ -2095,6 +2099,9 @@ definitions:
         type: string
       currency:
         example: USD
+        type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       email:
         example: info@harborbay.com
@@ -3032,6 +3039,12 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      documentUsage:
+        example: 0
+        type: integer
       email:
         example: info@harborbay.com
         type: string
@@ -3166,6 +3179,12 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlanId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      documentUsage:
+        example: 0
+        type: integer
       email:
         example: info@harborbay.com
         type: string
@@ -6969,6 +6988,58 @@ paths:
       summary: Update e-signature template
       tags:
       - E-signature Templates
+  /external/dme/esign/documents:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new e-signature document for the DME system
+      parameters:
+      - description: System ID
+        in: formData
+        name: systemId
+        required: true
+        type: string
+      - description: 'Document status (default: dme_draft)'
+        in: formData
+        name: status
+        type: string
+      - description: 'Document type (default: document)'
+        in: formData
+        name: type
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: DME API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignDocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Create e-signature document for DME
+      tags:
+      - E-signature Documents
   /gallery/boat:
     post:
       consumes:
@@ -9135,6 +9206,69 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /plans/document:
+    get:
+      consumes:
+      - application/json
+      description: Get all document plans with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of plans
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List document plans
+      tags:
+      - Plans
+  /plans/document/{planId}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific document plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: planId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Plan details
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid plan ID
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Plan not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get document plan
+      tags:
+      - Plans
   /plans/notes-messages:
     get:
       consumes:
@@ -9276,53 +9410,6 @@ paths:
       summary: Project details
       tags:
       - Generic
-  /public/esign/dme/documents:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Creates a new e-signature document for the DME system
-      parameters:
-      - description: System ID
-        in: formData
-        name: systemId
-        required: true
-        type: string
-      - description: 'Document status (default: dme_draft)'
-        in: formData
-        name: status
-        type: string
-      - description: 'Document type (default: document)'
-        in: formData
-        name: type
-        type: string
-      - description: Document file
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/responses.EsignDocumentResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      summary: Create e-signature document for DME
-      tags:
-      - E-signature Documents
   /public/esign/submissions/{id}:
     get:
       consumes:

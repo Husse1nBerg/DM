@@ -25,6 +25,7 @@ type CreateMarinaRequest struct {
 	SystemID            *string               `json:"systemId,omitempty" example:"SYS123456"`
 	NotesMessagesPlanID *uuid.UUID            `json:"notesMessagesPlanId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
 	StoragePlanID       *uuid.UUID            `json:"storagePlanId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
+	DocumentPlanID      *uuid.UUID            `json:"documentPlanId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the document plan for this marina"`
 	Modules             *models.Modules       `json:"modules,omitempty"`
 }
 
@@ -46,6 +47,7 @@ type UpdateMarinaRequest struct {
 	SystemID             *string               `json:"systemId,omitempty" example:"SYS123456"`
 	NotesMessagesPlanID  *uuid.UUID            `json:"notesMessagesPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the notes and messages plan for this marina"`
 	StoragePlanID        *uuid.UUID            `json:"storagePlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
+	DocumentPlanID       *uuid.UUID            `json:"documentPlanId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the document plan for this marina"`
 	Modules              *models.Modules       `json:"modules,omitempty"`
 	InternalAnnouncement *string               `json:"internalAnnouncement,omitempty" example:"This is an internal announcement"`
 	ExternalAnnouncement *string               `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
