@@ -22,7 +22,7 @@ func LoadAppConfig() AppConfig {
 	invitationRoute := EnvOrDefault("INVITATION_ROUTE", "auth/invitation")
 	invitationCustomerRoute := EnvOrDefault("INVITATION_CUSTOMER_ROUTE", "auth/invitation")
 	customerIntakeRoute := EnvOrDefault("CUSTOMER_INTAKE_ROUTE", "auth/customer-intake")
-	passwordResetRoute := EnvOrDefault("PASSWORD_RESET_ROUTE", "auth/password-reset")
+	passwordResetRoute := EnvOrDefault("PASSWORD_RESET_ROUTE", "auth/reset-password")
 	termsConditionsRoute := EnvOrDefault("TERMS_CONDITIONS_ROUTE", "terms-conditions")
 	esignDocumentRoute := EnvOrDefault("ESIGN_DOCUMENT_ROUTE", "esign/submissions")
 	if frontendBaseURL == "" {

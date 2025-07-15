@@ -1335,17 +1335,12 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 	sgClient := g.server.SendGrid
 
 	// Build the reset URL
-	baseURL := g.server.Config.App.FrontendBaseURL // Default URL
-	resetURL := fmt.Sprintf("%s/reset-password?token=%s&email=%s",
-		baseURL,
-		token,
-		url.QueryEscape(user.Email))
-
+	resetURL := g.server.Config.App.PasswordResetURL() + "?token=" + token + "&email=" + url.QueryEscape(user.Email)
 	// Create template data
 	templateData := sendgrid.PasswordResetTemplateData{
 		UserName:        user.FirstName + " " + user.LastName,
 		ResetURL:        resetURL,
-		TermsConditions: baseURL + "/terms-conditions",
+		TermsConditions: g.server.Config.App.TermsConditionsURL(),
 	}
 
 	// Send email using specialized password reset method
