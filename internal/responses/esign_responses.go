@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -11,58 +12,58 @@ import (
 // EsignTemplateResponse represents an e-signature template in the system
 // @Description E-signature template data including blob URL and metadata
 type EsignTemplateResponse struct {
-	ID             uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrganizationID uuid.UUID  `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	MarinaID       *uuid.UUID `json:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Name           string     `json:"name" example:"Customer Agreement Template"`
-	Description    *string    `json:"description,omitempty" example:"Standard customer agreement template for marina services"`
-	Type           string     `json:"type" example:"agreement"`
-	Status         string     `json:"status" example:"active"`
-	BlobURL        string     `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/templates/agreement.pdf"`
-	// BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	ID             uuid.UUID        `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID uuid.UUID        `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID       *uuid.UUID       `json:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Name           string           `json:"name" example:"Customer Agreement Template"`
+	Description    *string          `json:"description,omitempty" example:"Standard customer agreement template for marina services"`
+	Type           string           `json:"type" example:"agreement"`
+	Status         string           `json:"status" example:"active"`
+	BlobURL        string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/templates/agreement.pdf"`
+	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
+	CreatedAt      *time.Time       `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time       `json:"updatedAt,omitempty"`
 }
 
 // EsignDocumentResponse represents an e-signature document in the system
 // @Description E-signature document data including blob URL, metadata, and signature status
 type EsignDocumentResponse struct {
-	ID             uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TemplateID     *uuid.UUID `json:"templateId,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
-	OrganizationID uuid.UUID  `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	MarinaID       uuid.UUID  `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Type           string     `json:"type" example:"agreement"`
-	Status         string     `json:"status" example:"draft"`
-	BlobURL        string     `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/documents/agreement-001.pdf"`
-	// BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	ID             uuid.UUID        `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TemplateID     *uuid.UUID       `json:"templateId,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
+	OrganizationID uuid.UUID        `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID       uuid.UUID        `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Type           string           `json:"type" example:"agreement"`
+	Status         string           `json:"status" example:"draft"`
+	BlobURL        string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/documents/agreement-001.pdf"`
+	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
+	CreatedAt      *time.Time       `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time       `json:"updatedAt,omitempty"`
 }
 
 // EsignSubmissionResponse represents an e-signature submission in the system
 // @Description E-signature submission data including blob URL, metadata, and submission status
 type EsignSubmissionResponse struct {
-	ID             uuid.UUID `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrganizationID uuid.UUID `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	MarinaID       uuid.UUID `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
-	DocumentID     uuid.UUID `json:"documentId" example:"550e8400-e29b-41d4-a716-446655440003"`
-	Status         string    `json:"status" example:"pending"`
-	BlobURL        string    `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
-	// BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
-	CustomerID *string    `json:"customerId,omitempty" example:"CUST123"`
-	Email      string     `json:"email" example:"customer@example.com"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt  *time.Time `json:"updatedAt,omitempty"`
+	ID             uuid.UUID        `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID uuid.UUID        `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID       uuid.UUID        `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
+	DocumentID     uuid.UUID        `json:"documentId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	Status         string           `json:"status" example:"pending"`
+	BlobURL        string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
+	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
+	CustomerID     *string          `json:"customerId,omitempty" example:"CUST123"`
+	Email          string           `json:"email" example:"customer@example.com"`
+	CreatedAt      *time.Time       `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time       `json:"updatedAt,omitempty"`
 }
 
 // Convert a database EsignTemplate to a response model
 func ConvertEsignTemplateToResponse(template db.EsignTemplate) EsignTemplateResponse {
 	blobURL := utils.GetFullESignURL(&template.BlobUrl)
-	// var blobMetadata *json.RawMessage
-	// if len(template.BlobMetadata) > 0 {
-	// 	raw := json.RawMessage(template.BlobMetadata)
-	// 	blobMetadata = &raw
-	// }
+	var blobMetadata *json.RawMessage
+	if len(template.BlobMetadata) > 0 {
+		raw := json.RawMessage(template.BlobMetadata)
+		blobMetadata = &raw
+	}
 
 	var marinaID *uuid.UUID
 	if template.MarinaID != uuid.Nil {
@@ -78,20 +79,20 @@ func ConvertEsignTemplateToResponse(template db.EsignTemplate) EsignTemplateResp
 		Type:           template.Type,
 		Status:         template.Status,
 		BlobURL:        *blobURL,
-		// BlobMetadata:   blobMetadata,
-		CreatedAt: utils.PgTimeToTimePtr(template.CreatedAt),
-		UpdatedAt: utils.PgTimeToTimePtr(template.UpdatedAt),
+		BlobMetadata:   blobMetadata,
+		CreatedAt:      utils.PgTimeToTimePtr(template.CreatedAt),
+		UpdatedAt:      utils.PgTimeToTimePtr(template.UpdatedAt),
 	}
 }
 
 // Convert a database EsignDocument to a response model
 func ConvertEsignDocumentToResponse(document db.EsignDocument) EsignDocumentResponse {
 	blobURL := utils.GetFullESignURL(&document.BlobUrl)
-	// var blobMetadata *json.RawMessage
-	// if len(document.BlobMetadata) > 0 {
-	// 	raw := json.RawMessage(document.BlobMetadata)
-	// 	blobMetadata = &raw
-	// }
+	var blobMetadata *json.RawMessage
+	if len(document.BlobMetadata) > 0 {
+		raw := json.RawMessage(document.BlobMetadata)
+		blobMetadata = &raw
+	}
 
 	var templateID *uuid.UUID
 	if document.TemplateID != uuid.Nil {
@@ -106,20 +107,20 @@ func ConvertEsignDocumentToResponse(document db.EsignDocument) EsignDocumentResp
 		Type:           document.Type,
 		Status:         document.Status,
 		BlobURL:        *blobURL,
-		// BlobMetadata:   blobMetadata,
-		CreatedAt: utils.PgTimeToTimePtr(document.CreatedAt),
-		UpdatedAt: utils.PgTimeToTimePtr(document.UpdatedAt),
+		BlobMetadata:   blobMetadata,
+		CreatedAt:      utils.PgTimeToTimePtr(document.CreatedAt),
+		UpdatedAt:      utils.PgTimeToTimePtr(document.UpdatedAt),
 	}
 }
 
 // Convert a database EsignSubmission to a response model
 func ConvertEsignSubmissionToResponse(submission db.EsignSubmission) EsignSubmissionResponse {
 	blobURL := utils.GetFullESignURL(&submission.BlobUrl)
-	// var blobMetadata *json.RawMessage
-	// if len(submission.BlobMetadata) > 0 {
-	// 	raw := json.RawMessage(submission.BlobMetadata)
-	// 	blobMetadata = &raw
-	// }
+	var blobMetadata *json.RawMessage
+	if len(submission.BlobMetadata) > 0 {
+		raw := json.RawMessage(submission.BlobMetadata)
+		blobMetadata = &raw
+	}
 
 	return EsignSubmissionResponse{
 		ID:             submission.ID,
@@ -128,11 +129,11 @@ func ConvertEsignSubmissionToResponse(submission db.EsignSubmission) EsignSubmis
 		DocumentID:     submission.DocumentID,
 		Status:         submission.Status,
 		BlobURL:        *blobURL,
-		// BlobMetadata:   blobMetadata,
-		CustomerID: submission.CustomerID,
-		Email:      submission.Email,
-		CreatedAt:  utils.PgTimeToTimePtr(submission.CreatedAt),
-		UpdatedAt:  utils.PgTimeToTimePtr(submission.UpdatedAt),
+		BlobMetadata:   blobMetadata,
+		CustomerID:     submission.CustomerID,
+		Email:          submission.Email,
+		CreatedAt:      utils.PgTimeToTimePtr(submission.CreatedAt),
+		UpdatedAt:      utils.PgTimeToTimePtr(submission.UpdatedAt),
 	}
 }
 
