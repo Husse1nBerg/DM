@@ -1495,6 +1495,7 @@ func (h *EsignHandler) CreateEsignDocumentDME(c echo.Context) error {
 	if status == "" {
 		status = "dme_draft" // Default status
 	}
+	customerID := c.FormValue("customerId")
 	// Get file from form
 	file, header, err := c.Request().FormFile("file")
 	if err != nil {
@@ -1517,7 +1518,7 @@ func (h *EsignHandler) CreateEsignDocumentDME(c echo.Context) error {
 		Type:           documentType,
 		Status:         status,
 		BlobUrl:        filePath,
-		BlobMetadata:   nil, // Ignoring blob metadata for now as requested
+		BlobMetadata:   fmt.Appendf(nil, `{"customerId": "%s"}`, customerID),
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature document", err)
