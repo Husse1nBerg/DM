@@ -65,6 +65,83 @@ func (q *Queries) DeleteMarinaUsageHistory(ctx context.Context, id uuid.UUID) er
 	return err
 }
 
+const getAllMarinaUsageHistory = `-- name: GetAllMarinaUsageHistory :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetAllMarinaUsageHistory(ctx context.Context) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getAllMarinaUsageHistory)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllMarinaUsageHistoryByDateRange = `-- name: GetAllMarinaUsageHistoryByDateRange :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2
+ORDER BY created_at DESC
+`
+
+type GetAllMarinaUsageHistoryByDateRangeParams struct {
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetAllMarinaUsageHistoryByDateRange(ctx context.Context, arg GetAllMarinaUsageHistoryByDateRangeParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getAllMarinaUsageHistoryByDateRange, arg.CreatedAt, arg.CreatedAt_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLatestMarinaUsageHistory = `-- name: GetLatestMarinaUsageHistory :one
 SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE marina_id = $1

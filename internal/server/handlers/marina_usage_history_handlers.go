@@ -213,3 +213,82 @@ func (h *MarinaUsageHistoryHandler) GetMarinaUsageHistoryByID(c echo.Context) er
 
 	return responses.NewMarinaUsageHistoryResponseSuccess(history).JSON(c)
 }
+
+// GetAllMarinaUsageHistory handles retrieving all marina usage history records with optional filters
+// @Summary Get all marina usage history
+// @Description Retrieves all marina usage history records, optionally filtered by marinaId and date range
+// @Tags marina-usage-history
+// @Produce json
+// @Param marinaId query string false "Marina ID"
+// @Param startDate query string false "Start Date (YYYY-MM-DD)"
+// @Param endDate query string false "End Date (YYYY-MM-DD)"
+// @Success 200 {object} responses.MarinaUsageHistoryListResponse
+// @Failure 400 {object} responses.BaseResponse
+// @Failure 500 {object} responses.BaseResponse
+// @Router /marina-usage-history/all [get]
+func (h *MarinaUsageHistoryHandler) GetAllMarinaUsageHistory(c echo.Context) error {
+	marinaIDStr := c.QueryParam("marinaId")
+	startDate := c.QueryParam("startDate")
+	endDate := c.QueryParam("endDate")
+
+	var (
+		marinaID           uuid.UUID
+		hasMarinaID        bool
+		startTime, endTime time.Time
+		hasStart, hasEnd   bool
+	)
+
+	if marinaIDStr != "" {
+		var err error
+		marinaID, err = uuid.Parse(marinaIDStr)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marinaId format").JSON(c)
+		}
+		hasMarinaID = true
+	}
+	if startDate != "" {
+		var err error
+		startTime, err = time.Parse("2006-01-02", startDate)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid startDate format").JSON(c)
+		}
+		hasStart = true
+	}
+	if endDate != "" {
+		var err error
+		endTime, err = time.Parse("2006-01-02", endDate)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid endDate format").JSON(c)
+		}
+		// Set end time to end of day
+		endTime = endTime.Add(24*time.Hour - time.Second)
+		hasEnd = true
+	}
+
+	var histories []db.MarinaUsageHistory
+	var err error
+
+	switch {
+	case hasMarinaID && hasStart && hasEnd:
+		histories, err = h.server.DB.Queries().GetMarinaUsageHistoryByDateRange(c.Request().Context(), db.GetMarinaUsageHistoryByDateRangeParams{
+			MarinaID:    marinaID,
+			CreatedAt:   pgtype.Timestamptz{Time: startTime, Valid: true},
+			CreatedAt_2: pgtype.Timestamptz{Time: endTime, Valid: true},
+		})
+	case hasMarinaID:
+		histories, err = h.server.DB.Queries().GetMarinaUsageHistoryByMarinaID(c.Request().Context(), marinaID)
+	case hasStart && hasEnd:
+		histories, err = h.server.DB.Queries().GetAllMarinaUsageHistoryByDateRange(c.Request().Context(), db.GetAllMarinaUsageHistoryByDateRangeParams{
+			CreatedAt:   pgtype.Timestamptz{Time: startTime, Valid: true},
+			CreatedAt_2: pgtype.Timestamptz{Time: endTime, Valid: true},
+		})
+	default:
+		histories, err = h.server.DB.Queries().GetAllMarinaUsageHistory(c.Request().Context())
+	}
+
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return responses.NewMarinaUsageHistoryListResponse(histories).JSON(c)
+}

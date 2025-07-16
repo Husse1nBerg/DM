@@ -332,6 +332,7 @@ func RegisterRoutes(s *s.Server) {
 	marinaUsageHistory.GET("/:marinaId/date-range", marinaUsageHistoryHandler.GetMarinaUsageHistoryByDateRange)
 	marinaUsageHistory.GET("/:marinaId/latest", marinaUsageHistoryHandler.GetLatestMarinaUsageHistory)
 	marinaUsageHistory.GET("/:marinaId/month", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMonth)
+	marinaUsageHistory.GET("/all", marinaUsageHistoryHandler.GetAllMarinaUsageHistory)
 	marinaUsageHistory.GET("/usage/:id", marinaUsageHistoryHandler.GetMarinaUsageHistoryByID)
 	marinaUsageHistory.GET("/:marinaId", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMarinaID)
 

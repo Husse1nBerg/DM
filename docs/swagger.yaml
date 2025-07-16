@@ -7624,6 +7624,41 @@ paths:
       summary: Get marina usage history by month
       tags:
       - marina-usage-history
+  /marina-usage-history/all:
+    get:
+      description: Retrieves all marina usage history records, optionally filtered
+        by marinaId and date range
+      parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        type: string
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: End Date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get all marina usage history
+      tags:
+      - marina-usage-history
   /marina-usage-history/marina/{marinaId}:
     get:
       description: Retrieves all marina usage history records for a specific marina

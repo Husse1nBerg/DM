@@ -5801,6 +5801,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/marina-usage-history/all": {
+            "get": {
+                "description": "Retrieves all marina usage history records, optionally filtered by marinaId and date range",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get all marina usage history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/marina-usage-history/marina/{marinaId}": {
             "get": {
                 "description": "Retrieves all marina usage history records for a specific marina",
