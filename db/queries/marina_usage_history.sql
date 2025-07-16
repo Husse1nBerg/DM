@@ -52,3 +52,13 @@ WHERE marina_id = $1
 AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', $2::timestamp)
 ORDER BY created_at DESC
 LIMIT 1;
+
+-- name: GetAllMarinaUsageHistory :many
+SELECT * FROM marina_usage_history
+ORDER BY created_at DESC;
+
+-- name: GetAllMarinaUsageHistoryByDateRange :many
+SELECT * FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2
+ORDER BY created_at DESC;

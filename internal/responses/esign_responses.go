@@ -20,7 +20,7 @@ type EsignTemplateResponse struct {
 	Type           string           `json:"type" example:"agreement"`
 	Status         string           `json:"status" example:"active"`
 	BlobURL        string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/templates/agreement.pdf"`
-	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
+	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" swaggertype:"object"`
 	CreatedAt      *time.Time       `json:"createdAt,omitempty"`
 	UpdatedAt      *time.Time       `json:"updatedAt,omitempty"`
 }
@@ -35,7 +35,7 @@ type EsignDocumentResponse struct {
 	Type           string           `json:"type" example:"agreement"`
 	Status         string           `json:"status" example:"draft"`
 	BlobURL        string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/documents/agreement-001.pdf"`
-	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
+	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" swaggertype:"object"`
 	CreatedAt      *time.Time       `json:"createdAt,omitempty"`
 	UpdatedAt      *time.Time       `json:"updatedAt,omitempty"`
 }
@@ -49,7 +49,7 @@ type EsignSubmissionResponse struct {
 	DocumentID     uuid.UUID        `json:"documentId" example:"550e8400-e29b-41d4-a716-446655440003"`
 	Status         string           `json:"status" example:"pending"`
 	BlobURL        string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
-	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
+	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" swaggertype:"object"`
 	CustomerID     *string          `json:"customerId,omitempty" example:"CUST123"`
 	Email          string           `json:"email" example:"customer@example.com"`
 	CreatedAt      *time.Time       `json:"createdAt,omitempty"`

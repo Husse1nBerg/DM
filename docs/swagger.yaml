@@ -2817,12 +2817,12 @@ definitions:
     description: E-signature document data including blob URL, metadata, and signature
       status
     properties:
+      blobMetadata:
+        type: object
       blobUrl:
         example: https://s3.amazonaws.com/bucket/documents/agreement-001.pdf
         type: string
       createdAt:
-        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
-          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
         type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
@@ -2868,14 +2868,14 @@ definitions:
     description: E-signature submission data including blob URL, metadata, and submission
       status
     properties:
+      blobMetadata:
+        type: object
       blobUrl:
         example: https://s3.amazonaws.com/bucket/submissions/submission-001.pdf
         type: string
       createdAt:
         type: string
       customerId:
-        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
-          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
         example: CUST123
         type: string
       documentId:
@@ -2921,12 +2921,12 @@ definitions:
   responses.EsignTemplateResponse:
     description: E-signature template data including blob URL and metadata
     properties:
+      blobMetadata:
+        type: object
       blobUrl:
         example: https://s3.amazonaws.com/bucket/templates/agreement.pdf
         type: string
       createdAt:
-        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
-          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
         type: string
       description:
         example: Standard customer agreement template for marina services
@@ -7521,42 +7521,16 @@ paths:
       summary: Health check
       tags:
       - Generic
-  /marina-usage-history/{id}:
-    get:
-      description: Retrieves a marina usage history record by its ID
-      parameters:
-      - description: Marina Usage History ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.MarinaUsageHistoryResponseWrapper'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      summary: Get marina usage history by ID
-      tags:
-      - marina-usage-history
-  /marina-usage-history/date-range:
+  /marina-usage-history/{marinaId}/date-range:
     get:
       description: Retrieves marina usage history records within a specified date
-        range
+        range for a specific marina
       parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
       - description: Start Date (YYYY-MM-DD)
         in: query
         name: startDate
@@ -7585,7 +7559,7 @@ paths:
       summary: Get marina usage history by date range
       tags:
       - marina-usage-history
-  /marina-usage-history/latest/{marinaId}:
+  /marina-usage-history/{marinaId}/latest:
     get:
       description: Retrieves the most recent marina usage history record for a specific
         marina
@@ -7617,36 +7591,10 @@ paths:
       summary: Get latest marina usage history
       tags:
       - marina-usage-history
-  /marina-usage-history/marina/{marinaId}:
+  /marina-usage-history/{marinaId}/month:
     get:
-      description: Retrieves all marina usage history records for a specific marina
-      parameters:
-      - description: Marina ID
-        in: path
-        name: marinaId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      summary: Get marina usage history by marina ID
-      tags:
-      - marina-usage-history
-  /marina-usage-history/month:
-    get:
-      description: Retrieves marina usage history records for a specific month
+      description: Retrieves marina usage history records for a specific month for
+        a specific marina
       parameters:
       - description: Marina ID
         in: path
@@ -7674,6 +7622,99 @@ paths:
           schema:
             $ref: '#/definitions/responses.BaseResponse'
       summary: Get marina usage history by month
+      tags:
+      - marina-usage-history
+  /marina-usage-history/all:
+    get:
+      description: Retrieves all marina usage history records, optionally filtered
+        by marinaId and date range
+      parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        type: string
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: End Date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get all marina usage history
+      tags:
+      - marina-usage-history
+  /marina-usage-history/marina/{marinaId}:
+    get:
+      description: Retrieves all marina usage history records for a specific marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by marina ID
+      tags:
+      - marina-usage-history
+  /marina-usage-history/usage/{id}:
+    get:
+      description: Retrieves a marina usage history record by its ID
+      parameters:
+      - description: Marina Usage History ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by ID
       tags:
       - marina-usage-history
   /marina/{marinaId}/contacts:

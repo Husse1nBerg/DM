@@ -329,11 +329,12 @@ func RegisterRoutes(s *s.Server) {
 
 	// Marina Usage History routes
 	marinaUsageHistory := protected.Group("/marina-usage-history")
-	marinaUsageHistory.GET("/:id", marinaUsageHistoryHandler.GetMarinaUsageHistoryByID)
-	marinaUsageHistory.GET("/marina/:marinaId", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMarinaID)
-	marinaUsageHistory.GET("/marina/:marinaId/range", marinaUsageHistoryHandler.GetMarinaUsageHistoryByDateRange)
-	marinaUsageHistory.GET("/marina/:marinaId/latest", marinaUsageHistoryHandler.GetLatestMarinaUsageHistory)
-	marinaUsageHistory.GET("/marina/:marinaId/month", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMonth)
+	marinaUsageHistory.GET("/:marinaId/date-range", marinaUsageHistoryHandler.GetMarinaUsageHistoryByDateRange)
+	marinaUsageHistory.GET("/:marinaId/latest", marinaUsageHistoryHandler.GetLatestMarinaUsageHistory)
+	marinaUsageHistory.GET("/:marinaId/month", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMonth)
+	marinaUsageHistory.GET("/all", marinaUsageHistoryHandler.GetAllMarinaUsageHistory)
+	marinaUsageHistory.GET("/usage/:id", marinaUsageHistoryHandler.GetMarinaUsageHistoryByID)
+	marinaUsageHistory.GET("/:marinaId", marinaUsageHistoryHandler.GetMarinaUsageHistoryByMarinaID)
 
 	// Plan routes
 	plans := protected.Group("/plans")
