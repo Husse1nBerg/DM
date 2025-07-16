@@ -5803,7 +5803,7 @@ const docTemplate = `{
         },
         "/marina-usage-history/all": {
             "get": {
-                "description": "Retrieves all marina usage history records, optionally filtered by marinaId and date range",
+                "description": "Retrieves all marina usage history records, optionally filtered by one or more marinaIds and date range",
                 "produces": [
                     "application/json"
                 ],
@@ -5813,8 +5813,12 @@ const docTemplate = `{
                 "summary": "Get all marina usage history",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Marina ID",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "description": "Marina ID(s) (repeat for multiple)",
                         "name": "marinaId",
                         "in": "query"
                     },
@@ -5828,6 +5832,18 @@ const docTemplate = `{
                         "type": "string",
                         "description": "End Date (YYYY-MM-DD)",
                         "name": "endDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
                         "in": "query"
                     }
                 ],
@@ -5870,6 +5886,18 @@ const docTemplate = `{
                         "name": "marinaId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -5972,6 +6000,18 @@ const docTemplate = `{
                         "name": "endDate",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {

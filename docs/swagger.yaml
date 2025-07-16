@@ -7541,6 +7541,14 @@ paths:
         name: endDate
         required: true
         type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -7627,12 +7635,15 @@ paths:
   /marina-usage-history/all:
     get:
       description: Retrieves all marina usage history records, optionally filtered
-        by marinaId and date range
+        by one or more marinaIds and date range
       parameters:
-      - description: Marina ID
+      - collectionFormat: multi
+        description: Marina ID(s) (repeat for multiple)
         in: query
+        items:
+          type: string
         name: marinaId
-        type: string
+        type: array
       - description: Start Date (YYYY-MM-DD)
         in: query
         name: startDate
@@ -7641,6 +7652,14 @@ paths:
         in: query
         name: endDate
         type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -7668,6 +7687,14 @@ paths:
         name: marinaId
         required: true
         type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
