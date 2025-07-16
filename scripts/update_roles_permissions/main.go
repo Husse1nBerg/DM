@@ -120,6 +120,7 @@ func main() {
 			permissions: models.Permissions{
 				// Core module objects
 				"profile.read":        true,
+				"profile.write":       true,
 				"users.read":          true,
 				"users.write":         true,
 				"organizations.read":  true,
@@ -406,6 +407,7 @@ func main() {
 			permissions: models.Permissions{
 				// Core module objects
 				"profile.read":        true,
+				"profile.write":       true,
 				"users.read":          true,
 				"users.write":         true,
 				"organizations.read":  true,

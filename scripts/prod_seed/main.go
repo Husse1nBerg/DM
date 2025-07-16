@@ -199,6 +199,7 @@ func RunProdSeed() {
 			permissions: models.Permissions{
 				// Core module objects
 				"profile.read":        true,
+				"profile.write":       true,
 				"users.read":          true,
 				"users.write":         true,
 				"organizations.read":  true,
@@ -485,6 +486,7 @@ func RunProdSeed() {
 			permissions: models.Permissions{
 				// Core module objects
 				"profile.read":        true,
+				"profile.write":       true,
 				"users.read":          true,
 				"users.write":         true,
 				"organizations.read":  true,

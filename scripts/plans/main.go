@@ -208,7 +208,7 @@ func RunPlansSeed() {
 		isMostPopular bool
 	}{
 		{
-			name:          "Free Version",
+			name:          "Free",
 			monthlyPrice:  0.00,
 			documentLimit: u.Pointer(int32(10)),
 			userLimit:     u.Pointer("Unlimited Users"),
