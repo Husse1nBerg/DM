@@ -118,6 +118,15 @@ type ListEsignSubmissionsByStatusRequest struct {
 	Offset         int32     `json:"offset" validate:"min=0" example:"0"`
 }
 
+// ListEsignSubmissionsByMarinaFilteredRequest represents the parameters to list submissions for a marina with optional customerId and status filters
+// All fields are optional except pagination
+type ListEsignSubmissionsByMarinaFilteredRequest struct {
+	Page       int32   `query:"page" validate:"gte=1" default:"1"`
+	PageSize   int32   `query:"pageSize" validate:"gte=1,lte=100" default:"10"`
+	CustomerID *string `query:"customerId" validate:"omitempty,uuid"`                            // optional
+	Status     *string `query:"status" validate:"omitempty,oneof=pending signed questions sent"` // optional
+}
+
 // PublicUpdateEsignSubmissionRequest represents the parameters for public update of an e-signature submission
 // Only allows updating status and file
 type PublicUpdateEsignSubmissionRequest struct {

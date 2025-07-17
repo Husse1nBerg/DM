@@ -45,6 +45,14 @@ WHERE organization_id = $1
 ORDER BY created_at DESC
 LIMIT $4 OFFSET $5;
 
+-- name: ListEsignSubmissionsByCustomerID :many
+SELECT *
+FROM esign_submissions
+WHERE customer_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+
 -- name: UpdateEsignSubmission :one
 UPDATE esign_submissions
 SET
@@ -96,3 +104,23 @@ WHERE organization_id = $1
     AND marina_id = $2
     AND status = $3
     AND deleted_at IS NULL; 
+
+-- name: ListEsignSubmissionsByMarinaFiltered :many
+SELECT *
+FROM esign_submissions
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR customer_id = $3)
+  AND ($4 = '' OR status = $4)
+ORDER BY created_at DESC
+LIMIT $5 OFFSET $6;
+
+-- name: CountEsignSubmissionsByMarinaFiltered :one
+SELECT COUNT(*)
+FROM esign_submissions
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR customer_id = $3)
+  AND ($4 = '' OR status = $4);

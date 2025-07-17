@@ -46,6 +46,23 @@ WHERE template_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
+-- name: ListEsignDocumentsByMarinaStatus :many
+SELECT *
+FROM esign_documents
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+ORDER BY created_at DESC
+LIMIT $4 OFFSET $5;
+
+-- name: CountEsignDocumentsByMarinaStatus :one
+SELECT COUNT(*)
+FROM esign_documents
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3);
 
 -- name: UpdateEsignDocument :one
 UPDATE esign_documents
