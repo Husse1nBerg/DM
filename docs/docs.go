@@ -3681,6 +3681,18 @@ const docTemplate = `{
                 "summary": "List e-signature documents",
                 "parameters": [
                     {
+                        "enum": [
+                            "draft",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Document status (optional)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
                         "minimum": 1,
                         "type": "integer",
                         "default": 1,
@@ -4115,7 +4127,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature submissions for the authenticated user's marina",
+                "description": "Retrieves all e-signature submissions for the authenticated user's marina, with optional filtering by customerId and status",
                 "consumes": [
                     "application/json"
                 ],
@@ -4127,6 +4139,24 @@ const docTemplate = `{
                 ],
                 "summary": "List e-signature submissions",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID (optional)",
+                        "name": "customerId",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "pending",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Submission status (optional)",
+                        "name": "status",
+                        "in": "query"
+                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -4573,6 +4603,17 @@ const docTemplate = `{
                 ],
                 "summary": "List e-signature templates",
                 "parameters": [
+                    {
+                        "enum": [
+                            "draft",
+                            "active",
+                            "archived"
+                        ],
+                        "type": "string",
+                        "description": "Template status (optional)",
+                        "name": "status",
+                        "in": "query"
+                    },
                     {
                         "minimum": 1,
                         "type": "integer",

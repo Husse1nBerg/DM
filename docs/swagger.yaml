@@ -6171,6 +6171,15 @@ paths:
       description: Retrieves all e-signature documents for the authenticated user's
         marina
       parameters:
+      - description: Document status (optional)
+        enum:
+        - draft
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -6456,8 +6465,21 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature submissions for the authenticated user's
-        marina
+        marina, with optional filtering by customerId and status
       parameters:
+      - description: Customer ID (optional)
+        in: query
+        name: customerId
+        type: string
+      - description: Submission status (optional)
+        enum:
+        - pending
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -6745,6 +6767,14 @@ paths:
       description: Retrieves all e-signature templates for the authenticated user's
         marina
       parameters:
+      - description: Template status (optional)
+        enum:
+        - draft
+        - active
+        - archived
+        in: query
+        name: status
+        type: string
       - default: 1
         description: Page number
         in: query

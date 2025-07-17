@@ -114,6 +114,7 @@ func (h *EsignHandler) checkDocumentLimit(ctx context.Context, marinaID uuid.UUI
 //	@Tags			E-signature Templates
 //	@Accept			json
 //	@Produce		json
+//	@Param			status	query		string	false	"Template status (optional)" Enums(draft, active, archived)
 //	@Param			page	query		int	false	"Page number"	default(1)	minimum(1)
 //	@Param			pageSize	query		int	false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Success		200		{object}	responses.EsignTemplateListResponse
@@ -124,7 +125,6 @@ func (h *EsignHandler) checkDocumentLimit(ctx context.Context, marinaID uuid.UUI
 //	@Router			/esign/templates [get]
 func (h *EsignHandler) ListEsignTemplates(c echo.Context) error {
 	userID, organizationID, _, err := h.getUserInfoFromContext(c)
-
 	if err != nil {
 		return err
 	}
@@ -135,14 +135,13 @@ func (h *EsignHandler) ListEsignTemplates(c echo.Context) error {
 	}
 	marinaID := user.MarinaID
 
-	// Parse pagination parameters using standard pattern
+	status := c.QueryParam("status")
+
 	var req requests.PaginationQuery
 	if err := c.Bind(&req); err != nil {
 		req.Page = 1
 		req.PageSize = 10
 	}
-
-	// Set defaults if not provided
 	if req.Page <= 0 {
 		req.Page = 1
 	}
@@ -150,30 +149,52 @@ func (h *EsignHandler) ListEsignTemplates(c echo.Context) error {
 		req.PageSize = 10
 	}
 
-	// Get total count for pagination
-	total, err := h.server.DB.Queries().CountEsignTemplatesByMarina(c.Request().Context(), db.CountEsignTemplatesByMarinaParams{
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-	})
-	if err != nil {
-		h.server.Logger.Zap.Error("Error counting e-signature templates", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting templates").JSON(c)
+	ctx := c.Request().Context()
+	var templates []db.EsignTemplate
+	var total int64
+	if status != "" {
+		templates, err = h.server.DB.Queries().ListEsignTemplatesByMarinaStatus(ctx, db.ListEsignTemplatesByMarinaStatusParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Column3:        status,
+			Limit:          req.PageSize,
+			Offset:         (req.Page - 1) * req.PageSize,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching filtered templates", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching templates").JSON(c)
+		}
+		total, err = h.server.DB.Queries().CountEsignTemplatesByMarinaStatus(ctx, db.CountEsignTemplatesByMarinaStatusParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Column3:        status,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting filtered templates", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting templates").JSON(c)
+		}
+	} else {
+		total64, err := h.server.DB.Queries().CountEsignTemplatesByMarina(ctx, db.CountEsignTemplatesByMarinaParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting templates", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting templates").JSON(c)
+		}
+		total = int64(total64)
+		templates, err = h.server.DB.Queries().ListEsignTemplatesByMarina(ctx, db.ListEsignTemplatesByMarinaParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Limit:          req.PageSize,
+			Offset:         (req.Page - 1) * req.PageSize,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching templates", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching templates").JSON(c)
+		}
 	}
-	totalInt := int64(total)
-
-	// Get templates for the marina
-	templates, err := h.server.DB.Queries().ListEsignTemplatesByMarina(c.Request().Context(), db.ListEsignTemplatesByMarinaParams{
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-		Limit:          req.PageSize,
-		Offset:         (req.Page - 1) * req.PageSize,
-	})
-	if err != nil {
-		h.server.Logger.Zap.Error("Error fetching e-signature templates", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching templates").JSON(c)
-	}
-
-	return responses.NewEsignTemplatesPaginatedResponse(templates, totalInt, req.PageSize, req.Page).JSON(c)
+	return responses.NewEsignTemplatesPaginatedResponse(templates, total, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateEsignTemplate creates a new e-signature template
@@ -450,6 +471,7 @@ func (h *EsignHandler) DeleteEsignTemplate(c echo.Context) error {
 //	@Tags			E-signature Documents
 //	@Accept			json
 //	@Produce		json
+//	@Param			status	query		string	false	"Document status (optional)" Enums(draft, signed, questions, sent)
 //	@Param			page	query		int	false	"Page number"	default(1)	minimum(1)
 //	@Param			pageSize	query		int	false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Success		200		{object}	responses.EsignDocumentListResponse
@@ -463,7 +485,6 @@ func (h *EsignHandler) ListEsignDocuments(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
 	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching marina by user ID", err)
@@ -471,14 +492,13 @@ func (h *EsignHandler) ListEsignDocuments(c echo.Context) error {
 	}
 	marinaID := user.MarinaID
 
-	// Parse pagination parameters using standard pattern
+	status := c.QueryParam("status")
+
 	var req requests.PaginationQuery
 	if err := c.Bind(&req); err != nil {
 		req.Page = 1
 		req.PageSize = 10
 	}
-
-	// Set defaults if not provided
 	if req.Page <= 0 {
 		req.Page = 1
 	}
@@ -486,30 +506,52 @@ func (h *EsignHandler) ListEsignDocuments(c echo.Context) error {
 		req.PageSize = 10
 	}
 
-	// Get total count for pagination
-	total, err := h.server.DB.Queries().CountEsignDocumentsByMarina(c.Request().Context(), db.CountEsignDocumentsByMarinaParams{
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-	})
-	if err != nil {
-		h.server.Logger.Zap.Error("Error counting e-signature documents", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting documents").JSON(c)
+	ctx := c.Request().Context()
+	var documents []db.EsignDocument
+	var total int64
+	if status != "" {
+		documents, err = h.server.DB.Queries().ListEsignDocumentsByMarinaStatus(ctx, db.ListEsignDocumentsByMarinaStatusParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Column3:        status,
+			Limit:          req.PageSize,
+			Offset:         (req.Page - 1) * req.PageSize,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching filtered documents", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching documents").JSON(c)
+		}
+		total, err = h.server.DB.Queries().CountEsignDocumentsByMarinaStatus(ctx, db.CountEsignDocumentsByMarinaStatusParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Column3:        status,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting filtered documents", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting documents").JSON(c)
+		}
+	} else {
+		total64, err := h.server.DB.Queries().CountEsignDocumentsByMarina(ctx, db.CountEsignDocumentsByMarinaParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting documents", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting documents").JSON(c)
+		}
+		total = int64(total64)
+		documents, err = h.server.DB.Queries().ListEsignDocumentsByMarina(ctx, db.ListEsignDocumentsByMarinaParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Limit:          req.PageSize,
+			Offset:         (req.Page - 1) * req.PageSize,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching documents", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching documents").JSON(c)
+		}
 	}
-	totalInt := int64(total)
-
-	// Get documents for the marina
-	documents, err := h.server.DB.Queries().ListEsignDocumentsByMarina(c.Request().Context(), db.ListEsignDocumentsByMarinaParams{
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-		Limit:          req.PageSize,
-		Offset:         (req.Page - 1) * req.PageSize,
-	})
-	if err != nil {
-		h.server.Logger.Zap.Error("Error fetching e-signature documents", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching documents").JSON(c)
-	}
-
-	return responses.NewEsignDocumentsPaginatedResponse(documents, totalInt, req.PageSize, req.Page).JSON(c)
+	return responses.NewEsignDocumentsPaginatedResponse(documents, total, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateEsignDocument creates a new e-signature document
@@ -788,15 +830,17 @@ func (h *EsignHandler) DeleteEsignDocument(c echo.Context) error {
 // E-SIGNATURE SUBMISSIONS
 // ====================
 
-// ListEsignSubmissions retrieves all e-signature submissions for the user's marina
+// ListEsignSubmissions retrieves all e-signature submissions for the user's marina, with optional filtering by customerId and status
 //
 //	@Summary		List e-signature submissions
-//	@Description	Retrieves all e-signature submissions for the authenticated user's marina
+//	@Description	Retrieves all e-signature submissions for the authenticated user's marina, with optional filtering by customerId and status
 //	@Tags			E-signature Submissions
 //	@Accept			json
 //	@Produce		json
-//	@Param			page	query		int	false	"Page number"	default(1)	minimum(1)
-//	@Param			pageSize	query		int	false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Param			customerId	query		string	false	"Customer ID (optional)"
+//	@Param			status		query		string	false	"Submission status (optional)" Enums(pending, signed, questions, sent)
+//	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Success		200		{object}	responses.EsignSubmissionListResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		401		{object}	responses.BaseResponse
@@ -816,6 +860,10 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 	}
 	marinaID := user.MarinaID
 
+	// Parse query parameters
+	customerID := c.QueryParam("customerId")
+	status := c.QueryParam("status")
+
 	// Parse pagination parameters using standard pattern
 	var req requests.PaginationQuery
 	if err := c.Bind(&req); err != nil {
@@ -831,30 +879,66 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		req.PageSize = 10
 	}
 
-	// Get total count for pagination
-	total, err := h.server.DB.Queries().CountEsignSubmissionsByMarina(c.Request().Context(), db.CountEsignSubmissionsByMarinaParams{
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-	})
-	if err != nil {
-		h.server.Logger.Zap.Error("Error counting e-signature submissions", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
+	// Use new filtered queries if either filter is provided
+	useFilter := customerID != "" || status != ""
+	var (
+		submissions []db.EsignSubmission
+		total       int64
+	)
+	ctx := c.Request().Context()
+	if useFilter {
+		var customerIDVal, statusVal string
+		if customerID != "" {
+			customerIDVal = customerID
+		}
+		if status != "" {
+			statusVal = status
+		}
+		submissions, err = h.server.DB.Queries().ListEsignSubmissionsByMarinaFiltered(ctx, db.ListEsignSubmissionsByMarinaFilteredParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Column3:        customerIDVal,
+			Column4:        statusVal,
+			Limit:          req.PageSize,
+			Offset:         (req.Page - 1) * req.PageSize,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching filtered e-signature submissions", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
+		}
+		total, err = h.server.DB.Queries().CountEsignSubmissionsByMarinaFiltered(ctx, db.CountEsignSubmissionsByMarinaFilteredParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Column3:        customerIDVal,
+			Column4:        statusVal,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting filtered e-signature submissions", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
+		}
+	} else {
+		submissions, err = h.server.DB.Queries().ListEsignSubmissionsByMarina(ctx, db.ListEsignSubmissionsByMarinaParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+			Limit:          req.PageSize,
+			Offset:         (req.Page - 1) * req.PageSize,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching e-signature submissions", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
+		}
+		total64, err := h.server.DB.Queries().CountEsignSubmissionsByMarina(ctx, db.CountEsignSubmissionsByMarinaParams{
+			OrganizationID: organizationID,
+			MarinaID:       marinaID,
+		})
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting e-signature submissions", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
+		}
+		total = int64(total64)
 	}
-	totalInt := int64(total)
 
-	// Get submissions for the marina
-	submissions, err := h.server.DB.Queries().ListEsignSubmissionsByMarina(c.Request().Context(), db.ListEsignSubmissionsByMarinaParams{
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-		Limit:          req.PageSize,
-		Offset:         (req.Page - 1) * req.PageSize,
-	})
-	if err != nil {
-		h.server.Logger.Zap.Error("Error fetching e-signature submissions", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
-	}
-
-	return responses.NewEsignSubmissionsPaginatedResponse(submissions, totalInt, req.PageSize, req.Page).JSON(c)
+	return responses.NewEsignSubmissionsPaginatedResponse(submissions, total, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateEsignSubmission creates a new e-signature submission
