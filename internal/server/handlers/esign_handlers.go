@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
 	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
@@ -1379,6 +1381,7 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 
 	// Handle file upload (optional for update)
 	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
+	var uploadedFileName string
 
 	// Get file from form
 	file, header, err := c.Request().FormFile("file")
@@ -1391,6 +1394,7 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 		}
 		blobUrl = filePath
+		uploadedFileName = header.Filename
 	}
 
 	// Update submission
@@ -1406,6 +1410,89 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 	if err != nil {
 		h.server.Logger.Zap.Error("Error updating e-signature submission", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating submission").JSON(c)
+	}
+
+	// If a file was uploaded AND the submission has a customer ID, update the DME customer with the attachment
+	if uploadedFileName != "" && submission.CustomerID != nil && *submission.CustomerID != "" {
+		// Get marina information for DME API calls
+		marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), submission.MarinaID)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching marina for DME update", err)
+			// Don't fail the whole request if we can't update DME customer - log and continue
+		} else if marina.SystemID != nil {
+			orgID := marina.OrganizationID
+			systemID := *marina.SystemID
+
+			// Retrieve existing customer from DME
+			existingCustomer, err := h.server.DME.CustomerRetrieve(c.Request().Context(), *submission.CustomerID, orgID, systemID)
+			if err != nil {
+				h.server.Logger.Zap.Error("[DME API] Error retrieving customer from DME for attachment update", err)
+			} else {
+				// Create new attachment
+				datetime := time.Now().Format("2006-01-02 15:04:05")
+				newAttachment := dme.Attachment{
+					FileName:    uploadedFileName,
+					Description: fmt.Sprintf("E-signature submission attachment %s", datetime),
+					S3Path:      blobUrl,
+				}
+
+				// Append to existing attachments
+				updatedAttachments := existingCustomer.Attachments
+				if updatedAttachments == nil {
+					updatedAttachments = []dme.Attachment{}
+				}
+				updatedAttachments = append(updatedAttachments, newAttachment)
+
+				// Create CustomerUpdate with all existing data plus new attachment
+				customerUpdate := &dme.CustomerUpdate{
+					ID:                        existingCustomer.ID,
+					Name:                      existingCustomer.Name,
+					FirstName:                 existingCustomer.FirstName,
+					LastName:                  existingCustomer.LastName,
+					Email:                     existingCustomer.Email,
+					Address1:                  existingCustomer.Address1,
+					Address2:                  existingCustomer.Address2,
+					Address3:                  existingCustomer.Address3,
+					City:                      existingCustomer.City,
+					State:                     existingCustomer.State,
+					Zip:                       existingCustomer.Zip,
+					Country:                   existingCustomer.Country,
+					Phone:                     existingCustomer.Phone,
+					AltFirstName:              existingCustomer.AltFirstName,
+					AltLastName:               existingCustomer.AltLastName,
+					AltAddress1:               existingCustomer.AltAddress1,
+					AltAddress2:               existingCustomer.AltAddress2,
+					AltAddress3:               existingCustomer.AltAddress3,
+					AltCity:                   existingCustomer.AltCity,
+					AltState:                  existingCustomer.AltState,
+					AltZip:                    existingCustomer.AltZip,
+					AltCountry:                existingCustomer.AltCountry,
+					AltPhone:                  existingCustomer.AltPhone,
+					UseAltAddress:             existingCustomer.UseAltAddress,
+					WorkPhone:                 existingCustomer.WorkPhone,
+					CellPhone:                 existingCustomer.CellPhone,
+					EmergencyContact:          existingCustomer.EmergencyContact,
+					EmergencyPhone:            existingCustomer.EmergencyPhone,
+					CompanyName:               existingCustomer.CompanyName,
+					ShipmentMethod:            existingCustomer.ShipmentMethod,
+					ShipmentMethodDescription: existingCustomer.ShipmentMethodDescription,
+					CustomInformation:         existingCustomer.CustomInformation,
+					Attachments:               updatedAttachments,
+				}
+
+				// Update customer in DME
+				_, err = h.server.DME.CustomerUpdate(c.Request().Context(), customerUpdate, orgID, systemID)
+				if err != nil {
+					h.server.Logger.Zap.Error("[DME API] Error updating customer attachments in DME", err)
+					// Don't fail the whole request - log and continue
+				} else {
+					h.server.Logger.Zap.Info("[DME API] Successfully updated DME customer with e-signature attachment",
+						"customerID", *submission.CustomerID,
+						"fileName", uploadedFileName,
+						"submissionID", submission.ID.String())
+				}
+			}
+		}
 	}
 
 	// Create notification for marina staff about new customer message
