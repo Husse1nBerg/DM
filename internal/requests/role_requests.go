@@ -18,7 +18,7 @@ type CreateRoleRequest struct {
 	Permissions    *models.Permissions `json:"permissions" validate:"required"`
 	IsActive       *bool               `json:"isActive,omitempty" example:"true"`
 	IsCustomerRole *bool               `json:"isCustomerRole,omitempty" example:"false"`
-	Type           string              `json:"type" validate:"required" example:"marina"`
+	Type           string              `json:"type" example:"marina"`
 	MarinaID       *uuid.UUID          `json:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
 }
 
