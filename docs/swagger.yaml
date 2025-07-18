@@ -6,6 +6,10 @@ definitions:
         type: string
       fileName:
         type: string
+      fileType:
+        type: string
+      fromDMWeb:
+        type: boolean
       s3Path:
         type: string
     type: object
@@ -1503,6 +1507,9 @@ definitions:
       isCustomerRole:
         example: false
         type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       name:
         example: Admin
         type: string
@@ -1514,7 +1521,6 @@ definitions:
     required:
     - name
     - permissions
-    - type
     type: object
   requests.CreateUserRequest:
     properties:
@@ -2217,6 +2223,9 @@ definitions:
       isCustomerRole:
         example: false
         type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       name:
         example: Admin
         type: string
@@ -3464,16 +3473,7 @@ definitions:
         example: https://example.com
         type: string
     type: object
-  responses.OverLimitUsageListResponse:
-    description: List of marina usage records over plan limits
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/responses.OverLimitUsageResponse'
-        type: array
-    type: object
   responses.OverLimitUsageResponse:
-    description: Marina usage over plan limits for a specific month
     properties:
       documentLimit:
         type: integer
@@ -3484,21 +3484,24 @@ definitions:
       emailUsage:
         type: integer
       marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       month:
+        example: 2024-01
         type: string
       organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
         type: string
       storageLimitGb:
-        type: integer
+        description: in GB
+        type: number
       storageUsage:
-        type: integer
+        description: in GB
+        type: number
       textLimit:
         type: integer
       textUsage:
         type: integer
-      usageHistoryId:
-        type: string
     type: object
   responses.RedisGetResponse:
     properties:
@@ -3571,6 +3574,9 @@ definitions:
       isCustomerRole:
         example: false
         type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       name:
         example: Admin
         type: string
@@ -7779,45 +7785,6 @@ paths:
       summary: Get marina usage history by marina ID
       tags:
       - marina-usage-history
-  /marina-usage-history/over-limit:
-    get:
-      description: Returns all marinas (optionally filtered by organization) that
-        exceeded their plan limits for storage, documents, messages, or emails, grouped
-        by month
-      parameters:
-      - description: Organization ID (optional)
-        format: uuid
-        in: query
-        name: organizationId
-        type: string
-      - description: Start month (YYYY-MM)
-        in: query
-        name: startMonth
-        required: true
-        type: string
-      - description: End month (YYYY-MM)
-        in: query
-        name: endMonth
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.OverLimitUsageListResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      summary: Get marinas over plan limits by month
-      tags:
-      - marina-usage-history
   /marina-usage-history/usage/{id}:
     get:
       description: Retrieves a marina usage history record by its ID
@@ -8347,6 +8314,50 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get marinas by organization
+      tags:
+      - Marinas
+  /marinas/over-current-limit:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas that are over their current limit
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: query
+        name: organizationId
+        required: true
+        type: string
+      - description: Start month (YYYY-MM)
+        in: query
+        name: startMonth
+        required: true
+        type: string
+      - description: End month (YYYY-MM)
+        in: query
+        name: endMonth
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.OverLimitUsageResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marinas over current limit
       tags:
       - Marinas
   /marinas/user:

@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createMarina = `-- name: CreateMarina :one
@@ -667,7 +668,11 @@ func (q *Queries) GetMarinasByOrganizationPaginated(ctx context.Context, arg Get
 }
 
 const getMarinasOverCurrentLimit = `-- name: GetMarinasOverCurrentLimit :many
-SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage, 
+  sp.storage_limit_gb AS storage_limit_gb, 
+  dp.document_limit AS document_limit, 
+  nmp.text_limit AS text_limit, 
+  nmp.email_limit AS email_limit
 FROM marinas m
 LEFT JOIN storage_plans sp ON m.storage_plan_id = sp.id
 LEFT JOIN notes_messages_plans nmp ON m.notes_messages_plan_id = nmp.id
@@ -679,34 +684,70 @@ LEFT JOIN (
 ) uc ON m.id = uc.marina_id
 WHERE m.deleted_at IS NULL
   AND (
-    (sp.storage_limit_gb IS NOT NULL AND sp.storage_limit_gb != 'Unlimited Storage' AND m.storage_usage > sp.storage_limit_gb * 1024 * 1024 * 1024)
-    OR (nmp.text_limit IS NOT NULL AND nmp.text_limit != 'Unlimited Texts' AND m.text_usage > nmp.text_limit)
-    OR (nmp.email_limit IS NOT NULL AND nmp.email_limit != 'Unlimited Emails' AND m.email_usage > nmp.email_limit)
-    OR (dp.document_limit IS NOT NULL AND dp.document_limit != 'Unlimited Documents' AND m.document_usage > dp.document_limit)
+    (sp.storage_limit_gb IS NOT NULL AND sp.storage_limit_gb::text ~ '^[0-9]+$' AND m.storage_usage > (sp.storage_limit_gb::bigint * 1024 * 1024 * 1024))
+    OR (nmp.text_limit IS NOT NULL AND nmp.text_limit::text ~ '^[0-9]+$' AND m.text_usage > nmp.text_limit::int)
+    OR (nmp.email_limit IS NOT NULL AND nmp.email_limit::text ~ '^[0-9]+$' AND m.email_usage > nmp.email_limit::int)
+    OR (dp.document_limit IS NOT NULL AND dp.document_limit::text ~ '^[0-9]+$' AND m.document_usage > dp.document_limit::int)
     OR (
-      COALESCE(sp.user_limit, 1000000) != 'Unlimited Users'
-      AND uc.user_count > COALESCE(NULLIF(sp.user_limit, 'Unlimited Users')::int, 1000000)
+      sp.user_limit IS NOT NULL AND sp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > sp.user_limit::int
     )
     OR (
-      COALESCE(nmp.user_limit, 1000000) != 'Unlimited Users'
-      AND uc.user_count > COALESCE(NULLIF(nmp.user_limit, 'Unlimited Users')::int, 1000000)
+      nmp.user_limit IS NOT NULL AND nmp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > nmp.user_limit::int
     )
     OR (
-      COALESCE(dp.user_limit, 1000000) != 'Unlimited Users'
-      AND uc.user_count > COALESCE(NULLIF(dp.user_limit, 'Unlimited Users')::int, 1000000)
+      dp.user_limit IS NOT NULL AND dp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > dp.user_limit::int
     )
   )
 `
 
-func (q *Queries) GetMarinasOverCurrentLimit(ctx context.Context) ([]Marina, error) {
+type GetMarinasOverCurrentLimitRow struct {
+	ID                   uuid.UUID
+	OrganizationID       uuid.UUID
+	Name                 string
+	Email                string
+	Location             *string
+	Phone                *string
+	Country              *string
+	Currency             *string
+	WorkingHours         []byte
+	Website              *string
+	Image                *string
+	MaxUsers             *int32
+	IsActive             *bool
+	IsTest               *bool
+	CreatedAt            pgtype.Timestamp
+	UpdatedAt            pgtype.Timestamp
+	DeletedAt            pgtype.Timestamp
+	AddressID            uuid.UUID
+	SystemID             *string
+	StorageUsage         *int64
+	EmailUsage           *int16
+	TextUsage            *int16
+	NotesMessagesPlanID  uuid.UUID
+	StoragePlanID        uuid.UUID
+	Modules              []byte
+	InternalAnnouncement *string
+	ExternalAnnouncement *string
+	DocumentPlanID       uuid.UUID
+	DocumentUsage        *int64
+	StorageLimitGb       *int32
+	DocumentLimit        *int32
+	TextLimit            *int32
+	EmailLimit           *string
+}
+
+func (q *Queries) GetMarinasOverCurrentLimit(ctx context.Context) ([]GetMarinasOverCurrentLimitRow, error) {
 	rows, err := q.db.Query(ctx, getMarinasOverCurrentLimit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Marina
+	var items []GetMarinasOverCurrentLimitRow
 	for rows.Next() {
-		var i Marina
+		var i GetMarinasOverCurrentLimitRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.OrganizationID,
@@ -737,6 +778,10 @@ func (q *Queries) GetMarinasOverCurrentLimit(ctx context.Context) ([]Marina, err
 			&i.ExternalAnnouncement,
 			&i.DocumentPlanID,
 			&i.DocumentUsage,
+			&i.StorageLimitGb,
+			&i.DocumentLimit,
+			&i.TextLimit,
+			&i.EmailLimit,
 		); err != nil {
 			return nil, err
 		}

@@ -5963,61 +5963,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/marina-usage-history/over-limit": {
-            "get": {
-                "description": "Returns all marinas (optionally filtered by organization) that exceeded their plan limits for storage, documents, messages, or emails, grouped by month",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "marina-usage-history"
-                ],
-                "summary": "Get marinas over plan limits by month",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Organization ID (optional)",
-                        "name": "organizationId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Start month (YYYY-MM)",
-                        "name": "startMonth",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "End month (YYYY-MM)",
-                        "name": "endMonth",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.OverLimitUsageListResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/marina-usage-history/usage/{id}": {
             "get": {
                 "description": "Retrieves a marina usage history record by its ID",
@@ -6692,6 +6637,73 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/over-current-limit": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas that are over their current limit",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get marinas over current limit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start month (YYYY-MM)",
+                        "name": "startMonth",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End month (YYYY-MM)",
+                        "name": "endMonth",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.OverLimitUsageResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
                         }
@@ -11144,6 +11156,12 @@ const docTemplate = `{
                 "fileName": {
                     "type": "string"
                 },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
                 "s3Path": {
                     "type": "string"
                 }
@@ -13340,8 +13358,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
-                "permissions",
-                "type"
+                "permissions"
             ],
             "properties": {
                 "description": {
@@ -13355,6 +13372,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",
@@ -14362,6 +14383,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",
@@ -16112,20 +16137,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.OverLimitUsageListResponse": {
-            "description": "List of marina usage records over plan limits",
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.OverLimitUsageResponse"
-                    }
-                }
-            }
-        },
         "responses.OverLimitUsageResponse": {
-            "description": "Marina usage over plan limits for a specific month",
             "type": "object",
             "properties": {
                 "documentLimit": {
@@ -16141,28 +16153,30 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "marinaId": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "month": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2024-01"
                 },
                 "organizationId": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
                 },
                 "storageLimitGb": {
-                    "type": "integer"
+                    "description": "in GB",
+                    "type": "number"
                 },
                 "storageUsage": {
-                    "type": "integer"
+                    "description": "in GB",
+                    "type": "number"
                 },
                 "textLimit": {
                     "type": "integer"
                 },
                 "textUsage": {
                     "type": "integer"
-                },
-                "usageHistoryId": {
-                    "type": "string"
                 }
             }
         },
@@ -16268,6 +16282,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",

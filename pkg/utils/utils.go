@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -129,4 +130,14 @@ func Int16OrZero(ptr *int16) int16 {
 		return 0
 	}
 	return *ptr
+}
+
+// StringToInt16Ptr converts a *string to a *int16, returns error if not a valid integer
+func StringToInt16Ptr(s string) (*int16, error) {
+	v, err := strconv.ParseInt(s, 10, 16)
+	if err != nil {
+		return nil, err
+	}
+	res := int16(v)
+	return &res, nil
 }

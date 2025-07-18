@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"math"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -171,8 +172,8 @@ type OverLimitUsageResponse struct {
 	MarinaID       uuid.UUID `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440000"`
 	OrganizationID uuid.UUID `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
 	Month          string    `json:"month" example:"2024-01"`
-	StorageUsage   int64     `json:"storageUsage"`
-	StorageLimitGb *int32    `json:"storageLimitGb,omitempty"`
+	StorageUsage   *float64  `json:"storageUsage"`             // in GB
+	StorageLimitGb *float64  `json:"storageLimitGb,omitempty"` // in GB
 	DocumentUsage  int64     `json:"documentUsage"`
 	DocumentLimit  *int32    `json:"documentLimit,omitempty"`
 	TextUsage      int16     `json:"textUsage"`
@@ -182,21 +183,45 @@ type OverLimitUsageResponse struct {
 }
 
 // NewOverLimitUsageResponse creates a response for marinas over their usage limits
-func NewOverLimitUsageResponse(marinas []db.Marina) BaseResponse {
-	responses := make([]OverLimitUsageResponse, len(marinas))
-	for i, marina := range marinas {
+func NewOverLimitUsageResponse(rows []db.GetMarinasOverCurrentLimitRow) BaseResponse {
+	const bytesInGB = 1024 * 1024 * 1024
+	responses := make([]OverLimitUsageResponse, len(rows))
+	for i, row := range rows {
+		var emailLimitPtr *int16
+		if row.EmailLimit != nil {
+			if v, err := utils.StringToInt16Ptr(*row.EmailLimit); err == nil {
+				emailLimitPtr = v
+			}
+		}
+		var textLimitPtr *int16
+		if row.TextLimit != nil {
+			v := int16(*row.TextLimit)
+			textLimitPtr = &v
+		}
+		var storageUsageGB *float64
+		if row.StorageUsage != nil {
+			usage := float64(*row.StorageUsage) / float64(bytesInGB)
+			rounded := math.Round(usage*100) / 100
+			storageUsageGB = &rounded
+		}
+		var storageLimitGB *float64
+		if row.StorageLimitGb != nil {
+			limit := float64(*row.StorageLimitGb)
+			rounded := math.Round(limit*100) / 100
+			storageLimitGB = &rounded
+		}
 		responses[i] = OverLimitUsageResponse{
-			MarinaID:       marina.ID,
-			OrganizationID: marina.OrganizationID,
-			Month:          "", // Month not available from db.Marina
-			StorageUsage:   utils.Int64OrZero(marina.StorageUsage),
-			StorageLimitGb: nil, // Not available without joining plan
-			DocumentUsage:  utils.Int64OrZero(marina.DocumentUsage),
-			DocumentLimit:  nil, // Not available without joining plan
-			TextUsage:      utils.Int16OrZero(marina.TextUsage),
-			TextLimit:      nil, // Not available without joining plan
-			EmailUsage:     utils.Int16OrZero(marina.EmailUsage),
-			EmailLimit:     nil, // Not available without joining plan
+			MarinaID:       row.ID,
+			OrganizationID: row.OrganizationID,
+			Month:          "",
+			StorageUsage:   storageUsageGB,
+			StorageLimitGb: storageLimitGB,
+			DocumentUsage:  utils.Int64OrZero(row.DocumentUsage),
+			DocumentLimit:  row.DocumentLimit,
+			TextUsage:      utils.Int16OrZero(row.TextUsage),
+			TextLimit:      textLimitPtr,
+			EmailUsage:     utils.Int16OrZero(row.EmailUsage),
+			EmailLimit:     emailLimitPtr,
 		}
 	}
 	return NewSuccessResponse(responses)
