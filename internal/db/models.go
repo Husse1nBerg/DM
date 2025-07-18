@@ -316,6 +316,7 @@ type Role struct {
 	DeletedAt      pgtype.Timestamp
 	IsCustomerRole *bool
 	Type           string
+	MarinaID       uuid.UUID
 }
 
 type StoragePlan struct {
