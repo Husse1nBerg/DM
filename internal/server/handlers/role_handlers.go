@@ -20,37 +20,29 @@ type RoleHandler struct {
 func (h *RoleHandler) getUserInfoFromContext(c echo.Context) (marinaID uuid.UUID, err error) {
 	userToken := c.Get("user").(*jwt.Token)
 	if userToken == nil {
-		h.server.Logger.Zap.Error("No user token found in context")
 		return uuid.Nil, responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
 	}
 
 	claims, ok := userToken.Claims.(*token.JwtCustomClaims)
 	if !ok {
-		h.server.Logger.Zap.Error("Invalid token claims type")
 		return uuid.Nil, responses.NewErrorResponse(http.StatusUnauthorized, "Invalid token claims").JSON(c)
 	}
 
 	if claims.ID == uuid.Nil {
-		h.server.Logger.Zap.Error("Invalid user ID in token claims")
 		return uuid.Nil, responses.NewErrorResponse(http.StatusUnauthorized, "Invalid user ID").JSON(c)
 	}
-
-	h.server.Logger.Zap.Info("Getting user info", "userID", claims.ID)
 
 	// Fetch the user's current marina_id from the database
 	queries := h.server.DB.Queries()
 	user, dbErr := queries.GetUserByID(c.Request().Context(), claims.ID)
 	if dbErr != nil {
-		h.server.Logger.Zap.Error("Failed to get user from database", "userID", claims.ID, "error", dbErr)
 		return uuid.Nil, responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+dbErr.Error()).JSON(c)
 	}
 
 	if user.MarinaID == uuid.Nil {
-		h.server.Logger.Zap.Error("User has no marina assigned", "userID", claims.ID)
 		return uuid.Nil, responses.NewErrorResponse(http.StatusBadRequest, "User has no marina assigned").JSON(c)
 	}
 
-	h.server.Logger.Zap.Info("Successfully retrieved user marina", "userID", claims.ID, "marinaID", user.MarinaID)
 	marinaID = user.MarinaID
 	return marinaID, nil
 }
@@ -76,16 +68,12 @@ func NewRoleHandler(server *s.Server) *RoleHandler {
 func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 	marinaID, err := g.getUserInfoFromContext(c)
 	if err != nil {
-		g.server.Logger.Zap.Error("Failed to get user info from context", "error", err)
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
 	}
-
-	g.server.Logger.Zap.Info("ListRolesHandler called", "marinaID", marinaID)
 
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
-		g.server.Logger.Zap.Warn("Failed to bind pagination params, using defaults", "error", err)
 		pagination.Page = 1
 		pagination.PageSize = 10
 	}
@@ -98,8 +86,6 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 		pagination.PageSize = 10
 	}
 
-	g.server.Logger.Zap.Info("Pagination params", "page", pagination.Page, "pageSize", pagination.PageSize)
-
 	queries := g.server.DB.Queries()
 
 	// Get paginated roles
@@ -109,24 +95,16 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 		Offset:   (pagination.Page - 1) * pagination.PageSize,
 	}
 
-	g.server.Logger.Zap.Info("Querying roles with params", "marinaID", params.MarinaID, "limit", params.Limit, "offset", params.Offset)
-
 	roles, err := queries.GetRolesPaginated(c.Request().Context(), params)
 	if err != nil {
-		g.server.Logger.Zap.Error("Failed to get paginated roles", "error", err, "params", params)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve roles: "+err.Error()).JSON(c)
 	}
-
-	g.server.Logger.Zap.Info("Retrieved roles", "count", len(roles))
 
 	// Get total count for pagination
 	total, err := queries.CountRolesByMarina(c.Request().Context(), marinaID)
 	if err != nil {
-		g.server.Logger.Zap.Error("Failed to count roles by marina", "error", err, "marinaID", marinaID)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to count roles: "+err.Error()).JSON(c)
 	}
-
-	g.server.Logger.Zap.Info("Total roles count", "total", total)
 
 	response := responses.NewRolesPaginatedResponse(roles, total, pagination.PageSize, pagination.Page)
 	return response.JSON(c)
@@ -276,7 +254,6 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 	// Parse the request body
 	var req requests.UpdateRoleRequest
 	if err := c.Bind(&req); err != nil {
-		g.server.Logger.Zap.Error("Failed to bind request", err)
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
 	}
 
@@ -320,7 +297,6 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		var convErr error
 		permissionsBytes, convErr = req.Permissions.ToBytes()
 		if convErr != nil {
-			g.server.Logger.Zap.Error("Failed to convert permissions", convErr)
 			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
 		}
 	}
@@ -336,19 +312,9 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		MarinaID:       marinaID,
 	}
 
-	// Log the update operation
-	g.server.Logger.Zap.Info("Updating role",
-		"id", roleID,
-		"name", name,
-		"description_provided", req.Description != nil,
-		"permissions_provided", req.Permissions != nil,
-		"is_active_provided", req.IsActive != nil,
-		"is_customer_role_provided", req.IsCustomerRole != nil)
-
 	// Update the role
 	updatedRole, err := queries.UpdateRole(c.Request().Context(), updateParams)
 	if err != nil {
-		g.server.Logger.Zap.Error("Failed to update role", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, err.Error()).JSON(c)
 	}
 
