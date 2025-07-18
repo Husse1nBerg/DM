@@ -5963,6 +5963,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/marina-usage-history/over-limit": {
+            "get": {
+                "description": "Returns all marinas (optionally filtered by organization) that exceeded their plan limits for storage, documents, messages, or emails, grouped by month",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marinas over plan limits by month",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID (optional)",
+                        "name": "organizationId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start month (YYYY-MM)",
+                        "name": "startMonth",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End month (YYYY-MM)",
+                        "name": "endMonth",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.OverLimitUsageListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/marina-usage-history/usage/{id}": {
             "get": {
                 "description": "Retrieves a marina usage history record by its ID",
@@ -16054,6 +16109,60 @@ const docTemplate = `{
                 "website": {
                     "type": "string",
                     "example": "https://example.com"
+                }
+            }
+        },
+        "responses.OverLimitUsageListResponse": {
+            "description": "List of marina usage records over plan limits",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.OverLimitUsageResponse"
+                    }
+                }
+            }
+        },
+        "responses.OverLimitUsageResponse": {
+            "description": "Marina usage over plan limits for a specific month",
+            "type": "object",
+            "properties": {
+                "documentLimit": {
+                    "type": "integer"
+                },
+                "documentUsage": {
+                    "type": "integer"
+                },
+                "emailLimit": {
+                    "type": "integer"
+                },
+                "emailUsage": {
+                    "type": "integer"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "storageLimitGb": {
+                    "type": "integer"
+                },
+                "storageUsage": {
+                    "type": "integer"
+                },
+                "textLimit": {
+                    "type": "integer"
+                },
+                "textUsage": {
+                    "type": "integer"
+                },
+                "usageHistoryId": {
+                    "type": "string"
                 }
             }
         },

@@ -114,3 +114,19 @@ func IntToInt32Ptr(i *int) *int32 {
 	v := int32(*i)
 	return &v
 }
+
+// Int64OrZero returns the value of a *int64 or 0 if nil
+func Int64OrZero(ptr *int64) int64 {
+	if ptr == nil {
+		return 0
+	}
+	return *ptr
+}
+
+// Int16OrZero returns the value of a *int16 or 0 if nil
+func Int16OrZero(ptr *int16) int16 {
+	if ptr == nil {
+		return 0
+	}
+	return *ptr
+}

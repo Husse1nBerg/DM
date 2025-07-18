@@ -666,6 +666,88 @@ func (q *Queries) GetMarinasByOrganizationPaginated(ctx context.Context, arg Get
 	return items, nil
 }
 
+const getMarinasOverCurrentLimit = `-- name: GetMarinasOverCurrentLimit :many
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage
+FROM marinas m
+LEFT JOIN storage_plans sp ON m.storage_plan_id = sp.id
+LEFT JOIN notes_messages_plans nmp ON m.notes_messages_plan_id = nmp.id
+LEFT JOIN document_plans dp ON m.document_plan_id = dp.id
+LEFT JOIN (
+    SELECT um.marina_id, COUNT(*) AS user_count
+    FROM user_marinas um
+    GROUP BY um.marina_id
+) uc ON m.id = uc.marina_id
+WHERE m.deleted_at IS NULL
+  AND (
+    (sp.storage_limit_gb IS NOT NULL AND sp.storage_limit_gb != 'Unlimited Storage' AND m.storage_usage > sp.storage_limit_gb * 1024 * 1024 * 1024)
+    OR (nmp.text_limit IS NOT NULL AND nmp.text_limit != 'Unlimited Texts' AND m.text_usage > nmp.text_limit)
+    OR (nmp.email_limit IS NOT NULL AND nmp.email_limit != 'Unlimited Emails' AND m.email_usage > nmp.email_limit)
+    OR (dp.document_limit IS NOT NULL AND dp.document_limit != 'Unlimited Documents' AND m.document_usage > dp.document_limit)
+    OR (
+      COALESCE(sp.user_limit, 1000000) != 'Unlimited Users'
+      AND uc.user_count > COALESCE(NULLIF(sp.user_limit, 'Unlimited Users')::int, 1000000)
+    )
+    OR (
+      COALESCE(nmp.user_limit, 1000000) != 'Unlimited Users'
+      AND uc.user_count > COALESCE(NULLIF(nmp.user_limit, 'Unlimited Users')::int, 1000000)
+    )
+    OR (
+      COALESCE(dp.user_limit, 1000000) != 'Unlimited Users'
+      AND uc.user_count > COALESCE(NULLIF(dp.user_limit, 'Unlimited Users')::int, 1000000)
+    )
+  )
+`
+
+func (q *Queries) GetMarinasOverCurrentLimit(ctx context.Context) ([]Marina, error) {
+	rows, err := q.db.Query(ctx, getMarinasOverCurrentLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Marina
+	for rows.Next() {
+		var i Marina
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.Name,
+			&i.Email,
+			&i.Location,
+			&i.Phone,
+			&i.Country,
+			&i.Currency,
+			&i.WorkingHours,
+			&i.Website,
+			&i.Image,
+			&i.MaxUsers,
+			&i.IsActive,
+			&i.IsTest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AddressID,
+			&i.SystemID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.NotesMessagesPlanID,
+			&i.StoragePlanID,
+			&i.Modules,
+			&i.InternalAnnouncement,
+			&i.ExternalAnnouncement,
+			&i.DocumentPlanID,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMarinasPaginated = `-- name: GetMarinasPaginated :many
 SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage, notes_messages_plan_id, storage_plan_id, modules, internal_announcement, external_announcement, document_plan_id, document_usage
 FROM marinas

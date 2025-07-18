@@ -3464,6 +3464,42 @@ definitions:
         example: https://example.com
         type: string
     type: object
+  responses.OverLimitUsageListResponse:
+    description: List of marina usage records over plan limits
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.OverLimitUsageResponse'
+        type: array
+    type: object
+  responses.OverLimitUsageResponse:
+    description: Marina usage over plan limits for a specific month
+    properties:
+      documentLimit:
+        type: integer
+      documentUsage:
+        type: integer
+      emailLimit:
+        type: integer
+      emailUsage:
+        type: integer
+      marinaId:
+        type: string
+      month:
+        type: string
+      organizationId:
+        type: string
+      storageLimitGb:
+        type: integer
+      storageUsage:
+        type: integer
+      textLimit:
+        type: integer
+      textUsage:
+        type: integer
+      usageHistoryId:
+        type: string
+    type: object
   responses.RedisGetResponse:
     properties:
       key:
@@ -7741,6 +7777,45 @@ paths:
           schema:
             $ref: '#/definitions/responses.BaseResponse'
       summary: Get marina usage history by marina ID
+      tags:
+      - marina-usage-history
+  /marina-usage-history/over-limit:
+    get:
+      description: Returns all marinas (optionally filtered by organization) that
+        exceeded their plan limits for storage, documents, messages, or emails, grouped
+        by month
+      parameters:
+      - description: Organization ID (optional)
+        format: uuid
+        in: query
+        name: organizationId
+        type: string
+      - description: Start month (YYYY-MM)
+        in: query
+        name: startMonth
+        required: true
+        type: string
+      - description: End month (YYYY-MM)
+        in: query
+        name: endMonth
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.OverLimitUsageListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marinas over plan limits by month
       tags:
       - marina-usage-history
   /marina-usage-history/usage/{id}:

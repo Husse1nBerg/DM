@@ -188,3 +188,33 @@ SELECT COALESCE(document_usage, 0)::bigint
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL;
+-- name: GetMarinasOverCurrentLimit :many
+SELECT m.*
+FROM marinas m
+LEFT JOIN storage_plans sp ON m.storage_plan_id = sp.id
+LEFT JOIN notes_messages_plans nmp ON m.notes_messages_plan_id = nmp.id
+LEFT JOIN document_plans dp ON m.document_plan_id = dp.id
+LEFT JOIN (
+    SELECT um.marina_id, COUNT(*) AS user_count
+    FROM user_marinas um
+    GROUP BY um.marina_id
+) uc ON m.id = uc.marina_id
+WHERE m.deleted_at IS NULL
+  AND (
+    (sp.storage_limit_gb IS NOT NULL AND sp.storage_limit_gb != 'Unlimited Storage' AND m.storage_usage > sp.storage_limit_gb * 1024 * 1024 * 1024)
+    OR (nmp.text_limit IS NOT NULL AND nmp.text_limit != 'Unlimited Texts' AND m.text_usage > nmp.text_limit)
+    OR (nmp.email_limit IS NOT NULL AND nmp.email_limit != 'Unlimited Emails' AND m.email_usage > nmp.email_limit)
+    OR (dp.document_limit IS NOT NULL AND dp.document_limit != 'Unlimited Documents' AND m.document_usage > dp.document_limit)
+    OR (
+      COALESCE(sp.user_limit, 1000000) != 'Unlimited Users'
+      AND uc.user_count > COALESCE(NULLIF(sp.user_limit, 'Unlimited Users')::int, 1000000)
+    )
+    OR (
+      COALESCE(nmp.user_limit, 1000000) != 'Unlimited Users'
+      AND uc.user_count > COALESCE(NULLIF(nmp.user_limit, 'Unlimited Users')::int, 1000000)
+    )
+    OR (
+      COALESCE(dp.user_limit, 1000000) != 'Unlimited Users'
+      AND uc.user_count > COALESCE(NULLIF(dp.user_limit, 'Unlimited Users')::int, 1000000)
+    )
+  );

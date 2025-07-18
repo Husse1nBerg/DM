@@ -53,7 +53,13 @@ type UpdateMarinaRequest struct {
 	ExternalAnnouncement *string               `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
 }
 
-// MarinaIDParam represents the URL parameter for marina ID
+type OverLimitUsageRequest struct {
+	OrganizationID *uuid.UUID `json:"organizationId" query:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	StartMonth     string     `json:"startMonth" query:"startMonth" validate:"required" example:"2024-01"`
+	EndMonth       string     `json:"endMonth" query:"endMonth" validate:"required" example:"2024-12"`
+}
+
+// MarinaIDParam represents the URL parameter for the marina ID
 type MarinaIDParam struct {
 	MarinaID uuid.UUID `param:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 }

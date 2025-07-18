@@ -166,3 +166,38 @@ type MarinaDetailResponse struct {
 	Users        []UserResponse       `json:"users"`
 	TotalUsers   int64                `json:"totalUsers" example:"50"`
 }
+
+type OverLimitUsageResponse struct {
+	MarinaID       uuid.UUID `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID uuid.UUID `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Month          string    `json:"month" example:"2024-01"`
+	StorageUsage   int64     `json:"storageUsage"`
+	StorageLimitGb *int32    `json:"storageLimitGb,omitempty"`
+	DocumentUsage  int64     `json:"documentUsage"`
+	DocumentLimit  *int32    `json:"documentLimit,omitempty"`
+	TextUsage      int16     `json:"textUsage"`
+	TextLimit      *int16    `json:"textLimit,omitempty"`
+	EmailUsage     int16     `json:"emailUsage"`
+	EmailLimit     *int16    `json:"emailLimit,omitempty"`
+}
+
+// NewOverLimitUsageResponse creates a response for marinas over their usage limits
+func NewOverLimitUsageResponse(marinas []db.Marina) BaseResponse {
+	responses := make([]OverLimitUsageResponse, len(marinas))
+	for i, marina := range marinas {
+		responses[i] = OverLimitUsageResponse{
+			MarinaID:       marina.ID,
+			OrganizationID: marina.OrganizationID,
+			Month:          "", // Month not available from db.Marina
+			StorageUsage:   utils.Int64OrZero(marina.StorageUsage),
+			StorageLimitGb: nil, // Not available without joining plan
+			DocumentUsage:  utils.Int64OrZero(marina.DocumentUsage),
+			DocumentLimit:  nil, // Not available without joining plan
+			TextUsage:      utils.Int16OrZero(marina.TextUsage),
+			TextLimit:      nil, // Not available without joining plan
+			EmailUsage:     utils.Int16OrZero(marina.EmailUsage),
+			EmailLimit:     nil, // Not available without joining plan
+		}
+	}
+	return NewSuccessResponse(responses)
+}

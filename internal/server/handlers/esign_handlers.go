@@ -973,9 +973,9 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 	marinaID := user.MarinaID
 
 	// Check document usage limit
-	if err := h.checkDocumentLimit(c.Request().Context(), marinaID); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-	}
+	// if err := h.checkDocumentLimit(c.Request().Context(), marinaID); err != nil {
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
 
 	// Parse request body
 	var req requests.CreateEsignSubmissionRequest
