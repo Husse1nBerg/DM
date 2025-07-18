@@ -34,6 +34,11 @@ func NewRoleHandler(server *s.Server) *RoleHandler {
 //
 //	@Router			/role/list [get]
 func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
+	marinaID, err := uuid.Parse(c.QueryParam("marinaId"))
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
+	}
+
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -44,23 +49,27 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 	queries := g.server.DB.Queries()
 
 	// Get paginated roles
-	params := db.GetAllRolesByTypesPaginatedParams{
-		Column1: []string{"marina", "customer"},
-		Limit:   pagination.PageSize,
-		Offset:  (pagination.Page - 1) * pagination.PageSize,
+	params := db.GetRolesPaginatedParams{
+		MarinaID: marinaID,
+		Limit:    pagination.PageSize,
+		Offset:   (pagination.Page - 1) * pagination.PageSize,
 	}
-	roles, err := queries.GetAllRolesByTypesPaginated(c.Request().Context(), params)
+	roles, err := queries.GetRolesPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Get total count for pagination
 	// allRoles, err := queries.GetAllRoles(c.Request().Context())
-	allRoles, err := queries.GetAllRolesByTypes(c.Request().Context(), []string{"marina", "customer"})
+	// allRoles, err := queries.GetAllRolesByTypes(c.Request().Context(), []string{"marina", "customer"})
+	// if err != nil {
+	// 	return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	// }
+
+	total, err := queries.CountRolesByMarina(c.Request().Context(), marinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-	total := int64(len(allRoles))
 
 	return responses.NewRolesPaginatedResponse(roles, total, pagination.PageSize, pagination.Page).JSON(c)
 }
@@ -123,6 +132,7 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 		Permissions:    permissionsBytes,
 		IsActive:       &isActive,
 		IsCustomerRole: req.IsCustomerRole,
+		MarinaID:       *req.MarinaID,
 	}
 
 	role, err := queries.CreateRole(c.Request().Context(), params)
@@ -213,6 +223,7 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 	isActive := existingRole.IsActive
 	permissionsBytes := existingRole.Permissions
 	isCustomerRole := existingRole.IsCustomerRole
+	marinaID := existingRole.MarinaID
 	// Update fields if provided
 	if req.Name != nil {
 		// Check if the new name already exists for another role
@@ -228,6 +239,10 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 
 	if req.Description != nil {
 		description = req.Description
+	}
+
+	if req.MarinaID != nil {
+		marinaID = *req.MarinaID
 	}
 
 	if req.IsActive != nil {
@@ -255,6 +270,7 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		Permissions:    permissionsBytes,
 		IsActive:       isActive,
 		IsCustomerRole: isCustomerRole,
+		MarinaID:       marinaID,
 	}
 
 	// Log the update operation

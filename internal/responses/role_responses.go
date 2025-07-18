@@ -12,6 +12,7 @@ import (
 // @Description Role representation for API responses
 type RoleResponse struct {
 	ID             uuid.UUID           `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	MarinaID       uuid.UUID           `json:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Name           string              `json:"name" example:"Admin"`
 	Description    *string             `json:"description,omitempty" example:"Administrator role with full access"`
 	Permissions    *models.Permissions `json:"permissions"`
@@ -53,6 +54,7 @@ func convertDBRoleToResponse(role db.Role) RoleResponse {
 
 	response := RoleResponse{
 		ID:             role.ID,
+		MarinaID:       role.MarinaID,
 		Name:           role.Name,
 		Description:    role.Description,
 		Permissions:    permissions,
