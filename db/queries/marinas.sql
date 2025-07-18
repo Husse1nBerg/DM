@@ -188,3 +188,37 @@ SELECT COALESCE(document_usage, 0)::bigint
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL;
+-- name: GetMarinasOverCurrentLimit :many
+SELECT m.*, 
+  sp.storage_limit_gb AS storage_limit_gb, 
+  dp.document_limit AS document_limit, 
+  nmp.text_limit AS text_limit, 
+  nmp.email_limit AS email_limit
+FROM marinas m
+LEFT JOIN storage_plans sp ON m.storage_plan_id = sp.id
+LEFT JOIN notes_messages_plans nmp ON m.notes_messages_plan_id = nmp.id
+LEFT JOIN document_plans dp ON m.document_plan_id = dp.id
+LEFT JOIN (
+    SELECT um.marina_id, COUNT(*) AS user_count
+    FROM user_marinas um
+    GROUP BY um.marina_id
+) uc ON m.id = uc.marina_id
+WHERE m.deleted_at IS NULL
+  AND (
+    (sp.storage_limit_gb IS NOT NULL AND sp.storage_limit_gb::text ~ '^[0-9]+$' AND m.storage_usage > (sp.storage_limit_gb::bigint * 1024 * 1024 * 1024))
+    OR (nmp.text_limit IS NOT NULL AND nmp.text_limit::text ~ '^[0-9]+$' AND m.text_usage > nmp.text_limit::int)
+    OR (nmp.email_limit IS NOT NULL AND nmp.email_limit::text ~ '^[0-9]+$' AND m.email_usage > nmp.email_limit::int)
+    OR (dp.document_limit IS NOT NULL AND dp.document_limit::text ~ '^[0-9]+$' AND m.document_usage > dp.document_limit::int)
+    OR (
+      sp.user_limit IS NOT NULL AND sp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > sp.user_limit::int
+    )
+    OR (
+      nmp.user_limit IS NOT NULL AND nmp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > nmp.user_limit::int
+    )
+    OR (
+      dp.user_limit IS NOT NULL AND dp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > dp.user_limit::int
+    )
+  );

@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createMarina = `-- name: CreateMarina :one
@@ -655,6 +656,132 @@ func (q *Queries) GetMarinasByOrganizationPaginated(ctx context.Context, arg Get
 			&i.ExternalAnnouncement,
 			&i.DocumentPlanID,
 			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinasOverCurrentLimit = `-- name: GetMarinasOverCurrentLimit :many
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage, 
+  sp.storage_limit_gb AS storage_limit_gb, 
+  dp.document_limit AS document_limit, 
+  nmp.text_limit AS text_limit, 
+  nmp.email_limit AS email_limit
+FROM marinas m
+LEFT JOIN storage_plans sp ON m.storage_plan_id = sp.id
+LEFT JOIN notes_messages_plans nmp ON m.notes_messages_plan_id = nmp.id
+LEFT JOIN document_plans dp ON m.document_plan_id = dp.id
+LEFT JOIN (
+    SELECT um.marina_id, COUNT(*) AS user_count
+    FROM user_marinas um
+    GROUP BY um.marina_id
+) uc ON m.id = uc.marina_id
+WHERE m.deleted_at IS NULL
+  AND (
+    (sp.storage_limit_gb IS NOT NULL AND sp.storage_limit_gb::text ~ '^[0-9]+$' AND m.storage_usage > (sp.storage_limit_gb::bigint * 1024 * 1024 * 1024))
+    OR (nmp.text_limit IS NOT NULL AND nmp.text_limit::text ~ '^[0-9]+$' AND m.text_usage > nmp.text_limit::int)
+    OR (nmp.email_limit IS NOT NULL AND nmp.email_limit::text ~ '^[0-9]+$' AND m.email_usage > nmp.email_limit::int)
+    OR (dp.document_limit IS NOT NULL AND dp.document_limit::text ~ '^[0-9]+$' AND m.document_usage > dp.document_limit::int)
+    OR (
+      sp.user_limit IS NOT NULL AND sp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > sp.user_limit::int
+    )
+    OR (
+      nmp.user_limit IS NOT NULL AND nmp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > nmp.user_limit::int
+    )
+    OR (
+      dp.user_limit IS NOT NULL AND dp.user_limit::text ~ '^[0-9]+$'
+      AND uc.user_count > dp.user_limit::int
+    )
+  )
+`
+
+type GetMarinasOverCurrentLimitRow struct {
+	ID                   uuid.UUID
+	OrganizationID       uuid.UUID
+	Name                 string
+	Email                string
+	Location             *string
+	Phone                *string
+	Country              *string
+	Currency             *string
+	WorkingHours         []byte
+	Website              *string
+	Image                *string
+	MaxUsers             *int32
+	IsActive             *bool
+	IsTest               *bool
+	CreatedAt            pgtype.Timestamp
+	UpdatedAt            pgtype.Timestamp
+	DeletedAt            pgtype.Timestamp
+	AddressID            uuid.UUID
+	SystemID             *string
+	StorageUsage         *int64
+	EmailUsage           *int16
+	TextUsage            *int16
+	NotesMessagesPlanID  uuid.UUID
+	StoragePlanID        uuid.UUID
+	Modules              []byte
+	InternalAnnouncement *string
+	ExternalAnnouncement *string
+	DocumentPlanID       uuid.UUID
+	DocumentUsage        *int64
+	StorageLimitGb       *int32
+	DocumentLimit        *int32
+	TextLimit            *int32
+	EmailLimit           *string
+}
+
+func (q *Queries) GetMarinasOverCurrentLimit(ctx context.Context) ([]GetMarinasOverCurrentLimitRow, error) {
+	rows, err := q.db.Query(ctx, getMarinasOverCurrentLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMarinasOverCurrentLimitRow
+	for rows.Next() {
+		var i GetMarinasOverCurrentLimitRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.Name,
+			&i.Email,
+			&i.Location,
+			&i.Phone,
+			&i.Country,
+			&i.Currency,
+			&i.WorkingHours,
+			&i.Website,
+			&i.Image,
+			&i.MaxUsers,
+			&i.IsActive,
+			&i.IsTest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AddressID,
+			&i.SystemID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.NotesMessagesPlanID,
+			&i.StoragePlanID,
+			&i.Modules,
+			&i.InternalAnnouncement,
+			&i.ExternalAnnouncement,
+			&i.DocumentPlanID,
+			&i.DocumentUsage,
+			&i.StorageLimitGb,
+			&i.DocumentLimit,
+			&i.TextLimit,
+			&i.EmailLimit,
 		); err != nil {
 			return nil, err
 		}

@@ -15,6 +15,7 @@ func RegisterMarinaRoutes(server *s.Server, permissionProtected *echo.Group) {
 	marinas := permissionProtected.Group("/marinas")
 	marinas.POST("", marinaHandler.CreateMarina)
 	marinas.GET("", marinaHandler.GetMarinasPaginated)
+	marinas.GET("/over-current-limit", marinaHandler.GetMarinasOverCurrentLimit)
 	marinas.GET("/by-email", marinaHandler.GetMarinaByEmail)
 	marinas.GET("/organization/:organizationId", marinaHandler.GetMarinasByOrganization)
 	marinas.GET("/user/:userId", marinaHandler.GetUserMarinas)
@@ -30,4 +31,4 @@ func RegisterMarinaRoutes(server *s.Server, permissionProtected *echo.Group) {
 	marinas.POST("/:id/contacts", contactHandler.CreateContact)
 	marinas.PUT("/:id/contacts/:contactId", contactHandler.UpdateContact)
 	marinas.DELETE("/:id/contacts/:contactId", contactHandler.DeleteContact)
-} 
+}

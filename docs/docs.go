@@ -6650,6 +6650,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/marinas/over-current-limit": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas that are over their current limit",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get marinas over current limit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start month (YYYY-MM)",
+                        "name": "startMonth",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End month (YYYY-MM)",
+                        "name": "endMonth",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.OverLimitUsageResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/marinas/user": {
             "get": {
                 "security": [
@@ -11089,6 +11156,12 @@ const docTemplate = `{
                 "fileName": {
                     "type": "string"
                 },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
                 "s3Path": {
                     "type": "string"
                 }
@@ -13285,8 +13358,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
-                "permissions",
-                "type"
+                "permissions"
             ],
             "properties": {
                 "description": {
@@ -13300,6 +13372,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",
@@ -14307,6 +14383,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",
@@ -16057,6 +16137,49 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.OverLimitUsageResponse": {
+            "type": "object",
+            "properties": {
+                "documentLimit": {
+                    "type": "integer"
+                },
+                "documentUsage": {
+                    "type": "integer"
+                },
+                "emailLimit": {
+                    "type": "integer"
+                },
+                "emailUsage": {
+                    "type": "integer"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2024-01"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "storageLimitGb": {
+                    "description": "in GB",
+                    "type": "number"
+                },
+                "storageUsage": {
+                    "description": "in GB",
+                    "type": "number"
+                },
+                "textLimit": {
+                    "type": "integer"
+                },
+                "textUsage": {
+                    "type": "integer"
+                }
+            }
+        },
         "responses.RedisGetResponse": {
             "type": "object",
             "properties": {
@@ -16159,6 +16282,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",

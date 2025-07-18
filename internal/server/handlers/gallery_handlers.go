@@ -140,10 +140,10 @@ func (h *GalleryHandler) CreateMarinaGalleryItem(c echo.Context) error {
 	defer file.Close()
 
 	// Check storage limit before upload
-	if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
-		h.server.Logger.Zap.Error("Storage limit check failed", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-	}
+	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+	// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
 
 	// Upload the image to S3
 	imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.MarinaGalleryImageType)
@@ -296,10 +296,10 @@ func (h *GalleryHandler) UpdateMarinaGalleryItem(c echo.Context) error {
 		defer file.Close()
 
 		// Check storage limit before upload
-		if err := h.checkStorageLimit(c, existingItem.MarinaID, header.Size); err != nil {
-			h.server.Logger.Zap.Error("Storage limit check failed", err)
-			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-		}
+		// if err := h.checkStorageLimit(c, existingItem.MarinaID, header.Size); err != nil {
+		// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+		// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+		// }
 
 		// Upload the new image to S3
 		imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.MarinaGalleryImageType)
@@ -461,10 +461,10 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 	defer file.Close()
 
 	// Check storage limit before upload
-	if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
-		h.server.Logger.Zap.Error("Storage limit check failed", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-	}
+	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+	// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
 
 	// Upload the image to S3
 	imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.VesselGalleryImageType)
@@ -640,10 +640,10 @@ func (h *GalleryHandler) UpdateVesselGalleryItem(c echo.Context) error {
 		defer file.Close()
 
 		// Check storage limit before upload
-		if err := h.checkStorageLimit(c, existingItem.MarinaID, header.Size); err != nil {
-			h.server.Logger.Zap.Error("Storage limit check failed", err)
-			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-		}
+		// if err := h.checkStorageLimit(c, existingItem.MarinaID, header.Size); err != nil {
+		// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+		// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+		// }
 
 		// Upload the new image to S3
 		imagePath, err := h.server.ImageService.UploadImage(c.Request().Context(), file, header, s3.VesselGalleryImageType)
