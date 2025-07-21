@@ -904,3 +904,27 @@ func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
 
 	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
 }
+
+// GetMarinasOverCurrentLimit retrieves marinas that are over their current limit
+//
+//	@Summary		Get marinas over current limit
+//	@Description	Retrieves marinas that are over their current limit
+//	@Tags			Marinas
+//	@Accept			json
+//	@Produce		json
+//	@Param			organizationId	query		string	true	"Organization ID"	Format(uuid)
+//	@Param			startMonth		query		string	true	"Start month (YYYY-MM)"
+//	@Param			endMonth			query		string	true	"End month (YYYY-MM)"
+//	@Success		200				{array}		responses.OverLimitUsageResponse
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/marinas/over-current-limit [get]
+func (h *MarinaHandler) GetMarinasOverCurrentLimit(c echo.Context) error {
+	marinas, err := h.server.DB.Queries().GetMarinasOverCurrentLimit(c.Request().Context())
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return responses.NewOverLimitUsageResponse(marinas).JSON(c)
+}

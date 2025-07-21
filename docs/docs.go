@@ -3681,6 +3681,18 @@ const docTemplate = `{
                 "summary": "List e-signature documents",
                 "parameters": [
                     {
+                        "enum": [
+                            "draft",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Document status (optional)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
                         "minimum": 1,
                         "type": "integer",
                         "default": 1,
@@ -4115,7 +4127,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature submissions for the authenticated user's marina",
+                "description": "Retrieves all e-signature submissions for the authenticated user's marina, with optional filtering by customerId and status",
                 "consumes": [
                     "application/json"
                 ],
@@ -4127,6 +4139,24 @@ const docTemplate = `{
                 ],
                 "summary": "List e-signature submissions",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID (optional)",
+                        "name": "customerId",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "pending",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Submission status (optional)",
+                        "name": "status",
+                        "in": "query"
+                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -4573,6 +4603,17 @@ const docTemplate = `{
                 ],
                 "summary": "List e-signature templates",
                 "parameters": [
+                    {
+                        "enum": [
+                            "draft",
+                            "active",
+                            "archived"
+                        ],
+                        "type": "string",
+                        "description": "Template status (optional)",
+                        "name": "status",
+                        "in": "query"
+                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -5801,30 +5842,50 @@ const docTemplate = `{
                 }
             }
         },
-        "/marina-usage-history/date-range": {
+        "/marina-usage-history/all": {
             "get": {
-                "description": "Retrieves marina usage history records within a specified date range",
+                "description": "Retrieves all marina usage history records, optionally filtered by one or more marinaIds and date range",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "marina-usage-history"
                 ],
-                "summary": "Get marina usage history by date range",
+                "summary": "Get all marina usage history",
                 "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "description": "Marina ID(s) (repeat for multiple)",
+                        "name": "marinaId",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Start Date (YYYY-MM-DD)",
                         "name": "startDate",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "End Date (YYYY-MM-DD)",
                         "name": "endDate",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -5849,7 +5910,174 @@ const docTemplate = `{
                 }
             }
         },
-        "/marina-usage-history/latest/{marinaId}": {
+        "/marina-usage-history/marina/{marinaId}": {
+            "get": {
+                "description": "Retrieves all marina usage history records for a specific marina",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marina usage history by marina ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina-usage-history/usage/{id}": {
+            "get": {
+                "description": "Retrieves a marina usage history record by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marina usage history by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Marina Usage History ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina-usage-history/{marinaId}/date-range": {
+            "get": {
+                "description": "Retrieves marina usage history records within a specified date range for a specific marina",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marina-usage-history"
+                ],
+                "summary": "Get marina usage history by date range",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marina-usage-history/{marinaId}/latest": {
             "get": {
                 "description": "Retrieves the most recent marina usage history record for a specific marina",
                 "produces": [
@@ -5896,50 +6124,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/marina-usage-history/marina/{marinaId}": {
+        "/marina-usage-history/{marinaId}/month": {
             "get": {
-                "description": "Retrieves all marina usage history records for a specific marina",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "marina-usage-history"
-                ],
-                "summary": "Get marina usage history by marina ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Marina ID",
-                        "name": "marinaId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/marina-usage-history/month": {
-            "get": {
-                "description": "Retrieves marina usage history records for a specific month",
+                "description": "Retrieves marina usage history records for a specific month for a specific marina",
                 "produces": [
                     "application/json"
                 ],
@@ -5972,53 +6159,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/marina-usage-history/{id}": {
-            "get": {
-                "description": "Retrieves a marina usage history record by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "marina-usage-history"
-                ],
-                "summary": "Get marina usage history by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Marina Usage History ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryResponseWrapper"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
                         }
@@ -6497,6 +6637,73 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marinas/over-current-limit": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves marinas that are over their current limit",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Marinas"
+                ],
+                "summary": "Get marinas over current limit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start month (YYYY-MM)",
+                        "name": "startMonth",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End month (YYYY-MM)",
+                        "name": "endMonth",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.OverLimitUsageResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
                         }
@@ -10949,6 +11156,12 @@ const docTemplate = `{
                 "fileName": {
                     "type": "string"
                 },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
                 "s3Path": {
                     "type": "string"
                 }
@@ -13145,8 +13358,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
-                "permissions",
-                "type"
+                "permissions"
             ],
             "properties": {
                 "description": {
@@ -13160,6 +13372,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",
@@ -14168,6 +14384,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "name": {
                     "type": "string",
                     "example": "Admin"
@@ -15022,12 +15242,14 @@ const docTemplate = `{
             "description": "E-signature document data including blob URL, metadata, and signature status",
             "type": "object",
             "properties": {
+                "blobMetadata": {
+                    "type": "object"
+                },
                 "blobUrl": {
                     "type": "string",
                     "example": "https://s3.amazonaws.com/bucket/documents/agreement-001.pdf"
                 },
                 "createdAt": {
-                    "description": "BlobMetadata   *json.RawMessage ` + "`" + `json:\"blobMetadata,omitempty\" example:\"{\\\"size\\\": 1024, \\\"contentType\\\": \\\"application/pdf\\\"}\"` + "`" + `",
                     "type": "string"
                 },
                 "id": {
@@ -15090,6 +15312,9 @@ const docTemplate = `{
             "description": "E-signature submission data including blob URL, metadata, and submission status",
             "type": "object",
             "properties": {
+                "blobMetadata": {
+                    "type": "object"
+                },
                 "blobUrl": {
                     "type": "string",
                     "example": "https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"
@@ -15098,7 +15323,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "customerId": {
-                    "description": "BlobMetadata   *json.RawMessage ` + "`" + `json:\"blobMetadata,omitempty\" example:\"{\\\"size\\\": 1024, \\\"contentType\\\": \\\"application/pdf\\\"}\"` + "`" + `",
                     "type": "string",
                     "example": "CUST123"
                 },
@@ -15162,12 +15386,14 @@ const docTemplate = `{
             "description": "E-signature template data including blob URL and metadata",
             "type": "object",
             "properties": {
+                "blobMetadata": {
+                    "type": "object"
+                },
                 "blobUrl": {
                     "type": "string",
                     "example": "https://s3.amazonaws.com/bucket/templates/agreement.pdf"
                 },
                 "createdAt": {
-                    "description": "BlobMetadata   *json.RawMessage ` + "`" + `json:\"blobMetadata,omitempty\" example:\"{\\\"size\\\": 1024, \\\"contentType\\\": \\\"application/pdf\\\"}\"` + "`" + `",
                     "type": "string"
                 },
                 "description": {
@@ -15911,6 +16137,49 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.OverLimitUsageResponse": {
+            "type": "object",
+            "properties": {
+                "documentLimit": {
+                    "type": "integer"
+                },
+                "documentUsage": {
+                    "type": "integer"
+                },
+                "emailLimit": {
+                    "type": "integer"
+                },
+                "emailUsage": {
+                    "type": "integer"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2024-01"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "storageLimitGb": {
+                    "description": "in GB",
+                    "type": "number"
+                },
+                "storageUsage": {
+                    "description": "in GB",
+                    "type": "number"
+                },
+                "textLimit": {
+                    "type": "integer"
+                },
+                "textUsage": {
+                    "type": "integer"
+                }
+            }
+        },
         "responses.RedisGetResponse": {
             "type": "object",
             "properties": {
@@ -16013,6 +16282,10 @@ const docTemplate = `{
                 "isCustomerRole": {
                     "type": "boolean",
                     "example": false
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
                     "type": "string",

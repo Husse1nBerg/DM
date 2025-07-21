@@ -31,6 +31,28 @@ func (q *Queries) CountEsignTemplatesByMarina(ctx context.Context, arg CountEsig
 	return count, err
 }
 
+const countEsignTemplatesByMarinaStatus = `-- name: CountEsignTemplatesByMarinaStatus :one
+SELECT COUNT(*)
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+`
+
+type CountEsignTemplatesByMarinaStatusParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+}
+
+func (q *Queries) CountEsignTemplatesByMarinaStatus(ctx context.Context, arg CountEsignTemplatesByMarinaStatusParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignTemplatesByMarinaStatus, arg.OrganizationID, arg.MarinaID, arg.Column3)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createEsignTemplate = `-- name: CreateEsignTemplate :one
 INSERT INTO esign_templates (
     organization_id,
@@ -144,6 +166,64 @@ func (q *Queries) ListEsignTemplatesByMarina(ctx context.Context, arg ListEsignT
 	rows, err := q.db.Query(ctx, listEsignTemplatesByMarina,
 		arg.OrganizationID,
 		arg.MarinaID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignTemplate
+	for rows.Next() {
+		var i EsignTemplate
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.Name,
+			&i.Description,
+			&i.Type,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEsignTemplatesByMarinaStatus = `-- name: ListEsignTemplatesByMarinaStatus :many
+SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+ORDER BY created_at DESC
+LIMIT $4 OFFSET $5
+`
+
+type ListEsignTemplatesByMarinaStatusParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Limit          int32
+	Offset         int32
+}
+
+func (q *Queries) ListEsignTemplatesByMarinaStatus(ctx context.Context, arg ListEsignTemplatesByMarinaStatusParams) ([]EsignTemplate, error) {
+	rows, err := q.db.Query(ctx, listEsignTemplatesByMarinaStatus,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
 		arg.Limit,
 		arg.Offset,
 	)

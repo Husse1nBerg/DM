@@ -132,10 +132,10 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 	defer file.Close()
 
 	// Check storage limit before upload
-	if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
-		h.server.Logger.Zap.Error("Storage limit check failed", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-	}
+	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+	// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
 
 	// Upload the file to S3 using document storage service
 	filePath, err := h.server.DocumentService.UploadFileToS3(c.Request().Context(), file, header, entityType)
@@ -260,10 +260,10 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	defer file.Close()
 
 	// Check storage limit before upload
-	if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
-		h.server.Logger.Zap.Error("Storage limit check failed", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-	}
+	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+	// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
 
 	// Upload the file to S3 using document storage service
 	filePath, err := h.server.DocumentService.UploadFileToS3(c.Request().Context(), file, header, entityType)
@@ -388,10 +388,10 @@ func (h *DocumentHandler) UserUploadDocument(c echo.Context) error {
 	defer file.Close()
 
 	// Check storage limit before upload
-	if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
-		h.server.Logger.Zap.Error("Storage limit check failed", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-	}
+	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+	// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
 
 	// Upload the file to S3 using document storage service
 	filePath, err := h.server.DocumentService.UploadFileToS3(c.Request().Context(), file, header, entityType)

@@ -7,12 +7,44 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type RoleHandler struct {
 	server *s.Server
+}
+
+func (h *RoleHandler) getUserInfoFromContext(c echo.Context) (marinaID uuid.UUID, err error) {
+	userToken := c.Get("user").(*jwt.Token)
+	if userToken == nil {
+		return uuid.Nil, responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+	}
+
+	claims, ok := userToken.Claims.(*token.JwtCustomClaims)
+	if !ok {
+		return uuid.Nil, responses.NewErrorResponse(http.StatusUnauthorized, "Invalid token claims").JSON(c)
+	}
+
+	if claims.ID == uuid.Nil {
+		return uuid.Nil, responses.NewErrorResponse(http.StatusUnauthorized, "Invalid user ID").JSON(c)
+	}
+
+	// Fetch the user's current marina_id from the database
+	queries := h.server.DB.Queries()
+	user, dbErr := queries.GetUserByID(c.Request().Context(), claims.ID)
+	if dbErr != nil {
+		return uuid.Nil, responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+dbErr.Error()).JSON(c)
+	}
+
+	if user.MarinaID == uuid.Nil {
+		return uuid.Nil, responses.NewErrorResponse(http.StatusBadRequest, "User has no marina assigned").JSON(c)
+	}
+
+	marinaID = user.MarinaID
+	return marinaID, nil
 }
 
 func NewRoleHandler(server *s.Server) *RoleHandler {
@@ -34,6 +66,11 @@ func NewRoleHandler(server *s.Server) *RoleHandler {
 //
 //	@Router			/role/list [get]
 func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
+	marinaID, err := g.getUserInfoFromContext(c)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+	}
+
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -41,28 +78,36 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 		pagination.PageSize = 10
 	}
 
+	// Validate pagination params
+	if pagination.Page < 1 {
+		pagination.Page = 1
+	}
+	if pagination.PageSize < 1 || pagination.PageSize > 100 {
+		pagination.PageSize = 10
+	}
+
 	queries := g.server.DB.Queries()
 
 	// Get paginated roles
-	params := db.GetAllRolesByTypesPaginatedParams{
-		Column1: []string{"marina", "customer"},
-		Limit:   pagination.PageSize,
-		Offset:  (pagination.Page - 1) * pagination.PageSize,
+	params := db.GetRolesPaginatedParams{
+		MarinaID: marinaID,
+		Limit:    pagination.PageSize,
+		Offset:   (pagination.Page - 1) * pagination.PageSize,
 	}
-	roles, err := queries.GetAllRolesByTypesPaginated(c.Request().Context(), params)
+
+	roles, err := queries.GetRolesPaginated(c.Request().Context(), params)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve roles: "+err.Error()).JSON(c)
 	}
 
 	// Get total count for pagination
-	// allRoles, err := queries.GetAllRoles(c.Request().Context())
-	allRoles, err := queries.GetAllRolesByTypes(c.Request().Context(), []string{"marina", "customer"})
+	total, err := queries.CountRolesByMarina(c.Request().Context(), marinaID)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to count roles: "+err.Error()).JSON(c)
 	}
-	total := int64(len(allRoles))
 
-	return responses.NewRolesPaginatedResponse(roles, total, pagination.PageSize, pagination.Page).JSON(c)
+	response := responses.NewRolesPaginatedResponse(roles, total, pagination.PageSize, pagination.Page)
+	return response.JSON(c)
 }
 
 // CreateRoleHandler creates a new role
@@ -80,18 +125,22 @@ func (g *RoleHandler) ListRolesHandler(c echo.Context) error {
 //
 //	@Router			/role [post]
 func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
+	marinaID, err := g.getUserInfoFromContext(c)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+	}
+
 	// Parse and validate the request body
 	req := new(requests.CreateRoleRequest)
-	if err := c.Bind(req); err != nil {
+	if err = c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
-	if err := c.Validate(req); err != nil {
+	if err = c.Validate(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
 	// Convert permissions to bytes for database storage
 	var permissionsBytes []byte
-	var err error
 
 	if req.Type == "" {
 		req.Type = "marina"
@@ -123,6 +172,8 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 		Permissions:    permissionsBytes,
 		IsActive:       &isActive,
 		IsCustomerRole: req.IsCustomerRole,
+		Type:           req.Type,
+		MarinaID:       marinaID,
 	}
 
 	role, err := queries.CreateRole(c.Request().Context(), params)
@@ -203,7 +254,6 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 	// Parse the request body
 	var req requests.UpdateRoleRequest
 	if err := c.Bind(&req); err != nil {
-		g.server.Logger.Zap.Error("Failed to bind request", err)
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
 	}
 
@@ -213,6 +263,7 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 	isActive := existingRole.IsActive
 	permissionsBytes := existingRole.Permissions
 	isCustomerRole := existingRole.IsCustomerRole
+	marinaID := existingRole.MarinaID
 	// Update fields if provided
 	if req.Name != nil {
 		// Check if the new name already exists for another role
@@ -230,6 +281,10 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		description = req.Description
 	}
 
+	if req.MarinaID != nil {
+		marinaID = *req.MarinaID
+	}
+
 	if req.IsActive != nil {
 		isActive = req.IsActive
 	}
@@ -242,7 +297,6 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		var convErr error
 		permissionsBytes, convErr = req.Permissions.ToBytes()
 		if convErr != nil {
-			g.server.Logger.Zap.Error("Failed to convert permissions", convErr)
 			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid permissions format").JSON(c)
 		}
 	}
@@ -255,21 +309,12 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		Permissions:    permissionsBytes,
 		IsActive:       isActive,
 		IsCustomerRole: isCustomerRole,
+		MarinaID:       marinaID,
 	}
-
-	// Log the update operation
-	g.server.Logger.Zap.Info("Updating role",
-		"id", roleID,
-		"name", name,
-		"description_provided", req.Description != nil,
-		"permissions_provided", req.Permissions != nil,
-		"is_active_provided", req.IsActive != nil,
-		"is_customer_role_provided", req.IsCustomerRole != nil)
 
 	// Update the role
 	updatedRole, err := queries.UpdateRole(c.Request().Context(), updateParams)
 	if err != nil {
-		g.server.Logger.Zap.Error("Failed to update role", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, err.Error()).JSON(c)
 	}
 

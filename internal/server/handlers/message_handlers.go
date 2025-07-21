@@ -445,12 +445,12 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	queries := h.server.DB.Queries()
 
 	// Check message limit before sending
-	if req.Type != "email" {
-		if err := h.checkMessageLimit(c, req.MarinaID, req.Type); err != nil {
-			logger.Zap.Error("Message limit check failed", err)
-			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
-		}
-	}
+	// if req.Type != "email" {
+	// 	if err := h.checkMessageLimit(c, req.MarinaID, req.Type); err != nil {
+	// 		logger.Zap.Error("Message limit check failed", err)
+	// 		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// 	}
+	// }
 
 	var direction string
 	if req.Type == "internal" {

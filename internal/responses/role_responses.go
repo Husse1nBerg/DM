@@ -12,6 +12,7 @@ import (
 // @Description Role representation for API responses
 type RoleResponse struct {
 	ID             uuid.UUID           `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	MarinaID       uuid.UUID           `json:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Name           string              `json:"name" example:"Admin"`
 	Description    *string             `json:"description,omitempty" example:"Administrator role with full access"`
 	Permissions    *models.Permissions `json:"permissions"`
@@ -44,26 +45,32 @@ func NewRoleResponseSuccess(role db.Role) BaseResponse {
 func convertDBRoleToResponse(role db.Role) RoleResponse {
 	// Parse JSON permissions from the DB
 	permissions := &models.Permissions{}
-	if role.Permissions != nil {
+	if role.Permissions != nil && len(role.Permissions) > 0 {
 		if err := permissions.FromBytes(role.Permissions); err != nil {
-			// Default empty permissions if can't parse
+			// Log the error but continue with empty permissions to avoid breaking the response
+			// Note: Consider adding logging here if you have access to a logger
 			permissions = &models.Permissions{}
 		}
 	}
 
 	response := RoleResponse{
 		ID:             role.ID,
+		MarinaID:       role.MarinaID,
 		Name:           role.Name,
 		Description:    role.Description,
 		Permissions:    permissions,
-		IsActive:       true, // Default to true if nil
-		IsCustomerRole: *role.IsCustomerRole,
+		IsActive:       true,  // Default to true if nil
+		IsCustomerRole: false, // Default to false if nil
 		Type:           role.Type,
 		CreatedAt:      role.CreatedAt.Time,
 	}
 
 	if role.IsActive != nil {
 		response.IsActive = *role.IsActive
+	}
+
+	if role.IsCustomerRole != nil {
+		response.IsCustomerRole = *role.IsCustomerRole
 	}
 
 	if role.UpdatedAt.Valid {
