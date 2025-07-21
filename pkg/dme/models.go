@@ -47,9 +47,11 @@ type CustomerSearch struct {
 
 // Attachment represents customer attachment information
 type Attachment struct {
-	FileName    string `json:"fileName"`
-	Description string `json:"description"`
-	S3Path      string `json:"s3Path"`
+	FileName    string  `json:"fileName"`
+	Description string  `json:"description"`
+	S3Path      string  `json:"s3Path"`
+	FileType    *string `json:"fileType"`
+	FromDMWeb   *bool   `json:"fromDMWeb"`
 }
 
 // Customer represents detailed customer information

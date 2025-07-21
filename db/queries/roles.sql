@@ -1,6 +1,6 @@
 -- name: CreateRole :one
-INSERT INTO roles (name, description, permissions, is_active, is_customer_role, type)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO roles (name, description, permissions, is_active, is_customer_role, type, marina_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 -- name: GetRoleByID :one
 SELECT *
@@ -20,8 +20,9 @@ WHERE deleted_at IS NULL;
 SELECT *
 FROM roles
 WHERE deleted_at IS NULL
+    AND (marina_id IS NULL OR marina_id = $1)
 ORDER BY created_at DESC
-LIMIT $1 OFFSET $2;
+LIMIT $2 OFFSET $3;
 -- name: UpdateRole :one
 UPDATE roles
 SET name = $2,
@@ -30,6 +31,7 @@ SET name = $2,
     is_active = $5,
     is_customer_role = $6,
     type = $7,
+    marina_id = $8,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
@@ -62,3 +64,8 @@ WHERE deleted_at IS NULL
     AND type = ANY($1::text[])
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
+-- name: CountRolesByMarina :one
+SELECT COUNT(*)
+FROM roles
+WHERE deleted_at IS NULL
+    AND (marina_id IS NULL OR marina_id = $1);

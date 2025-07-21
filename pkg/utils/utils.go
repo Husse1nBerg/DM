@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -113,4 +114,30 @@ func IntToInt32Ptr(i *int) *int32 {
 	}
 	v := int32(*i)
 	return &v
+}
+
+// Int64OrZero returns the value of a *int64 or 0 if nil
+func Int64OrZero(ptr *int64) int64 {
+	if ptr == nil {
+		return 0
+	}
+	return *ptr
+}
+
+// Int16OrZero returns the value of a *int16 or 0 if nil
+func Int16OrZero(ptr *int16) int16 {
+	if ptr == nil {
+		return 0
+	}
+	return *ptr
+}
+
+// StringToInt16Ptr converts a *string to a *int16, returns error if not a valid integer
+func StringToInt16Ptr(s string) (*int16, error) {
+	v, err := strconv.ParseInt(s, 10, 16)
+	if err != nil {
+		return nil, err
+	}
+	res := int16(v)
+	return &res, nil
 }

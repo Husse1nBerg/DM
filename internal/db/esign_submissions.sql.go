@@ -45,6 +45,35 @@ func (q *Queries) CountEsignSubmissionsByMarina(ctx context.Context, arg CountEs
 	return count, err
 }
 
+const countEsignSubmissionsByMarinaFiltered = `-- name: CountEsignSubmissionsByMarinaFiltered :one
+SELECT COUNT(*)
+FROM esign_submissions
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR customer_id = $3)
+  AND ($4 = '' OR status = $4)
+`
+
+type CountEsignSubmissionsByMarinaFilteredParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+}
+
+func (q *Queries) CountEsignSubmissionsByMarinaFiltered(ctx context.Context, arg CountEsignSubmissionsByMarinaFilteredParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignSubmissionsByMarinaFiltered,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countEsignSubmissionsByStatus = `-- name: CountEsignSubmissionsByStatus :one
 SELECT COUNT(*)
 FROM esign_submissions
@@ -159,6 +188,54 @@ func (q *Queries) HardDeleteEsignSubmission(ctx context.Context, id uuid.UUID) e
 	return err
 }
 
+const listEsignSubmissionsByCustomerID = `-- name: ListEsignSubmissionsByCustomerID :many
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at
+FROM esign_submissions
+WHERE customer_id = $1
+    AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListEsignSubmissionsByCustomerIDParams struct {
+	CustomerID *string
+	Limit      int32
+	Offset     int32
+}
+
+func (q *Queries) ListEsignSubmissionsByCustomerID(ctx context.Context, arg ListEsignSubmissionsByCustomerIDParams) ([]EsignSubmission, error) {
+	rows, err := q.db.Query(ctx, listEsignSubmissionsByCustomerID, arg.CustomerID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignSubmission
+	for rows.Next() {
+		var i EsignSubmission
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.DocumentID,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CustomerID,
+			&i.Email,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEsignSubmissionsByDocument = `-- name: ListEsignSubmissionsByDocument :many
 SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at
 FROM esign_submissions
@@ -228,6 +305,67 @@ func (q *Queries) ListEsignSubmissionsByMarina(ctx context.Context, arg ListEsig
 	rows, err := q.db.Query(ctx, listEsignSubmissionsByMarina,
 		arg.OrganizationID,
 		arg.MarinaID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignSubmission
+	for rows.Next() {
+		var i EsignSubmission
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.DocumentID,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CustomerID,
+			&i.Email,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEsignSubmissionsByMarinaFiltered = `-- name: ListEsignSubmissionsByMarinaFiltered :many
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at
+FROM esign_submissions
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR customer_id = $3)
+  AND ($4 = '' OR status = $4)
+ORDER BY created_at DESC
+LIMIT $5 OFFSET $6
+`
+
+type ListEsignSubmissionsByMarinaFilteredParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+	Limit          int32
+	Offset         int32
+}
+
+func (q *Queries) ListEsignSubmissionsByMarinaFiltered(ctx context.Context, arg ListEsignSubmissionsByMarinaFilteredParams) ([]EsignSubmission, error) {
+	rows, err := q.db.Query(ctx, listEsignSubmissionsByMarinaFiltered,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
 		arg.Limit,
 		arg.Offset,
 	)

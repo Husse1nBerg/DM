@@ -64,4 +64,22 @@ SELECT COUNT(*)
 FROM esign_templates
 WHERE organization_id = $1
     AND marina_id = $2
-    AND deleted_at IS NULL; 
+    AND deleted_at IS NULL;
+
+-- name: ListEsignTemplatesByMarinaStatus :many
+SELECT *
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+ORDER BY created_at DESC
+LIMIT $4 OFFSET $5;
+
+-- name: CountEsignTemplatesByMarinaStatus :one
+SELECT COUNT(*)
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3); 

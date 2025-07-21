@@ -52,3 +52,93 @@ WHERE marina_id = $1
 AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', $2::timestamp)
 ORDER BY created_at DESC
 LIMIT 1;
+
+-- name: GetAllMarinaUsageHistory :many
+SELECT * FROM marina_usage_history
+ORDER BY created_at DESC;
+
+-- name: GetAllMarinaUsageHistoryByDateRange :many
+SELECT * FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2
+ORDER BY created_at DESC;
+
+-- name: GetMarinaUsageHistoryByMarinaIDs :many
+SELECT * FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+ORDER BY created_at DESC;
+
+-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRange :many
+SELECT * FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+  AND created_at >= $2
+  AND created_at <= $3
+ORDER BY created_at DESC;
+
+-- name: GetAllMarinaUsageHistoryPaginated :many
+SELECT * FROM marina_usage_history
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
+
+-- name: GetAllMarinaUsageHistoryByDateRangePaginated :many
+SELECT * FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $4;
+
+-- name: GetMarinaUsageHistoryByMarinaIDsPaginated :many
+SELECT * FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+
+-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRangePaginated :many
+SELECT * FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+  AND created_at >= $2
+  AND created_at <= $3
+ORDER BY created_at DESC
+LIMIT $4 OFFSET $5;
+
+-- name: GetAllMarinaUsageHistoryTotal :one
+SELECT COUNT(*) FROM marina_usage_history;
+
+-- name: GetAllMarinaUsageHistoryByDateRangeTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2;
+
+-- name: GetMarinaUsageHistoryByMarinaIDsTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[]);
+
+-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRangeTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+  AND created_at >= $2
+  AND created_at <= $3;
+
+-- name: GetMarinaUsageHistoryByMarinaIDPaginated :many
+SELECT * FROM marina_usage_history
+WHERE marina_id = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+
+-- name: GetMarinaUsageHistoryByMarinaIDTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = $1;
+
+-- name: GetMarinaUsageHistoryByDateRangePaginated :many
+SELECT * FROM marina_usage_history
+WHERE marina_id = $1
+  AND created_at >= $2
+  AND created_at <= $3
+ORDER BY created_at DESC
+LIMIT $4 OFFSET $5;
+
+-- name: GetMarinaUsageHistoryByDateRangeTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = $1
+  AND created_at >= $2
+  AND created_at <= $3;

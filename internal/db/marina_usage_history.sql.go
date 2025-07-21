@@ -65,6 +65,203 @@ func (q *Queries) DeleteMarinaUsageHistory(ctx context.Context, id uuid.UUID) er
 	return err
 }
 
+const getAllMarinaUsageHistory = `-- name: GetAllMarinaUsageHistory :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetAllMarinaUsageHistory(ctx context.Context) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getAllMarinaUsageHistory)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllMarinaUsageHistoryByDateRange = `-- name: GetAllMarinaUsageHistoryByDateRange :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2
+ORDER BY created_at DESC
+`
+
+type GetAllMarinaUsageHistoryByDateRangeParams struct {
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetAllMarinaUsageHistoryByDateRange(ctx context.Context, arg GetAllMarinaUsageHistoryByDateRangeParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getAllMarinaUsageHistoryByDateRange, arg.CreatedAt, arg.CreatedAt_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllMarinaUsageHistoryByDateRangePaginated = `-- name: GetAllMarinaUsageHistoryByDateRangePaginated :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $4
+`
+
+type GetAllMarinaUsageHistoryByDateRangePaginatedParams struct {
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+	Limit       int32
+	Offset      int32
+}
+
+func (q *Queries) GetAllMarinaUsageHistoryByDateRangePaginated(ctx context.Context, arg GetAllMarinaUsageHistoryByDateRangePaginatedParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getAllMarinaUsageHistoryByDateRangePaginated,
+		arg.CreatedAt,
+		arg.CreatedAt_2,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllMarinaUsageHistoryByDateRangeTotal = `-- name: GetAllMarinaUsageHistoryByDateRangeTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE created_at >= $1
+  AND created_at <= $2
+`
+
+type GetAllMarinaUsageHistoryByDateRangeTotalParams struct {
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetAllMarinaUsageHistoryByDateRangeTotal(ctx context.Context, arg GetAllMarinaUsageHistoryByDateRangeTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllMarinaUsageHistoryByDateRangeTotal, arg.CreatedAt, arg.CreatedAt_2)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getAllMarinaUsageHistoryPaginated = `-- name: GetAllMarinaUsageHistoryPaginated :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetAllMarinaUsageHistoryPaginatedParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetAllMarinaUsageHistoryPaginated(ctx context.Context, arg GetAllMarinaUsageHistoryPaginatedParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getAllMarinaUsageHistoryPaginated, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllMarinaUsageHistoryTotal = `-- name: GetAllMarinaUsageHistoryTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+`
+
+func (q *Queries) GetAllMarinaUsageHistoryTotal(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, getAllMarinaUsageHistoryTotal)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getLatestMarinaUsageHistory = `-- name: GetLatestMarinaUsageHistory :one
 SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE marina_id = $1
@@ -133,6 +330,79 @@ func (q *Queries) GetMarinaUsageHistoryByDateRange(ctx context.Context, arg GetM
 	return items, nil
 }
 
+const getMarinaUsageHistoryByDateRangePaginated = `-- name: GetMarinaUsageHistoryByDateRangePaginated :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE marina_id = $1
+  AND created_at >= $2
+  AND created_at <= $3
+ORDER BY created_at DESC
+LIMIT $4 OFFSET $5
+`
+
+type GetMarinaUsageHistoryByDateRangePaginatedParams struct {
+	MarinaID    uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+	Limit       int32
+	Offset      int32
+}
+
+func (q *Queries) GetMarinaUsageHistoryByDateRangePaginated(ctx context.Context, arg GetMarinaUsageHistoryByDateRangePaginatedParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsageHistoryByDateRangePaginated,
+		arg.MarinaID,
+		arg.CreatedAt,
+		arg.CreatedAt_2,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinaUsageHistoryByDateRangeTotal = `-- name: GetMarinaUsageHistoryByDateRangeTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = $1
+  AND created_at >= $2
+  AND created_at <= $3
+`
+
+type GetMarinaUsageHistoryByDateRangeTotalParams struct {
+	MarinaID    uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetMarinaUsageHistoryByDateRangeTotal(ctx context.Context, arg GetMarinaUsageHistoryByDateRangeTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getMarinaUsageHistoryByDateRangeTotal, arg.MarinaID, arg.CreatedAt, arg.CreatedAt_2)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getMarinaUsageHistoryByID = `-- name: GetMarinaUsageHistoryByID :one
 SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
 WHERE id = $1
@@ -189,6 +459,269 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaID(ctx context.Context, marinaID 
 		return nil, err
 	}
 	return items, nil
+}
+
+const getMarinaUsageHistoryByMarinaIDPaginated = `-- name: GetMarinaUsageHistoryByMarinaIDPaginated :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE marina_id = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetMarinaUsageHistoryByMarinaIDPaginatedParams struct {
+	MarinaID uuid.UUID
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDPaginated(ctx context.Context, arg GetMarinaUsageHistoryByMarinaIDPaginatedParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsageHistoryByMarinaIDPaginated, arg.MarinaID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinaUsageHistoryByMarinaIDTotal = `-- name: GetMarinaUsageHistoryByMarinaIDTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = $1
+`
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDTotal(ctx context.Context, marinaID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, getMarinaUsageHistoryByMarinaIDTotal, marinaID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getMarinaUsageHistoryByMarinaIDs = `-- name: GetMarinaUsageHistoryByMarinaIDs :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsageHistoryByMarinaIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinaUsageHistoryByMarinaIDsAndDateRange = `-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRange :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+  AND created_at >= $2
+  AND created_at <= $3
+ORDER BY created_at DESC
+`
+
+type GetMarinaUsageHistoryByMarinaIDsAndDateRangeParams struct {
+	Column1     []uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDsAndDateRange(ctx context.Context, arg GetMarinaUsageHistoryByMarinaIDsAndDateRangeParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsageHistoryByMarinaIDsAndDateRange, arg.Column1, arg.CreatedAt, arg.CreatedAt_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinaUsageHistoryByMarinaIDsAndDateRangePaginated = `-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRangePaginated :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+  AND created_at >= $2
+  AND created_at <= $3
+ORDER BY created_at DESC
+LIMIT $4 OFFSET $5
+`
+
+type GetMarinaUsageHistoryByMarinaIDsAndDateRangePaginatedParams struct {
+	Column1     []uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+	Limit       int32
+	Offset      int32
+}
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDsAndDateRangePaginated(ctx context.Context, arg GetMarinaUsageHistoryByMarinaIDsAndDateRangePaginatedParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsageHistoryByMarinaIDsAndDateRangePaginated,
+		arg.Column1,
+		arg.CreatedAt,
+		arg.CreatedAt_2,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinaUsageHistoryByMarinaIDsAndDateRangeTotal = `-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRangeTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+  AND created_at >= $2
+  AND created_at <= $3
+`
+
+type GetMarinaUsageHistoryByMarinaIDsAndDateRangeTotalParams struct {
+	Column1     []uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDsAndDateRangeTotal(ctx context.Context, arg GetMarinaUsageHistoryByMarinaIDsAndDateRangeTotalParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getMarinaUsageHistoryByMarinaIDsAndDateRangeTotal, arg.Column1, arg.CreatedAt, arg.CreatedAt_2)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getMarinaUsageHistoryByMarinaIDsPaginated = `-- name: GetMarinaUsageHistoryByMarinaIDsPaginated :many
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetMarinaUsageHistoryByMarinaIDsPaginatedParams struct {
+	Column1 []uuid.UUID
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDsPaginated(ctx context.Context, arg GetMarinaUsageHistoryByMarinaIDsPaginatedParams) ([]MarinaUsageHistory, error) {
+	rows, err := q.db.Query(ctx, getMarinaUsageHistoryByMarinaIDsPaginated, arg.Column1, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MarinaUsageHistory
+	for rows.Next() {
+		var i MarinaUsageHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MonthDate,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinaUsageHistoryByMarinaIDsTotal = `-- name: GetMarinaUsageHistoryByMarinaIDsTotal :one
+SELECT COUNT(*) FROM marina_usage_history
+WHERE marina_id = ANY($1::uuid[])
+`
+
+func (q *Queries) GetMarinaUsageHistoryByMarinaIDsTotal(ctx context.Context, dollar_1 []uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, getMarinaUsageHistoryByMarinaIDsTotal, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getMarinaUsageHistoryByMonth = `-- name: GetMarinaUsageHistoryByMonth :one

@@ -6,6 +6,10 @@ definitions:
         type: string
       fileName:
         type: string
+      fileType:
+        type: string
+      fromDMWeb:
+        type: boolean
       s3Path:
         type: string
     type: object
@@ -1503,6 +1507,9 @@ definitions:
       isCustomerRole:
         example: false
         type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       name:
         example: Admin
         type: string
@@ -1514,7 +1521,6 @@ definitions:
     required:
     - name
     - permissions
-    - type
     type: object
   requests.CreateUserRequest:
     properties:
@@ -2217,6 +2223,9 @@ definitions:
       isCustomerRole:
         example: false
         type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       name:
         example: Admin
         type: string
@@ -2817,12 +2826,12 @@ definitions:
     description: E-signature document data including blob URL, metadata, and signature
       status
     properties:
+      blobMetadata:
+        type: object
       blobUrl:
         example: https://s3.amazonaws.com/bucket/documents/agreement-001.pdf
         type: string
       createdAt:
-        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
-          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
         type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
@@ -2868,14 +2877,14 @@ definitions:
     description: E-signature submission data including blob URL, metadata, and submission
       status
     properties:
+      blobMetadata:
+        type: object
       blobUrl:
         example: https://s3.amazonaws.com/bucket/submissions/submission-001.pdf
         type: string
       createdAt:
         type: string
       customerId:
-        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
-          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
         example: CUST123
         type: string
       documentId:
@@ -2921,12 +2930,12 @@ definitions:
   responses.EsignTemplateResponse:
     description: E-signature template data including blob URL and metadata
     properties:
+      blobMetadata:
+        type: object
       blobUrl:
         example: https://s3.amazonaws.com/bucket/templates/agreement.pdf
         type: string
       createdAt:
-        description: 'BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty"
-          example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`'
         type: string
       description:
         example: Standard customer agreement template for marina services
@@ -3464,6 +3473,36 @@ definitions:
         example: https://example.com
         type: string
     type: object
+  responses.OverLimitUsageResponse:
+    properties:
+      documentLimit:
+        type: integer
+      documentUsage:
+        type: integer
+      emailLimit:
+        type: integer
+      emailUsage:
+        type: integer
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      month:
+        example: 2024-01
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      storageLimitGb:
+        description: in GB
+        type: number
+      storageUsage:
+        description: in GB
+        type: number
+      textLimit:
+        type: integer
+      textUsage:
+        type: integer
+    type: object
   responses.RedisGetResponse:
     properties:
       key:
@@ -3535,6 +3574,9 @@ definitions:
       isCustomerRole:
         example: false
         type: boolean
+      marinaId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       name:
         example: Admin
         type: string
@@ -6171,6 +6213,15 @@ paths:
       description: Retrieves all e-signature documents for the authenticated user's
         marina
       parameters:
+      - description: Document status (optional)
+        enum:
+        - draft
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -6456,8 +6507,21 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature submissions for the authenticated user's
-        marina
+        marina, with optional filtering by customerId and status
       parameters:
+      - description: Customer ID (optional)
+        in: query
+        name: customerId
+        type: string
+      - description: Submission status (optional)
+        enum:
+        - pending
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -6745,6 +6809,14 @@ paths:
       description: Retrieves all e-signature templates for the authenticated user's
         marina
       parameters:
+      - description: Template status (optional)
+        enum:
+        - draft
+        - active
+        - archived
+        in: query
+        name: status
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -7521,42 +7593,16 @@ paths:
       summary: Health check
       tags:
       - Generic
-  /marina-usage-history/{id}:
-    get:
-      description: Retrieves a marina usage history record by its ID
-      parameters:
-      - description: Marina Usage History ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.MarinaUsageHistoryResponseWrapper'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      summary: Get marina usage history by ID
-      tags:
-      - marina-usage-history
-  /marina-usage-history/date-range:
+  /marina-usage-history/{marinaId}/date-range:
     get:
       description: Retrieves marina usage history records within a specified date
-        range
+        range for a specific marina
       parameters:
+      - description: Marina ID
+        in: query
+        name: marinaId
+        required: true
+        type: string
       - description: Start Date (YYYY-MM-DD)
         in: query
         name: startDate
@@ -7567,6 +7613,14 @@ paths:
         name: endDate
         required: true
         type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -7585,7 +7639,7 @@ paths:
       summary: Get marina usage history by date range
       tags:
       - marina-usage-history
-  /marina-usage-history/latest/{marinaId}:
+  /marina-usage-history/{marinaId}/latest:
     get:
       description: Retrieves the most recent marina usage history record for a specific
         marina
@@ -7617,36 +7671,10 @@ paths:
       summary: Get latest marina usage history
       tags:
       - marina-usage-history
-  /marina-usage-history/marina/{marinaId}:
+  /marina-usage-history/{marinaId}/month:
     get:
-      description: Retrieves all marina usage history records for a specific marina
-      parameters:
-      - description: Marina ID
-        in: path
-        name: marinaId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      summary: Get marina usage history by marina ID
-      tags:
-      - marina-usage-history
-  /marina-usage-history/month:
-    get:
-      description: Retrieves marina usage history records for a specific month
+      description: Retrieves marina usage history records for a specific month for
+        a specific marina
       parameters:
       - description: Marina ID
         in: path
@@ -7674,6 +7702,118 @@ paths:
           schema:
             $ref: '#/definitions/responses.BaseResponse'
       summary: Get marina usage history by month
+      tags:
+      - marina-usage-history
+  /marina-usage-history/all:
+    get:
+      description: Retrieves all marina usage history records, optionally filtered
+        by one or more marinaIds and date range
+      parameters:
+      - collectionFormat: multi
+        description: Marina ID(s) (repeat for multiple)
+        in: query
+        items:
+          type: string
+        name: marinaId
+        type: array
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: End Date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get all marina usage history
+      tags:
+      - marina-usage-history
+  /marina-usage-history/marina/{marinaId}:
+    get:
+      description: Retrieves all marina usage history records for a specific marina
+      parameters:
+      - description: Marina ID
+        in: path
+        name: marinaId
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by marina ID
+      tags:
+      - marina-usage-history
+  /marina-usage-history/usage/{id}:
+    get:
+      description: Retrieves a marina usage history record by its ID
+      parameters:
+      - description: Marina Usage History ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.MarinaUsageHistoryResponseWrapper'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get marina usage history by ID
       tags:
       - marina-usage-history
   /marina/{marinaId}/contacts:
@@ -8174,6 +8314,50 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get marinas by organization
+      tags:
+      - Marinas
+  /marinas/over-current-limit:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves marinas that are over their current limit
+      parameters:
+      - description: Organization ID
+        format: uuid
+        in: query
+        name: organizationId
+        required: true
+        type: string
+      - description: Start month (YYYY-MM)
+        in: query
+        name: startMonth
+        required: true
+        type: string
+      - description: End month (YYYY-MM)
+        in: query
+        name: endMonth
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.OverLimitUsageResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marinas over current limit
       tags:
       - Marinas
   /marinas/user:
