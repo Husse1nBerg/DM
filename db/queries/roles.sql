@@ -31,7 +31,7 @@ SET name = $2,
     is_active = $5,
     is_customer_role = $6,
     type = $7,
-    marina_id = $8,
+    marina_id = NULLIF($8::uuid, '00000000-0000-0000-0000-000000000000'),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;

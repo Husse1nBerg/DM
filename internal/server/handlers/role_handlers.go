@@ -309,7 +309,7 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		Permissions:    permissionsBytes,
 		IsActive:       isActive,
 		IsCustomerRole: isCustomerRole,
-		MarinaID:       marinaID,
+		Column8:        marinaID,
 	}
 
 	// Update the role
