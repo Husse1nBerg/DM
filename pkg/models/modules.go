@@ -43,7 +43,7 @@ func (m *Modules) String() string {
 func DefaultModules() *Modules {
 	return &Modules{
 		CustomerVessels:     true,
-		ESign:               false,
+		ESign:               true,
 		ServiceManagement:   false,
 		Payments:            false,
 		InventoryManagement: false,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/dockworks/dm-web-backend/internal/config"
@@ -27,6 +28,7 @@ func main() {
 		isActive       bool
 		isCustomerRole bool
 		roleType       string
+		marinaID       uuid.UUID
 	}{
 		{
 			name:        "superuser",
@@ -113,6 +115,7 @@ func main() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "internal",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "superuser_viewer",
@@ -159,6 +162,7 @@ func main() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "internal",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "org_admin",
@@ -243,6 +247,7 @@ func main() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "marina_admin",
@@ -326,6 +331,7 @@ func main() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "staff",
@@ -400,6 +406,7 @@ func main() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "viewer",
@@ -444,6 +451,7 @@ func main() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "customer_user",
@@ -499,6 +507,7 @@ func main() {
 			isActive:       true,
 			isCustomerRole: true,
 			roleType:       "customer",
+			marinaID:       uuid.Nil,
 		},
 	}
 
@@ -528,6 +537,7 @@ func main() {
 			IsActive:       u.Pointer(r.isActive),
 			IsCustomerRole: u.Pointer(r.isCustomerRole),
 			Type:           r.roleType,
+			Column8:        r.marinaID,
 		})
 		if err != nil {
 			log.Printf("failed to update role %s: %v", r.name, err)
