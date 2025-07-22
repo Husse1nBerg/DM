@@ -397,7 +397,7 @@ SET name = $2,
     is_active = $5,
     is_customer_role = $6,
     type = $7,
-    marina_id = $8,
+    marina_id = NULLIF($8::uuid, '00000000-0000-0000-0000-000000000000'),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type, marina_id
@@ -411,7 +411,7 @@ type UpdateRoleParams struct {
 	IsActive       *bool
 	IsCustomerRole *bool
 	Type           string
-	MarinaID       uuid.UUID
+	Column8        uuid.UUID
 }
 
 func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, error) {
@@ -423,7 +423,7 @@ func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, e
 		arg.IsActive,
 		arg.IsCustomerRole,
 		arg.Type,
-		arg.MarinaID,
+		arg.Column8,
 	)
 	var i Role
 	err := row.Scan(
