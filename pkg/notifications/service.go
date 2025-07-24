@@ -344,7 +344,13 @@ func (s *NotificationService) GetNotificationsByType(ctx context.Context, userID
 // Helper methods for common notification creation patterns
 
 // CreateMessageNotification creates a notification for new messages
-func (s *NotificationService) CreateMessageNotification(ctx context.Context, userID, organizationID, marinaID uuid.UUID, messageContent string, sender string, customerID uuid.UUID) error {
+func (s *NotificationService) CreateMessageNotification(
+	ctx context.Context,
+	userID, organizationID, marinaID uuid.UUID,
+	messageContent string,
+	sender string,
+	customerID string,
+) error {
 	title := "New Message Received"
 	content := fmt.Sprintf("You have received a new message from %s", sender)
 
