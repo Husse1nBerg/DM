@@ -359,8 +359,9 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 					userRow.ID,
 					userRow.OrganizationID,
 					userRow.MarinaID,
-					req.Body,   // Message content preview
-					req.Sender, // Customer name
+					req.Body,       // Message content preview
+					req.Sender,     // Customer name
+					req.CustomerID, // Customer ID
 				)
 				if notificationErr != nil {
 					logger.Zap.Warnw("Failed to create notification for marina user",
@@ -637,6 +638,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				customer.MarinaID,
 				req.Body,
 				req.Sender,
+				req.CustomerID, // Customer ID
 			)
 			if notificationErr != nil {
 				logger.Zap.Errorw("Failed to create notification for customer user", "error", notificationErr)
