@@ -5,7 +5,8 @@ INSERT INTO vessel_gallery (
     vessel_id,
     image_url,
     description,
-    main
+    main,
+    public
 )
 VALUES (
     $1,
@@ -13,7 +14,8 @@ VALUES (
     $3,
     $4,
     $5,
-    $6
+    $6,
+    $7
 )
 RETURNING *;
 
@@ -37,6 +39,7 @@ UPDATE vessel_gallery
 SET image_url = $2,
     description = $3,
     main = $4,
+    public = $5,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
@@ -90,6 +93,7 @@ ORDER BY created_at DESC;
 UPDATE marina_gallery
 SET image_url = $2,
     description = $3,
+    public = $4,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL

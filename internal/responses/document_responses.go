@@ -20,6 +20,7 @@ type DocumentResponse struct {
 	FilePath   string     `json:"filePath" example:"/documents/customers/550e8400-e29b-41d4-a716-446655440002/contract.pdf"`
 	FileSize   int64      `json:"fileSize" example:"1024"`
 	FileURL    string     `json:"fileUrl" example:"https://example.com/documents/customers/550e8400-e29b-41d4-a716-446655440002/contract.pdf"`
+	Public     *bool      `json:"public,omitempty" example:"true"`
 	CreatedAt  *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt  *time.Time `json:"updatedAt,omitempty"`
 }
@@ -37,6 +38,7 @@ func ConvertDocumentToResponse(doc db.Document) DocumentResponse {
 		FilePath:   doc.FilePath,
 		FileSize:   doc.FileSize,
 		FileURL:    *fileURL,
+		Public:     &doc.Public,
 		CreatedAt:  utils.PgTimeToTimePtr(doc.CreatedAt),
 		UpdatedAt:  utils.PgTimeToTimePtr(doc.UpdatedAt),
 	}
