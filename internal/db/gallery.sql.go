@@ -22,7 +22,7 @@ VALUES (
     $2,
     $3
 )
-RETURNING id, marina_id, image_url, description, created_at, updated_at, deleted_at
+RETURNING id, marina_id, image_url, description, created_at, updated_at, deleted_at, public
 `
 
 type CreateMarinaGalleryItemParams struct {
@@ -42,6 +42,7 @@ func (q *Queries) CreateMarinaGalleryItem(ctx context.Context, arg CreateMarinaG
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Public,
 	)
 	return i, err
 }
@@ -53,7 +54,8 @@ INSERT INTO vessel_gallery (
     vessel_id,
     image_url,
     description,
-    main
+    main,
+    public
 )
 VALUES (
     $1,
@@ -61,9 +63,10 @@ VALUES (
     $3,
     $4,
     $5,
-    $6
+    $6,
+    $7
 )
-RETURNING id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at
+RETURNING id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at, public
 `
 
 type CreateVesselGalleryItemParams struct {
@@ -73,6 +76,7 @@ type CreateVesselGalleryItemParams struct {
 	ImageUrl    string
 	Description *string
 	Main        *bool
+	Public      bool
 }
 
 func (q *Queries) CreateVesselGalleryItem(ctx context.Context, arg CreateVesselGalleryItemParams) (VesselGallery, error) {
@@ -83,6 +87,7 @@ func (q *Queries) CreateVesselGalleryItem(ctx context.Context, arg CreateVesselG
 		arg.ImageUrl,
 		arg.Description,
 		arg.Main,
+		arg.Public,
 	)
 	var i VesselGallery
 	err := row.Scan(
@@ -96,12 +101,13 @@ func (q *Queries) CreateVesselGalleryItem(ctx context.Context, arg CreateVesselG
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Public,
 	)
 	return i, err
 }
 
 const getMarinaGallery = `-- name: GetMarinaGallery :many
-SELECT id, marina_id, image_url, description, created_at, updated_at, deleted_at
+SELECT id, marina_id, image_url, description, created_at, updated_at, deleted_at, public
 FROM marina_gallery
 WHERE marina_id = $1
     AND deleted_at IS NULL
@@ -125,6 +131,7 @@ func (q *Queries) GetMarinaGallery(ctx context.Context, marinaID uuid.UUID) ([]M
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.Public,
 		); err != nil {
 			return nil, err
 		}
@@ -137,7 +144,7 @@ func (q *Queries) GetMarinaGallery(ctx context.Context, marinaID uuid.UUID) ([]M
 }
 
 const getMarinaGalleryItemByID = `-- name: GetMarinaGalleryItemByID :one
-SELECT id, marina_id, image_url, description, created_at, updated_at, deleted_at
+SELECT id, marina_id, image_url, description, created_at, updated_at, deleted_at, public
 FROM marina_gallery
 WHERE id = $1
     AND deleted_at IS NULL
@@ -154,12 +161,13 @@ func (q *Queries) GetMarinaGalleryItemByID(ctx context.Context, id uuid.UUID) (M
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Public,
 	)
 	return i, err
 }
 
 const getVesselGallery = `-- name: GetVesselGallery :many
-SELECT id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at
+SELECT id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at, public
 FROM vessel_gallery
 WHERE vessel_id = $1
     AND customer_id = $2
@@ -194,6 +202,7 @@ func (q *Queries) GetVesselGallery(ctx context.Context, arg GetVesselGalleryPara
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.Public,
 		); err != nil {
 			return nil, err
 		}
@@ -206,7 +215,7 @@ func (q *Queries) GetVesselGallery(ctx context.Context, arg GetVesselGalleryPara
 }
 
 const getVesselGalleryItemByID = `-- name: GetVesselGalleryItemByID :one
-SELECT id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at
+SELECT id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at, public
 FROM vessel_gallery
 WHERE id = $1
     AND deleted_at IS NULL
@@ -226,6 +235,7 @@ func (q *Queries) GetVesselGalleryItemByID(ctx context.Context, id uuid.UUID) (V
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Public,
 	)
 	return i, err
 }
@@ -297,20 +307,27 @@ const updateMarinaGalleryItem = `-- name: UpdateMarinaGalleryItem :one
 UPDATE marina_gallery
 SET image_url = $2,
     description = $3,
+    public = $4,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, marina_id, image_url, description, created_at, updated_at, deleted_at
+RETURNING id, marina_id, image_url, description, created_at, updated_at, deleted_at, public
 `
 
 type UpdateMarinaGalleryItemParams struct {
 	ID          uuid.UUID
 	ImageUrl    string
 	Description *string
+	Public      bool
 }
 
 func (q *Queries) UpdateMarinaGalleryItem(ctx context.Context, arg UpdateMarinaGalleryItemParams) (MarinaGallery, error) {
-	row := q.db.QueryRow(ctx, updateMarinaGalleryItem, arg.ID, arg.ImageUrl, arg.Description)
+	row := q.db.QueryRow(ctx, updateMarinaGalleryItem,
+		arg.ID,
+		arg.ImageUrl,
+		arg.Description,
+		arg.Public,
+	)
 	var i MarinaGallery
 	err := row.Scan(
 		&i.ID,
@@ -320,6 +337,7 @@ func (q *Queries) UpdateMarinaGalleryItem(ctx context.Context, arg UpdateMarinaG
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Public,
 	)
 	return i, err
 }
@@ -329,10 +347,11 @@ UPDATE vessel_gallery
 SET image_url = $2,
     description = $3,
     main = $4,
+    public = $5,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at
+RETURNING id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at, public
 `
 
 type UpdateVesselGalleryItemParams struct {
@@ -340,6 +359,7 @@ type UpdateVesselGalleryItemParams struct {
 	ImageUrl    string
 	Description *string
 	Main        *bool
+	Public      bool
 }
 
 func (q *Queries) UpdateVesselGalleryItem(ctx context.Context, arg UpdateVesselGalleryItemParams) (VesselGallery, error) {
@@ -348,6 +368,7 @@ func (q *Queries) UpdateVesselGalleryItem(ctx context.Context, arg UpdateVesselG
 		arg.ImageUrl,
 		arg.Description,
 		arg.Main,
+		arg.Public,
 	)
 	var i VesselGallery
 	err := row.Scan(
@@ -361,6 +382,7 @@ func (q *Queries) UpdateVesselGalleryItem(ctx context.Context, arg UpdateVesselG
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Public,
 	)
 	return i, err
 }

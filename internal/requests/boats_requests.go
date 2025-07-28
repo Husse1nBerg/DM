@@ -92,5 +92,7 @@ type BoatUpdateRequest struct {
 	OwnerIntegrationID   string                    `json:"ownerIntegrationId"`
 	LastModified         string                    `json:"lastModified"`
 	Comments             string                    `json:"comments"`
-	Attachments          []dme.Attachment          `json:"attachments"`
+	Motors               []dme.Motor               `json:"motors"`
+	Slip                 dme.Slip                  `json:"slip"`
+	Attachments          []AttachmentWithPublic    `json:"attachments"`
 }

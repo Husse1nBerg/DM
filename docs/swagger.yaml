@@ -2760,6 +2760,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      public:
+        example: true
+        type: boolean
       updatedAt:
         type: string
     type: object
@@ -3011,6 +3014,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      public:
+        example: true
+        type: boolean
       updatedAt:
         type: string
     type: object
@@ -3748,6 +3754,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      public:
+        example: true
+        type: boolean
       updatedAt:
         type: string
     type: object
