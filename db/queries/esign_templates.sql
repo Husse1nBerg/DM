@@ -7,9 +7,10 @@ INSERT INTO esign_templates (
     type,
     status,
     blob_url,
-    blob_metadata
+    blob_metadata,
+    json_data
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 ) RETURNING *;
 
 -- name: GetEsignTemplateByID :one
@@ -36,6 +37,7 @@ SET
     status = $5,
     blob_url = $6,
     blob_metadata = $7,
+    json_data = $8,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
