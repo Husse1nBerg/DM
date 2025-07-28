@@ -15408,6 +15408,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
+                "jsonData": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"

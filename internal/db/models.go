@@ -158,6 +158,7 @@ type EsignTemplate struct {
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
 	DeletedAt      pgtype.Timestamp
+	JsonData       []byte
 }
 
 type Invite struct {

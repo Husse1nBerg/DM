@@ -12,6 +12,8 @@ type CreateEsignTemplateRequest struct {
 	Description    *string    `json:"description,omitempty" example:"Standard customer agreement template for marina services"`
 	Type           string     `json:"type" validate:"required" example:"agreement"`
 	Status         string     `json:"status" validate:"required,oneof=draft active archived" example:"draft"`
+	// Optional flexible JSON data for template customization
+	JsonData map[string]interface{} `json:"jsonData,omitempty" validate:"omitempty"`
 	// BlobURL        string     `json:"blobUrl" validate:"required" example:"https://s3.amazonaws.com/bucket/templates/agreement.pdf"`
 	// BlobMetadata   json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 1024, \"contentType\": \"application/pdf\"}"`
 }
@@ -22,6 +24,8 @@ type UpdateEsignTemplateRequest struct {
 	Description *string `json:"description,omitempty" example:"Updated description for the template"`
 	Type        string  `json:"type" validate:"required" example:"agreement"`
 	Status      string  `json:"status" validate:"required,oneof=draft active archived" example:"active"`
+	// Optional flexible JSON data for template customization
+	JsonData map[string]interface{} `json:"jsonData,omitempty" validate:"omitempty"`
 	// BlobURL     string  `json:"blobUrl" validate:"required" example:"https://s3.amazonaws.com/bucket/templates/agreement-v2.pdf"`
 	// BlobMetadata json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 2048, \"contentType\": \"application/pdf\"}"`
 }
