@@ -13175,6 +13175,14 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "customer@example.com"
+                },
+                "replyName": {
+                    "type": "string",
+                    "example": "Marina Manager"
+                },
+                "replyTo": {
+                    "type": "string",
+                    "example": "marina@example.com"
                 }
             }
         },

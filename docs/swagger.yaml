@@ -1363,6 +1363,12 @@ definitions:
       email:
         example: customer@example.com
         type: string
+      replyName:
+        example: Marina Manager
+        type: string
+      replyTo:
+        example: marina@example.com
+        type: string
     required:
     - documentId
     - email
