@@ -1064,11 +1064,26 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 	// Create email data
+	var replyTo string
+	var replyName string
+	if req.ReplyTo != nil && *req.ReplyTo != "" {
+		replyTo = *req.ReplyTo
+	} else {
+		replyTo = marina.Email
+	}
+
+	if req.ReplyName != nil && *req.ReplyName != "" {
+		replyName = *req.ReplyName
+	} else {
+		replyName = marina.Name
+	}
+
 	email := sendgrid.ESignSubmissionTemplateData{
 		DocumentURL:     h.server.Config.App.EsignDocumentURL(submission.ID.String()),
 		Recipient:       "",
 		Sender:          marina.Name,
-		ReplyTo:         marina.Email,
+		ReplyTo:         replyTo,
+		ReplyName:       replyName,
 		TermsConditions: h.server.Config.App.TermsConditionsURL(),
 	}
 	to := []string{req.Email}

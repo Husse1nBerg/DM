@@ -87,6 +87,8 @@ type CreateEsignSubmissionRequest struct {
 	DocumentID uuid.UUID `json:"documentId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
 	CustomerID *string   `json:"customerId,omitempty" example:"CUST123"`
 	Email      string    `json:"email" validate:"required,email" example:"customer@example.com"`
+	ReplyTo    *string   `json:"replyTo,omitempty" example:"marina@example.com"`
+	ReplyName  *string   `json:"replyName,omitempty" example:"Marina Manager"`
 }
 
 // UpdateEsignSubmissionRequest represents the parameters that can be updated for an e-signature submission

@@ -106,6 +106,7 @@ type ESignSubmissionTemplateData struct {
 	Recipient       string `json:"recipient"`        // Recipient name
 	Sender          string `json:"sender"`           // Sender name
 	ReplyTo         string `json:"reply_to"`         // Reply to email address
+	ReplyName       string `json:"reply_name"`       // Reply to name
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
 	DocumentURL     string `json:"document_url"`     // URL for the document
 }
