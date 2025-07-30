@@ -1,6 +1,7 @@
 -- name: AssignUserToMarina :exec
-INSERT INTO user_marinas (user_id, marina_id, customer_id)
-VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;
+INSERT INTO user_marinas (user_id, marina_id, customer_id, role_id)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (user_id, marina_id) DO UPDATE SET role_id = EXCLUDED.role_id;
 -- name: UnassignUserFromMarina :exec
 DELETE FROM user_marinas
 WHERE user_id = $1
@@ -156,3 +157,7 @@ JOIN users u ON u.id = um.user_id
 WHERE um.marina_id = $1
   AND u.is_superuser = TRUE 
   AND u.deleted_at IS NULL;
+-- name: GetUserMarinaAssignmentByUserAndMarina :one
+SELECT role_id, customer_id
+FROM user_marinas
+WHERE user_id = $1 AND marina_id = $2;

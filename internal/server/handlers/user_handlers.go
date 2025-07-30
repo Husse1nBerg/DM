@@ -643,6 +643,7 @@ func (g *UserHandler) AssignUserToMarinaHandler(c echo.Context) error {
 	params := db.AssignUserToMarinaParams{
 		UserID:   req.UserID,
 		MarinaID: req.MarinaID,
+		RoleID:   req.RoleID,
 	}
 	if *user.IsCustomer && req.CustomerID != nil {
 		params.CustomerID = req.CustomerID
@@ -902,7 +903,15 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		}
 		if marinaIDStr := c.FormValue("marinaId"); marinaIDStr != "" {
 			if marinaID, err := uuid.Parse(marinaIDStr); err == nil {
-				updateParams.MarinaID = marinaID
+				// Fetch the role_id for this user in the new marina
+				assignment, err := queries.GetUserMarinaAssignmentByUserAndMarina(c.Request().Context(), db.GetUserMarinaAssignmentByUserAndMarinaParams{
+					UserID:   userID,
+					MarinaID: marinaID,
+				})
+				if err == nil {
+					updateParams.RoleID = assignment.RoleID
+					updateParams.MarinaID = marinaID
+				}
 			}
 		}
 		if roleIDStr := c.FormValue("roleId"); roleIDStr != "" {
@@ -978,7 +987,18 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			updateParams.LastPasswordReset = lastPasswordReset
 		}
 		if req.MarinaID != nil {
-			updateParams.MarinaID = *req.MarinaID
+			// If marinaId is changed, fetch role_id from user_marinas and set updateParams.RoleID
+			if *req.MarinaID != currentUser.MarinaID {
+				// Fetch the role_id for this user in the new marina
+				assignment, err := queries.GetUserMarinaAssignmentByUserAndMarina(c.Request().Context(), db.GetUserMarinaAssignmentByUserAndMarinaParams{
+					UserID:   userID,
+					MarinaID: *req.MarinaID,
+				})
+				if err == nil {
+					updateParams.RoleID = assignment.RoleID
+					updateParams.MarinaID = *req.MarinaID
+				}
+			}
 		}
 		if req.RoleID != nil {
 			updateParams.RoleID = *req.RoleID
