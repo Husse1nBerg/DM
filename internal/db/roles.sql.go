@@ -369,6 +369,7 @@ SELECT id, name, description, permissions, is_active, created_at, updated_at, de
 FROM roles
 WHERE deleted_at IS NULL
     AND (marina_id IS NULL OR marina_id = $1)
+    AND type != 'internal'
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
