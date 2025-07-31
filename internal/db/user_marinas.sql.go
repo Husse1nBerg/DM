@@ -742,7 +742,7 @@ const listUserMarinasAssignmentsPaginated = `-- name: ListUserMarinasAssignments
 SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM user_marinas um
 JOIN users u ON u.id = um.user_id
-LEFT JOIN roles r ON u.role_id = r.id
+LEFT JOIN roles r ON um.role_id = r.id
 WHERE um.marina_id = $1
   AND ($2::bool IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
   AND u.is_superuser = FALSE
