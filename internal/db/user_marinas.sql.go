@@ -65,6 +65,21 @@ func (q *Queries) CountUserMarinasAssignmentsPaginatedAdminOnly(ctx context.Cont
 	return count, err
 }
 
+const countUsersByRoleID = `-- name: CountUsersByRoleID :one
+SELECT COUNT(*)
+FROM user_marinas um
+JOIN roles r ON r.id = um.role_id
+WHERE r.id = $1
+  AND r.deleted_at IS NULL
+`
+
+func (q *Queries) CountUsersByRoleID(ctx context.Context, id uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countUsersByRoleID, id)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUsersNotAssignedToMarina = `-- name: CountUsersNotAssignedToMarina :one
 SELECT COUNT(*)
 FROM users u

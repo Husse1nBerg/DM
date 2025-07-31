@@ -156,3 +156,9 @@ JOIN users u ON u.id = um.user_id
 WHERE um.marina_id = $1
   AND u.is_superuser = TRUE 
   AND u.deleted_at IS NULL;
+-- name: CountUsersByRoleID :one
+SELECT COUNT(*)
+FROM user_marinas um
+JOIN roles r ON r.id = um.role_id
+WHERE r.id = $1
+  AND r.deleted_at IS NULL;
