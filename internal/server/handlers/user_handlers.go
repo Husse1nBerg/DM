@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -18,6 +19,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -917,6 +919,19 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		if roleIDStr := c.FormValue("roleId"); roleIDStr != "" {
 			if roleID, err := uuid.Parse(roleIDStr); err == nil {
 				updateParams.RoleID = roleID
+
+				// Update user role in user_marinas table for the current marina
+				err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+					UserID:   userID,
+					MarinaID: currentUser.MarinaID,
+					RoleID:   roleID,
+				})
+				if err != nil {
+					if errors.Is(err, pgx.ErrNoRows) {
+						return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+					}
+					return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+				}
 			}
 		}
 		// Add UserAnalytics handling for multipart form
@@ -1002,6 +1017,19 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		}
 		if req.RoleID != nil {
 			updateParams.RoleID = *req.RoleID
+
+			// Update user role in user_marinas table for the current marina
+			err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+				UserID:   userID,
+				MarinaID: currentUser.MarinaID,
+				RoleID:   *req.RoleID,
+			})
+			if err != nil {
+				if errors.Is(err, pgx.ErrNoRows) {
+					return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+				}
+				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			}
 		}
 		if req.IsSuperuser != nil {
 			updateParams.IsSuperuser = req.IsSuperuser
