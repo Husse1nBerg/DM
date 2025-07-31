@@ -342,6 +342,23 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 	}
 
 	if req.Permissions != nil {
+
+		defaultPerms := []struct{ Obj, Act string }{
+			{"profile", "read"},
+			{"profile", "write"},
+			{"users", "read"},
+			{"users", "write"},
+			{"marinas", "read"},
+			{"roles", "read"},
+			{"marina_gallery", "read"},
+			{"plans", "read"},
+		}
+		for _, p := range defaultPerms {
+			if !req.Permissions.HasPermission(p.Obj, p.Act) {
+				req.Permissions.Grant(p.Obj, p.Act)
+			}
+		}
+
 		var convErr error
 		permissionsBytes, convErr = req.Permissions.ToBytes()
 		if convErr != nil {
