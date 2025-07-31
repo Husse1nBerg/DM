@@ -373,6 +373,7 @@ type UserMarina struct {
 	MarinaID   uuid.UUID
 	AssignedAt pgtype.Timestamp
 	CustomerID *string
+	RoleID     uuid.UUID
 }
 
 type VesselGallery struct {

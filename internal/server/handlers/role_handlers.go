@@ -139,6 +139,27 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	// Ensure default permissions are always present
+	if req.Permissions == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Permissions are required").JSON(c)
+	}
+	// Always grant these minimum permissions
+	defaultPerms := []struct{ Obj, Act string }{
+		{"profile", "read"},
+		{"profile", "write"},
+		{"users", "read"},
+		{"users", "write"},
+		{"marinas", "read"},
+		{"roles", "read"},
+		{"marina_gallery", "read"},
+		{"plans", "read"},
+	}
+	for _, p := range defaultPerms {
+		if !req.Permissions.HasPermission(p.Obj, p.Act) {
+			req.Permissions.Grant(p.Obj, p.Act)
+		}
+	}
+
 	// Convert permissions to bytes for database storage
 	var permissionsBytes []byte
 

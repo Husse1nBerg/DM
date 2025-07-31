@@ -12753,6 +12753,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "marinaId",
+                "roleId",
                 "userId"
             ],
             "properties": {
@@ -12763,6 +12764,10 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "roleId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
                 "userId": {
                     "type": "string",
