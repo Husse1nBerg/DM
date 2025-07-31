@@ -1472,6 +1472,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 			UserID:     userByEmail.ID,
 			MarinaID:   req.MarinaID,
 			CustomerID: req.CustomerID,
+			RoleID:     req.RoleID,
 		}
 		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
 		if err != nil {
@@ -1550,6 +1551,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		UserID:     user.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
+		RoleID:     req.RoleID,
 	}
 
 	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
@@ -1729,6 +1731,7 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		assignUserToMarina := db.AssignUserToMarinaParams{
 			UserID:   userByEmail.ID,
 			MarinaID: req.MarinaID,
+			RoleID:   req.RoleID,
 		}
 		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
 		if err != nil {
@@ -1804,6 +1807,7 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 	assignUserToMarina := db.AssignUserToMarinaParams{
 		UserID:   user.ID,
 		MarinaID: req.MarinaID,
+		RoleID:   req.RoleID,
 	}
 
 	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)

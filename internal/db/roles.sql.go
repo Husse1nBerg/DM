@@ -310,10 +310,43 @@ SELECT id, name, description, permissions, is_active, created_at, updated_at, de
 FROM roles
 WHERE name = $1
     AND deleted_at IS NULL
+    AND marina_id IS NULL
 `
 
 func (q *Queries) GetRoleByName(ctx context.Context, name string) (Role, error) {
 	row := q.db.QueryRow(ctx, getRoleByName, name)
+	var i Role
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Permissions,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.IsCustomerRole,
+		&i.Type,
+		&i.MarinaID,
+	)
+	return i, err
+}
+
+const getRoleByNameAndMarina = `-- name: GetRoleByNameAndMarina :one
+SELECT id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type, marina_id
+FROM roles
+WHERE name = $1
+    AND marina_id = $2
+    AND deleted_at IS NULL
+`
+
+type GetRoleByNameAndMarinaParams struct {
+	Name     string
+	MarinaID uuid.UUID
+}
+
+func (q *Queries) GetRoleByNameAndMarina(ctx context.Context, arg GetRoleByNameAndMarinaParams) (Role, error) {
+	row := q.db.QueryRow(ctx, getRoleByNameAndMarina, arg.Name, arg.MarinaID)
 	var i Role
 	err := row.Scan(
 		&i.ID,
