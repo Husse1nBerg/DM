@@ -1085,6 +1085,23 @@ func (q *Queries) UnassignUserFromMarina(ctx context.Context, arg UnassignUserFr
 	return err
 }
 
+const updateUserMarinaRole = `-- name: UpdateUserMarinaRole :exec
+UPDATE user_marinas
+SET role_id = $3
+WHERE user_id = $1 AND marina_id = $2
+`
+
+type UpdateUserMarinaRoleParams struct {
+	UserID   uuid.UUID
+	MarinaID uuid.UUID
+	RoleID   uuid.UUID
+}
+
+func (q *Queries) UpdateUserMarinaRole(ctx context.Context, arg UpdateUserMarinaRoleParams) error {
+	_, err := q.db.Exec(ctx, updateUserMarinaRole, arg.UserID, arg.MarinaID, arg.RoleID)
+	return err
+}
+
 const userCanAccessMarina = `-- name: UserCanAccessMarina :one
 SELECT EXISTS (
     SELECT 1

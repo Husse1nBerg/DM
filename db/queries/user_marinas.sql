@@ -161,6 +161,10 @@ WHERE um.marina_id = $1
 SELECT role_id, customer_id
 FROM user_marinas
 WHERE user_id = $1 AND marina_id = $2;
+-- name: UpdateUserMarinaRole :exec
+UPDATE user_marinas
+SET role_id = $3
+WHERE user_id = $1 AND marina_id = $2;
 -- name: CountUsersByRoleID :one
 SELECT COUNT(*)
 FROM user_marinas um
