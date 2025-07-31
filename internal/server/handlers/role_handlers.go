@@ -278,6 +278,17 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
 	}
 
+	// Check if the role is assigned to any users
+	if !*req.IsActive {
+		usersCount, err := queries.CountUsersByRoleID(c.Request().Context(), roleID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if usersCount > 0 {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Role is assigned to users, cannot deactivate").JSON(c)
+		}
+	}
+
 	// Start with existing values
 	name := existingRole.Name
 	description := existingRole.Description
@@ -372,6 +383,15 @@ func (g *RoleHandler) DeleteRoleHandler(c echo.Context) error {
 	_, err := queries.GetRoleByID(c.Request().Context(), param.RoleID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusNotFound, "Role not found").JSON(c)
+	}
+
+	// Check if the role is assigned to any users
+	usersCount, err := queries.CountUsersByRoleID(c.Request().Context(), param.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	if usersCount > 0 {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role is assigned to users, cannot delete").JSON(c)
 	}
 
 	// Soft delete the role

@@ -161,3 +161,9 @@ WHERE um.marina_id = $1
 SELECT role_id, customer_id
 FROM user_marinas
 WHERE user_id = $1 AND marina_id = $2;
+-- name: CountUsersByRoleID :one
+SELECT COUNT(*)
+FROM user_marinas um
+JOIN roles r ON r.id = um.role_id
+WHERE r.id = $1
+  AND r.deleted_at IS NULL;
