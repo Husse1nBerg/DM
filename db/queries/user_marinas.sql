@@ -123,7 +123,7 @@ WHERE u.deleted_at IS NULL
 SELECT um.*, u.*, r.name as role_name
 FROM user_marinas um
 JOIN users u ON u.id = um.user_id
-LEFT JOIN roles r ON u.role_id = r.id
+LEFT JOIN roles r ON um.role_id = r.id
 WHERE um.marina_id = $1
   AND ($2::bool IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
   AND u.is_superuser = FALSE
