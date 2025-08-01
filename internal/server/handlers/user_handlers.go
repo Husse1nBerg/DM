@@ -920,17 +920,41 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			if roleID, err := uuid.Parse(roleIDStr); err == nil {
 				updateParams.RoleID = roleID
 
-				// Update user role in user_marinas table for the current marina
-				err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
-					UserID:   userID,
-					MarinaID: currentUser.MarinaID,
-					RoleID:   roleID,
-				})
-				if err != nil {
-					if errors.Is(err, pgx.ErrNoRows) {
-						return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+				userToken := c.Get("user").(*jwt.Token)
+				if userToken == nil {
+					return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+				}
+				claims := userToken.Claims.(*token.JwtCustomClaims)
+				loggedUserID := claims.ID
+				loggedUser, dbErr := g.server.DB.Queries().GetUserByID(c.Request().Context(), loggedUserID)
+				if dbErr != nil {
+					return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+dbErr.Error()).JSON(c)
+				}
+
+				if loggedUser.MarinaID != currentUser.MarinaID {
+					err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+						UserID:   userID,
+						MarinaID: loggedUser.MarinaID,
+						RoleID:   roleID,
+					})
+					if err != nil {
+						if errors.Is(err, pgx.ErrNoRows) {
+							return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+						}
+						return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 					}
-					return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+				} else {
+					err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+						UserID:   userID,
+						MarinaID: currentUser.MarinaID,
+						RoleID:   roleID,
+					})
+					if err != nil {
+						if errors.Is(err, pgx.ErrNoRows) {
+							return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+						}
+						return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+					}
 				}
 			}
 		}
@@ -1018,17 +1042,46 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		if req.RoleID != nil {
 			updateParams.RoleID = *req.RoleID
 
-			// Update user role in user_marinas table for the current marina
-			err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
-				UserID:   userID,
-				MarinaID: currentUser.MarinaID,
-				RoleID:   *req.RoleID,
-			})
-			if err != nil {
-				if errors.Is(err, pgx.ErrNoRows) {
-					return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+			userToken := c.Get("user").(*jwt.Token)
+			if userToken == nil {
+				return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+			}
+
+			claims := userToken.Claims.(*token.JwtCustomClaims)
+			loggedUserID := claims.ID
+			// Fetch the user's current marina_id from the database
+			loggedUser, dbErr := g.server.DB.Queries().GetUserByID(c.Request().Context(), loggedUserID)
+			if dbErr != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+dbErr.Error()).JSON(c)
+			}
+
+			if loggedUser.MarinaID != currentUser.MarinaID {
+				// Update user role in user_marinas table for the logged-in user's marina
+				err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+					UserID:   userID,
+					MarinaID: loggedUser.MarinaID,
+					RoleID:   *req.RoleID,
+				})
+				if err != nil {
+					if errors.Is(err, pgx.ErrNoRows) {
+						return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+					}
+					return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 				}
-				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+
+			} else {
+				// Update user role in user_marinas table for the logged-in user's marina
+				err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+					UserID:   userID,
+					MarinaID: currentUser.MarinaID,
+					RoleID:   *req.RoleID,
+				})
+				if err != nil {
+					if errors.Is(err, pgx.ErrNoRows) {
+						return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+					}
+					return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+				}
 			}
 		}
 		if req.IsSuperuser != nil {
