@@ -35,7 +35,9 @@ func RegisterRoutes(s *s.Server) {
 	s.Echo.Use(echozap.ZapLogger(s.Logger.DesugarZap))
 	s.Echo.Use(middleware.CORSWithConfig(s.Config.Server.CORSConfig))
 	s.Echo.Use(middleware.Recover())
-	s.Echo.Use(middleware.Timeout())
+	s.Echo.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Timeout: 30 * time.Second,
+	}))
 	s.Echo.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
 		zapLogger.Info("Request Body", zap.String("body", string(reqBody)), zap.String("path", c.Path()), zap.String("method", c.Request().Method), zap.String("query", c.QueryString()), zap.String("remote_ip", c.RealIP()), zap.String("host", c.Request().Host), zap.String("user_agent", c.Request().UserAgent()), zap.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)))
 		zapLogger.Info("Response Body", zap.String("body", string(resBody)), zap.String("path", c.Path()), zap.String("method", c.Request().Method), zap.String("query", c.QueryString()), zap.String("remote_ip", c.RealIP()), zap.String("host", c.Request().Host), zap.String("user_agent", c.Request().UserAgent()), zap.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)))
