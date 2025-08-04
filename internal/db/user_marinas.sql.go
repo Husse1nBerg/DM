@@ -13,18 +13,25 @@ import (
 )
 
 const assignUserToMarina = `-- name: AssignUserToMarina :exec
-INSERT INTO user_marinas (user_id, marina_id, customer_id)
-VALUES ($1, $2, $3) ON CONFLICT DO NOTHING
+INSERT INTO user_marinas (user_id, marina_id, customer_id, role_id)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (user_id, marina_id) DO UPDATE SET role_id = EXCLUDED.role_id
 `
 
 type AssignUserToMarinaParams struct {
 	UserID     uuid.UUID
 	MarinaID   uuid.UUID
 	CustomerID *string
+	RoleID     uuid.UUID
 }
 
 func (q *Queries) AssignUserToMarina(ctx context.Context, arg AssignUserToMarinaParams) error {
-	_, err := q.db.Exec(ctx, assignUserToMarina, arg.UserID, arg.MarinaID, arg.CustomerID)
+	_, err := q.db.Exec(ctx, assignUserToMarina,
+		arg.UserID,
+		arg.MarinaID,
+		arg.CustomerID,
+		arg.RoleID,
+	)
 	return err
 }
 
@@ -60,6 +67,21 @@ WHERE um.marina_id = $1
 
 func (q *Queries) CountUserMarinasAssignmentsPaginatedAdminOnly(ctx context.Context, marinaID uuid.UUID) (int64, error) {
 	row := q.db.QueryRow(ctx, countUserMarinasAssignmentsPaginatedAdminOnly, marinaID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countUsersByRoleID = `-- name: CountUsersByRoleID :one
+SELECT COUNT(*)
+FROM user_marinas um
+JOIN roles r ON r.id = um.role_id
+WHERE r.id = $1
+  AND r.deleted_at IS NULL
+`
+
+func (q *Queries) CountUsersByRoleID(ctx context.Context, id uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countUsersByRoleID, id)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -415,6 +437,29 @@ func (q *Queries) GetMarinaUsersListPaginated(ctx context.Context, arg GetMarina
 	return items, nil
 }
 
+const getUserMarinaAssignmentByUserAndMarina = `-- name: GetUserMarinaAssignmentByUserAndMarina :one
+SELECT role_id, customer_id
+FROM user_marinas
+WHERE user_id = $1 AND marina_id = $2
+`
+
+type GetUserMarinaAssignmentByUserAndMarinaParams struct {
+	UserID   uuid.UUID
+	MarinaID uuid.UUID
+}
+
+type GetUserMarinaAssignmentByUserAndMarinaRow struct {
+	RoleID     uuid.UUID
+	CustomerID *string
+}
+
+func (q *Queries) GetUserMarinaAssignmentByUserAndMarina(ctx context.Context, arg GetUserMarinaAssignmentByUserAndMarinaParams) (GetUserMarinaAssignmentByUserAndMarinaRow, error) {
+	row := q.db.QueryRow(ctx, getUserMarinaAssignmentByUserAndMarina, arg.UserID, arg.MarinaID)
+	var i GetUserMarinaAssignmentByUserAndMarinaRow
+	err := row.Scan(&i.RoleID, &i.CustomerID)
+	return i, err
+}
+
 const getUserMarinasList = `-- name: GetUserMarinasList :many
 SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage
 FROM marinas m
@@ -694,10 +739,10 @@ func (q *Queries) GetUsersNotAssignedToMarinaPaginatedAdmin(ctx context.Context,
 }
 
 const listUserMarinasAssignmentsPaginated = `-- name: ListUserMarinasAssignmentsPaginated :many
-SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
+SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM user_marinas um
 JOIN users u ON u.id = um.user_id
-LEFT JOIN roles r ON u.role_id = r.id
+LEFT JOIN roles r ON um.role_id = r.id
 WHERE um.marina_id = $1
   AND ($2::bool IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
   AND u.is_superuser = FALSE
@@ -718,6 +763,7 @@ type ListUserMarinasAssignmentsPaginatedRow struct {
 	MarinaID            uuid.UUID
 	AssignedAt          pgtype.Timestamp
 	CustomerID          *string
+	RoleID              uuid.UUID
 	ID                  uuid.UUID
 	Username            string
 	FirstName           string
@@ -734,7 +780,7 @@ type ListUserMarinasAssignmentsPaginatedRow struct {
 	LastPasswordReset   pgtype.Timestamp
 	OrganizationID      uuid.UUID
 	MarinaID_2          uuid.UUID
-	RoleID              uuid.UUID
+	RoleID_2            uuid.UUID
 	IsSuperuser         *bool
 	IsActive            *bool
 	CreatedAt           pgtype.Timestamp
@@ -766,6 +812,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginated(ctx context.Context, arg L
 			&i.MarinaID,
 			&i.AssignedAt,
 			&i.CustomerID,
+			&i.RoleID,
 			&i.ID,
 			&i.Username,
 			&i.FirstName,
@@ -782,7 +829,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginated(ctx context.Context, arg L
 			&i.LastPasswordReset,
 			&i.OrganizationID,
 			&i.MarinaID_2,
-			&i.RoleID,
+			&i.RoleID_2,
 			&i.IsSuperuser,
 			&i.IsActive,
 			&i.CreatedAt,
@@ -805,7 +852,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginated(ctx context.Context, arg L
 }
 
 const listUserMarinasAssignmentsPaginatedAdmin = `-- name: ListUserMarinasAssignmentsPaginatedAdmin :many
-SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
+SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM user_marinas um
 JOIN users u ON u.id = um.user_id
 LEFT JOIN roles r ON u.role_id = r.id
@@ -828,6 +875,7 @@ type ListUserMarinasAssignmentsPaginatedAdminRow struct {
 	MarinaID            uuid.UUID
 	AssignedAt          pgtype.Timestamp
 	CustomerID          *string
+	RoleID              uuid.UUID
 	ID                  uuid.UUID
 	Username            string
 	FirstName           string
@@ -844,7 +892,7 @@ type ListUserMarinasAssignmentsPaginatedAdminRow struct {
 	LastPasswordReset   pgtype.Timestamp
 	OrganizationID      uuid.UUID
 	MarinaID_2          uuid.UUID
-	RoleID              uuid.UUID
+	RoleID_2            uuid.UUID
 	IsSuperuser         *bool
 	IsActive            *bool
 	CreatedAt           pgtype.Timestamp
@@ -876,6 +924,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginatedAdmin(ctx context.Context, 
 			&i.MarinaID,
 			&i.AssignedAt,
 			&i.CustomerID,
+			&i.RoleID,
 			&i.ID,
 			&i.Username,
 			&i.FirstName,
@@ -892,7 +941,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginatedAdmin(ctx context.Context, 
 			&i.LastPasswordReset,
 			&i.OrganizationID,
 			&i.MarinaID_2,
-			&i.RoleID,
+			&i.RoleID_2,
 			&i.IsSuperuser,
 			&i.IsActive,
 			&i.CreatedAt,
@@ -915,7 +964,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginatedAdmin(ctx context.Context, 
 }
 
 const listUserMarinasAssignmentsPaginatedAdminOnly = `-- name: ListUserMarinasAssignmentsPaginatedAdminOnly :many
-SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
+SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM user_marinas um
 JOIN users u ON u.id = um.user_id
 LEFT JOIN roles r ON u.role_id = r.id
@@ -937,6 +986,7 @@ type ListUserMarinasAssignmentsPaginatedAdminOnlyRow struct {
 	MarinaID            uuid.UUID
 	AssignedAt          pgtype.Timestamp
 	CustomerID          *string
+	RoleID              uuid.UUID
 	ID                  uuid.UUID
 	Username            string
 	FirstName           string
@@ -953,7 +1003,7 @@ type ListUserMarinasAssignmentsPaginatedAdminOnlyRow struct {
 	LastPasswordReset   pgtype.Timestamp
 	OrganizationID      uuid.UUID
 	MarinaID_2          uuid.UUID
-	RoleID              uuid.UUID
+	RoleID_2            uuid.UUID
 	IsSuperuser         *bool
 	IsActive            *bool
 	CreatedAt           pgtype.Timestamp
@@ -980,6 +1030,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginatedAdminOnly(ctx context.Conte
 			&i.MarinaID,
 			&i.AssignedAt,
 			&i.CustomerID,
+			&i.RoleID,
 			&i.ID,
 			&i.Username,
 			&i.FirstName,
@@ -996,7 +1047,7 @@ func (q *Queries) ListUserMarinasAssignmentsPaginatedAdminOnly(ctx context.Conte
 			&i.LastPasswordReset,
 			&i.OrganizationID,
 			&i.MarinaID_2,
-			&i.RoleID,
+			&i.RoleID_2,
 			&i.IsSuperuser,
 			&i.IsActive,
 			&i.CreatedAt,
@@ -1031,6 +1082,23 @@ type UnassignUserFromMarinaParams struct {
 
 func (q *Queries) UnassignUserFromMarina(ctx context.Context, arg UnassignUserFromMarinaParams) error {
 	_, err := q.db.Exec(ctx, unassignUserFromMarina, arg.UserID, arg.MarinaID)
+	return err
+}
+
+const updateUserMarinaRole = `-- name: UpdateUserMarinaRole :exec
+UPDATE user_marinas
+SET role_id = $3
+WHERE user_id = $1 AND marina_id = $2
+`
+
+type UpdateUserMarinaRoleParams struct {
+	UserID   uuid.UUID
+	MarinaID uuid.UUID
+	RoleID   uuid.UUID
+}
+
+func (q *Queries) UpdateUserMarinaRole(ctx context.Context, arg UpdateUserMarinaRoleParams) error {
+	_, err := q.db.Exec(ctx, updateUserMarinaRole, arg.UserID, arg.MarinaID, arg.RoleID)
 	return err
 }
 

@@ -15,6 +15,7 @@ type MarinaGalleryItemResponse struct {
 	MarinaID    uuid.UUID  `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440001"`
 	ImageURL    string     `json:"imageUrl" example:"/images/marinas/sunset_view.jpg"`
 	Description *string    `json:"description,omitempty" example:"Beautiful view of the marina at sunset"`
+	Public      *bool      `json:"public,omitempty" example:"true"`
 	CreatedAt   *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
 }
@@ -29,6 +30,7 @@ type VesselGalleryItemResponse struct {
 	ImageURL    string     `json:"imageUrl" example:"/images/vessels/yacht_port_side.jpg"`
 	Description *string    `json:"description,omitempty" example:"Port side view of the yacht"`
 	Main        *bool      `json:"main,omitempty" example:"true"`
+	Public      *bool      `json:"public,omitempty" example:"true"`
 	CreatedAt   *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
 }
@@ -40,6 +42,7 @@ func ConvertMarinaGalleryItemToResponse(item db.MarinaGallery) MarinaGalleryItem
 		MarinaID:    item.MarinaID,
 		ImageURL:    *utils.GetFullImageURL(&item.ImageUrl),
 		Description: item.Description,
+		Public:      &item.Public,
 		CreatedAt:   utils.PgTimeToTimePtr(item.CreatedAt),
 		UpdatedAt:   utils.PgTimeToTimePtr(item.UpdatedAt),
 	}
@@ -55,6 +58,7 @@ func ConvertVesselGalleryItemToResponse(item db.VesselGallery) VesselGalleryItem
 		ImageURL:    *utils.GetFullImageURL(&item.ImageUrl),
 		Description: item.Description,
 		Main:        item.Main,
+		Public:      &item.Public,
 		CreatedAt:   utils.PgTimeToTimePtr(item.CreatedAt),
 		UpdatedAt:   utils.PgTimeToTimePtr(item.UpdatedAt),
 	}

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -267,6 +268,17 @@ func (h *EsignHandler) CreateEsignTemplate(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 	}
 
+	// Parse optional jsonData field
+	var jsonDataBytes []byte
+	jsonDataStr := c.FormValue("jsonData")
+	if jsonDataStr != "" {
+		if err := json.Unmarshal([]byte(jsonDataStr), new(map[string]interface{})); err != nil {
+			h.server.Logger.Zap.Error("Invalid jsonData", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid jsonData: "+err.Error()).JSON(c)
+		}
+		jsonDataBytes = []byte(jsonDataStr)
+	}
+
 	// Create template
 	template, err := h.server.DB.Queries().CreateEsignTemplate(c.Request().Context(), db.CreateEsignTemplateParams{
 		OrganizationID: organizationID,
@@ -277,6 +289,7 @@ func (h *EsignHandler) CreateEsignTemplate(c echo.Context) error {
 		Status:         status,
 		BlobUrl:        filePath,
 		BlobMetadata:   nil, // Ignoring blob metadata for now as requested
+		JsonData:       jsonDataBytes,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature template", err)
@@ -406,6 +419,19 @@ func (h *EsignHandler) UpdateEsignTemplate(c echo.Context) error {
 		blobUrl = filePath
 	}
 
+	// Parse optional jsonData field
+	var jsonDataBytes []byte
+	jsonDataStr := c.FormValue("jsonData")
+	if jsonDataStr != "" {
+		if err := json.Unmarshal([]byte(jsonDataStr), new(map[string]interface{})); err != nil {
+			h.server.Logger.Zap.Error("Invalid jsonData", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid jsonData: "+err.Error()).JSON(c)
+		}
+		jsonDataBytes = []byte(jsonDataStr)
+	} else {
+		jsonDataBytes = existingTemplate.JsonData
+	}
+
 	// Update template
 	template, err := h.server.DB.Queries().UpdateEsignTemplate(c.Request().Context(), db.UpdateEsignTemplateParams{
 		ID:           templateID,
@@ -415,6 +441,7 @@ func (h *EsignHandler) UpdateEsignTemplate(c echo.Context) error {
 		Status:       status,
 		BlobUrl:      blobUrl,
 		BlobMetadata: nil, // Ignoring blob metadata for now as requested
+		JsonData:     jsonDataBytes,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error updating e-signature template", err)
@@ -1037,11 +1064,26 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 	// Create email data
+	var replyTo string
+	var replyName string
+	if req.ReplyTo != nil && *req.ReplyTo != "" {
+		replyTo = *req.ReplyTo
+	} else {
+		replyTo = marina.Email
+	}
+
+	if req.ReplyName != nil && *req.ReplyName != "" {
+		replyName = *req.ReplyName
+	} else {
+		replyName = marina.Name
+	}
+
 	email := sendgrid.ESignSubmissionTemplateData{
 		DocumentURL:     h.server.Config.App.EsignDocumentURL(submission.ID.String()),
 		Recipient:       "",
 		Sender:          marina.Name,
-		ReplyTo:         marina.Email,
+		ReplyTo:         replyTo,
+		ReplyName:       replyName,
 		TermsConditions: h.server.Config.App.TermsConditionsURL(),
 	}
 	to := []string{req.Email}

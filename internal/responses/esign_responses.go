@@ -12,17 +12,18 @@ import (
 // EsignTemplateResponse represents an e-signature template in the system
 // @Description E-signature template data including blob URL and metadata
 type EsignTemplateResponse struct {
-	ID             uuid.UUID        `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	OrganizationID uuid.UUID        `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
-	MarinaID       *uuid.UUID       `json:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Name           string           `json:"name" example:"Customer Agreement Template"`
-	Description    *string          `json:"description,omitempty" example:"Standard customer agreement template for marina services"`
-	Type           string           `json:"type" example:"agreement"`
-	Status         string           `json:"status" example:"active"`
-	BlobURL        string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/templates/agreement.pdf"`
-	BlobMetadata   *json.RawMessage `json:"blobMetadata,omitempty" swaggertype:"object"`
-	CreatedAt      *time.Time       `json:"createdAt,omitempty"`
-	UpdatedAt      *time.Time       `json:"updatedAt,omitempty"`
+	ID             uuid.UUID              `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID uuid.UUID              `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID       *uuid.UUID             `json:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Name           string                 `json:"name" example:"Customer Agreement Template"`
+	Description    *string                `json:"description,omitempty" example:"Standard customer agreement template for marina services"`
+	Type           string                 `json:"type" example:"agreement"`
+	Status         string                 `json:"status" example:"active"`
+	BlobURL        string                 `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/templates/agreement.pdf"`
+	BlobMetadata   *json.RawMessage       `json:"blobMetadata,omitempty" swaggertype:"object"`
+	CreatedAt      *time.Time             `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time             `json:"updatedAt,omitempty"`
+	JsonData       map[string]interface{} `json:"jsonData"`
 }
 
 // EsignDocumentResponse represents an e-signature document in the system
@@ -70,6 +71,11 @@ func ConvertEsignTemplateToResponse(template db.EsignTemplate) EsignTemplateResp
 		marinaID = &template.MarinaID
 	}
 
+	var jsonData map[string]interface{}
+	if len(template.JsonData) > 0 {
+		_ = json.Unmarshal(template.JsonData, &jsonData)
+	}
+
 	return EsignTemplateResponse{
 		ID:             template.ID,
 		OrganizationID: template.OrganizationID,
@@ -82,6 +88,7 @@ func ConvertEsignTemplateToResponse(template db.EsignTemplate) EsignTemplateResp
 		BlobMetadata:   blobMetadata,
 		CreatedAt:      utils.PgTimeToTimePtr(template.CreatedAt),
 		UpdatedAt:      utils.PgTimeToTimePtr(template.UpdatedAt),
+		JsonData:       jsonData,
 	}
 }
 

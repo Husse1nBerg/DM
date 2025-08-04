@@ -3,6 +3,9 @@ package handlers
 import (
 	"net/http"
 
+	"errors"
+	"strings"
+
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
@@ -10,6 +13,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
 )
 
@@ -139,6 +143,27 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	// Ensure default permissions are always present
+	if req.Permissions == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Permissions are required").JSON(c)
+	}
+	// Always grant these minimum permissions
+	defaultPerms := []struct{ Obj, Act string }{
+		{"profile", "read"},
+		{"profile", "write"},
+		{"users", "read"},
+		{"users", "write"},
+		{"marinas", "read"},
+		{"roles", "read"},
+		{"marina_gallery", "read"},
+		{"plans", "read"},
+	}
+	for _, p := range defaultPerms {
+		if !req.Permissions.HasPermission(p.Obj, p.Act) {
+			req.Permissions.Grant(p.Obj, p.Act)
+		}
+	}
+
 	// Convert permissions to bytes for database storage
 	var permissionsBytes []byte
 
@@ -178,6 +203,11 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 
 	role, err := queries.CreateRole(c.Request().Context(), params)
 	if err != nil {
+		// Check for unique constraint violation (role name and marina id)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" && strings.Contains(pgErr.ConstraintName, "roles_name_marina") {
+			return responses.NewErrorResponse(http.StatusBadRequest, "A role with this name already exists in this marina").JSON(c)
+		}
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
@@ -257,6 +287,17 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
 	}
 
+	// Check if the role is assigned to any users
+	if !*req.IsActive {
+		usersCount, err := queries.CountUsersByRoleID(c.Request().Context(), roleID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		if usersCount > 0 {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Role is assigned to users, cannot deactivate").JSON(c)
+		}
+	}
+
 	// Start with existing values
 	name := existingRole.Name
 	description := existingRole.Description
@@ -272,6 +313,13 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 			if err == nil && existingRoleWithName.ID != roleID {
 				// Another role with this name exists
 				return responses.NewErrorResponse(http.StatusBadRequest, "Role with this name already exists").JSON(c)
+			}
+			existingRoleWithName, err = queries.GetRoleByNameAndMarina(c.Request().Context(), db.GetRoleByNameAndMarinaParams{
+				Name:     *req.Name,
+				MarinaID: marinaID,
+			})
+			if err == nil && existingRoleWithName.ID != roleID {
+				return responses.NewErrorResponse(http.StatusBadRequest, "Role with this name already exists for this marina").JSON(c)
 			}
 		}
 		name = *req.Name
@@ -294,6 +342,23 @@ func (g *RoleHandler) UpdateRoleHandler(c echo.Context) error {
 	}
 
 	if req.Permissions != nil {
+
+		defaultPerms := []struct{ Obj, Act string }{
+			{"profile", "read"},
+			{"profile", "write"},
+			{"users", "read"},
+			{"users", "write"},
+			{"marinas", "read"},
+			{"roles", "read"},
+			{"marina_gallery", "read"},
+			{"plans", "read"},
+		}
+		for _, p := range defaultPerms {
+			if !req.Permissions.HasPermission(p.Obj, p.Act) {
+				req.Permissions.Grant(p.Obj, p.Act)
+			}
+		}
+
 		var convErr error
 		permissionsBytes, convErr = req.Permissions.ToBytes()
 		if convErr != nil {
@@ -351,6 +416,15 @@ func (g *RoleHandler) DeleteRoleHandler(c echo.Context) error {
 	_, err := queries.GetRoleByID(c.Request().Context(), param.RoleID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusNotFound, "Role not found").JSON(c)
+	}
+
+	// Check if the role is assigned to any users
+	usersCount, err := queries.CountUsersByRoleID(c.Request().Context(), param.RoleID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	if usersCount > 0 {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Role is assigned to users, cannot delete").JSON(c)
 	}
 
 	// Soft delete the role

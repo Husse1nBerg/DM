@@ -41,6 +41,7 @@ SET
     file_type = $3,
     file_path = $4,
     file_size = $5,
+    public = $6,
     updated_at = NOW()
 WHERE id = $1
 RETURNING *; 

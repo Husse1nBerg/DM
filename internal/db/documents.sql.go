@@ -22,7 +22,7 @@ INSERT INTO documents (
     file_size
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at
+) RETURNING id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public
 `
 
 type CreateDocumentParams struct {
@@ -57,6 +57,7 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 		&i.FileSize,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Public,
 	)
 	return i, err
 }
@@ -72,7 +73,7 @@ func (q *Queries) DeleteDocument(ctx context.Context, id uuid.UUID) error {
 }
 
 const getDocumentByID = `-- name: GetDocumentByID :one
-SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at FROM documents
+SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public FROM documents
 WHERE id = $1
 `
 
@@ -90,12 +91,13 @@ func (q *Queries) GetDocumentByID(ctx context.Context, id uuid.UUID) (Document, 
 		&i.FileSize,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Public,
 	)
 	return i, err
 }
 
 const listDocumentsByEntity = `-- name: ListDocumentsByEntity :many
-SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at
+SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public
 FROM documents
 WHERE marina_id = $1
 AND entity_type = $2
@@ -129,6 +131,7 @@ func (q *Queries) ListDocumentsByEntity(ctx context.Context, arg ListDocumentsBy
 			&i.FileSize,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Public,
 		); err != nil {
 			return nil, err
 		}
@@ -141,7 +144,7 @@ func (q *Queries) ListDocumentsByEntity(ctx context.Context, arg ListDocumentsBy
 }
 
 const listDocumentsByMarina = `-- name: ListDocumentsByMarina :many
-SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at
+SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public
 FROM documents
 WHERE marina_id = $1
 ORDER BY created_at DESC
@@ -174,6 +177,7 @@ func (q *Queries) ListDocumentsByMarina(ctx context.Context, arg ListDocumentsBy
 			&i.FileSize,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Public,
 		); err != nil {
 			return nil, err
 		}
@@ -192,9 +196,10 @@ SET
     file_type = $3,
     file_path = $4,
     file_size = $5,
+    public = $6,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at
+RETURNING id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public
 `
 
 type UpdateDocumentParams struct {
@@ -203,6 +208,7 @@ type UpdateDocumentParams struct {
 	FileType string
 	FilePath string
 	FileSize int64
+	Public   bool
 }
 
 func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) (Document, error) {
@@ -212,6 +218,7 @@ func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) 
 		arg.FileType,
 		arg.FilePath,
 		arg.FileSize,
+		arg.Public,
 	)
 	var i Document
 	err := row.Scan(
@@ -225,6 +232,7 @@ func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) 
 		&i.FileSize,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Public,
 	)
 	return i, err
 }

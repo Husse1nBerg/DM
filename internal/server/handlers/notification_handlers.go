@@ -92,7 +92,7 @@ func (h *NotificationHandler) CreateNotificationHandler(c echo.Context) error {
 func (h *NotificationHandler) ListNotificationsHandler(c echo.Context) error {
 	// Get user info from JWT token
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*token.JwtCustomClaims)
+	claims := user.Claims.(*token.JwtCustomClaims) //
 
 	// Get current user data from database to get the current marina ID
 	queries := h.server.DB.Queries()

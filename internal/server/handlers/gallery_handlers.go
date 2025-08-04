@@ -1,13 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -288,6 +291,7 @@ func (h *GalleryHandler) UpdateMarinaGalleryItem(c echo.Context) error {
 	// Initialize update parameters with current values
 	imageUrl := existingItem.ImageUrl
 	description := existingItem.Description
+	public := existingItem.Public
 	var fileSize int64
 
 	// Check if there's an image file in the form
@@ -317,11 +321,17 @@ func (h *GalleryHandler) UpdateMarinaGalleryItem(c echo.Context) error {
 		description = &desc
 	}
 
+	// Parse public flag from form if provided
+	if publicStr := c.FormValue("public"); publicStr != "" {
+		public = publicStr == "false"
+	}
+
 	// Update gallery item in database
 	updateParams := db.UpdateMarinaGalleryItemParams{
 		ID:          id,
 		ImageUrl:    imageUrl,
 		Description: description,
+		Public:      public,
 	}
 
 	updatedItem, err := h.server.DB.Queries().UpdateMarinaGalleryItem(c.Request().Context(), updateParams)
@@ -496,9 +506,99 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
 	}
 
+	go func() {
+		ctx := context.Background()
+
+		marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error fetching marina for DME update", err)
+			return
+		}
+		if marina.SystemID == nil {
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME boat update")
+			return
+		}
+		orgID := marina.OrganizationID
+		systemID := *marina.SystemID
+
+		dmeBoat, err := h.server.DME.RetrieveBoatByID(ctx, boatID, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error retrieving boat from DME for attachment update", err)
+			return
+		}
+
+		desc := ""
+		if descriptionPtr != nil {
+			desc = *descriptionPtr
+		}
+		fileType := header.Header.Get("Content-Type")
+		newAttachment := dme.Attachment{
+			FileName:    header.Filename,
+			Description: desc,
+			S3Path:      imagePath,
+			FileType:    utils.Pointer(fileType),
+			FromDMWeb:   utils.Pointer(true),
+		}
+
+		updatedAttachments := dmeBoat.Attachments
+		if updatedAttachments == nil {
+			updatedAttachments = []dme.Attachment{}
+		}
+		updatedAttachments = append(updatedAttachments, newAttachment)
+
+		boatUpdate := &dme.BoatUpdate{
+			ID:                   dmeBoat.ID,
+			Name:                 dmeBoat.Name,
+			Registration:         dmeBoat.Registration,
+			Year:                 dmeBoat.Year,
+			Make:                 dmeBoat.Make,
+			Model:                dmeBoat.Model,
+			HIN:                  dmeBoat.HIN,
+			LOA:                  dmeBoat.LOA,
+			LWL:                  dmeBoat.LWL,
+			Draft:                dmeBoat.Draft,
+			Beam:                 dmeBoat.Beam,
+			Height:               dmeBoat.Height,
+			Color:                dmeBoat.Color,
+			TrailerMake:          dmeBoat.TrailerMake,
+			TrailerModel:         dmeBoat.TrailerModel,
+			TrailerSerial:        dmeBoat.TrailerSerial,
+			TrailerRegistration:  dmeBoat.TrailerRegistration,
+			TrailerLocation:      dmeBoat.TrailerLocation,
+			SummerSlip:           dmeBoat.SummerSlip,
+			WinterSlip:           dmeBoat.WinterSlip,
+			InsuranceCompany:     dmeBoat.InsuranceCompany,
+			InsuranceExpDate:     dmeBoat.InsuranceExpDate,
+			SlipID:               dmeBoat.SlipID,
+			Slip:                 dmeBoat.Slip,
+			Motors:               dmeBoat.Motors,
+			DoNotLaunch:          dmeBoat.DoNotLaunch,
+			BillingCodes:         dmeBoat.BillingCodes,
+			BoatDescriptionCodes: dmeBoat.BoatDescriptionCodes,
+			CustomInformation:    dmeBoat.CustomInformation,
+			OperationsHistory:    dmeBoat.OperationsHistory,
+			IntegrationID:        dmeBoat.IntegrationID,
+			OwnerIntegrationID:   dmeBoat.OwnerIntegrationID,
+			LastModified:         dmeBoat.LastModified,
+			Comments:             dmeBoat.Comments,
+			Attachments:          updatedAttachments,
+		}
+
+		_, err = h.server.DME.UpdateBoat(ctx, boatUpdate, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error updating boat attachments in DME", err)
+		} else {
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME boat with gallery attachment",
+				"boatID", boatID,
+				"fileName", header.Filename,
+				"galleryItemID", galleryItem.ID.String())
+		}
+	}()
+
 	// Return created gallery item
 	response := responses.NewVesselGalleryItemResponseSuccess(galleryItem)
 	response.Code = http.StatusCreated
+
 	return response.JSON(c)
 }
 

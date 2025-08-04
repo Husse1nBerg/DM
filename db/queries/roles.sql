@@ -11,6 +11,13 @@ WHERE id = $1
 SELECT *
 FROM roles
 WHERE name = $1
+    AND deleted_at IS NULL
+    AND marina_id IS NULL;
+-- name: GetRoleByNameAndMarina :one
+SELECT *
+FROM roles
+WHERE name = $1
+    AND marina_id = $2
     AND deleted_at IS NULL;
 -- name: GetAllRoles :many
 SELECT *
@@ -21,6 +28,7 @@ SELECT *
 FROM roles
 WHERE deleted_at IS NULL
     AND (marina_id IS NULL OR marina_id = $1)
+    AND type != 'internal'
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 -- name: UpdateRole :one

@@ -83,6 +83,7 @@ type AssignUserToMarinaRequest struct {
 	UserID     uuid.UUID `json:"userId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	MarinaID   uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
 	CustomerID *string   `json:"customerId,omitempty" example:"1234567890"`
+	RoleID     uuid.UUID `json:"roleId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
 }
 
 // Validate performs custom validation on the request
