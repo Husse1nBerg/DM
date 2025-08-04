@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -18,6 +19,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -643,6 +645,7 @@ func (g *UserHandler) AssignUserToMarinaHandler(c echo.Context) error {
 	params := db.AssignUserToMarinaParams{
 		UserID:   req.UserID,
 		MarinaID: req.MarinaID,
+		RoleID:   req.RoleID,
 	}
 	if *user.IsCustomer && req.CustomerID != nil {
 		params.CustomerID = req.CustomerID
@@ -902,12 +905,57 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 		}
 		if marinaIDStr := c.FormValue("marinaId"); marinaIDStr != "" {
 			if marinaID, err := uuid.Parse(marinaIDStr); err == nil {
-				updateParams.MarinaID = marinaID
+				// Fetch the role_id for this user in the new marina
+				assignment, err := queries.GetUserMarinaAssignmentByUserAndMarina(c.Request().Context(), db.GetUserMarinaAssignmentByUserAndMarinaParams{
+					UserID:   userID,
+					MarinaID: marinaID,
+				})
+				if err == nil {
+					updateParams.RoleID = assignment.RoleID
+					updateParams.MarinaID = marinaID
+				}
 			}
 		}
 		if roleIDStr := c.FormValue("roleId"); roleIDStr != "" {
 			if roleID, err := uuid.Parse(roleIDStr); err == nil {
 				updateParams.RoleID = roleID
+
+				userToken := c.Get("user").(*jwt.Token)
+				if userToken == nil {
+					return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+				}
+				claims := userToken.Claims.(*token.JwtCustomClaims)
+				loggedUserID := claims.ID
+				loggedUser, dbErr := g.server.DB.Queries().GetUserByID(c.Request().Context(), loggedUserID)
+				if dbErr != nil {
+					return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+dbErr.Error()).JSON(c)
+				}
+
+				if loggedUser.MarinaID != currentUser.MarinaID {
+					err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+						UserID:   userID,
+						MarinaID: loggedUser.MarinaID,
+						RoleID:   roleID,
+					})
+					if err != nil {
+						if errors.Is(err, pgx.ErrNoRows) {
+							return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+						}
+						return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+					}
+				} else {
+					err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+						UserID:   userID,
+						MarinaID: currentUser.MarinaID,
+						RoleID:   roleID,
+					})
+					if err != nil {
+						if errors.Is(err, pgx.ErrNoRows) {
+							return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+						}
+						return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+					}
+				}
 			}
 		}
 		// Add UserAnalytics handling for multipart form
@@ -978,10 +1026,63 @@ func (g *UserHandler) UpdateUserHandler(c echo.Context) error {
 			updateParams.LastPasswordReset = lastPasswordReset
 		}
 		if req.MarinaID != nil {
-			updateParams.MarinaID = *req.MarinaID
+			// If marinaId is changed, fetch role_id from user_marinas and set updateParams.RoleID
+			if *req.MarinaID != currentUser.MarinaID {
+				// Fetch the role_id for this user in the new marina
+				assignment, err := queries.GetUserMarinaAssignmentByUserAndMarina(c.Request().Context(), db.GetUserMarinaAssignmentByUserAndMarinaParams{
+					UserID:   userID,
+					MarinaID: *req.MarinaID,
+				})
+				if err == nil {
+					updateParams.RoleID = assignment.RoleID
+					updateParams.MarinaID = *req.MarinaID
+				}
+			}
 		}
 		if req.RoleID != nil {
 			updateParams.RoleID = *req.RoleID
+
+			userToken := c.Get("user").(*jwt.Token)
+			if userToken == nil {
+				return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+			}
+
+			claims := userToken.Claims.(*token.JwtCustomClaims)
+			loggedUserID := claims.ID
+			// Fetch the user's current marina_id from the database
+			loggedUser, dbErr := g.server.DB.Queries().GetUserByID(c.Request().Context(), loggedUserID)
+			if dbErr != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to load user: "+dbErr.Error()).JSON(c)
+			}
+
+			if loggedUser.MarinaID != currentUser.MarinaID {
+				// Update user role in user_marinas table for the logged-in user's marina
+				err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+					UserID:   userID,
+					MarinaID: loggedUser.MarinaID,
+					RoleID:   *req.RoleID,
+				})
+				if err != nil {
+					if errors.Is(err, pgx.ErrNoRows) {
+						return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+					}
+					return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+				}
+
+			} else {
+				// Update user role in user_marinas table for the logged-in user's marina
+				err := queries.UpdateUserMarinaRole(c.Request().Context(), db.UpdateUserMarinaRoleParams{
+					UserID:   userID,
+					MarinaID: currentUser.MarinaID,
+					RoleID:   *req.RoleID,
+				})
+				if err != nil {
+					if errors.Is(err, pgx.ErrNoRows) {
+						return responses.NewErrorResponse(http.StatusNotFound, errors.New("user-marina assignment not found")).JSON(c)
+					}
+					return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+				}
+			}
 		}
 		if req.IsSuperuser != nil {
 			updateParams.IsSuperuser = req.IsSuperuser
@@ -1452,6 +1553,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 			UserID:     userByEmail.ID,
 			MarinaID:   req.MarinaID,
 			CustomerID: req.CustomerID,
+			RoleID:     req.RoleID,
 		}
 		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
 		if err != nil {
@@ -1530,6 +1632,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		UserID:     user.ID,
 		MarinaID:   req.MarinaID,
 		CustomerID: req.CustomerID,
+		RoleID:     req.RoleID,
 	}
 
 	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
@@ -1709,6 +1812,7 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		assignUserToMarina := db.AssignUserToMarinaParams{
 			UserID:   userByEmail.ID,
 			MarinaID: req.MarinaID,
+			RoleID:   req.RoleID,
 		}
 		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
 		if err != nil {
@@ -1784,6 +1888,7 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 	assignUserToMarina := db.AssignUserToMarinaParams{
 		UserID:   user.ID,
 		MarinaID: req.MarinaID,
+		RoleID:   req.RoleID,
 	}
 
 	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)

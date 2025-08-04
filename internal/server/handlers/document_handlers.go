@@ -1,12 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/dme"
+	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -170,6 +174,92 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 	// Return created document
 	response := responses.NewDocumentResponseSuccess(doc)
 	response.Code = http.StatusCreated
+
+	// --- DME Attachment Insert (Async, e-sign/gallery style) ---
+	go func() {
+		ctx := context.Background()
+
+		marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error fetching marina for DME update (customer document)", err)
+			return
+		}
+		if marina.SystemID == nil {
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME customer update (document)")
+			return
+		}
+		orgID := marina.OrganizationID
+		systemID := *marina.SystemID
+
+		dmeCustomer, err := h.server.DME.CustomerRetrieve(ctx, entityID, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error retrieving customer from DME for attachment update (document)", err)
+			return
+		}
+
+		fileType := header.Header.Get("Content-Type")
+		datetime := time.Now().Format("2006-01-02 15:04:05")
+		newAttachment := dme.Attachment{
+			FileName:    header.Filename,
+			Description: fmt.Sprintf("Document attachment %s", datetime),
+			S3Path:      filePath,
+			FileType:    utils.Pointer(fileType),
+			FromDMWeb:   utils.Pointer(true),
+		}
+
+		updatedAttachments := dmeCustomer.Attachments
+		if updatedAttachments == nil {
+			updatedAttachments = []dme.Attachment{}
+		}
+		updatedAttachments = append(updatedAttachments, newAttachment)
+
+		customerUpdate := &dme.CustomerUpdate{
+			ID:                        dmeCustomer.ID,
+			Name:                      dmeCustomer.Name,
+			FirstName:                 dmeCustomer.FirstName,
+			LastName:                  dmeCustomer.LastName,
+			Email:                     dmeCustomer.Email,
+			Address1:                  dmeCustomer.Address1,
+			Address2:                  dmeCustomer.Address2,
+			Address3:                  dmeCustomer.Address3,
+			City:                      dmeCustomer.City,
+			State:                     dmeCustomer.State,
+			Zip:                       dmeCustomer.Zip,
+			Country:                   dmeCustomer.Country,
+			Phone:                     dmeCustomer.Phone,
+			AltFirstName:              dmeCustomer.AltFirstName,
+			AltLastName:               dmeCustomer.AltLastName,
+			AltAddress1:               dmeCustomer.AltAddress1,
+			AltAddress2:               dmeCustomer.AltAddress2,
+			AltAddress3:               dmeCustomer.AltAddress3,
+			AltCity:                   dmeCustomer.AltCity,
+			AltState:                  dmeCustomer.AltState,
+			AltZip:                    dmeCustomer.AltZip,
+			AltCountry:                dmeCustomer.AltCountry,
+			AltPhone:                  dmeCustomer.AltPhone,
+			UseAltAddress:             dmeCustomer.UseAltAddress,
+			WorkPhone:                 dmeCustomer.WorkPhone,
+			CellPhone:                 dmeCustomer.CellPhone,
+			EmergencyContact:          dmeCustomer.EmergencyContact,
+			EmergencyPhone:            dmeCustomer.EmergencyPhone,
+			CompanyName:               dmeCustomer.CompanyName,
+			ShipmentMethod:            dmeCustomer.ShipmentMethod,
+			ShipmentMethodDescription: dmeCustomer.ShipmentMethodDescription,
+			CustomInformation:         dmeCustomer.CustomInformation,
+			Attachments:               updatedAttachments,
+		}
+
+		_, err = h.server.DME.CustomerUpdate(ctx, customerUpdate, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error updating customer attachments in DME (document)", err)
+		} else {
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME customer with document attachment",
+				"customerID", entityID,
+				"fileName", header.Filename,
+				"documentID", doc.ID.String())
+		}
+	}()
+
 	return response.JSON(c)
 }
 
@@ -298,6 +388,93 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	// Return created document
 	response := responses.NewDocumentResponseSuccess(doc)
 	response.Code = http.StatusCreated
+
+	go func() {
+		ctx := context.Background()
+
+		marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error fetching marina for DME update (document)", err)
+			return
+		}
+		if marina.SystemID == nil {
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME boat update (document)")
+			return
+		}
+		orgID := marina.OrganizationID
+		systemID := *marina.SystemID
+
+		dmeBoat, err := h.server.DME.RetrieveBoatByID(ctx, entityID, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error retrieving boat from DME for attachment update (document)", err)
+			return
+		}
+
+		fileType := header.Header.Get("Content-Type")
+		datetime := time.Now().Format("2006-01-02 15:04:05")
+		newAttachment := dme.Attachment{
+			FileName:    header.Filename,
+			Description: fmt.Sprintf("Document attachment %s", datetime),
+			S3Path:      filePath,
+			FileType:    utils.Pointer(fileType),
+			FromDMWeb:   utils.Pointer(true),
+		}
+
+		updatedAttachments := dmeBoat.Attachments
+		if updatedAttachments == nil {
+			updatedAttachments = []dme.Attachment{}
+		}
+		updatedAttachments = append(updatedAttachments, newAttachment)
+
+		boatUpdate := &dme.BoatUpdate{
+			ID:                   dmeBoat.ID,
+			Name:                 dmeBoat.Name,
+			Registration:         dmeBoat.Registration,
+			Year:                 dmeBoat.Year,
+			Make:                 dmeBoat.Make,
+			Model:                dmeBoat.Model,
+			HIN:                  dmeBoat.HIN,
+			LOA:                  dmeBoat.LOA,
+			LWL:                  dmeBoat.LWL,
+			Draft:                dmeBoat.Draft,
+			Beam:                 dmeBoat.Beam,
+			Height:               dmeBoat.Height,
+			Color:                dmeBoat.Color,
+			TrailerMake:          dmeBoat.TrailerMake,
+			TrailerModel:         dmeBoat.TrailerModel,
+			TrailerSerial:        dmeBoat.TrailerSerial,
+			TrailerRegistration:  dmeBoat.TrailerRegistration,
+			TrailerLocation:      dmeBoat.TrailerLocation,
+			SummerSlip:           dmeBoat.SummerSlip,
+			WinterSlip:           dmeBoat.WinterSlip,
+			InsuranceCompany:     dmeBoat.InsuranceCompany,
+			InsuranceExpDate:     dmeBoat.InsuranceExpDate,
+			SlipID:               dmeBoat.SlipID,
+			Slip:                 dmeBoat.Slip,
+			Motors:               dmeBoat.Motors,
+			DoNotLaunch:          dmeBoat.DoNotLaunch,
+			BillingCodes:         dmeBoat.BillingCodes,
+			BoatDescriptionCodes: dmeBoat.BoatDescriptionCodes,
+			CustomInformation:    dmeBoat.CustomInformation,
+			OperationsHistory:    dmeBoat.OperationsHistory,
+			IntegrationID:        dmeBoat.IntegrationID,
+			OwnerIntegrationID:   dmeBoat.OwnerIntegrationID,
+			LastModified:         dmeBoat.LastModified,
+			Comments:             dmeBoat.Comments,
+			Attachments:          updatedAttachments,
+		}
+
+		_, err = h.server.DME.UpdateBoat(ctx, boatUpdate, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error updating boat attachments in DME (document)", err)
+		} else {
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME boat with document attachment",
+				"boatID", entityID,
+				"fileName", header.Filename,
+				"documentID", doc.ID.String())
+		}
+	}()
+
 	return response.JSON(c)
 }
 

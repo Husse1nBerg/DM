@@ -8,6 +8,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
+	"strings"
+
+	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
@@ -134,9 +137,71 @@ func (h *BoatHandler) RetrieveBoat(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert DME response to API response
+	// Deduplicate and merge DME attachments with local metadata
+	mergedMap := make(map[string]map[string]interface{})
+	for _, att := range dmeResponse.Attachments {
+		if att.S3Path == "" {
+			continue
+		}
+		if _, exists := mergedMap[att.S3Path]; exists {
+			continue // skip duplicates
+		}
+		meta, err := h.server.DB.Queries().GetAttachmentMetadataByS3Path(ctx, att.S3Path)
+		public := false
+		if err == nil {
+			public = meta.Public
+		} else if strings.Contains(err.Error(), "no rows") {
+			_, _ = h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+				S3Path: att.S3Path,
+				Public: false,
+			})
+			public = false
+		}
+		merged := map[string]interface{}{
+			"fileName":    att.FileName,
+			"description": att.Description,
+			"s3Path":      att.S3Path,
+			"fileType":    att.FileType,
+			"fromDMWeb":   att.FromDMWeb,
+			"public":      public,
+		}
+		mergedMap[att.S3Path] = merged
+	}
+	// Convert mergedMap to a slice and to a struct with the public field
+	type AttachmentWithPublic struct {
+		FileName    string  `json:"fileName"`
+		Description string  `json:"description"`
+		S3Path      string  `json:"s3Path"`
+		FileType    *string `json:"fileType"`
+		FromDMWeb   *bool   `json:"fromDMWeb"`
+		Public      bool    `json:"public"`
+	}
+	mergedAttachments := make([]AttachmentWithPublic, 0, len(mergedMap))
+	for _, v := range mergedMap {
+		mergedAttachments = append(mergedAttachments, AttachmentWithPublic{
+			FileName:    v["fileName"].(string),
+			Description: v["description"].(string),
+			S3Path:      v["s3Path"].(string),
+			FileType:    v["fileType"].(*string),
+			FromDMWeb:   v["fromDMWeb"].(*bool),
+			Public:      v["public"].(bool),
+		})
+	}
+	// Set the merged attachments inside the boat object
+	dmeResponse.Attachments = nil // clear original
 	response := responses.ConvertBoat(dmeResponse)
-	return c.JSON(http.StatusOK, response)
+
+	// Marshal the DME boat to a map
+	boatBytes, _ := json.Marshal(response.Data)
+	var boatMap map[string]interface{}
+	json.Unmarshal(boatBytes, &boatMap)
+
+	// Set the merged attachments
+	boatMap["attachments"] = mergedAttachments
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": boatMap,
+	})
 }
 
 // @Summary Retrieve boats for customer
@@ -260,25 +325,9 @@ func (h *BoatHandler) SearchBoats(c echo.Context) error {
 // @Router /boats/update [post]
 func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 	ctx := c.Request().Context()
-	var reqMap map[string]interface{}
-	if err := c.Bind(&reqMap); err != nil {
+	var reqStruct requests.BoatUpdateRequest
+	if err := c.Bind(&reqStruct); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-	}
-
-	// Validate required field
-	id, ok := reqMap["id"].(string)
-	if !ok || id == "" {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Missing or invalid 'id' field").JSON(c)
-	}
-
-	// Type/value validation: marshal to JSON, unmarshal into struct, validate
-	jsonBytes, err := json.Marshal(reqMap)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Failed to marshal request").JSON(c)
-	}
-	var reqStruct dme.BoatUpdate
-	if err := json.Unmarshal(jsonBytes, &reqStruct); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Failed to parse request: "+err.Error()).JSON(c)
 	}
 	if err := c.Validate(&reqStruct); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -393,7 +442,40 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 		existingBoat.LastModified = reqStruct.LastModified
 	}
 	if reqStruct.Attachments != nil {
-		existingBoat.Attachments = reqStruct.Attachments
+		// Convert []AttachmentWithPublic to []dme.Attachment
+		attachments := make([]dme.Attachment, 0, len(reqStruct.Attachments))
+		for _, att := range reqStruct.Attachments {
+			attachments = append(attachments, att.Attachment)
+		}
+		existingBoat.Attachments = attachments
+		// Update public status in dme_attachment_metadata for each attachment
+		for _, att := range reqStruct.Attachments {
+			if att.S3Path == "" {
+				continue
+			}
+			if att.FromDMWeb != nil && *att.FromDMWeb {
+				continue
+			}
+			_, err := h.server.DB.Queries().UpdateAttachmentMetadataPublic(ctx, db.UpdateAttachmentMetadataPublicParams{
+				S3Path: att.S3Path,
+				Public: att.Public,
+			})
+			if err != nil && strings.Contains(err.Error(), "no rows") {
+				_, createErr := h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+					S3Path: att.S3Path,
+					Public: att.Public,
+				})
+				if createErr != nil {
+					h.server.Logger.DesugarZap.Error("Failed to create attachment metadata",
+						zap.Error(createErr),
+						zap.String("s3Path", att.S3Path))
+				}
+			} else if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to update attachment metadata",
+					zap.Error(err),
+					zap.String("s3Path", att.S3Path))
+			}
+		}
 	}
 	existingBoat.DoNotLaunch = reqStruct.DoNotLaunch
 	if reqStruct.Motors != nil {

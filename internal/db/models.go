@@ -58,6 +58,12 @@ type CustomerSetting struct {
 	DeletedAt    pgtype.Timestamp
 }
 
+type DmeAttachmentMetadatum struct {
+	ID     uuid.UUID
+	S3Path string
+	Public bool
+}
+
 type DmeCredential struct {
 	ID             uuid.UUID
 	OrganizationID uuid.UUID
@@ -96,6 +102,7 @@ type Document struct {
 	FileSize   int64
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
+	Public     bool
 }
 
 type DocumentPlan struct {
@@ -151,6 +158,7 @@ type EsignTemplate struct {
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
 	DeletedAt      pgtype.Timestamp
+	JsonData       []byte
 }
 
 type Invite struct {
@@ -203,6 +211,7 @@ type MarinaGallery struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	DeletedAt   pgtype.Timestamp
+	Public      bool
 }
 
 type MarinaUsageHistory struct {
@@ -364,6 +373,7 @@ type UserMarina struct {
 	MarinaID   uuid.UUID
 	AssignedAt pgtype.Timestamp
 	CustomerID *string
+	RoleID     uuid.UUID
 }
 
 type VesselGallery struct {
@@ -377,4 +387,5 @@ type VesselGallery struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	DeletedAt   pgtype.Timestamp
+	Public      bool
 }

@@ -97,6 +97,12 @@ type CustomerIntakeRequest struct {
 	Password         string `json:"password"`
 }
 
+// AttachmentWithPublic extends dme.Attachment with a Public field for update requests
+type AttachmentWithPublic struct {
+	dme.Attachment
+	Public bool `json:"public"`
+}
+
 // CustomerUpdateRequest represents a request to update an existing customer
 type CustomerUpdateRequest struct {
 	ID                        string                  `json:"id" validate:"required"`
@@ -131,5 +137,5 @@ type CustomerUpdateRequest struct {
 	ShipmentMethod            string                  `json:"shipmentMethod"`
 	ShipmentMethodDescription string                  `json:"shipmentMethodDescription"`
 	CustomInformation         []dme.CustomInformation `json:"customInformation"`
-	Attachments               []dme.Attachment        `json:"attachments"`
+	Attachments               []AttachmentWithPublic  `json:"attachments"`
 }

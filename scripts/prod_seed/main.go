@@ -466,7 +466,7 @@ func RunProdSeed() {
 				"esign_templates.read":     true,
 				"esign_templates.create":   true,
 				"esign_templates.write":    true,
-				"esign_templates.delete":   false,
+				"esign_templates.delete":   true,
 				"esign_documents.read":     true,
 				"esign_documents.create":   true,
 				"esign_documents.write":    true,

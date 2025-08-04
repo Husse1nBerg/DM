@@ -13,13 +13,12 @@ import (
 
 // PermissionService handles authorization logic combining Casbin RBAC with marina module validation
 type PermissionService struct {
-	model   model.Model
-	Adapter *MarinaCasbinAdapter
+	modelText string
+	Adapter   *MarinaCasbinAdapter
 }
 
 // NewPermissionService creates a new permission service instance
 func NewPermissionService(database *db.Queries) (*PermissionService, error) {
-	// Create Casbin model from string
 	modelText := `
 [request_definition]
 r = sub, dom, obj, act
@@ -33,21 +32,13 @@ e = some(where (p.eft == allow))
 [matchers]
 m = r.sub == p.sub && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 `
-
-	m, err := model.NewModelFromString(modelText)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create casbin model: %w", err)
-	}
-
 	adapter := NewMarinaCasbinAdapter(database)
-
 	return &PermissionService{
-		model:   m,
-		Adapter: adapter,
+		modelText: modelText,
+		Adapter:   adapter,
 	}, nil
 }
 
-// CanAccess checks if a user can perform an action on an object in a specific marina
 // This is the main method for permission checking
 func (s *PermissionService) CanAccess(ctx context.Context, userID, marinaID, object, action string) (bool, error) {
 	isAdmin, err := s.IsAdmin(ctx, userID, marinaID)
@@ -77,8 +68,12 @@ func (s *PermissionService) CanAccess(ctx context.Context, userID, marinaID, obj
 		return false, fmt.Errorf("failed to load user policies: %w", err)
 	}
 
-	// Step 4: Create a per-request enforcer to avoid race conditions
-	enforcer, err := casbin.NewEnforcer(s.model)
+	// Step 4: Create a per-request model and enforcer to avoid race conditions
+	m, err := model.NewModelFromString(s.modelText)
+	if err != nil {
+		return false, fmt.Errorf("failed to create casbin model: %w", err)
+	}
+	enforcer, err := casbin.NewEnforcer(m)
 	if err != nil {
 		return false, fmt.Errorf("failed to create per-request enforcer: %w", err)
 	}

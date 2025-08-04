@@ -12753,6 +12753,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "marinaId",
+                "roleId",
                 "userId"
             ],
             "properties": {
@@ -12763,6 +12764,10 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "roleId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
                 "userId": {
                     "type": "string",
@@ -13175,6 +13180,14 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "customer@example.com"
+                },
+                "replyName": {
+                    "type": "string",
+                    "example": "Marina Manager"
+                },
+                "replyTo": {
+                    "type": "string",
+                    "example": "marina@example.com"
                 }
             }
         },
@@ -15149,6 +15162,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
                 },
+                "public": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "updatedAt": {
                     "type": "string"
                 }
@@ -15404,6 +15421,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
+                "jsonData": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
@@ -15498,6 +15519,10 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "public": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "updatedAt": {
                     "type": "string"
@@ -16523,6 +16548,10 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "public": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "updatedAt": {
                     "type": "string"

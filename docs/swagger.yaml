@@ -1072,11 +1072,15 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
+      roleId:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
       userId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
     required:
     - marinaId
+    - roleId
     - userId
     type: object
   requests.BoatCreateRequest:
@@ -1362,6 +1366,12 @@ definitions:
         type: string
       email:
         example: customer@example.com
+        type: string
+      replyName:
+        example: Marina Manager
+        type: string
+      replyTo:
+        example: marina@example.com
         type: string
     required:
     - documentId
@@ -2760,6 +2770,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      public:
+        example: true
+        type: boolean
       updatedAt:
         type: string
     type: object
@@ -2943,6 +2956,9 @@ definitions:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
+      jsonData:
+        additionalProperties: true
+        type: object
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
@@ -3011,6 +3027,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      public:
+        example: true
+        type: boolean
       updatedAt:
         type: string
     type: object
@@ -3748,6 +3767,9 @@ definitions:
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      public:
+        example: true
+        type: boolean
       updatedAt:
         type: string
     type: object

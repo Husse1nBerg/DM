@@ -62,10 +62,11 @@ INSERT INTO esign_templates (
     type,
     status,
     blob_url,
-    blob_metadata
+    blob_metadata,
+    json_data
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
-) RETURNING id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
 `
 
 type CreateEsignTemplateParams struct {
@@ -77,6 +78,7 @@ type CreateEsignTemplateParams struct {
 	Status         string
 	BlobUrl        string
 	BlobMetadata   []byte
+	JsonData       []byte
 }
 
 func (q *Queries) CreateEsignTemplate(ctx context.Context, arg CreateEsignTemplateParams) (EsignTemplate, error) {
@@ -89,6 +91,7 @@ func (q *Queries) CreateEsignTemplate(ctx context.Context, arg CreateEsignTempla
 		arg.Status,
 		arg.BlobUrl,
 		arg.BlobMetadata,
+		arg.JsonData,
 	)
 	var i EsignTemplate
 	err := row.Scan(
@@ -104,12 +107,13 @@ func (q *Queries) CreateEsignTemplate(ctx context.Context, arg CreateEsignTempla
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.JsonData,
 	)
 	return i, err
 }
 
 const getEsignTemplateByID = `-- name: GetEsignTemplateByID :one
-SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
 FROM esign_templates
 WHERE id = $1
     AND deleted_at IS NULL
@@ -131,6 +135,7 @@ func (q *Queries) GetEsignTemplateByID(ctx context.Context, id uuid.UUID) (Esign
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.JsonData,
 	)
 	return i, err
 }
@@ -146,7 +151,7 @@ func (q *Queries) HardDeleteEsignTemplate(ctx context.Context, id uuid.UUID) err
 }
 
 const listEsignTemplatesByMarina = `-- name: ListEsignTemplatesByMarina :many
-SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
 FROM esign_templates
 WHERE organization_id = $1
     AND marina_id = $2
@@ -189,6 +194,7 @@ func (q *Queries) ListEsignTemplatesByMarina(ctx context.Context, arg ListEsignT
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.JsonData,
 		); err != nil {
 			return nil, err
 		}
@@ -201,7 +207,7 @@ func (q *Queries) ListEsignTemplatesByMarina(ctx context.Context, arg ListEsignT
 }
 
 const listEsignTemplatesByMarinaStatus = `-- name: ListEsignTemplatesByMarinaStatus :many
-SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
 FROM esign_templates
 WHERE organization_id = $1
   AND marina_id = $2
@@ -247,6 +253,7 @@ func (q *Queries) ListEsignTemplatesByMarinaStatus(ctx context.Context, arg List
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.JsonData,
 		); err != nil {
 			return nil, err
 		}
@@ -278,10 +285,11 @@ SET
     status = $5,
     blob_url = $6,
     blob_metadata = $7,
+    json_data = $8,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+RETURNING id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
 `
 
 type UpdateEsignTemplateParams struct {
@@ -292,6 +300,7 @@ type UpdateEsignTemplateParams struct {
 	Status       string
 	BlobUrl      string
 	BlobMetadata []byte
+	JsonData     []byte
 }
 
 func (q *Queries) UpdateEsignTemplate(ctx context.Context, arg UpdateEsignTemplateParams) (EsignTemplate, error) {
@@ -303,6 +312,7 @@ func (q *Queries) UpdateEsignTemplate(ctx context.Context, arg UpdateEsignTempla
 		arg.Status,
 		arg.BlobUrl,
 		arg.BlobMetadata,
+		arg.JsonData,
 	)
 	var i EsignTemplate
 	err := row.Scan(
@@ -318,6 +328,7 @@ func (q *Queries) UpdateEsignTemplate(ctx context.Context, arg UpdateEsignTempla
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.JsonData,
 	)
 	return i, err
 }
@@ -329,7 +340,7 @@ SET
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+RETURNING id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
 `
 
 type UpdateEsignTemplateStatusParams struct {
@@ -353,6 +364,7 @@ func (q *Queries) UpdateEsignTemplateStatus(ctx context.Context, arg UpdateEsign
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.JsonData,
 	)
 	return i, err
 }

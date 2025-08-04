@@ -13,6 +13,7 @@ type CreateMarinaGalleryItemRequest struct {
 // UpdateMarinaGalleryItemRequest represents the parameters that can be updated for a marina gallery item
 type UpdateMarinaGalleryItemRequest struct {
 	Description *string `json:"description,omitempty" example:"Updated description of the marina view"`
+	Public      *bool   `json:"public,omitempty" example:"true"`
 }
 
 // CreateVesselGalleryItemRequest represents the required parameters to create a new vessel gallery item
@@ -28,4 +29,5 @@ type CreateVesselGalleryItemRequest struct {
 type UpdateVesselGalleryItemRequest struct {
 	Description *string `json:"description,omitempty" example:"Updated description of the vessel image"`
 	Main        *bool   `json:"main,omitempty" example:"true"`
+	Public      *bool   `json:"public,omitempty" example:"true"`
 }

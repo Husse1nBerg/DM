@@ -3,12 +3,15 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+
+	"encoding/json"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
@@ -137,9 +140,71 @@ func (h *CustomerHandler) RetrieveCustomer(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert DME response to API response
+	// Deduplicate and merge DME attachments with local metadata
+	mergedMap := make(map[string]map[string]interface{})
+	for _, att := range dmeResponse.Attachments {
+		if att.S3Path == "" {
+			continue
+		}
+		if _, exists := mergedMap[att.S3Path]; exists {
+			continue // skip duplicates
+		}
+		meta, err := h.server.DB.Queries().GetAttachmentMetadataByS3Path(ctx, att.S3Path)
+		public := false
+		if err == nil {
+			public = meta.Public
+		} else if strings.Contains(err.Error(), "no rows") {
+			_, _ = h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+				S3Path: att.S3Path,
+				Public: false,
+			})
+			public = false
+		}
+		merged := map[string]interface{}{
+			"fileName":    att.FileName,
+			"description": att.Description,
+			"s3Path":      att.S3Path,
+			"fileType":    att.FileType,
+			"fromDMWeb":   att.FromDMWeb,
+			"public":      public,
+		}
+		mergedMap[att.S3Path] = merged
+	}
+	// Convert mergedMap to a slice and to a struct with the public field
+	type AttachmentWithPublic struct {
+		FileName    string  `json:"fileName"`
+		Description string  `json:"description"`
+		S3Path      string  `json:"s3Path"`
+		FileType    *string `json:"fileType"`
+		FromDMWeb   *bool   `json:"fromDMWeb"`
+		Public      bool    `json:"public"`
+	}
+	mergedAttachments := make([]AttachmentWithPublic, 0, len(mergedMap))
+	for _, v := range mergedMap {
+		mergedAttachments = append(mergedAttachments, AttachmentWithPublic{
+			FileName:    v["fileName"].(string),
+			Description: v["description"].(string),
+			S3Path:      v["s3Path"].(string),
+			FileType:    v["fileType"].(*string),
+			FromDMWeb:   v["fromDMWeb"].(*bool),
+			Public:      v["public"].(bool),
+		})
+	}
+	// Set the merged attachments inside the data
+	dmeResponse.Attachments = nil // clear original
 	response := responses.ConvertCustomer(dmeResponse)
-	return c.JSON(http.StatusOK, response)
+
+	// Marshal the DME customer to a map
+	customerBytes, _ := json.Marshal(response.Data)
+	var customerMap map[string]interface{}
+	json.Unmarshal(customerBytes, &customerMap)
+
+	// Set the merged attachments
+	customerMap["attachments"] = mergedAttachments
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": customerMap,
+	})
 }
 
 // @Summary Search customers
@@ -340,7 +405,37 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		existingCustomer.CustomInformation = req.CustomInformation
 	}
 	if req.Attachments != nil {
-		existingCustomer.Attachments = req.Attachments
+		// Convert []AttachmentWithPublic to []dme.Attachment
+		attachments := make([]dme.Attachment, 0, len(req.Attachments))
+		for _, att := range req.Attachments {
+			attachments = append(attachments, att.Attachment)
+		}
+		existingCustomer.Attachments = attachments
+		// Update public status in dme_attachment_metadata for each attachment
+		for _, att := range req.Attachments {
+			if att.S3Path == "" {
+				continue
+			}
+			_, err := h.server.DB.Queries().UpdateAttachmentMetadataPublic(ctx, db.UpdateAttachmentMetadataPublicParams{
+				S3Path: att.S3Path,
+				Public: att.Public,
+			})
+			if err != nil && strings.Contains(err.Error(), "no rows") {
+				_, createErr := h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+					S3Path: att.S3Path,
+					Public: att.Public,
+				})
+				if createErr != nil {
+					h.server.Logger.DesugarZap.Error("Failed to create attachment metadata",
+						zap.Error(createErr),
+						zap.String("s3Path", att.S3Path))
+				}
+			} else if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to update attachment metadata",
+					zap.Error(err),
+					zap.String("s3Path", att.S3Path))
+			}
+		}
 	}
 
 	// Convert to CustomerUpdate

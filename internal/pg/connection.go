@@ -49,6 +49,10 @@ func NewConnection(cfg *config.DBConfig) DBService {
 		if err != nil {
 			log.Fatal(err)
 		}
+		// Set connection pool settings to prevent exhaustion
+		pool.Config().MaxConns = 25
+		pool.Config().MinConns = 5
+		pool.Config().MaxConnLifetime = 10 * time.Minute
 		query := sqlc.New(pool)
 		dbInstance = &service{
 			Pool:  pool,
