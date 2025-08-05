@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"net/http"
 	"time"
 
 	_ "github.com/dockworks/dm-web-backend/docs"
@@ -10,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/brpaz/echozap"
+	"github.com/dockworks/dm-web-backend/internal/responses"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -62,6 +64,23 @@ func RegisterRoutes(s *s.Server) {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(s.Config.Auth.AccessSecret),
+		ErrorHandler: func(c echo.Context, err error) error {
+			s.Logger.Zap.Error("JWT validation failed", zap.Error(err))
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Token validation failed").JSON(c)
+		},
+		TokenLookup: "header:Authorization:Bearer ",
+		ParseTokenFunc: func(c echo.Context, auth string) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(auth, &token.JwtCustomClaims{}, func(t *jwt.Token) (interface{}, error) {
+				return []byte(s.Config.Auth.AccessSecret), nil
+			})
+			if err != nil {
+				return nil, err
+			}
+			if !token.Valid {
+				return nil, jwt.ErrTokenExpired
+			}
+			return token, nil
+		},
 	}
 	protected.Use(echojwt.WithConfig(config))
 
