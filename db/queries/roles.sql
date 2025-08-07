@@ -76,4 +76,5 @@ LIMIT $2 OFFSET $3;
 SELECT COUNT(*)
 FROM roles
 WHERE deleted_at IS NULL
-    AND (marina_id IS NULL OR marina_id = $1);
+    AND (marina_id IS NULL OR marina_id = $1)
+    AND type != 'internal';
