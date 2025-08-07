@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -1033,14 +1034,16 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 
 	// Create submission with duplicated file
 	submission, err := h.server.DB.Queries().CreateEsignSubmission(c.Request().Context(), db.CreateEsignSubmissionParams{
-		OrganizationID: organizationID,
-		MarinaID:       marinaID,
-		DocumentID:     req.DocumentID,
-		Status:         "pending", // Default status
-		BlobUrl:        duplicatedFilePath,
-		BlobMetadata:   nil, // Ignoring blob metadata for now as requested
-		CustomerID:     req.CustomerID,
-		Email:          req.Email,
+		OrganizationID:     organizationID,
+		MarinaID:           marinaID,
+		DocumentID:         req.DocumentID,
+		Status:             "pending", // Default status
+		BlobUrl:            duplicatedFilePath,
+		BlobMetadata:       nil, // Ignoring blob metadata for now as requested
+		CustomerID:         req.CustomerID,
+		Email:              req.Email,
+		Name:               req.Name,
+		AttachmentRequired: req.AttachmentRequired,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature submission", err)
@@ -1217,6 +1220,25 @@ func (h *EsignHandler) UpdateEsignSubmission(c echo.Context) error {
 		customerIDPtr = existingSubmission.CustomerID
 	}
 
+	name := c.FormValue("name")
+	var namePtr *string
+	if name != "" {
+		namePtr = &name
+	} else {
+		namePtr = existingSubmission.Name
+	}
+
+	attachmentRequired := c.FormValue("attachmentRequired")
+	var attachmentRequiredPtr *bool
+	if attachmentRequired != "" {
+		parsed, err := strconv.ParseBool(attachmentRequired)
+		if err == nil {
+			attachmentRequiredPtr = &parsed
+		}
+	} else {
+		attachmentRequiredPtr = existingSubmission.AttachmentRequired
+	}
+
 	// Handle file upload (optional for update)
 	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
 
@@ -1235,12 +1257,14 @@ func (h *EsignHandler) UpdateEsignSubmission(c echo.Context) error {
 
 	// Update submission
 	submission, err := h.server.DB.Queries().UpdateEsignSubmission(c.Request().Context(), db.UpdateEsignSubmissionParams{
-		ID:           submissionID,
-		Status:       status,
-		BlobUrl:      blobUrl,
-		BlobMetadata: nil, // Ignoring blob metadata for now as requested
-		CustomerID:   customerIDPtr,
-		Email:        existingSubmission.Email,
+		ID:                 submissionID,
+		Status:             status,
+		BlobUrl:            blobUrl,
+		BlobMetadata:       nil, // Ignoring blob metadata for now as requested
+		CustomerID:         customerIDPtr,
+		Email:              existingSubmission.Email,
+		Name:               namePtr,
+		AttachmentRequired: attachmentRequiredPtr,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error updating e-signature submission", err)

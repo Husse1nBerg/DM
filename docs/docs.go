@@ -13169,6 +13169,10 @@ const docTemplate = `{
                 "email"
             ],
             "properties": {
+                "attachmentRequired": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "customerId": {
                     "type": "string",
                     "example": "CUST123"
@@ -13180,6 +13184,10 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "customer@example.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Customer Agreement"
                 },
                 "replyName": {
                     "type": "string",
@@ -15329,6 +15337,10 @@ const docTemplate = `{
             "description": "E-signature submission data including blob URL, metadata, and submission status",
             "type": "object",
             "properties": {
+                "attachmentRequired": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "blobMetadata": {
                     "type": "object"
                 },
@@ -15358,6 +15370,10 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Customer Agreement"
                 },
                 "organizationId": {
                     "type": "string",

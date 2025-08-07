@@ -1358,6 +1358,9 @@ definitions:
     type: object
   requests.CreateEsignSubmissionRequest:
     properties:
+      attachmentRequired:
+        example: false
+        type: boolean
       customerId:
         example: CUST123
         type: string
@@ -1366,6 +1369,9 @@ definitions:
         type: string
       email:
         example: customer@example.com
+        type: string
+      name:
+        example: Customer Agreement
         type: string
       replyName:
         example: Marina Manager
@@ -2890,6 +2896,9 @@ definitions:
     description: E-signature submission data including blob URL, metadata, and submission
       status
     properties:
+      attachmentRequired:
+        example: false
+        type: boolean
       blobMetadata:
         type: object
       blobUrl:
@@ -2911,6 +2920,9 @@ definitions:
         type: string
       marinaId:
         example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Customer Agreement
         type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
