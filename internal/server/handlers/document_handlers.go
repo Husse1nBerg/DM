@@ -263,6 +263,173 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 	return response.JSON(c)
 }
 
+// CustomerUploadDocument uploads a document for a customer entity (public endpoint)
+//
+//	@Summary		Upload document (public)
+//	@Description	Creates a new document for a customer (public, no authentication required)
+//	@Tags			Documents
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			marinaId	formData	string	true	"Marina ID"	Format(uuid)
+//	@Param			entityId	formData	string	true	"Entity ID"
+//	@Param			file		formData	file	true	"Document file"
+//	@Success		201			{object}	responses.BaseResponse{data=responses.DocumentResponse}
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		404			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Router			/public/documents/customer [post]
+func (h *DocumentHandler) CustomerUploadDocumentPublic(c echo.Context) error {
+	// Parse marina ID from form
+	marinaIDStr := c.FormValue("marinaId")
+	marinaID, err := uuid.Parse(marinaIDStr)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error parsing marina ID", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
+	}
+
+	entityType := "customer"
+	entityID := c.FormValue("entityId")
+
+	if entityID == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Entity ID is required").JSON(c)
+	}
+
+	// Get file from form
+	file, header, err := c.Request().FormFile("file")
+	if err != nil {
+		h.server.Logger.Zap.Error("Error getting file", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "File is required").JSON(c)
+	}
+	defer file.Close()
+
+	// Check storage limit before upload
+	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
+	// 	h.server.Logger.Zap.Error("Storage limit check failed", err)
+	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	// }
+
+	// Upload the file to S3 using document storage service
+	filePath, err := h.server.DocumentService.UploadFileToS3(c.Request().Context(), file, header, entityType)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error uploading file to S3", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
+	}
+
+	// Create document record
+	doc, err := h.server.DB.Queries().CreateDocument(c.Request().Context(), db.CreateDocumentParams{
+		MarinaID:   marinaID,
+		EntityType: entityType,
+		EntityID:   entityID,
+		FileName:   header.Filename,
+		FileType:   header.Header.Get("Content-Type"),
+		FilePath:   filePath,
+		FileSize:   header.Size,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error creating document in database", err)
+		// TODO: Delete file from S3 since document creation failed
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error creating document: "+err.Error()).JSON(c)
+	}
+
+	// Update marina storage usage
+	if err := h.updateStorageUsage(c, marinaID, header.Size, true); err != nil {
+		h.server.Logger.Zap.Error("Error updating storage usage", err)
+		// TODO: Delete file from S3 and document record since storage update failed
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
+	}
+
+	// Return created document
+	response := responses.NewDocumentResponseSuccess(doc)
+	response.Code = http.StatusCreated
+
+	// --- DME Attachment Insert (Async, e-sign/gallery style) ---
+	go func() {
+		ctx := context.Background()
+
+		marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error fetching marina for DME update (customer document)", err)
+			return
+		}
+		if marina.SystemID == nil {
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME customer update (document)")
+			return
+		}
+		orgID := marina.OrganizationID
+		systemID := *marina.SystemID
+
+		dmeCustomer, err := h.server.DME.CustomerRetrieve(ctx, entityID, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error retrieving customer from DME for attachment update (document)", err)
+			return
+		}
+
+		fileType := header.Header.Get("Content-Type")
+		datetime := time.Now().Format("2006-01-02 15:04:05")
+		newAttachment := dme.Attachment{
+			FileName:    header.Filename,
+			Description: fmt.Sprintf("Document attachment %s", datetime),
+			S3Path:      filePath,
+			FileType:    utils.Pointer(fileType),
+			FromDMWeb:   utils.Pointer(true),
+		}
+
+		updatedAttachments := dmeCustomer.Attachments
+		if updatedAttachments == nil {
+			updatedAttachments = []dme.Attachment{}
+		}
+		updatedAttachments = append(updatedAttachments, newAttachment)
+
+		customerUpdate := &dme.CustomerUpdate{
+			ID:                        dmeCustomer.ID,
+			Name:                      dmeCustomer.Name,
+			FirstName:                 dmeCustomer.FirstName,
+			LastName:                  dmeCustomer.LastName,
+			Email:                     dmeCustomer.Email,
+			Address1:                  dmeCustomer.Address1,
+			Address2:                  dmeCustomer.Address2,
+			Address3:                  dmeCustomer.Address3,
+			City:                      dmeCustomer.City,
+			State:                     dmeCustomer.State,
+			Zip:                       dmeCustomer.Zip,
+			Country:                   dmeCustomer.Country,
+			Phone:                     dmeCustomer.Phone,
+			AltFirstName:              dmeCustomer.AltFirstName,
+			AltLastName:               dmeCustomer.AltLastName,
+			AltAddress1:               dmeCustomer.AltAddress1,
+			AltAddress2:               dmeCustomer.AltAddress2,
+			AltAddress3:               dmeCustomer.AltAddress3,
+			AltCity:                   dmeCustomer.AltCity,
+			AltState:                  dmeCustomer.AltState,
+			AltZip:                    dmeCustomer.AltZip,
+			AltCountry:                dmeCustomer.AltCountry,
+			AltPhone:                  dmeCustomer.AltPhone,
+			UseAltAddress:             dmeCustomer.UseAltAddress,
+			WorkPhone:                 dmeCustomer.WorkPhone,
+			CellPhone:                 dmeCustomer.CellPhone,
+			EmergencyContact:          dmeCustomer.EmergencyContact,
+			EmergencyPhone:            dmeCustomer.EmergencyPhone,
+			CompanyName:               dmeCustomer.CompanyName,
+			ShipmentMethod:            dmeCustomer.ShipmentMethod,
+			ShipmentMethodDescription: dmeCustomer.ShipmentMethodDescription,
+			CustomInformation:         dmeCustomer.CustomInformation,
+			Attachments:               updatedAttachments,
+		}
+
+		_, err = h.server.DME.CustomerUpdate(ctx, customerUpdate, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error updating customer attachments in DME (document)", err)
+		} else {
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME customer with document attachment",
+				"customerID", entityID,
+				"fileName", header.Filename,
+				"documentID", doc.ID.String())
+		}
+	}()
+
+	return response.JSON(c)
+}
+
 // GetDocumentsByEntity retrieves all documents for a customer entity
 //
 //	@Summary		Get customer documents
@@ -277,8 +444,53 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 //	@Failure		404			{object}	responses.BaseResponse
 //	@Failure		500			{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
-//	@Router			/documents/customer [get]
+//	@Router			/public/documents/customer [get]
 func (h *DocumentHandler) CustomerGetDocumentsByEntity(c echo.Context) error {
+	// Parse marina ID from query
+	marinaIDStr := c.QueryParam("marinaId")
+	marinaID, err := uuid.Parse(marinaIDStr)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error parsing marina ID", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
+	}
+
+	entityType := "customer"
+	entityID := c.QueryParam("entityId")
+
+	if entityID == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Entity ID is required").JSON(c)
+	}
+
+	// Get documents from database
+	documents, err := h.server.DB.Queries().ListDocumentsByEntity(c.Request().Context(), db.ListDocumentsByEntityParams{
+		MarinaID:   marinaID,
+		EntityType: entityType,
+		EntityID:   entityID,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching documents", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching documents").JSON(c)
+	}
+
+	// Return documents
+	return responses.NewDocumentsResponseSuccess(documents).JSON(c)
+}
+
+// CustomerGetDocumentsByEntityPublic retrieves all documents for a customer entity (public endpoint)
+//
+//	@Summary		Get customer documents (public)
+//	@Description	Retrieves all documents for a customer entity
+//	@Tags			Documents
+//	@Accept			json
+//	@Produce		json
+//	@Param			marinaId	query		string	true	"Marina ID"	Format(uuid)
+//	@Param			entityId	query		string	true	"Entity ID"
+//	@Success		200			{array}		responses.BaseResponse{data=[]responses.DocumentResponse}
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		404			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
+//	@Router			/public/documents/customer [get]
+func (h *DocumentHandler) CustomerGetDocumentsByEntityPublic(c echo.Context) error {
 	// Parse marina ID from query
 	marinaIDStr := c.QueryParam("marinaId")
 	marinaID, err := uuid.Parse(marinaIDStr)
