@@ -1088,6 +1088,7 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		ReplyTo:         replyTo,
 		ReplyName:       replyName,
 		TermsConditions: h.server.Config.App.TermsConditionsURL(),
+		Name:            *submission.Name,
 	}
 	to := []string{req.Email}
 	subject := "New e-signature submission"
