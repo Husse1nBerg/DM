@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"golang.org/x/crypto/bcrypt"
@@ -106,6 +107,7 @@ func RunProdSeed() {
 		isActive       bool
 		isCustomerRole bool
 		roleType       string
+		marinaID       uuid.UUID
 	}{
 		{
 			name:        "superuser",
@@ -130,6 +132,7 @@ func RunProdSeed() {
 				"roles.read":            true,
 				"roles.write":           true,
 				"roles.delete":          true,
+				"roles.create":          true,
 				"marina_gallery.read":   true,
 				"marina_gallery.write":  true,
 				"marina_gallery.delete": true,
@@ -192,6 +195,7 @@ func RunProdSeed() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "internal",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "superuser_viewer",
@@ -238,6 +242,7 @@ func RunProdSeed() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "internal",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "org_admin",
@@ -262,8 +267,9 @@ func RunProdSeed() {
 				"addresses.delete":      true,
 				"addresses.create":      true,
 				"roles.read":            true,
-				"roles.write":           false,
-				"roles.delete":          false,
+				"roles.write":           true,
+				"roles.delete":          true,
+				"roles.create":          true,
 				"marina_gallery.read":   true,
 				"marina_gallery.write":  true,
 				"marina_gallery.delete": true,
@@ -322,6 +328,7 @@ func RunProdSeed() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "marina_admin",
@@ -345,8 +352,9 @@ func RunProdSeed() {
 				"addresses.delete":      false,
 				"addresses.create":      true,
 				"roles.read":            true,
-				"roles.write":           false,
-				"roles.delete":          false,
+				"roles.write":           true,
+				"roles.delete":          true,
+				"roles.create":          true,
 				"marina_gallery.read":   true,
 				"marina_gallery.write":  true,
 				"marina_gallery.delete": true,
@@ -405,6 +413,7 @@ func RunProdSeed() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "staff",
@@ -479,6 +488,7 @@ func RunProdSeed() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "viewer",
@@ -523,6 +533,7 @@ func RunProdSeed() {
 			isActive:       true,
 			isCustomerRole: false,
 			roleType:       "marina",
+			marinaID:       uuid.Nil,
 		},
 		{
 			name:        "customer_user",
@@ -578,6 +589,7 @@ func RunProdSeed() {
 			isActive:       true,
 			isCustomerRole: true,
 			roleType:       "customer",
+			marinaID:       uuid.Nil,
 		},
 	}
 

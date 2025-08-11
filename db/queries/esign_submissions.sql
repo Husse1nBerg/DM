@@ -7,9 +7,11 @@ INSERT INTO esign_submissions (
     blob_url,
     blob_metadata,
     customer_id,
-    email
+    email,
+    name,
+    attachment_required
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) RETURNING *;
 
 -- name: GetEsignSubmissionByID :one
@@ -61,6 +63,8 @@ SET
     blob_metadata = $4,
     customer_id = $5,
     email = $6,
+    name = $7,
+    attachment_required = $8,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL

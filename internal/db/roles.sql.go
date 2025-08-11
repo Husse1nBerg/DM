@@ -16,6 +16,7 @@ SELECT COUNT(*)
 FROM roles
 WHERE deleted_at IS NULL
     AND (marina_id IS NULL OR marina_id = $1)
+    AND type != 'internal'
 `
 
 func (q *Queries) CountRolesByMarina(ctx context.Context, marinaID uuid.UUID) (int64, error) {

@@ -3126,85 +3126,6 @@ const docTemplate = `{
             }
         },
         "/documents/customer": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Retrieves all documents for a customer entity",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Documents"
-                ],
-                "summary": "Get customer documents",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Marina ID",
-                        "name": "marinaId",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Entity ID",
-                        "name": "entityId",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/definitions/responses.BaseResponse"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "data": {
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/definitions/responses.DocumentResponse"
-                                                }
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "security": [
                     {
@@ -8915,6 +8836,157 @@ const docTemplate = `{
                 }
             }
         },
+        "/public/documents/customer": {
+            "get": {
+                "description": "Retrieves all documents for a customer entity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get customer documents (public)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new document for a customer (public, no authentication required)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload document (public)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/public/esign/submissions/{id}": {
             "get": {
                 "description": "Retrieves an e-signature submission by ID without authentication",
@@ -13169,6 +13241,10 @@ const docTemplate = `{
                 "email"
             ],
             "properties": {
+                "attachmentRequired": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "customerId": {
                     "type": "string",
                     "example": "CUST123"
@@ -13180,6 +13256,10 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "customer@example.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Customer Agreement"
                 },
                 "replyName": {
                     "type": "string",
@@ -15329,6 +15409,10 @@ const docTemplate = `{
             "description": "E-signature submission data including blob URL, metadata, and submission status",
             "type": "object",
             "properties": {
+                "attachmentRequired": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "blobMetadata": {
                     "type": "object"
                 },
@@ -15358,6 +15442,10 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Customer Agreement"
                 },
                 "organizationId": {
                     "type": "string",
