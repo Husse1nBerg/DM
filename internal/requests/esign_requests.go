@@ -84,18 +84,22 @@ type ListEsignDocumentsByTemplateRequest struct {
 
 // CreateEsignSubmissionRequest represents the required parameters to create a new e-signature submission
 type CreateEsignSubmissionRequest struct {
-	DocumentID uuid.UUID `json:"documentId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
-	CustomerID *string   `json:"customerId,omitempty" example:"CUST123"`
-	Email      string    `json:"email" validate:"required,email" example:"customer@example.com"`
-	ReplyTo    *string   `json:"replyTo,omitempty" example:"marina@example.com"`
-	ReplyName  *string   `json:"replyName,omitempty" example:"Marina Manager"`
+	DocumentID         uuid.UUID `json:"documentId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
+	CustomerID         *string   `json:"customerId,omitempty" example:"CUST123"`
+	Email              string    `json:"email" validate:"required,email" example:"customer@example.com"`
+	ReplyTo            *string   `json:"replyTo,omitempty" example:"marina@example.com"`
+	ReplyName          *string   `json:"replyName,omitempty" example:"Marina Manager"`
+	Name               *string   `json:"name,omitempty" example:"Customer Agreement"`
+	AttachmentRequired *bool     `json:"attachmentRequired,omitempty" example:"false"`
 }
 
 // UpdateEsignSubmissionRequest represents the parameters that can be updated for an e-signature submission
 type UpdateEsignSubmissionRequest struct {
-	Status     string  `json:"status" validate:"required,oneof=pending signed questions sent" example:"signed"`
-	CustomerID *string `json:"customerId,omitempty" example:"CUST123"`
-	Email      string  `json:"email" validate:"required,email" example:"customer@example.com"`
+	Status             string  `json:"status" validate:"required,oneof=pending signed questions sent" example:"signed"`
+	CustomerID         *string `json:"customerId,omitempty" example:"CUST123"`
+	Email              string  `json:"email" validate:"required,email" example:"customer@example.com"`
+	Name               *string `json:"name,omitempty" example:"Customer Agreement"`
+	AttachmentRequired *bool   `json:"attachmentRequired,omitempty" example:"false"`
 	// BlobURL      string          `json:"blobUrl" validate:"required" example:"https://s3.amazonaws.com/bucket/submissions/submission-001-updated.pdf"`
 	// BlobMetadata json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 2048, \"contentType\": \"application/pdf\"}"`
 }

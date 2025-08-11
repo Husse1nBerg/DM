@@ -7,10 +7,15 @@ import (
 )
 
 // RegisterDocumentRoutes registers all document management routes
-func RegisterDocumentRoutes(server *s.Server, permissionProtected *echo.Group) {
+func RegisterDocumentRoutes(server *s.Server, base *echo.Group, permissionProtected *echo.Group) {
 	documentHandler := h.NewDocumentHandler(server)
 
-	// Document routes
+	// Public Document routes for customer
+	publicDocuments := base.Group("/public/documents")
+	publicDocuments.POST("/customer", documentHandler.CustomerUploadDocumentPublic)
+	publicDocuments.GET("/customer", documentHandler.CustomerGetDocumentsByEntityPublic)
+
+	// Document routes (protected)
 	documents := permissionProtected.Group("/documents")
 
 	// Customer document routes

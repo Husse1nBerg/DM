@@ -131,18 +131,20 @@ type EsignDocument struct {
 }
 
 type EsignSubmission struct {
-	ID             uuid.UUID
-	OrganizationID uuid.UUID
-	MarinaID       uuid.UUID
-	DocumentID     uuid.UUID
-	Status         string
-	BlobUrl        string
-	BlobMetadata   []byte
-	CustomerID     *string
-	Email          string
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
-	DeletedAt      pgtype.Timestamp
+	ID                 uuid.UUID
+	OrganizationID     uuid.UUID
+	MarinaID           uuid.UUID
+	DocumentID         uuid.UUID
+	Status             string
+	BlobUrl            string
+	BlobMetadata       []byte
+	CustomerID         *string
+	Email              string
+	CreatedAt          pgtype.Timestamp
+	UpdatedAt          pgtype.Timestamp
+	DeletedAt          pgtype.Timestamp
+	Name               *string
+	AttachmentRequired *bool
 }
 
 type EsignTemplate struct {

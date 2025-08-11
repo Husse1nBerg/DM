@@ -137,7 +137,7 @@ func RegisterRoutes(s *s.Server) {
 	RegisterGalleryRoutes(s, permissionProtected)
 
 	// Document routes
-	RegisterDocumentRoutes(s, permissionProtected)
+	RegisterDocumentRoutes(s, base, permissionProtected)
 
 	// Work Order routes
 	RegisterWorkOrderRoutes(s, permissionProtected)
