@@ -1081,6 +1081,14 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		replyName = marina.Name
 	}
 
+	// Safely handle optional Name
+	var submissionName string
+	if submission.Name != nil {
+		submissionName = *submission.Name
+	} else {
+		submissionName = ""
+	}
+
 	email := sendgrid.ESignSubmissionTemplateData{
 		DocumentURL:     h.server.Config.App.EsignDocumentURL(submission.ID.String()),
 		Recipient:       "",
@@ -1088,7 +1096,7 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		ReplyTo:         replyTo,
 		ReplyName:       replyName,
 		TermsConditions: h.server.Config.App.TermsConditionsURL(),
-		Name:            *submission.Name,
+		Name:            submissionName,
 	}
 	to := []string{req.Email}
 	subject := "New e-signature submission"
