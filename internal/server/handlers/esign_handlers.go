@@ -1530,6 +1530,31 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 		status = existingSubmission.Status
 	}
 
+	// Defensive handling for name
+	var name string
+	if formName := c.FormValue("name"); formName != "" {
+		name = formName
+	} else if existingSubmission.Name != nil {
+		name = *existingSubmission.Name
+	} else {
+		name = ""
+	}
+
+	// Defensive handling for attachmentRequired
+	var attachmentRequiredBool bool
+	if formAttachment := c.FormValue("attachmentRequired"); formAttachment != "" {
+		parsed, err := strconv.ParseBool(formAttachment)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error parsing attachmentRequired", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid attachmentRequired value").JSON(c)
+		}
+		attachmentRequiredBool = parsed
+	} else if existingSubmission.AttachmentRequired != nil {
+		attachmentRequiredBool = *existingSubmission.AttachmentRequired
+	} else {
+		attachmentRequiredBool = false
+	}
+
 	// Handle file upload (optional for update)
 	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
 	var uploadedFileName string
@@ -1550,12 +1575,14 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 
 	// Update submission
 	submission, err := h.server.DB.Queries().UpdateEsignSubmission(c.Request().Context(), db.UpdateEsignSubmissionParams{
-		ID:           submissionID,
-		Status:       status,
-		BlobUrl:      blobUrl,
-		BlobMetadata: nil, // Ignoring blob metadata for now as requested
-		CustomerID:   existingSubmission.CustomerID,
-		Email:        existingSubmission.Email,
+		ID:                 submissionID,
+		Status:             status,
+		BlobUrl:            blobUrl,
+		BlobMetadata:       nil, // Ignoring blob metadata for now as requested
+		CustomerID:         existingSubmission.CustomerID,
+		Email:              existingSubmission.Email,
+		Name:               &name,
+		AttachmentRequired: &attachmentRequiredBool,
 	})
 
 	if err != nil {
