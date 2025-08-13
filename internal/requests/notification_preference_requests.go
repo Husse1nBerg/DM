@@ -7,7 +7,7 @@ import (
 // NotificationPreferenceRequest represents a request for notification preferences
 type NotificationPreferenceRequest struct {
 	NotificationType string `json:"notificationType" validate:"required,oneof=message invite system alert" example:"message"`
-	Enabled          *bool  `json:"enabled,omitempty" example:"true"`
+	Enabled          bool   `json:"enabled" validate:"required" example:"true"`
 	DeliveryMethod   string `json:"deliveryMethod" validate:"required,oneof=push email sms all" example:"push"`
 }
 
@@ -17,7 +17,7 @@ type UpdateNotificationPreferencesRequest struct {
 }
 
 // Validate performs custom validation on the request
-func (r *UpdateNotificationPreferencesRequest) Validate() error {
+func (r *NotificationPreferenceRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)
 }
