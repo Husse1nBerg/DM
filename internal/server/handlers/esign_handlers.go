@@ -1081,6 +1081,14 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		replyName = marina.Name
 	}
 
+	// Safely handle optional Name
+	var submissionName string
+	if submission.Name != nil {
+		submissionName = *submission.Name
+	} else {
+		submissionName = ""
+	}
+
 	email := sendgrid.ESignSubmissionTemplateData{
 		DocumentURL:     h.server.Config.App.EsignDocumentURL(submission.ID.String()),
 		Recipient:       "",
@@ -1088,6 +1096,7 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		ReplyTo:         replyTo,
 		ReplyName:       replyName,
 		TermsConditions: h.server.Config.App.TermsConditionsURL(),
+		Name:            submissionName,
 	}
 	to := []string{req.Email}
 	subject := "New e-signature submission"
@@ -1529,6 +1538,31 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 		status = existingSubmission.Status
 	}
 
+	// Defensive handling for name
+	var name string
+	if formName := c.FormValue("name"); formName != "" {
+		name = formName
+	} else if existingSubmission.Name != nil {
+		name = *existingSubmission.Name
+	} else {
+		name = ""
+	}
+
+	// Defensive handling for attachmentRequired
+	var attachmentRequiredBool bool
+	if formAttachment := c.FormValue("attachmentRequired"); formAttachment != "" {
+		parsed, err := strconv.ParseBool(formAttachment)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error parsing attachmentRequired", err)
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid attachmentRequired value").JSON(c)
+		}
+		attachmentRequiredBool = parsed
+	} else if existingSubmission.AttachmentRequired != nil {
+		attachmentRequiredBool = *existingSubmission.AttachmentRequired
+	} else {
+		attachmentRequiredBool = false
+	}
+
 	// Handle file upload (optional for update)
 	blobUrl := existingSubmission.BlobUrl // Keep existing URL by default
 	var uploadedFileName string
@@ -1549,12 +1583,14 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 
 	// Update submission
 	submission, err := h.server.DB.Queries().UpdateEsignSubmission(c.Request().Context(), db.UpdateEsignSubmissionParams{
-		ID:           submissionID,
-		Status:       status,
-		BlobUrl:      blobUrl,
-		BlobMetadata: nil, // Ignoring blob metadata for now as requested
-		CustomerID:   existingSubmission.CustomerID,
-		Email:        existingSubmission.Email,
+		ID:                 submissionID,
+		Status:             status,
+		BlobUrl:            blobUrl,
+		BlobMetadata:       nil, // Ignoring blob metadata for now as requested
+		CustomerID:         existingSubmission.CustomerID,
+		Email:              existingSubmission.Email,
+		Name:               &name,
+		AttachmentRequired: &attachmentRequiredBool,
 	})
 
 	if err != nil {
