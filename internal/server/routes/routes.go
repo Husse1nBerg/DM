@@ -159,4 +159,7 @@ func RegisterRoutes(s *s.Server) {
 
 	// Admin routes
 	RegisterAdminRoutes(s, permissionProtected)
+
+	// Notification preference routes
+	RegisterNotificationPreferenceRoutes(s, permissionProtected)
 }
