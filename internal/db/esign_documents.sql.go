@@ -75,33 +75,26 @@ func (q *Queries) CountEsignDocumentsByTemplateFiltered(ctx context.Context, arg
 	return count, err
 }
 
-const countEsignDocumentsFiltered = `-- name: CountEsignDocumentsFiltered :one
+const countEsignDocumentsWithGlobalSearch = `-- name: CountEsignDocumentsWithGlobalSearch :one
 SELECT COUNT(*)
 FROM esign_documents
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR status = $3)
-  AND ($4 = '' OR LOWER(type) LIKE LOWER('%' || $4 || '%'))
-  AND ($5 = '' OR template_id = $5::uuid)
+  AND ($3 = '' OR (
+    LOWER(type) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $3 || '%')
+  ))
 `
 
-type CountEsignDocumentsFilteredParams struct {
+type CountEsignDocumentsWithGlobalSearchParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
-	Column4        interface{}
-	Column5        interface{}
 }
 
-func (q *Queries) CountEsignDocumentsFiltered(ctx context.Context, arg CountEsignDocumentsFilteredParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countEsignDocumentsFiltered,
-		arg.OrganizationID,
-		arg.MarinaID,
-		arg.Column3,
-		arg.Column4,
-		arg.Column5,
-	)
+func (q *Queries) CountEsignDocumentsWithGlobalSearch(ctx context.Context, arg CountEsignDocumentsWithGlobalSearchParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignDocumentsWithGlobalSearch, arg.OrganizationID, arg.MarinaID, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -478,57 +471,54 @@ func (q *Queries) ListEsignDocumentsByTemplateFiltered(ctx context.Context, arg 
 	return items, nil
 }
 
-const listEsignDocumentsFiltered = `-- name: ListEsignDocumentsFiltered :many
+const listEsignDocumentsWithGlobalSearch = `-- name: ListEsignDocumentsWithGlobalSearch :many
 SELECT id, template_id, organization_id, marina_id, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
 FROM esign_documents
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR status = $3)
-  AND ($4 = '' OR LOWER(type) LIKE LOWER('%' || $4 || '%'))
-  AND ($5 = '' OR template_id = $5::uuid)
+  AND ($3 = '' OR (
+    LOWER(type) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $3 || '%')
+  ))
 ORDER BY 
   CASE 
-    WHEN $6 = 'type' AND $7 = 'asc' THEN type
-    WHEN $6 = 'status' AND $7 = 'asc' THEN status
+    WHEN $4 = 'type' AND $5 = 'asc' THEN type
+    WHEN $4 = 'status' AND $5 = 'asc' THEN status
   END ASC,
   CASE 
-    WHEN $6 = 'type' AND $7 = 'desc' THEN type
-    WHEN $6 = 'status' AND $7 = 'desc' THEN status
+    WHEN $4 = 'type' AND $5 = 'desc' THEN type
+    WHEN $4 = 'status' AND $5 = 'desc' THEN status
   END DESC,
   CASE 
-    WHEN $6 = 'created_at' AND $7 = 'asc' THEN created_at
-    WHEN $6 = 'updated_at' AND $7 = 'asc' THEN updated_at
+    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
   END ASC,
   CASE 
-    WHEN $6 = 'created_at' AND $7 = 'desc' THEN created_at
-    WHEN $6 = 'updated_at' AND $7 = 'desc' THEN updated_at
+    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
     ELSE created_at
   END DESC
-LIMIT $8 OFFSET $9
+LIMIT $6 OFFSET $7
 `
 
-type ListEsignDocumentsFilteredParams struct {
+type ListEsignDocumentsWithGlobalSearchParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
 	Column4        interface{}
 	Column5        interface{}
-	Column6        interface{}
-	Column7        interface{}
 	Limit          int32
 	Offset         int32
 }
 
-func (q *Queries) ListEsignDocumentsFiltered(ctx context.Context, arg ListEsignDocumentsFilteredParams) ([]EsignDocument, error) {
-	rows, err := q.db.Query(ctx, listEsignDocumentsFiltered,
+func (q *Queries) ListEsignDocumentsWithGlobalSearch(ctx context.Context, arg ListEsignDocumentsWithGlobalSearchParams) ([]EsignDocument, error) {
+	rows, err := q.db.Query(ctx, listEsignDocumentsWithGlobalSearch,
 		arg.OrganizationID,
 		arg.MarinaID,
 		arg.Column3,
 		arg.Column4,
 		arg.Column5,
-		arg.Column6,
-		arg.Column7,
 		arg.Limit,
 		arg.Offset,
 	)

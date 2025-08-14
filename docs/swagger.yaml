@@ -6246,24 +6246,11 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature documents for the authenticated user's
-        marina with comprehensive filtering and sorting
+        marina with global search and sorting
       parameters:
-      - description: Filter by document status
-        enum:
-        - draft
-        - signed
-        - questions
-        - sent
+      - description: Global search across type and status
         in: query
-        name: status
-        type: string
-      - description: Filter by document type (partial match)
-        in: query
-        name: type
-        type: string
-      - description: Filter by template ID
-        in: query
-        name: templateId
+        name: search
         type: string
       - default: 1
         description: Page number
@@ -6610,32 +6597,11 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature submissions for the authenticated user's
-        marina with comprehensive filtering and sorting
+        marina with global search and sorting
       parameters:
-      - description: Filter by submission status
-        enum:
-        - pending
-        - signed
-        - questions
-        - sent
+      - description: Global search across email, name, status, and customer_id
         in: query
-        name: status
-        type: string
-      - description: Filter by customer ID
-        in: query
-        name: customerId
-        type: string
-      - description: Filter by email (partial match)
-        in: query
-        name: email
-        type: string
-      - description: Filter by name (partial match)
-        in: query
-        name: name
-        type: string
-      - description: Filter by document ID
-        in: query
-        name: documentId
+        name: search
         type: string
       - default: 1
         description: Page number
@@ -6977,27 +6943,11 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature templates for the authenticated user's
-        marina with comprehensive filtering and sorting
+        marina with global search and sorting
       parameters:
-      - description: Filter by template status
-        enum:
-        - draft
-        - active
-        - archived
+      - description: Global search across name, type, description, and status
         in: query
-        name: status
-        type: string
-      - description: Filter by template name (partial match)
-        in: query
-        name: name
-        type: string
-      - description: Filter by template type (partial match)
-        in: query
-        name: type
-        type: string
-      - description: Filter by description (partial match)
-        in: query
-        name: description
+        name: search
         type: string
       - default: 1
         description: Page number

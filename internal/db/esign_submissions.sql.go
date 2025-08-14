@@ -128,44 +128,6 @@ func (q *Queries) CountEsignSubmissionsFilteredByDocument(ctx context.Context, a
 	return count, err
 }
 
-const countEsignSubmissionsFilteredByMarina = `-- name: CountEsignSubmissionsFilteredByMarina :one
-SELECT COUNT(*)
-FROM esign_submissions
-WHERE organization_id = $1
-  AND marina_id = $2
-  AND deleted_at IS NULL
-  AND ($3 = '' OR status = $3)
-  AND ($4 = '' OR customer_id = $4)
-  AND ($5 = '' OR LOWER(email) LIKE LOWER('%' || $5 || '%'))
-  AND ($6 = '' OR LOWER(name) LIKE LOWER('%' || $6 || '%'))
-  AND ($7 = '' OR document_id = $7::uuid)
-`
-
-type CountEsignSubmissionsFilteredByMarinaParams struct {
-	OrganizationID uuid.UUID
-	MarinaID       uuid.UUID
-	Column3        interface{}
-	Column4        interface{}
-	Column5        interface{}
-	Column6        interface{}
-	Column7        interface{}
-}
-
-func (q *Queries) CountEsignSubmissionsFilteredByMarina(ctx context.Context, arg CountEsignSubmissionsFilteredByMarinaParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countEsignSubmissionsFilteredByMarina,
-		arg.OrganizationID,
-		arg.MarinaID,
-		arg.Column3,
-		arg.Column4,
-		arg.Column5,
-		arg.Column6,
-		arg.Column7,
-	)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const countEsignSubmissionsFilteredByStatus = `-- name: CountEsignSubmissionsFilteredByStatus :one
 SELECT COUNT(*)
 FROM esign_submissions
@@ -199,6 +161,33 @@ func (q *Queries) CountEsignSubmissionsFilteredByStatus(ctx context.Context, arg
 		arg.Column6,
 		arg.Column7,
 	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countEsignSubmissionsWithGlobalSearch = `-- name: CountEsignSubmissionsWithGlobalSearch :one
+SELECT COUNT(*)
+FROM esign_submissions
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR (
+    LOWER(email) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(customer_id) LIKE LOWER('%' || $3 || '%')
+  ))
+`
+
+type CountEsignSubmissionsWithGlobalSearchParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+}
+
+func (q *Queries) CountEsignSubmissionsWithGlobalSearch(ctx context.Context, arg CountEsignSubmissionsWithGlobalSearchParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignSubmissionsWithGlobalSearch, arg.OrganizationID, arg.MarinaID, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -677,103 +666,6 @@ func (q *Queries) ListEsignSubmissionsFilteredByDocument(ctx context.Context, ar
 	return items, nil
 }
 
-const listEsignSubmissionsFilteredByMarina = `-- name: ListEsignSubmissionsFilteredByMarina :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required
-FROM esign_submissions
-WHERE organization_id = $1
-  AND marina_id = $2
-  AND deleted_at IS NULL
-  AND ($3 = '' OR status = $3)
-  AND ($4 = '' OR customer_id = $4)
-  AND ($5 = '' OR LOWER(email) LIKE LOWER('%' || $5 || '%'))
-  AND ($6 = '' OR LOWER(name) LIKE LOWER('%' || $6 || '%'))
-  AND ($7 = '' OR document_id = $7::uuid)
-ORDER BY 
-  CASE 
-    WHEN $8 = 'email' AND $9 = 'asc' THEN email
-    WHEN $8 = 'name' AND $9 = 'asc' THEN name
-    WHEN $8 = 'status' AND $9 = 'asc' THEN status
-    WHEN $8 = 'customer_id' AND $9 = 'asc' THEN customer_id
-  END ASC,
-  CASE 
-    WHEN $8 = 'email' AND $9 = 'desc' THEN email
-    WHEN $8 = 'name' AND $9 = 'desc' THEN name
-    WHEN $8 = 'status' AND $9 = 'desc' THEN status
-    WHEN $8 = 'customer_id' AND $9 = 'desc' THEN customer_id
-  END DESC,
-  CASE 
-    WHEN $8 = 'created_at' AND $9 = 'asc' THEN created_at
-    WHEN $8 = 'updated_at' AND $9 = 'asc' THEN updated_at
-  END ASC,
-  CASE 
-    WHEN $8 = 'created_at' AND $9 = 'desc' THEN created_at
-    WHEN $8 = 'updated_at' AND $9 = 'desc' THEN updated_at
-    ELSE created_at
-  END DESC
-LIMIT $10 OFFSET $11
-`
-
-type ListEsignSubmissionsFilteredByMarinaParams struct {
-	OrganizationID uuid.UUID
-	MarinaID       uuid.UUID
-	Column3        interface{}
-	Column4        interface{}
-	Column5        interface{}
-	Column6        interface{}
-	Column7        interface{}
-	Column8        interface{}
-	Column9        interface{}
-	Limit          int32
-	Offset         int32
-}
-
-func (q *Queries) ListEsignSubmissionsFilteredByMarina(ctx context.Context, arg ListEsignSubmissionsFilteredByMarinaParams) ([]EsignSubmission, error) {
-	rows, err := q.db.Query(ctx, listEsignSubmissionsFilteredByMarina,
-		arg.OrganizationID,
-		arg.MarinaID,
-		arg.Column3,
-		arg.Column4,
-		arg.Column5,
-		arg.Column6,
-		arg.Column7,
-		arg.Column8,
-		arg.Column9,
-		arg.Limit,
-		arg.Offset,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []EsignSubmission
-	for rows.Next() {
-		var i EsignSubmission
-		if err := rows.Scan(
-			&i.ID,
-			&i.OrganizationID,
-			&i.MarinaID,
-			&i.DocumentID,
-			&i.Status,
-			&i.BlobUrl,
-			&i.BlobMetadata,
-			&i.CustomerID,
-			&i.Email,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-			&i.Name,
-			&i.AttachmentRequired,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listEsignSubmissionsFilteredByStatus = `-- name: ListEsignSubmissionsFilteredByStatus :many
 SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required
 FROM esign_submissions
@@ -833,6 +725,96 @@ func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg 
 		arg.Column7,
 		arg.Column8,
 		arg.Column9,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignSubmission
+	for rows.Next() {
+		var i EsignSubmission
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.DocumentID,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CustomerID,
+			&i.Email,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Name,
+			&i.AttachmentRequired,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEsignSubmissionsWithGlobalSearch = `-- name: ListEsignSubmissionsWithGlobalSearch :many
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required
+FROM esign_submissions
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR (
+    LOWER(email) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(customer_id) LIKE LOWER('%' || $3 || '%')
+  ))
+ORDER BY 
+  CASE 
+    WHEN $4 = 'email' AND $5 = 'asc' THEN email
+    WHEN $4 = 'name' AND $5 = 'asc' THEN name
+    WHEN $4 = 'status' AND $5 = 'asc' THEN status
+    WHEN $4 = 'customer_id' AND $5 = 'asc' THEN customer_id
+  END ASC,
+  CASE 
+    WHEN $4 = 'email' AND $5 = 'desc' THEN email
+    WHEN $4 = 'name' AND $5 = 'desc' THEN name
+    WHEN $4 = 'status' AND $5 = 'desc' THEN status
+    WHEN $4 = 'customer_id' AND $5 = 'desc' THEN customer_id
+  END DESC,
+  CASE 
+    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
+  END ASC,
+  CASE 
+    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
+    ELSE created_at
+  END DESC
+LIMIT $6 OFFSET $7
+`
+
+type ListEsignSubmissionsWithGlobalSearchParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+	Column5        interface{}
+	Limit          int32
+	Offset         int32
+}
+
+func (q *Queries) ListEsignSubmissionsWithGlobalSearch(ctx context.Context, arg ListEsignSubmissionsWithGlobalSearchParams) ([]EsignSubmission, error) {
+	rows, err := q.db.Query(ctx, listEsignSubmissionsWithGlobalSearch,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
 		arg.Limit,
 		arg.Offset,
 	)

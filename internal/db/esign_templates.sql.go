@@ -53,36 +53,28 @@ func (q *Queries) CountEsignTemplatesByMarinaStatus(ctx context.Context, arg Cou
 	return count, err
 }
 
-const countEsignTemplatesFiltered = `-- name: CountEsignTemplatesFiltered :one
+const countEsignTemplatesWithGlobalSearch = `-- name: CountEsignTemplatesWithGlobalSearch :one
 SELECT COUNT(*)
 FROM esign_templates
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR status = $3)
-  AND ($4 = '' OR LOWER(name) LIKE LOWER('%' || $4 || '%'))
-  AND ($5 = '' OR LOWER(type) LIKE LOWER('%' || $5 || '%'))
-  AND ($6 = '' OR LOWER(description) LIKE LOWER('%' || $6 || '%'))
+  AND ($3 = '' OR (
+    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(type) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(description) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $3 || '%')
+  ))
 `
 
-type CountEsignTemplatesFilteredParams struct {
+type CountEsignTemplatesWithGlobalSearchParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
-	Column4        interface{}
-	Column5        interface{}
-	Column6        interface{}
 }
 
-func (q *Queries) CountEsignTemplatesFiltered(ctx context.Context, arg CountEsignTemplatesFilteredParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countEsignTemplatesFiltered,
-		arg.OrganizationID,
-		arg.MarinaID,
-		arg.Column3,
-		arg.Column4,
-		arg.Column5,
-		arg.Column6,
-	)
+func (q *Queries) CountEsignTemplatesWithGlobalSearch(ctx context.Context, arg CountEsignTemplatesWithGlobalSearchParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignTemplatesWithGlobalSearch, arg.OrganizationID, arg.MarinaID, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -300,62 +292,58 @@ func (q *Queries) ListEsignTemplatesByMarinaStatus(ctx context.Context, arg List
 	return items, nil
 }
 
-const listEsignTemplatesFiltered = `-- name: ListEsignTemplatesFiltered :many
+const listEsignTemplatesWithGlobalSearch = `-- name: ListEsignTemplatesWithGlobalSearch :many
 SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
 FROM esign_templates
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR status = $3)
-  AND ($4 = '' OR LOWER(name) LIKE LOWER('%' || $4 || '%'))
-  AND ($5 = '' OR LOWER(type) LIKE LOWER('%' || $5 || '%'))
-  AND ($6 = '' OR LOWER(description) LIKE LOWER('%' || $6 || '%'))
+  AND ($3 = '' OR (
+    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(type) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(description) LIKE LOWER('%' || $3 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $3 || '%')
+  ))
 ORDER BY 
   CASE 
-    WHEN $7 = 'name' AND $8 = 'asc' THEN name
-    WHEN $7 = 'type' AND $8 = 'asc' THEN type
-    WHEN $7 = 'status' AND $8 = 'asc' THEN status
+    WHEN $4 = 'name' AND $5 = 'asc' THEN name
+    WHEN $4 = 'type' AND $5 = 'asc' THEN type
+    WHEN $4 = 'status' AND $5 = 'asc' THEN status
   END ASC,
   CASE 
-    WHEN $7 = 'name' AND $8 = 'desc' THEN name
-    WHEN $7 = 'type' AND $8 = 'desc' THEN type
-    WHEN $7 = 'status' AND $8 = 'desc' THEN status
+    WHEN $4 = 'name' AND $5 = 'desc' THEN name
+    WHEN $4 = 'type' AND $5 = 'desc' THEN type
+    WHEN $4 = 'status' AND $5 = 'desc' THEN status
   END DESC,
   CASE 
-    WHEN $7 = 'created_at' AND $8 = 'asc' THEN created_at
-    WHEN $7 = 'updated_at' AND $8 = 'asc' THEN updated_at
+    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
   END ASC,
   CASE 
-    WHEN $7 = 'created_at' AND $8 = 'desc' THEN created_at
-    WHEN $7 = 'updated_at' AND $8 = 'desc' THEN updated_at
+    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
     ELSE created_at
   END DESC
-LIMIT $9 OFFSET $10
+LIMIT $6 OFFSET $7
 `
 
-type ListEsignTemplatesFilteredParams struct {
+type ListEsignTemplatesWithGlobalSearchParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
 	Column4        interface{}
 	Column5        interface{}
-	Column6        interface{}
-	Column7        interface{}
-	Column8        interface{}
 	Limit          int32
 	Offset         int32
 }
 
-func (q *Queries) ListEsignTemplatesFiltered(ctx context.Context, arg ListEsignTemplatesFilteredParams) ([]EsignTemplate, error) {
-	rows, err := q.db.Query(ctx, listEsignTemplatesFiltered,
+func (q *Queries) ListEsignTemplatesWithGlobalSearch(ctx context.Context, arg ListEsignTemplatesWithGlobalSearchParams) ([]EsignTemplate, error) {
+	rows, err := q.db.Query(ctx, listEsignTemplatesWithGlobalSearch,
 		arg.OrganizationID,
 		arg.MarinaID,
 		arg.Column3,
 		arg.Column4,
 		arg.Column5,
-		arg.Column6,
-		arg.Column7,
-		arg.Column8,
 		arg.Limit,
 		arg.Offset,
 	)

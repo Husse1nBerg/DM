@@ -14,10 +14,12 @@ func (p *PaginationQuery) Validate() error {
 
 // FilterSortParams provides a standard structure for filtering and sorting across endpoints
 // Filters can be used for arbitrary key-value pairs for flexible filtering
+// Search provides a global search across multiple text fields
 type FilterSortParams struct {
 	Page      int32             `query:"page" json:"page" validate:"gte=1" default:"1"`
 	PageSize  int32             `query:"pageSize" json:"pageSize" validate:"gte=1,lte=100" default:"10"`
 	SortBy    string            `query:"sortBy" json:"sortBy"`
 	SortOrder string            `query:"sortOrder" json:"sortOrder" validate:"omitempty,oneof=asc desc"`
+	Search    string            `query:"search" json:"search"`
 	Filters   map[string]string `query:"filters" json:"filters" validate:"omitempty"`
 }
