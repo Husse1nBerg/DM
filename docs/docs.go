@@ -3589,7 +3589,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature documents for the authenticated user's marina with comprehensive filtering and sorting",
+                "description": "Retrieves all e-signature documents for the authenticated user's marina with global search and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -3602,27 +3602,9 @@ const docTemplate = `{
                 "summary": "List e-signature documents",
                 "parameters": [
                     {
-                        "enum": [
-                            "draft",
-                            "signed",
-                            "questions",
-                            "sent"
-                        ],
                         "type": "string",
-                        "description": "Filter by document status",
-                        "name": "status",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by document type (partial match)",
-                        "name": "type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by template ID",
-                        "name": "templateId",
+                        "description": "Global search across type and status",
+                        "name": "search",
                         "in": "query"
                     },
                     {
@@ -4140,7 +4122,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature submissions for the authenticated user's marina with comprehensive filtering and sorting",
+                "description": "Retrieves all e-signature submissions for the authenticated user's marina with global search and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -4153,39 +4135,9 @@ const docTemplate = `{
                 "summary": "List e-signature submissions",
                 "parameters": [
                     {
-                        "enum": [
-                            "pending",
-                            "signed",
-                            "questions",
-                            "sent"
-                        ],
                         "type": "string",
-                        "description": "Filter by submission status",
-                        "name": "status",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by customer ID",
-                        "name": "customerId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by email (partial match)",
-                        "name": "email",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by name (partial match)",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by document ID",
-                        "name": "documentId",
+                        "description": "Global search across email, name, status, and customer_id",
+                        "name": "search",
                         "in": "query"
                     },
                     {
@@ -4697,7 +4649,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature templates for the authenticated user's marina with comprehensive filtering and sorting",
+                "description": "Retrieves all e-signature templates for the authenticated user's marina with global search and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -4710,32 +4662,9 @@ const docTemplate = `{
                 "summary": "List e-signature templates",
                 "parameters": [
                     {
-                        "enum": [
-                            "draft",
-                            "active",
-                            "archived"
-                        ],
                         "type": "string",
-                        "description": "Filter by template status",
-                        "name": "status",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by template name (partial match)",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by template type (partial match)",
-                        "name": "type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by description (partial match)",
-                        "name": "description",
+                        "description": "Global search across name, type, description, and status",
+                        "name": "search",
                         "in": "query"
                     },
                     {

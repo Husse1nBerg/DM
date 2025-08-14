@@ -114,14 +114,11 @@ func (h *EsignHandler) checkDocumentLimit(ctx context.Context, marinaID uuid.UUI
 // ListEsignTemplates retrieves all e-signature templates for the user's marina
 //
 //	@Summary		List e-signature templates
-//	@Description	Retrieves all e-signature templates for the authenticated user's marina with comprehensive filtering and sorting
+//	@Description	Retrieves all e-signature templates for the authenticated user's marina with global search and sorting
 //	@Tags			E-signature Templates
 //	@Accept			json
 //	@Produce		json
-//	@Param			status		query		string	false	"Filter by template status" Enums(draft, active, archived)
-//	@Param			name		query		string	false	"Filter by template name (partial match)"
-//	@Param			type		query		string	false	"Filter by template type (partial match)"
-//	@Param			description	query		string	false	"Filter by description (partial match)"
+//	@Param			search		query		string	false	"Global search across name, type, description, and status"
 //	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
 //	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Param			sortBy		query		string	false	"Sort field" Enums(name, type, status, created_at, updated_at) default(created_at)
@@ -159,26 +156,19 @@ func (h *EsignHandler) ListEsignTemplates(c echo.Context) error {
 	req.OrganizationID = organizationID
 	req.MarinaID = marinaID
 
-	// Extract filters from query params and FilterSortParams
-	status := c.QueryParam("status")
-	name := c.QueryParam("name")
-	templateType := c.QueryParam("type")
-	description := c.QueryParam("description")
+	// Extract global search parameter
+	search := c.QueryParam("search")
 
 	// Override with filters map if provided
 	if req.Filters != nil {
-		if val, exists := req.Filters["status"]; exists && status == "" {
-			status = val
+		if val, exists := req.Filters["search"]; exists && search == "" {
+			search = val
 		}
-		if val, exists := req.Filters["name"]; exists && name == "" {
-			name = val
-		}
-		if val, exists := req.Filters["type"]; exists && templateType == "" {
-			templateType = val
-		}
-		if val, exists := req.Filters["description"]; exists && description == "" {
-			description = val
-		}
+	}
+
+	// Use search from FilterSortParams if available
+	if search == "" && req.Search != "" {
+		search = req.Search
 	}
 
 	// Set default sort if not provided
@@ -193,16 +183,13 @@ func (h *EsignHandler) ListEsignTemplates(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	// Use the new comprehensive filtering query
-	templates, err := h.server.DB.Queries().ListEsignTemplatesFiltered(ctx, db.ListEsignTemplatesFilteredParams{
+	// Use the simplified global search query
+	templates, err := h.server.DB.Queries().ListEsignTemplatesWithGlobalSearch(ctx, db.ListEsignTemplatesWithGlobalSearchParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
-		Column3:        status,
-		Column4:        name,
-		Column5:        templateType,
-		Column6:        description,
-		Column7:        sortBy,
-		Column8:        sortOrder,
+		Column3:        search,
+		Column4:        sortBy,
+		Column5:        sortOrder,
 		Limit:          req.PageSize,
 		Offset:         (req.Page - 1) * req.PageSize,
 	})
@@ -211,13 +198,10 @@ func (h *EsignHandler) ListEsignTemplates(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching templates").JSON(c)
 	}
 
-	total, err := h.server.DB.Queries().CountEsignTemplatesFiltered(ctx, db.CountEsignTemplatesFilteredParams{
+	total, err := h.server.DB.Queries().CountEsignTemplatesWithGlobalSearch(ctx, db.CountEsignTemplatesWithGlobalSearchParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
-		Column3:        status,
-		Column4:        name,
-		Column5:        templateType,
-		Column6:        description,
+		Column3:        search,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error counting filtered templates", err)
@@ -522,13 +506,11 @@ func (h *EsignHandler) DeleteEsignTemplate(c echo.Context) error {
 // ListEsignDocuments retrieves all e-signature documents for the user's marina
 //
 //	@Summary		List e-signature documents
-//	@Description	Retrieves all e-signature documents for the authenticated user's marina with comprehensive filtering and sorting
+//	@Description	Retrieves all e-signature documents for the authenticated user's marina with global search and sorting
 //	@Tags			E-signature Documents
 //	@Accept			json
 //	@Produce		json
-//	@Param			status		query		string	false	"Filter by document status" Enums(draft, signed, questions, sent)
-//	@Param			type		query		string	false	"Filter by document type (partial match)"
-//	@Param			templateId	query		string	false	"Filter by template ID"
+//	@Param			search		query		string	false	"Global search across type and status"
 //	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
 //	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Param			sortBy		query		string	false	"Sort field" Enums(type, status, created_at, updated_at) default(created_at)
@@ -566,22 +548,19 @@ func (h *EsignHandler) ListEsignDocuments(c echo.Context) error {
 	req.OrganizationID = organizationID
 	req.MarinaID = marinaID
 
-	// Extract filters from query params and FilterSortParams
-	status := c.QueryParam("status")
-	docType := c.QueryParam("type")
-	templateId := c.QueryParam("templateId")
+	// Extract global search parameter
+	search := c.QueryParam("search")
 
 	// Override with filters map if provided
 	if req.Filters != nil {
-		if val, exists := req.Filters["status"]; exists && status == "" {
-			status = val
+		if val, exists := req.Filters["search"]; exists && search == "" {
+			search = val
 		}
-		if val, exists := req.Filters["type"]; exists && docType == "" {
-			docType = val
-		}
-		if val, exists := req.Filters["templateId"]; exists && templateId == "" {
-			templateId = val
-		}
+	}
+
+	// Use search from FilterSortParams if available
+	if search == "" && req.Search != "" {
+		search = req.Search
 	}
 
 	// Set default sort if not provided
@@ -596,15 +575,13 @@ func (h *EsignHandler) ListEsignDocuments(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	// Use the new comprehensive filtering query
-	documents, err := h.server.DB.Queries().ListEsignDocumentsFiltered(ctx, db.ListEsignDocumentsFilteredParams{
+	// Use the simplified global search query
+	documents, err := h.server.DB.Queries().ListEsignDocumentsWithGlobalSearch(ctx, db.ListEsignDocumentsWithGlobalSearchParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
-		Column3:        status,
-		Column4:        docType,
-		Column5:        templateId,
-		Column6:        sortBy,
-		Column7:        sortOrder,
+		Column3:        search,
+		Column4:        sortBy,
+		Column5:        sortOrder,
 		Limit:          req.PageSize,
 		Offset:         (req.Page - 1) * req.PageSize,
 	})
@@ -613,12 +590,10 @@ func (h *EsignHandler) ListEsignDocuments(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching documents").JSON(c)
 	}
 
-	total, err := h.server.DB.Queries().CountEsignDocumentsFiltered(ctx, db.CountEsignDocumentsFilteredParams{
+	total, err := h.server.DB.Queries().CountEsignDocumentsWithGlobalSearch(ctx, db.CountEsignDocumentsWithGlobalSearchParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
-		Column3:        status,
-		Column4:        docType,
-		Column5:        templateId,
+		Column3:        search,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error counting filtered documents", err)
@@ -906,15 +881,11 @@ func (h *EsignHandler) DeleteEsignDocument(c echo.Context) error {
 // ListEsignSubmissions retrieves all e-signature submissions for the user's marina, with optional filtering by customerId and status
 //
 //	@Summary		List e-signature submissions
-//	@Description	Retrieves all e-signature submissions for the authenticated user's marina with comprehensive filtering and sorting
+//	@Description	Retrieves all e-signature submissions for the authenticated user's marina with global search and sorting
 //	@Tags			E-signature Submissions
 //	@Accept			json
 //	@Produce		json
-//	@Param			status		query		string	false	"Filter by submission status" Enums(pending, signed, questions, sent)
-//	@Param			customerId	query		string	false	"Filter by customer ID"
-//	@Param			email		query		string	false	"Filter by email (partial match)"
-//	@Param			name		query		string	false	"Filter by name (partial match)"
-//	@Param			documentId	query		string	false	"Filter by document ID"
+//	@Param			search		query		string	false	"Global search across email, name, status, and customer_id"
 //	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
 //	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Param			sortBy		query		string	false	"Sort field" Enums(email, name, status, customer_id, created_at, updated_at) default(created_at)
@@ -953,30 +924,19 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 	req.OrganizationID = organizationID
 	req.MarinaID = marinaID
 
-	// Extract filters from query params and FilterSortParams
-	status := c.QueryParam("status")
-	customerID := c.QueryParam("customerId")
-	email := c.QueryParam("email")
-	name := c.QueryParam("name")
-	documentID := c.QueryParam("documentId")
+	// Extract global search parameter
+	search := c.QueryParam("search")
 
 	// Override with filters map if provided
 	if req.Filters != nil {
-		if val, exists := req.Filters["status"]; exists && status == "" {
-			status = val
+		if val, exists := req.Filters["search"]; exists && search == "" {
+			search = val
 		}
-		if val, exists := req.Filters["customerId"]; exists && customerID == "" {
-			customerID = val
-		}
-		if val, exists := req.Filters["email"]; exists && email == "" {
-			email = val
-		}
-		if val, exists := req.Filters["name"]; exists && name == "" {
-			name = val
-		}
-		if val, exists := req.Filters["documentId"]; exists && documentID == "" {
-			documentID = val
-		}
+	}
+
+	// Use search from FilterSortParams if available
+	if search == "" && req.Search != "" {
+		search = req.Search
 	}
 
 	// Set default sort if not provided
@@ -991,17 +951,13 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	// Use the new comprehensive filtering query
-	submissions, err := h.server.DB.Queries().ListEsignSubmissionsFilteredByMarina(ctx, db.ListEsignSubmissionsFilteredByMarinaParams{
+	// Use the simplified global search query
+	submissions, err := h.server.DB.Queries().ListEsignSubmissionsWithGlobalSearch(ctx, db.ListEsignSubmissionsWithGlobalSearchParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
-		Column3:        status,
-		Column4:        customerID,
-		Column5:        email,
-		Column6:        name,
-		Column7:        documentID,
-		Column8:        sortBy,
-		Column9:        sortOrder,
+		Column3:        search,
+		Column4:        sortBy,
+		Column5:        sortOrder,
 		Limit:          req.PageSize,
 		Offset:         (req.Page - 1) * req.PageSize,
 	})
@@ -1010,14 +966,10 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
 	}
 
-	total, err := h.server.DB.Queries().CountEsignSubmissionsFilteredByMarina(ctx, db.CountEsignSubmissionsFilteredByMarinaParams{
+	total, err := h.server.DB.Queries().CountEsignSubmissionsWithGlobalSearch(ctx, db.CountEsignSubmissionsWithGlobalSearchParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
-		Column3:        status,
-		Column4:        customerID,
-		Column5:        email,
-		Column6:        name,
-		Column7:        documentID,
+		Column3:        search,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error counting filtered submissions", err)
