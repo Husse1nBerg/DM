@@ -6246,8 +6246,21 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature documents for the authenticated user's
-        marina with global search and sorting
+        marina with filtering, search, and sorting
       parameters:
+      - description: Filter by document status
+        enum:
+        - draft
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        type: string
+      - description: Filter by document type
+        in: query
+        name: type
+        type: string
       - description: Global search across type and status
         in: query
         name: search
@@ -6597,8 +6610,17 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature submissions for the authenticated user's
-        marina with global search and sorting
+        marina with filtering, search, and sorting
       parameters:
+      - description: Filter by submission status
+        enum:
+        - pending
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        type: string
       - description: Global search across email, name, status, and customer_id
         in: query
         name: search
@@ -6943,8 +6965,20 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature templates for the authenticated user's
-        marina with global search and sorting
+        marina with filtering, search, and sorting
       parameters:
+      - description: Filter by template status
+        enum:
+        - draft
+        - active
+        - archived
+        in: query
+        name: status
+        type: string
+      - description: Filter by template type
+        in: query
+        name: type
+        type: string
       - description: Global search across name, type, description, and status
         in: query
         name: search

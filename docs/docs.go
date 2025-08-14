@@ -3589,7 +3589,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature documents for the authenticated user's marina with global search and sorting",
+                "description": "Retrieves all e-signature documents for the authenticated user's marina with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -3601,6 +3601,24 @@ const docTemplate = `{
                 ],
                 "summary": "List e-signature documents",
                 "parameters": [
+                    {
+                        "enum": [
+                            "draft",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Filter by document status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by document type",
+                        "name": "type",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Global search across type and status",
@@ -4122,7 +4140,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature submissions for the authenticated user's marina with global search and sorting",
+                "description": "Retrieves all e-signature submissions for the authenticated user's marina with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -4134,6 +4152,18 @@ const docTemplate = `{
                 ],
                 "summary": "List e-signature submissions",
                 "parameters": [
+                    {
+                        "enum": [
+                            "pending",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Filter by submission status",
+                        "name": "status",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Global search across email, name, status, and customer_id",
@@ -4649,7 +4679,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature templates for the authenticated user's marina with global search and sorting",
+                "description": "Retrieves all e-signature templates for the authenticated user's marina with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -4661,6 +4691,23 @@ const docTemplate = `{
                 ],
                 "summary": "List e-signature templates",
                 "parameters": [
+                    {
+                        "enum": [
+                            "draft",
+                            "active",
+                            "archived"
+                        ],
+                        "type": "string",
+                        "description": "Filter by template status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by template type",
+                        "name": "type",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Global search across name, type, description, and status",

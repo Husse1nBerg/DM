@@ -129,53 +129,55 @@ WHERE organization_id = $1
   AND ($3 = '' OR customer_id = $3)
   AND ($4 = '' OR status = $4);
 
--- name: ListEsignSubmissionsWithGlobalSearch :many
+-- name: ListEsignSubmissionsWithFilters :many
 SELECT *
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR (
-    LOWER(email) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $3 || '%')
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR (
+    LOWER(email) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(name) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
   ))
 ORDER BY 
   CASE 
-    WHEN $4 = 'email' AND $5 = 'asc' THEN email
-    WHEN $4 = 'name' AND $5 = 'asc' THEN name
-    WHEN $4 = 'status' AND $5 = 'asc' THEN status
-    WHEN $4 = 'customer_id' AND $5 = 'asc' THEN customer_id
+    WHEN $5 = 'email' AND $6 = 'asc' THEN email
+    WHEN $5 = 'name' AND $6 = 'asc' THEN name
+    WHEN $5 = 'status' AND $6 = 'asc' THEN status
+    WHEN $5 = 'customer_id' AND $6 = 'asc' THEN customer_id
   END ASC,
   CASE 
-    WHEN $4 = 'email' AND $5 = 'desc' THEN email
-    WHEN $4 = 'name' AND $5 = 'desc' THEN name
-    WHEN $4 = 'status' AND $5 = 'desc' THEN status
-    WHEN $4 = 'customer_id' AND $5 = 'desc' THEN customer_id
+    WHEN $5 = 'email' AND $6 = 'desc' THEN email
+    WHEN $5 = 'name' AND $6 = 'desc' THEN name
+    WHEN $5 = 'status' AND $6 = 'desc' THEN status
+    WHEN $5 = 'customer_id' AND $6 = 'desc' THEN customer_id
   END DESC,
   CASE 
-    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
-    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
+    WHEN $5 = 'created_at' AND $6 = 'asc' THEN created_at
+    WHEN $5 = 'updated_at' AND $6 = 'asc' THEN updated_at
   END ASC,
   CASE 
-    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
-    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
+    WHEN $5 = 'created_at' AND $6 = 'desc' THEN created_at
+    WHEN $5 = 'updated_at' AND $6 = 'desc' THEN updated_at
     ELSE created_at
   END DESC
-LIMIT $6 OFFSET $7;
+LIMIT $7 OFFSET $8;
 
--- name: CountEsignSubmissionsWithGlobalSearch :one
+-- name: CountEsignSubmissionsWithFilters :one
 SELECT COUNT(*)
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR (
-    LOWER(email) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $3 || '%')
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR (
+    LOWER(email) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(name) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
   ));
 
 -- name: ListEsignSubmissionsFilteredByDocument :many
