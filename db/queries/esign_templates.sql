@@ -84,4 +84,47 @@ FROM esign_templates
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR status = $3); 
+  AND ($3 = '' OR status = $3);
+
+-- name: ListEsignTemplatesFiltered :many
+SELECT *
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR LOWER(name) LIKE LOWER('%' || $4 || '%'))
+  AND ($5 = '' OR LOWER(type) LIKE LOWER('%' || $5 || '%'))
+  AND ($6 = '' OR LOWER(description) LIKE LOWER('%' || $6 || '%'))
+ORDER BY 
+  CASE 
+    WHEN $7 = 'name' AND $8 = 'asc' THEN name
+    WHEN $7 = 'type' AND $8 = 'asc' THEN type
+    WHEN $7 = 'status' AND $8 = 'asc' THEN status
+  END ASC,
+  CASE 
+    WHEN $7 = 'name' AND $8 = 'desc' THEN name
+    WHEN $7 = 'type' AND $8 = 'desc' THEN type
+    WHEN $7 = 'status' AND $8 = 'desc' THEN status
+  END DESC,
+  CASE 
+    WHEN $7 = 'created_at' AND $8 = 'asc' THEN created_at
+    WHEN $7 = 'updated_at' AND $8 = 'asc' THEN updated_at
+  END ASC,
+  CASE 
+    WHEN $7 = 'created_at' AND $8 = 'desc' THEN created_at
+    WHEN $7 = 'updated_at' AND $8 = 'desc' THEN updated_at
+    ELSE created_at
+  END DESC
+LIMIT $9 OFFSET $10;
+
+-- name: CountEsignTemplatesFiltered :one
+SELECT COUNT(*)
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR LOWER(name) LIKE LOWER('%' || $4 || '%'))
+  AND ($5 = '' OR LOWER(type) LIKE LOWER('%' || $5 || '%'))
+  AND ($6 = '' OR LOWER(description) LIKE LOWER('%' || $6 || '%')); 
