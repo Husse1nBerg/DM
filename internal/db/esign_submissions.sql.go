@@ -166,28 +166,35 @@ func (q *Queries) CountEsignSubmissionsFilteredByStatus(ctx context.Context, arg
 	return count, err
 }
 
-const countEsignSubmissionsWithGlobalSearch = `-- name: CountEsignSubmissionsWithGlobalSearch :one
+const countEsignSubmissionsWithFilters = `-- name: CountEsignSubmissionsWithFilters :one
 SELECT COUNT(*)
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR (
-    LOWER(email) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $3 || '%')
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR (
+    LOWER(email) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(name) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
   ))
 `
 
-type CountEsignSubmissionsWithGlobalSearchParams struct {
+type CountEsignSubmissionsWithFiltersParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
+	Column4        interface{}
 }
 
-func (q *Queries) CountEsignSubmissionsWithGlobalSearch(ctx context.Context, arg CountEsignSubmissionsWithGlobalSearchParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countEsignSubmissionsWithGlobalSearch, arg.OrganizationID, arg.MarinaID, arg.Column3)
+func (q *Queries) CountEsignSubmissionsWithFilters(ctx context.Context, arg CountEsignSubmissionsWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignSubmissionsWithFilters,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -761,60 +768,63 @@ func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg 
 	return items, nil
 }
 
-const listEsignSubmissionsWithGlobalSearch = `-- name: ListEsignSubmissionsWithGlobalSearch :many
+const listEsignSubmissionsWithFilters = `-- name: ListEsignSubmissionsWithFilters :many
 SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR (
-    LOWER(email) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(name) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $3 || '%')
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR (
+    LOWER(email) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(name) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
   ))
 ORDER BY 
   CASE 
-    WHEN $4 = 'email' AND $5 = 'asc' THEN email
-    WHEN $4 = 'name' AND $5 = 'asc' THEN name
-    WHEN $4 = 'status' AND $5 = 'asc' THEN status
-    WHEN $4 = 'customer_id' AND $5 = 'asc' THEN customer_id
+    WHEN $5 = 'email' AND $6 = 'asc' THEN email
+    WHEN $5 = 'name' AND $6 = 'asc' THEN name
+    WHEN $5 = 'status' AND $6 = 'asc' THEN status
+    WHEN $5 = 'customer_id' AND $6 = 'asc' THEN customer_id
   END ASC,
   CASE 
-    WHEN $4 = 'email' AND $5 = 'desc' THEN email
-    WHEN $4 = 'name' AND $5 = 'desc' THEN name
-    WHEN $4 = 'status' AND $5 = 'desc' THEN status
-    WHEN $4 = 'customer_id' AND $5 = 'desc' THEN customer_id
+    WHEN $5 = 'email' AND $6 = 'desc' THEN email
+    WHEN $5 = 'name' AND $6 = 'desc' THEN name
+    WHEN $5 = 'status' AND $6 = 'desc' THEN status
+    WHEN $5 = 'customer_id' AND $6 = 'desc' THEN customer_id
   END DESC,
   CASE 
-    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
-    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
+    WHEN $5 = 'created_at' AND $6 = 'asc' THEN created_at
+    WHEN $5 = 'updated_at' AND $6 = 'asc' THEN updated_at
   END ASC,
   CASE 
-    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
-    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
+    WHEN $5 = 'created_at' AND $6 = 'desc' THEN created_at
+    WHEN $5 = 'updated_at' AND $6 = 'desc' THEN updated_at
     ELSE created_at
   END DESC
-LIMIT $6 OFFSET $7
+LIMIT $7 OFFSET $8
 `
 
-type ListEsignSubmissionsWithGlobalSearchParams struct {
+type ListEsignSubmissionsWithFiltersParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
 	Column4        interface{}
 	Column5        interface{}
+	Column6        interface{}
 	Limit          int32
 	Offset         int32
 }
 
-func (q *Queries) ListEsignSubmissionsWithGlobalSearch(ctx context.Context, arg ListEsignSubmissionsWithGlobalSearchParams) ([]EsignSubmission, error) {
-	rows, err := q.db.Query(ctx, listEsignSubmissionsWithGlobalSearch,
+func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListEsignSubmissionsWithFiltersParams) ([]EsignSubmission, error) {
+	rows, err := q.db.Query(ctx, listEsignSubmissionsWithFilters,
 		arg.OrganizationID,
 		arg.MarinaID,
 		arg.Column3,
 		arg.Column4,
 		arg.Column5,
+		arg.Column6,
 		arg.Limit,
 		arg.Offset,
 	)

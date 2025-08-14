@@ -75,26 +75,36 @@ func (q *Queries) CountEsignDocumentsByTemplateFiltered(ctx context.Context, arg
 	return count, err
 }
 
-const countEsignDocumentsWithGlobalSearch = `-- name: CountEsignDocumentsWithGlobalSearch :one
+const countEsignDocumentsWithFilters = `-- name: CountEsignDocumentsWithFilters :one
 SELECT COUNT(*)
 FROM esign_documents
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR (
-    LOWER(type) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $3 || '%')
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    LOWER(type) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $5 || '%')
   ))
 `
 
-type CountEsignDocumentsWithGlobalSearchParams struct {
+type CountEsignDocumentsWithFiltersParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
+	Column4        interface{}
+	Column5        interface{}
 }
 
-func (q *Queries) CountEsignDocumentsWithGlobalSearch(ctx context.Context, arg CountEsignDocumentsWithGlobalSearchParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countEsignDocumentsWithGlobalSearch, arg.OrganizationID, arg.MarinaID, arg.Column3)
+func (q *Queries) CountEsignDocumentsWithFilters(ctx context.Context, arg CountEsignDocumentsWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignDocumentsWithFilters,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -471,54 +481,60 @@ func (q *Queries) ListEsignDocumentsByTemplateFiltered(ctx context.Context, arg 
 	return items, nil
 }
 
-const listEsignDocumentsWithGlobalSearch = `-- name: ListEsignDocumentsWithGlobalSearch :many
+const listEsignDocumentsWithFilters = `-- name: ListEsignDocumentsWithFilters :many
 SELECT id, template_id, organization_id, marina_id, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
 FROM esign_documents
 WHERE organization_id = $1
   AND marina_id = $2
   AND deleted_at IS NULL
-  AND ($3 = '' OR (
-    LOWER(type) LIKE LOWER('%' || $3 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $3 || '%')
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    LOWER(type) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $5 || '%')
   ))
 ORDER BY 
   CASE 
-    WHEN $4 = 'type' AND $5 = 'asc' THEN type
-    WHEN $4 = 'status' AND $5 = 'asc' THEN status
+    WHEN $6 = 'type' AND $7 = 'asc' THEN type
+    WHEN $6 = 'status' AND $7 = 'asc' THEN status
   END ASC,
   CASE 
-    WHEN $4 = 'type' AND $5 = 'desc' THEN type
-    WHEN $4 = 'status' AND $5 = 'desc' THEN status
+    WHEN $6 = 'type' AND $7 = 'desc' THEN type
+    WHEN $6 = 'status' AND $7 = 'desc' THEN status
   END DESC,
   CASE 
-    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
-    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
+    WHEN $6 = 'created_at' AND $7 = 'asc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'asc' THEN updated_at
   END ASC,
   CASE 
-    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
-    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
+    WHEN $6 = 'created_at' AND $7 = 'desc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'desc' THEN updated_at
     ELSE created_at
   END DESC
-LIMIT $6 OFFSET $7
+LIMIT $8 OFFSET $9
 `
 
-type ListEsignDocumentsWithGlobalSearchParams struct {
+type ListEsignDocumentsWithFiltersParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Column3        interface{}
 	Column4        interface{}
 	Column5        interface{}
+	Column6        interface{}
+	Column7        interface{}
 	Limit          int32
 	Offset         int32
 }
 
-func (q *Queries) ListEsignDocumentsWithGlobalSearch(ctx context.Context, arg ListEsignDocumentsWithGlobalSearchParams) ([]EsignDocument, error) {
-	rows, err := q.db.Query(ctx, listEsignDocumentsWithGlobalSearch,
+func (q *Queries) ListEsignDocumentsWithFilters(ctx context.Context, arg ListEsignDocumentsWithFiltersParams) ([]EsignDocument, error) {
+	rows, err := q.db.Query(ctx, listEsignDocumentsWithFilters,
 		arg.OrganizationID,
 		arg.MarinaID,
 		arg.Column3,
 		arg.Column4,
 		arg.Column5,
+		arg.Column6,
+		arg.Column7,
 		arg.Limit,
 		arg.Offset,
 	)
