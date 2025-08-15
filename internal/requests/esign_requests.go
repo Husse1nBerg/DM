@@ -39,8 +39,7 @@ type UpdateEsignTemplateStatusRequest struct {
 type ListEsignTemplatesByMarinaRequest struct {
 	OrganizationID uuid.UUID `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	MarinaID       uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Limit          int32     `json:"limit" validate:"min=1,max=100" example:"10"`
-	Offset         int32     `json:"offset" validate:"min=0" example:"0"`
+	FilterSortParams
 }
 
 // CreateEsignDocumentRequest represents the required parameters to create a new e-signature document
@@ -67,19 +66,17 @@ type UpdateEsignDocumentStatusRequest struct {
 	Status string `json:"status" validate:"required,oneof=draft signed questions sent" example:"sent"`
 }
 
-// ListEsignDocumentsByMarinaRequest represents the parameters to list documents for a marina with pagination
+// ListEsignDocumentsByMarinaRequest represents the parameters to list documents for a marina with pagination, filtering, and sorting
 type ListEsignDocumentsByMarinaRequest struct {
 	OrganizationID uuid.UUID `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	MarinaID       uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Limit          int32     `json:"limit" validate:"min=1,max=100" example:"10"`
-	Offset         int32     `json:"offset" validate:"min=0" example:"0"`
+	FilterSortParams
 }
 
-// ListEsignDocumentsByTemplateRequest represents the parameters to list documents created from a template
+// ListEsignDocumentsByTemplateRequest represents the parameters to list documents created from a template with pagination, filtering, and sorting
 type ListEsignDocumentsByTemplateRequest struct {
 	TemplateID uuid.UUID `json:"templateId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Limit      int32     `json:"limit" validate:"min=1,max=100" example:"10"`
-	Offset     int32     `json:"offset" validate:"min=0" example:"0"`
+	FilterSortParams
 }
 
 // CreateEsignSubmissionRequest represents the required parameters to create a new e-signature submission
@@ -104,28 +101,25 @@ type UpdateEsignSubmissionRequest struct {
 	// BlobMetadata json.RawMessage `json:"blobMetadata,omitempty" example:"{\"size\": 2048, \"contentType\": \"application/pdf\"}"`
 }
 
-// ListEsignSubmissionsByMarinaRequest represents the parameters to list submissions for a marina with pagination
+// ListEsignSubmissionsByMarinaRequest represents the parameters to list submissions for a marina with pagination, filtering, and sorting
 type ListEsignSubmissionsByMarinaRequest struct {
 	OrganizationID uuid.UUID `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	MarinaID       uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Limit          int32     `json:"limit" validate:"min=1,max=100" example:"10"`
-	Offset         int32     `json:"offset" validate:"min=0" example:"0"`
+	FilterSortParams
 }
 
-// ListEsignSubmissionsByDocumentRequest represents the parameters to list submissions for a document with pagination
+// ListEsignSubmissionsByDocumentRequest represents the parameters to list submissions for a document with pagination, filtering, and sorting
 type ListEsignSubmissionsByDocumentRequest struct {
 	DocumentID uuid.UUID `json:"documentId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Limit      int32     `json:"limit" validate:"min=1,max=100" example:"10"`
-	Offset     int32     `json:"offset" validate:"min=0" example:"0"`
+	FilterSortParams
 }
 
-// ListEsignSubmissionsByStatusRequest represents the parameters to list submissions by status with pagination
+// ListEsignSubmissionsByStatusRequest represents the parameters to list submissions by status with pagination, filtering, and sorting
 type ListEsignSubmissionsByStatusRequest struct {
 	OrganizationID uuid.UUID `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	MarinaID       uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
 	Status         string    `json:"status" validate:"required,oneof=pending signed questions sent" example:"pending"`
-	Limit          int32     `json:"limit" validate:"min=1,max=100" example:"10"`
-	Offset         int32     `json:"offset" validate:"min=0" example:"0"`
+	FilterSortParams
 }
 
 // ListEsignSubmissionsByMarinaFilteredRequest represents the parameters to list submissions for a marina with optional customerId and status filters

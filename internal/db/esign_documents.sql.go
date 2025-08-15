@@ -53,6 +53,65 @@ func (q *Queries) CountEsignDocumentsByMarinaStatus(ctx context.Context, arg Cou
 	return count, err
 }
 
+const countEsignDocumentsByTemplateFiltered = `-- name: CountEsignDocumentsByTemplateFiltered :one
+SELECT COUNT(*)
+FROM esign_documents
+WHERE template_id = $1
+  AND deleted_at IS NULL
+  AND ($2 = '' OR status = $2)
+  AND ($3 = '' OR LOWER(type) LIKE LOWER('%' || $3 || '%'))
+`
+
+type CountEsignDocumentsByTemplateFilteredParams struct {
+	TemplateID uuid.UUID
+	Column2    interface{}
+	Column3    interface{}
+}
+
+func (q *Queries) CountEsignDocumentsByTemplateFiltered(ctx context.Context, arg CountEsignDocumentsByTemplateFilteredParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignDocumentsByTemplateFiltered, arg.TemplateID, arg.Column2, arg.Column3)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countEsignDocumentsWithFilters = `-- name: CountEsignDocumentsWithFilters :one
+SELECT COUNT(*)
+FROM esign_documents
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    LOWER(type) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $5 || '%') OR
+    CAST(id AS TEXT) ILIKE '%' || $5 || '%' OR
+    (blob_metadata->>'customerId') ILIKE '%' || $5 || '%'
+  ))
+`
+
+type CountEsignDocumentsWithFiltersParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+	Column5        interface{}
+}
+
+func (q *Queries) CountEsignDocumentsWithFilters(ctx context.Context, arg CountEsignDocumentsWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignDocumentsWithFilters,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createEsignDocument = `-- name: CreateEsignDocument :one
 INSERT INTO esign_documents (
     organization_id,
@@ -316,6 +375,171 @@ type ListEsignDocumentsByTemplateParams struct {
 
 func (q *Queries) ListEsignDocumentsByTemplate(ctx context.Context, arg ListEsignDocumentsByTemplateParams) ([]EsignDocument, error) {
 	rows, err := q.db.Query(ctx, listEsignDocumentsByTemplate, arg.TemplateID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignDocument
+	for rows.Next() {
+		var i EsignDocument
+		if err := rows.Scan(
+			&i.ID,
+			&i.TemplateID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.Type,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEsignDocumentsByTemplateFiltered = `-- name: ListEsignDocumentsByTemplateFiltered :many
+SELECT id, template_id, organization_id, marina_id, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+FROM esign_documents
+WHERE template_id = $1
+  AND deleted_at IS NULL
+  AND ($2 = '' OR status = $2)
+  AND ($3 = '' OR LOWER(type) LIKE LOWER('%' || $3 || '%'))
+ORDER BY 
+  CASE 
+    WHEN $4 = 'type' AND $5 = 'asc' THEN type
+    WHEN $4 = 'status' AND $5 = 'asc' THEN status
+  END ASC,
+  CASE 
+    WHEN $4 = 'type' AND $5 = 'desc' THEN type
+    WHEN $4 = 'status' AND $5 = 'desc' THEN status
+  END DESC,
+  CASE 
+    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
+  END ASC,
+  CASE 
+    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
+    ELSE created_at
+  END DESC
+LIMIT $6 OFFSET $7
+`
+
+type ListEsignDocumentsByTemplateFilteredParams struct {
+	TemplateID uuid.UUID
+	Column2    interface{}
+	Column3    interface{}
+	Column4    interface{}
+	Column5    interface{}
+	Limit      int32
+	Offset     int32
+}
+
+func (q *Queries) ListEsignDocumentsByTemplateFiltered(ctx context.Context, arg ListEsignDocumentsByTemplateFilteredParams) ([]EsignDocument, error) {
+	rows, err := q.db.Query(ctx, listEsignDocumentsByTemplateFiltered,
+		arg.TemplateID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignDocument
+	for rows.Next() {
+		var i EsignDocument
+		if err := rows.Scan(
+			&i.ID,
+			&i.TemplateID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.Type,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEsignDocumentsWithFilters = `-- name: ListEsignDocumentsWithFilters :many
+SELECT id, template_id, organization_id, marina_id, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at
+FROM esign_documents
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    CAST(id AS TEXT) ILIKE '%' || $5 || '%' OR
+    (blob_metadata->>'customerId') ILIKE '%' || $5 || '%'
+  ))
+ORDER BY 
+  CASE 
+    WHEN $6 = 'type' AND $7 = 'asc' THEN type
+    WHEN $6 = 'status' AND $7 = 'asc' THEN status
+  END ASC,
+  CASE 
+    WHEN $6 = 'type' AND $7 = 'desc' THEN type
+    WHEN $6 = 'status' AND $7 = 'desc' THEN status
+  END DESC,
+  CASE 
+    WHEN $6 = 'created_at' AND $7 = 'asc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'asc' THEN updated_at
+  END ASC,
+  CASE 
+    WHEN $6 = 'created_at' AND $7 = 'desc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'desc' THEN updated_at
+    ELSE created_at
+  END DESC
+LIMIT $8 OFFSET $9
+`
+
+type ListEsignDocumentsWithFiltersParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+	Column5        interface{}
+	Column6        interface{}
+	Column7        interface{}
+	Limit          int32
+	Offset         int32
+}
+
+func (q *Queries) ListEsignDocumentsWithFilters(ctx context.Context, arg ListEsignDocumentsWithFiltersParams) ([]EsignDocument, error) {
+	rows, err := q.db.Query(ctx, listEsignDocumentsWithFilters,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

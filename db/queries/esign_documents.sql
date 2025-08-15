@@ -100,3 +100,85 @@ FROM esign_documents
 WHERE organization_id = $1
     AND marina_id = $2
     AND deleted_at IS NULL;
+
+-- name: ListEsignDocumentsWithFilters :many
+SELECT *
+FROM esign_documents
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    CAST(id AS TEXT) ILIKE '%' || $5 || '%' OR
+    (blob_metadata->>'customerId') ILIKE '%' || $5 || '%'
+  ))
+ORDER BY 
+  CASE 
+    WHEN $6 = 'type' AND $7 = 'asc' THEN type
+    WHEN $6 = 'status' AND $7 = 'asc' THEN status
+  END ASC,
+  CASE 
+    WHEN $6 = 'type' AND $7 = 'desc' THEN type
+    WHEN $6 = 'status' AND $7 = 'desc' THEN status
+  END DESC,
+  CASE 
+    WHEN $6 = 'created_at' AND $7 = 'asc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'asc' THEN updated_at
+  END ASC,
+  CASE 
+    WHEN $6 = 'created_at' AND $7 = 'desc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'desc' THEN updated_at
+    ELSE created_at
+  END DESC
+LIMIT $8 OFFSET $9;
+
+-- name: CountEsignDocumentsWithFilters :one
+SELECT COUNT(*)
+FROM esign_documents
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    LOWER(type) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $5 || '%') OR
+    CAST(id AS TEXT) ILIKE '%' || $5 || '%' OR
+    (blob_metadata->>'customerId') ILIKE '%' || $5 || '%'
+  ));
+
+-- name: ListEsignDocumentsByTemplateFiltered :many
+SELECT *
+FROM esign_documents
+WHERE template_id = $1
+  AND deleted_at IS NULL
+  AND ($2 = '' OR status = $2)
+  AND ($3 = '' OR LOWER(type) LIKE LOWER('%' || $3 || '%'))
+ORDER BY 
+  CASE 
+    WHEN $4 = 'type' AND $5 = 'asc' THEN type
+    WHEN $4 = 'status' AND $5 = 'asc' THEN status
+  END ASC,
+  CASE 
+    WHEN $4 = 'type' AND $5 = 'desc' THEN type
+    WHEN $4 = 'status' AND $5 = 'desc' THEN status
+  END DESC,
+  CASE 
+    WHEN $4 = 'created_at' AND $5 = 'asc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'asc' THEN updated_at
+  END ASC,
+  CASE 
+    WHEN $4 = 'created_at' AND $5 = 'desc' THEN created_at
+    WHEN $4 = 'updated_at' AND $5 = 'desc' THEN updated_at
+    ELSE created_at
+  END DESC
+LIMIT $6 OFFSET $7;
+
+-- name: CountEsignDocumentsByTemplateFiltered :one
+SELECT COUNT(*)
+FROM esign_documents
+WHERE template_id = $1
+  AND deleted_at IS NULL
+  AND ($2 = '' OR status = $2)
+  AND ($3 = '' OR LOWER(type) LIKE LOWER('%' || $3 || '%'));

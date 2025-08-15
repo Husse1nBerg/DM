@@ -62,7 +62,20 @@ func NewNotificationPreferencesResponse(preferences []db.NotificationPreference)
 	return NewSuccessResponse(NotificationPreferencesResponse{Data: preferenceResponses})
 }
 
+func NotificationPreferenceDBToResponseList(preferences []db.NotificationPreference) BaseResponse {
+	preferenceResponses := make([]NotificationPreferenceResponse, len(preferences))
+	for i, pref := range preferences {
+		preferenceResponses[i] = NotificationPreferenceDBToResponse(pref)
+	}
+
+	return NewSuccessResponse(preferenceResponses)
+}
+
 // NewNotificationPreferenceResponseSuccess creates a successful single preference response
 func NewNotificationPreferenceResponseSuccess(preference db.NotificationPreference) BaseResponse {
 	return NewSuccessResponse(NotificationPreferenceDBToResponse(preference))
+}
+
+func NewNotificationPreferencesBulkResponse(preferences []db.NotificationPreference) BaseResponse {
+	return NewSuccessResponse(NotificationPreferenceDBToResponseList(preferences))
 }
