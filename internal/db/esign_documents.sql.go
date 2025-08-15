@@ -85,7 +85,9 @@ WHERE organization_id = $1
   AND ($4 = '' OR type = $4)
   AND ($5 = '' OR (
     LOWER(type) LIKE LOWER('%' || $5 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $5 || '%')
+    LOWER(status) LIKE LOWER('%' || $5 || '%') OR
+    CAST(id AS TEXT) ILIKE '%' || $5 || '%' OR
+    (blob_metadata->>'customerId') ILIKE '%' || $5 || '%'
   ))
 `
 
@@ -490,8 +492,8 @@ WHERE organization_id = $1
   AND ($3 = '' OR status = $3)
   AND ($4 = '' OR type = $4)
   AND ($5 = '' OR (
-    LOWER(type) LIKE LOWER('%' || $5 || '%') OR
-    LOWER(status) LIKE LOWER('%' || $5 || '%')
+    CAST(id AS TEXT) ILIKE '%' || $5 || '%' OR
+    (blob_metadata->>'customerId') ILIKE '%' || $5 || '%'
   ))
 ORDER BY 
   CASE 

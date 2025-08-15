@@ -526,7 +526,7 @@ func (h *EsignHandler) DeleteEsignTemplate(c echo.Context) error {
 //	@Produce		json
 //	@Param			status		query		string	false	"Filter by document status" Enums(draft, signed, questions, sent)
 //	@Param			type		query		string	false	"Filter by document type"
-//	@Param			search		query		string	false	"Global search across type and status"
+//	@Param			search		query		string	false	"Global search across type, status, document ID, and customerId in blob metadata"
 //	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
 //	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Param			sortBy		query		string	false	"Sort field" Enums(type, status, created_at, updated_at) default(created_at)
