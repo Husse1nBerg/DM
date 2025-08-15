@@ -3589,7 +3589,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature documents for the authenticated user's marina",
+                "description": "Retrieves all e-signature documents for the authenticated user's marina with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -3609,8 +3609,20 @@ const docTemplate = `{
                             "sent"
                         ],
                         "type": "string",
-                        "description": "Document status (optional)",
+                        "description": "Filter by document status",
                         "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by document type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across document ID and customerId in blob metadata",
+                        "name": "search",
                         "in": "query"
                     },
                     {
@@ -3628,6 +3640,30 @@ const docTemplate = `{
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "type",
+                            "status",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -3751,7 +3787,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all submissions for a specific document",
+                "description": "Retrieves all submissions for a specific document with comprehensive filtering and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -3772,6 +3808,36 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "pending",
+                            "signed",
+                            "questions",
+                            "sent"
+                        ],
+                        "type": "string",
+                        "description": "Filter by submission status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by customer ID",
+                        "name": "customerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by email (partial match)",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by name (partial match)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
                         "minimum": 1,
                         "type": "integer",
                         "default": 1,
@@ -3786,6 +3852,32 @@ const docTemplate = `{
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "email",
+                            "name",
+                            "status",
+                            "customer_id",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -4048,7 +4140,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature submissions for the authenticated user's marina, with optional filtering by customerId and status",
+                "description": "Retrieves all e-signature submissions for the authenticated user's marina with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -4061,12 +4153,6 @@ const docTemplate = `{
                 "summary": "List e-signature submissions",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Customer ID (optional)",
-                        "name": "customerId",
-                        "in": "query"
-                    },
-                    {
                         "enum": [
                             "pending",
                             "signed",
@@ -4074,8 +4160,14 @@ const docTemplate = `{
                             "sent"
                         ],
                         "type": "string",
-                        "description": "Submission status (optional)",
+                        "description": "Filter by submission status",
                         "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across email, name, status, and customer_id",
+                        "name": "search",
                         "in": "query"
                     },
                     {
@@ -4093,6 +4185,32 @@ const docTemplate = `{
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "email",
+                            "name",
+                            "status",
+                            "customer_id",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -4204,7 +4322,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves submissions filtered by status for the authenticated user's marina",
+                "description": "Retrieves submissions filtered by status for the authenticated user's marina with comprehensive filtering and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -4230,6 +4348,30 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Filter by customer ID",
+                        "name": "customerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by email (partial match)",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by name (partial match)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by document ID",
+                        "name": "documentId",
+                        "in": "query"
+                    },
+                    {
                         "minimum": 1,
                         "type": "integer",
                         "default": 1,
@@ -4244,6 +4386,31 @@ const docTemplate = `{
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "email",
+                            "name",
+                            "customer_id",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -4512,7 +4679,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all e-signature templates for the authenticated user's marina",
+                "description": "Retrieves all e-signature templates for the authenticated user's marina with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -4531,8 +4698,20 @@ const docTemplate = `{
                             "archived"
                         ],
                         "type": "string",
-                        "description": "Template status (optional)",
+                        "description": "Filter by template status",
                         "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by template type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across name, type, description, and status",
+                        "name": "search",
                         "in": "query"
                     },
                     {
@@ -4550,6 +4729,31 @@ const docTemplate = `{
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "name",
+                            "type",
+                            "status",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -7629,6 +7833,145 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-preference": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create or update a notification preference for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification Preference"
+                ],
+                "summary": "Upsert notification preference",
+                "parameters": [
+                    {
+                        "description": "Notification preference payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.NotificationPreferenceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated notification preference",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NotificationPreferenceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-preference/bulk": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update multiple notification preferences for the current user in bulk",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification Preference"
+                ],
+                "summary": "Bulk update notification preferences",
+                "parameters": [
+                    {
+                        "description": "Notification Preferences",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/requests.NotificationPreferenceRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NotificationPreferencesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/notification-preference/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all notification preferences with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification Preference"
+                ],
+                "summary": "List notification preferences",
+                "responses": {
+                    "200": {
+                        "description": "List of notification preferences",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.NotificationPreferenceResponse"
+                            }
                         }
                     },
                     "500": {
@@ -13864,6 +14207,40 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": true
         },
+        "requests.NotificationPreferenceRequest": {
+            "type": "object",
+            "required": [
+                "deliveryMethod",
+                "enabled",
+                "notificationType"
+            ],
+            "properties": {
+                "deliveryMethod": {
+                    "type": "string",
+                    "enum": [
+                        "push",
+                        "email",
+                        "sms",
+                        "all"
+                    ],
+                    "example": "push"
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "notificationType": {
+                    "type": "string",
+                    "enum": [
+                        "message",
+                        "invite",
+                        "system",
+                        "alert"
+                    ],
+                    "example": "message"
+                }
+            }
+        },
         "requests.OperationCode": {
             "type": "object",
             "properties": {
@@ -16078,6 +16455,50 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 42
+                }
+            }
+        },
+        "responses.NotificationPreferenceResponse": {
+            "description": "Notification preference data including type, enabled status, and delivery method",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deliveryMethod": {
+                    "type": "string",
+                    "example": "push"
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "notificationType": {
+                    "type": "string",
+                    "example": "message"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                }
+            }
+        },
+        "responses.NotificationPreferencesResponse": {
+            "description": "List of notification preferences",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.NotificationPreferenceResponse"
+                    }
                 }
             }
         },

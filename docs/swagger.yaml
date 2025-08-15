@@ -1807,6 +1807,32 @@ definitions:
   requests.NotificationData:
     additionalProperties: true
     type: object
+  requests.NotificationPreferenceRequest:
+    properties:
+      deliveryMethod:
+        enum:
+        - push
+        - email
+        - sms
+        - all
+        example: push
+        type: string
+      enabled:
+        example: true
+        type: boolean
+      notificationType:
+        enum:
+        - message
+        - invite
+        - system
+        - alert
+        example: message
+        type: string
+    required:
+    - deliveryMethod
+    - enabled
+    - notificationType
+    type: object
   requests.OperationCode:
     properties:
       approved:
@@ -3380,6 +3406,38 @@ definitions:
       total:
         example: 42
         type: integer
+    type: object
+  responses.NotificationPreferenceResponse:
+    description: Notification preference data including type, enabled status, and
+      delivery method
+    properties:
+      createdAt:
+        type: string
+      deliveryMethod:
+        example: push
+        type: string
+      enabled:
+        example: true
+        type: boolean
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      notificationType:
+        example: message
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  responses.NotificationPreferencesResponse:
+    description: List of notification preferences
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.NotificationPreferenceResponse'
+        type: array
     type: object
   responses.NotificationResponse:
     description: Notification data including type, title, content, and status information
@@ -6196,9 +6254,9 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature documents for the authenticated user's
-        marina
+        marina with filtering, search, and sorting
       parameters:
-      - description: Document status (optional)
+      - description: Filter by document status
         enum:
         - draft
         - signed
@@ -6206,6 +6264,14 @@ paths:
         - sent
         in: query
         name: status
+        type: string
+      - description: Filter by document type
+        in: query
+        name: type
+        type: string
+      - description: Global search across document ID and customerId in blob metadata
+        in: query
+        name: search
         type: string
       - default: 1
         description: Page number
@@ -6220,6 +6286,24 @@ paths:
         minimum: 1
         name: pageSize
         type: integer
+      - default: created_at
+        description: Sort field
+        enum:
+        - type
+        - status
+        - created_at
+        - updated_at
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:
@@ -6302,13 +6386,35 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves all submissions for a specific document
+      description: Retrieves all submissions for a specific document with comprehensive
+        filtering and sorting
       parameters:
       - description: Document ID
         format: uuid
         in: path
         name: documentId
         required: true
+        type: string
+      - description: Filter by submission status
+        enum:
+        - pending
+        - signed
+        - questions
+        - sent
+        in: query
+        name: status
+        type: string
+      - description: Filter by customer ID
+        in: query
+        name: customerId
+        type: string
+      - description: Filter by email (partial match)
+        in: query
+        name: email
+        type: string
+      - description: Filter by name (partial match)
+        in: query
+        name: name
         type: string
       - default: 1
         description: Page number
@@ -6323,6 +6429,26 @@ paths:
         minimum: 1
         name: pageSize
         type: integer
+      - default: created_at
+        description: Sort field
+        enum:
+        - email
+        - name
+        - status
+        - customer_id
+        - created_at
+        - updated_at
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:
@@ -6492,13 +6618,9 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature submissions for the authenticated user's
-        marina, with optional filtering by customerId and status
+        marina with filtering, search, and sorting
       parameters:
-      - description: Customer ID (optional)
-        in: query
-        name: customerId
-        type: string
-      - description: Submission status (optional)
+      - description: Filter by submission status
         enum:
         - pending
         - signed
@@ -6506,6 +6628,10 @@ paths:
         - sent
         in: query
         name: status
+        type: string
+      - description: Global search across email, name, status, and customer_id
+        in: query
+        name: search
         type: string
       - default: 1
         description: Page number
@@ -6520,6 +6646,26 @@ paths:
         minimum: 1
         name: pageSize
         type: integer
+      - default: created_at
+        description: Sort field
+        enum:
+        - email
+        - name
+        - status
+        - customer_id
+        - created_at
+        - updated_at
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:
@@ -6738,7 +6884,7 @@ paths:
       consumes:
       - application/json
       description: Retrieves submissions filtered by status for the authenticated
-        user's marina
+        user's marina with comprehensive filtering and sorting
       parameters:
       - description: Submission status
         enum:
@@ -6749,6 +6895,22 @@ paths:
         in: query
         name: status
         required: true
+        type: string
+      - description: Filter by customer ID
+        in: query
+        name: customerId
+        type: string
+      - description: Filter by email (partial match)
+        in: query
+        name: email
+        type: string
+      - description: Filter by name (partial match)
+        in: query
+        name: name
+        type: string
+      - description: Filter by document ID
+        in: query
+        name: documentId
         type: string
       - default: 1
         description: Page number
@@ -6763,6 +6925,25 @@ paths:
         minimum: 1
         name: pageSize
         type: integer
+      - default: created_at
+        description: Sort field
+        enum:
+        - email
+        - name
+        - customer_id
+        - created_at
+        - updated_at
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:
@@ -6792,15 +6973,23 @@ paths:
       consumes:
       - application/json
       description: Retrieves all e-signature templates for the authenticated user's
-        marina
+        marina with filtering, search, and sorting
       parameters:
-      - description: Template status (optional)
+      - description: Filter by template status
         enum:
         - draft
         - active
         - archived
         in: query
         name: status
+        type: string
+      - description: Filter by template type
+        in: query
+        name: type
+        type: string
+      - description: Global search across name, type, description, and status
+        in: query
+        name: search
         type: string
       - default: 1
         description: Page number
@@ -6815,6 +7004,25 @@ paths:
         minimum: 1
         name: pageSize
         type: integer
+      - default: created_at
+        description: Sort field
+        enum:
+        - name
+        - type
+        - status
+        - created_at
+        - updated_at
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:
@@ -8804,6 +9012,95 @@ paths:
       summary: Create notification
       tags:
       - Notification
+  /notification-preference:
+    put:
+      consumes:
+      - application/json
+      description: Create or update a notification preference for the authenticated
+        user
+      parameters:
+      - description: Notification preference payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.NotificationPreferenceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated notification preference
+          schema:
+            $ref: '#/definitions/responses.NotificationPreferenceResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Upsert notification preference
+      tags:
+      - Notification Preference
+  /notification-preference/bulk:
+    put:
+      consumes:
+      - application/json
+      description: Update multiple notification preferences for the current user in
+        bulk
+      parameters:
+      - description: Notification Preferences
+        in: body
+        name: body
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/requests.NotificationPreferenceRequest'
+          type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.NotificationPreferencesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Bulk update notification preferences
+      tags:
+      - Notification Preference
+  /notification-preference/list:
+    get:
+      consumes:
+      - application/json
+      description: Get all notification preferences with pagination
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of notification preferences
+          schema:
+            items:
+              $ref: '#/definitions/responses.NotificationPreferenceResponse'
+            type: array
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List notification preferences
+      tags:
+      - Notification Preference
   /notification/{id}:
     delete:
       consumes:

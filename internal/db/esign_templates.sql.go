@@ -53,6 +53,43 @@ func (q *Queries) CountEsignTemplatesByMarinaStatus(ctx context.Context, arg Cou
 	return count, err
 }
 
+const countEsignTemplatesWithFilters = `-- name: CountEsignTemplatesWithFilters :one
+SELECT COUNT(*)
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    LOWER(name) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(type) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(description) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $5 || '%')
+  ))
+`
+
+type CountEsignTemplatesWithFiltersParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+	Column5        interface{}
+}
+
+func (q *Queries) CountEsignTemplatesWithFilters(ctx context.Context, arg CountEsignTemplatesWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countEsignTemplatesWithFilters,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createEsignTemplate = `-- name: CreateEsignTemplate :one
 INSERT INTO esign_templates (
     organization_id,
@@ -230,6 +267,99 @@ func (q *Queries) ListEsignTemplatesByMarinaStatus(ctx context.Context, arg List
 		arg.OrganizationID,
 		arg.MarinaID,
 		arg.Column3,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignTemplate
+	for rows.Next() {
+		var i EsignTemplate
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.Name,
+			&i.Description,
+			&i.Type,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.JsonData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEsignTemplatesWithFilters = `-- name: ListEsignTemplatesWithFilters :many
+SELECT id, organization_id, marina_id, name, description, type, status, blob_url, blob_metadata, created_at, updated_at, deleted_at, json_data
+FROM esign_templates
+WHERE organization_id = $1
+  AND marina_id = $2
+  AND deleted_at IS NULL
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR type = $4)
+  AND ($5 = '' OR (
+    LOWER(name) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(type) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(description) LIKE LOWER('%' || $5 || '%') OR
+    LOWER(status) LIKE LOWER('%' || $5 || '%')
+  ))
+ORDER BY 
+  CASE 
+    WHEN $6 = 'name' AND $7 = 'asc' THEN name
+    WHEN $6 = 'type' AND $7 = 'asc' THEN type
+    WHEN $6 = 'status' AND $7 = 'asc' THEN status
+  END ASC,
+  CASE 
+    WHEN $6 = 'name' AND $7 = 'desc' THEN name
+    WHEN $6 = 'type' AND $7 = 'desc' THEN type
+    WHEN $6 = 'status' AND $7 = 'desc' THEN status
+  END DESC,
+  CASE 
+    WHEN $6 = 'created_at' AND $7 = 'asc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'asc' THEN updated_at
+  END ASC,
+  CASE 
+    WHEN $6 = 'created_at' AND $7 = 'desc' THEN created_at
+    WHEN $6 = 'updated_at' AND $7 = 'desc' THEN updated_at
+    ELSE created_at
+  END DESC
+LIMIT $8 OFFSET $9
+`
+
+type ListEsignTemplatesWithFiltersParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+	Column5        interface{}
+	Column6        interface{}
+	Column7        interface{}
+	Limit          int32
+	Offset         int32
+}
+
+func (q *Queries) ListEsignTemplatesWithFilters(ctx context.Context, arg ListEsignTemplatesWithFiltersParams) ([]EsignTemplate, error) {
+	rows, err := q.db.Query(ctx, listEsignTemplatesWithFilters,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
 		arg.Limit,
 		arg.Offset,
 	)
