@@ -75,3 +75,7 @@ func NotificationPreferenceDBToResponseList(preferences []db.NotificationPrefere
 func NewNotificationPreferenceResponseSuccess(preference db.NotificationPreference) BaseResponse {
 	return NewSuccessResponse(NotificationPreferenceDBToResponse(preference))
 }
+
+func NewNotificationPreferencesBulkResponse(preferences []db.NotificationPreference) BaseResponse {
+	return NewSuccessResponse(NotificationPreferenceDBToResponseList(preferences))
+}

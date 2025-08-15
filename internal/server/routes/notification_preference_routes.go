@@ -13,4 +13,5 @@ func RegisterNotificationPreferenceRoutes(server *s.Server, permissionProtected 
 	notificationPreferences := permissionProtected.Group("/notification-preference")
 	notificationPreferences.GET("/list", notificationPreferenceHandler.ListNotificationPreferencesHandler)
 	notificationPreferences.PUT("", notificationPreferenceHandler.UpdateNotificationPreferenceHandler)
+	notificationPreferences.PUT("/bulk", notificationPreferenceHandler.UpdateNotificationPreferencesBulk)
 }

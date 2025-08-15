@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -8,6 +9,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
@@ -126,4 +128,61 @@ func (h *NotificationPreferenceHandler) UpdateNotificationPreferenceHandler(c ec
 	)
 
 	return responses.NewNotificationPreferenceResponseSuccess(preference).JSON(c)
+}
+
+// UpdateNotificationPreferencesBulk updates multiple notification preferences in bulk
+// @Summary      Bulk update notification preferences
+// @Description  Update multiple notification preferences for the current user in bulk
+// @Tags         notification-preferences
+// @Accept       json
+// @Produce      json
+// @Param        body  body  []requests.UpdateNotificationPreferenceRequest  true  "Notification Preferences"
+// @Success      200   {object} responses.NotificationPreferencesBulkResponse
+// @Failure      400   {object} responses.ErrorResponse
+// @Failure      500   {object} responses.ErrorResponse
+// @Router       /notification-preferences/bulk [put]
+// @Security     BearerAuth
+func (h *NotificationPreferenceHandler) UpdateNotificationPreferencesBulk(c echo.Context) error {
+	var reqs []requests.NotificationPreferenceRequest
+
+	if err := c.Bind(&reqs); err != nil {
+		h.server.Logger.Zap.Errorw("Failed to bind bulk update request", "error", err.Error())
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request body: "+err.Error()).JSON(c)
+	}
+
+	validate := validator.New()
+	for i, req := range reqs {
+		if err := validate.Struct(req); err != nil {
+			h.server.Logger.Zap.Errorw("Validation failed for bulk update", "index", i, "error", err.Error())
+			return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed for preference at index "+fmt.Sprintf("%d", i)+": "+err.Error()).JSON(c)
+		}
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	id := claims.ID
+
+	queries := h.server.DB.Queries()
+	ctx := c.Request().Context()
+
+	var updatedPreferences []db.NotificationPreference
+	for _, req := range reqs {
+		params := db.UpsertNotificationPreferenceParams{
+			UserID:           id,
+			NotificationType: req.NotificationType,
+			Enabled:          &req.Enabled,
+			DeliveryMethod:   &req.DeliveryMethod,
+		}
+
+		pref, err := queries.UpsertNotificationPreference(ctx, params)
+		if err != nil {
+			h.server.Logger.Zap.Errorw("Failed to upsert notification preference in bulk", "notificationType", req.NotificationType, "error", err.Error())
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update notification preferences: "+err.Error()).JSON(c)
+		}
+		updatedPreferences = append(updatedPreferences, pref)
+	}
+
+	h.server.Logger.Zap.Infow("Successfully bulk updated notification preferences", "count", len(updatedPreferences))
+
+	return responses.NewNotificationPreferencesBulkResponse(updatedPreferences).JSON(c)
 }
