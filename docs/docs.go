@@ -3621,7 +3621,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Global search across type and status",
+                        "description": "Global search across document ID and customerId in blob metadata",
                         "name": "search",
                         "in": "query"
                     },

@@ -6269,7 +6269,7 @@ paths:
         in: query
         name: type
         type: string
-      - description: Global search across type and status
+      - description: Global search across document ID and customerId in blob metadata
         in: query
         name: search
         type: string
