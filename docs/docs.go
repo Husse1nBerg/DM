@@ -7895,6 +7895,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/notification-preference/bulk": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update multiple notification preferences for the current user in bulk",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification Preference"
+                ],
+                "summary": "Bulk update notification preferences",
+                "parameters": [
+                    {
+                        "description": "Notification Preferences",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/requests.NotificationPreferenceRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NotificationPreferencesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/notification-preference/list": {
             "get": {
                 "security": [
@@ -16436,6 +16487,18 @@ const docTemplate = `{
                 "userId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                }
+            }
+        },
+        "responses.NotificationPreferencesResponse": {
+            "description": "List of notification preferences",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.NotificationPreferenceResponse"
+                    }
                 }
             }
         },

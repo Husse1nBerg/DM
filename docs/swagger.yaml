@@ -3431,6 +3431,14 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
     type: object
+  responses.NotificationPreferencesResponse:
+    description: List of notification preferences
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.NotificationPreferenceResponse'
+        type: array
+    type: object
   responses.NotificationResponse:
     description: Notification data including type, title, content, and status information
     properties:
@@ -9035,6 +9043,39 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Upsert notification preference
+      tags:
+      - Notification Preference
+  /notification-preference/bulk:
+    put:
+      consumes:
+      - application/json
+      description: Update multiple notification preferences for the current user in
+        bulk
+      parameters:
+      - description: Notification Preferences
+        in: body
+        name: body
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/requests.NotificationPreferenceRequest'
+          type: array
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.NotificationPreferencesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Bulk update notification preferences
       tags:
       - Notification Preference
   /notification-preference/list:

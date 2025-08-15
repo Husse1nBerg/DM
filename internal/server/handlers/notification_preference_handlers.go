@@ -133,14 +133,13 @@ func (h *NotificationPreferenceHandler) UpdateNotificationPreferenceHandler(c ec
 // UpdateNotificationPreferencesBulk updates multiple notification preferences in bulk
 // @Summary      Bulk update notification preferences
 // @Description  Update multiple notification preferences for the current user in bulk
-// @Tags         notification-preferences
+// @Tags         Notification Preference
 // @Accept       json
-// @Produce      json
-// @Param        body  body  []requests.UpdateNotificationPreferenceRequest  true  "Notification Preferences"
-// @Success      200   {object} responses.NotificationPreferencesBulkResponse
-// @Failure      400   {object} responses.ErrorResponse
-// @Failure      500   {object} responses.ErrorResponse
-// @Router       /notification-preferences/bulk [put]
+// @Param        body  body  []requests.NotificationPreferenceRequest  true  "Notification Preferences"
+// @Success      200   {object} responses.NotificationPreferencesResponse
+// @Failure      400   {object} responses.Error
+// @Failure      500   {object} responses.Error
+// @Router       /notification-preference/bulk [put]
 // @Security     BearerAuth
 func (h *NotificationPreferenceHandler) UpdateNotificationPreferencesBulk(c echo.Context) error {
 	var reqs []requests.NotificationPreferenceRequest
