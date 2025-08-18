@@ -2528,23 +2528,24 @@ definitions:
       total:
         type: integer
     type: object
-  responses.ContactListResponse:
-    description: Contact list response model
+  responses.ContactListPaginatedResponse:
+    description: Contact list paginated response model
     properties:
       currentPage:
+        example: 1
         type: integer
       data:
         items:
           $ref: '#/definitions/responses.ContactResponse'
         type: array
-      details: {}
-      error: {}
       lastPage:
+        example: 5
         type: integer
-      message: {}
       perPage:
+        example: 10
         type: integer
       total:
+        example: 42
         type: integer
     type: object
   responses.ContactResponse:
@@ -8020,7 +8021,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Lists all contacts for a marina, optionally filtered by type
+      description: Lists all contacts for a marina, with optional filtering, search,
+        sorting, and pagination
       parameters:
       - description: Marina ID
         format: uuid
@@ -8028,9 +8030,46 @@ paths:
         name: marinaId
         required: true
         type: string
+      - description: Global search across name, email, phone
+        in: query
+        name: search
+        type: string
       - description: Contact type (phone or email)
         in: query
         name: type
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      - default: created_at
+        description: Sort field
+        enum:
+        - name
+        - email
+        - phone
+        - type
+        - created_at
+        - updated_at
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
         type: string
       produces:
       - application/json
@@ -8038,7 +8077,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.ContactListResponse'
+            $ref: '#/definitions/responses.ContactListPaginatedResponse'
         "400":
           description: Bad Request
           schema:

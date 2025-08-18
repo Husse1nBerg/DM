@@ -25,13 +25,18 @@ func NewContactHandler(server *s.Server) *ContactHandler {
 // ListContacts lists all contacts for a marina
 //
 //	@Summary		List contacts
-//	@Description	Lists all contacts for a marina, optionally filtered by type
+//	@Description	Lists all contacts for a marina, with optional filtering, search, sorting, and pagination
 //	@Tags			Contacts
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	path		string	true	"Marina ID"	Format(uuid)
+//	@Param			search		query		string	false	"Global search across name, email, phone"
 //	@Param			type		query		string	false	"Contact type (phone or email)"
-//	@Success		200			{object}	responses.ContactListResponse
+//	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Param			sortBy		query		string	false	"Sort field"	Enums(name, email, phone, type, created_at, updated_at)	default(created_at)
+//	@Param			sortOrder	query		string	false	"Sort direction"	Enums(asc, desc)	default(desc)
+//	@Success		200			{object}	responses.ContactListPaginatedResponse
 //	@Failure		400			{object}	responses.Error
 //	@Failure		500			{object}	responses.Error
 //	@Security		ApiKeyAuth
@@ -43,24 +48,76 @@ func (h *ContactHandler) ListContacts(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID").JSON(c)
 	}
 
-	contactType := c.QueryParam("type")
-	var contacts []db.Contact
-	var err2 error
+	var req requests.ListContactsRequest
+	if err := c.Bind(&req); err != nil {
+		req.Page = 1
+		req.PageSize = 10
+	}
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+	// Always set marina ID from path
+	req.MarinaID = marinaID.String()
 
-	if contactType != "" {
-		contacts, err2 = h.server.DB.Queries().ListContactsByType(c.Request().Context(), db.ListContactsByTypeParams{
+	// Default sort
+	sortBy := req.SortBy
+	sortOrder := req.SortOrder
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+
+	// If no filter/sort/search params, fallback to old behavior
+	if req.Search == "" && req.Filters["type"] == "" && req.SortBy == "" && req.SortOrder == "" && req.Page == 1 && req.PageSize == 10 {
+		contacts, err2 := h.server.DB.Queries().ListContacts(c.Request().Context(), marinaID)
+		if err2 != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err2).JSON(c)
+		}
+		return responses.NewContactListResponse(contacts).JSON(c)
+	}
+
+	// Use new flexible query
+	contactType := req.Filters["type"]
+	if contactType == "" {
+		contactType = c.QueryParam("type")
+	}
+	var contacts []db.Contact
+	if sortOrder == "asc" {
+		contacts, err = h.server.DB.Queries().ListContactsWithFiltersAsc(c.Request().Context(), db.ListContactsWithFiltersAscParams{
 			MarinaID: marinaID,
-			Type:     contactType,
+			Column2:  req.Search,
+			Column3:  contactType,
+			Column4:  sortBy,
+			Limit:    req.PageSize,
+			Offset:   (req.Page - 1) * req.PageSize,
 		})
 	} else {
-		contacts, err2 = h.server.DB.Queries().ListContacts(c.Request().Context(), marinaID)
+		contacts, err = h.server.DB.Queries().ListContactsWithFiltersDesc(c.Request().Context(), db.ListContactsWithFiltersDescParams{
+			MarinaID: marinaID,
+			Column2:  req.Search,
+			Column3:  contactType,
+			Column4:  sortBy,
+			Limit:    req.PageSize,
+			Offset:   (req.Page - 1) * req.PageSize,
+		})
 	}
-
-	if err2 != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err2).JSON(c)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-
-	return responses.NewContactListResponse(contacts).JSON(c)
+	total, err := h.server.DB.Queries().CountContactsWithFilters(c.Request().Context(), db.CountContactsWithFiltersParams{
+		MarinaID: marinaID,
+		Column2:  req.Search,
+		Column3:  contactType,
+	})
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+	return responses.NewContactListPaginatedResponse(contacts, total, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateContact creates a new contact

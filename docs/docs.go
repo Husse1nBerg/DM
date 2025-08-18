@@ -6310,7 +6310,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Lists all contacts for a marina, optionally filtered by type",
+                "description": "Lists all contacts for a marina, with optional filtering, search, sorting, and pagination",
                 "consumes": [
                     "application/json"
                 ],
@@ -6332,8 +6332,57 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Global search across name, email, phone",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Contact type (phone or email)",
                         "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "name",
+                            "email",
+                            "phone",
+                            "type",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -6341,7 +6390,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ContactListResponse"
+                            "$ref": "#/definitions/responses.ContactListPaginatedResponse"
                         }
                     },
                     "400": {
@@ -15287,12 +15336,13 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ContactListResponse": {
-            "description": "Contact list response model",
+        "responses.ContactListPaginatedResponse": {
+            "description": "Contact list paginated response model",
             "type": "object",
             "properties": {
                 "currentPage": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "data": {
                     "type": "array",
@@ -15300,17 +15350,17 @@ const docTemplate = `{
                         "$ref": "#/definitions/responses.ContactResponse"
                     }
                 },
-                "details": {},
-                "error": {},
                 "lastPage": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 5
                 },
-                "message": {},
                 "perPage": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
                 "total": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
