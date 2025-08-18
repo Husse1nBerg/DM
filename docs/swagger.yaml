@@ -6633,6 +6633,10 @@ paths:
         in: query
         name: search
         type: string
+      - description: Filter by exact customer ID
+        in: query
+        name: customerId
+        type: string
       - default: 1
         description: Page number
         in: query
