@@ -142,6 +142,7 @@ WHERE organization_id = $1
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
     LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
   ))
+  AND ($9 = '' OR customer_id = $9)
 ORDER BY 
   CASE 
     WHEN $5 = 'email' AND $6 = 'asc' THEN email
@@ -178,7 +179,8 @@ WHERE organization_id = $1
     LOWER(name) LIKE LOWER('%' || $4 || '%') OR
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
     LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
-  ));
+  ))
+  AND ($5 = '' OR customer_id = $5);
 
 -- name: ListEsignSubmissionsFilteredByDocument :many
 SELECT *
