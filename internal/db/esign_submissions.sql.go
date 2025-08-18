@@ -179,6 +179,7 @@ WHERE organization_id = $1
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
     LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
   ))
+  AND ($5 = '' OR customer_id = $5)
 `
 
 type CountEsignSubmissionsWithFiltersParams struct {
@@ -186,6 +187,7 @@ type CountEsignSubmissionsWithFiltersParams struct {
 	MarinaID       uuid.UUID
 	Column3        interface{}
 	Column4        interface{}
+	Column5        interface{}
 }
 
 func (q *Queries) CountEsignSubmissionsWithFilters(ctx context.Context, arg CountEsignSubmissionsWithFiltersParams) (int64, error) {
@@ -194,6 +196,7 @@ func (q *Queries) CountEsignSubmissionsWithFilters(ctx context.Context, arg Coun
 		arg.MarinaID,
 		arg.Column3,
 		arg.Column4,
+		arg.Column5,
 	)
 	var count int64
 	err := row.Scan(&count)
@@ -781,6 +784,7 @@ WHERE organization_id = $1
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
     LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
   ))
+  AND ($9 = '' OR customer_id = $9)
 ORDER BY 
   CASE 
     WHEN $5 = 'email' AND $6 = 'asc' THEN email
@@ -815,6 +819,7 @@ type ListEsignSubmissionsWithFiltersParams struct {
 	Column6        interface{}
 	Limit          int32
 	Offset         int32
+	Column9        interface{}
 }
 
 func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListEsignSubmissionsWithFiltersParams) ([]EsignSubmission, error) {
@@ -827,6 +832,7 @@ func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListE
 		arg.Column6,
 		arg.Limit,
 		arg.Offset,
+		arg.Column9,
 	)
 	if err != nil {
 		return nil, err

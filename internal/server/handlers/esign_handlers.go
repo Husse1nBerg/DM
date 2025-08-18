@@ -915,6 +915,7 @@ func (h *EsignHandler) DeleteEsignDocument(c echo.Context) error {
 //	@Produce		json
 //	@Param			status		query		string	false	"Filter by submission status" Enums(pending, signed, questions, sent)
 //	@Param			search		query		string	false	"Global search across email, name, status, and customer_id"
+//	@Param			customerId	query		string	false	"Filter by exact customer ID"
 //	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
 //	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
 //	@Param			sortBy		query		string	false	"Sort field" Enums(email, name, status, customer_id, created_at, updated_at) default(created_at)
@@ -956,6 +957,7 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 	// Extract specific filter parameters
 	status := c.QueryParam("status")
 	search := c.QueryParam("search")
+	customerID := c.QueryParam("customerId")
 
 	// Override with filters map if provided
 	if req.Filters != nil {
@@ -964,6 +966,9 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		}
 		if val, exists := req.Filters["search"]; exists && search == "" {
 			search = val
+		}
+		if val, exists := req.Filters["customerId"]; exists && customerID == "" {
+			customerID = val
 		}
 	}
 
@@ -994,6 +999,7 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		Column6:        sortOrder,
 		Limit:          req.PageSize,
 		Offset:         (req.Page - 1) * req.PageSize,
+		Column9:        customerID,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching filtered submissions", err)
@@ -1005,6 +1011,7 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		MarinaID:       req.MarinaID,
 		Column3:        status,
 		Column4:        search,
+		Column5:        customerID,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error counting filtered submissions", err)
