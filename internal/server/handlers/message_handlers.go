@@ -350,23 +350,38 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	if err != nil {
 		logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", req.MarinaID, "error", err)
 	} else {
-		// Create notifications for marina staff
-		for _, userRow := range marinaUsers {
-			// Only notify active users
-			if userRow.IsActive != nil && *userRow.IsActive {
-				notificationErr := h.notificationService.CreateMessageNotification(
-					c.Request().Context(),
-					userRow.ID,
-					userRow.OrganizationID,
-					userRow.MarinaID,
-					req.Body,       // Message content preview
-					req.Sender,     // Customer name
-					req.CustomerID, // Customer ID
-				)
-				if notificationErr != nil {
-					logger.Zap.Warnw("Failed to create notification for marina user",
-						"user_id", userRow.ID,
-						"error", notificationErr)
+		// Create notifications for marina staff using smart notification system
+		emailData := &notifications.EmailNotificationData{
+			To:      []string{req.Contact},
+			Subject: "New Customer Message",
+		}
+
+		results, err := h.notificationService.CreateBulkMessageNotifications(
+			c.Request().Context(),
+			marinaUsers,
+			req.MarinaID, // Using marina ID as organization ID for now
+			req.MarinaID,
+			req.Body,       // Message content preview
+			req.Sender,     // Customer name
+			req.CustomerID, // Customer ID
+			emailData,
+			nil, // No SMS data for customer messages
+		)
+		if err != nil {
+			logger.Zap.Warnw("Failed to create bulk message notifications", "error", err)
+		} else {
+			// Log notification results
+			for _, result := range results {
+				if len(result.Errors) > 0 {
+					logger.Zap.Warnw("Notification delivery had errors",
+						"user_id", result.UserID,
+						"errors", result.Errors)
+				} else {
+					logger.Zap.Infow("Notification delivered successfully",
+						"user_id", result.UserID,
+						"push", result.PushDelivered,
+						"email", result.EmailDelivered,
+						"sms", result.SMSDelivered)
 				}
 			}
 		}
@@ -629,19 +644,50 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		logger.Zap.Errorw("Failed to get customer users", "error", err)
 	}
 	if len(customers) > 0 {
-		// Create notification for customer users about new marina message
-		for _, customer := range customers {
-			notificationErr := h.notificationService.CreateMessageNotification(
-				c.Request().Context(),
-				customer.ID,
-				customer.OrganizationID,
-				customer.MarinaID,
-				req.Body,
-				req.Sender,
-				req.CustomerID, // Customer ID
-			)
-			if notificationErr != nil {
-				logger.Zap.Errorw("Failed to create notification for customer user", "error", notificationErr)
+		// Create notification for customer users about new marina message using smart notification system
+		var emailData *notifications.EmailNotificationData
+		var smsData *notifications.SMSNotificationData
+
+		// Prepare delivery data based on message type
+		if req.Type == "email" {
+			emailData = &notifications.EmailNotificationData{
+				To:      []string{req.Contact},
+				Subject: "Message from " + req.Sender,
+			}
+		} else if req.Type == "sms" {
+			smsData = &notifications.SMSNotificationData{
+				To:      req.Contact,
+				Message: req.Body,
+			}
+		}
+
+		results, err := h.notificationService.CreateBulkMessageNotificationsForCustomers(
+			c.Request().Context(),
+			customers,
+			req.MarinaID, // Using marina ID as organization ID for now
+			req.MarinaID,
+			req.Body,
+			req.Sender,
+			req.CustomerID,
+			emailData,
+			smsData,
+		)
+		if err != nil {
+			logger.Zap.Errorw("Failed to create bulk message notifications for customers", "error", err)
+		} else {
+			// Log notification results
+			for _, result := range results {
+				if len(result.Errors) > 0 {
+					logger.Zap.Warnw("Customer notification delivery had errors",
+						"user_id", result.UserID,
+						"errors", result.Errors)
+				} else {
+					logger.Zap.Infow("Customer notification delivered successfully",
+						"user_id", result.UserID,
+						"push", result.PushDelivered,
+						"email", result.EmailDelivered,
+						"sms", result.SMSDelivered)
+				}
 			}
 		}
 	}
