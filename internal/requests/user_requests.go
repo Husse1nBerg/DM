@@ -92,6 +92,14 @@ type ListUsersRequest struct {
 	FilterSortParams
 }
 
+type ListUsersMarinasRequest struct {
+	MarinaID   uuid.UUID `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
+	IsCustomer *bool     `json:"isCustomer" example:"true"`
+	RoleID     uuid.UUID `json:"roleId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	IsActive   *bool     `json:"isActive" example:"true"`
+	FilterSortParams
+}
+
 // Validate performs custom validation on the request
 func (r *CreateUserRequest) Validate() error {
 	validate := validator.New()

@@ -515,6 +515,16 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 		isCustomer = &value
 	}
 
+	req := new(requests.ListUsersMarinasRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+	// Set MarinaID from path param
+	req.MarinaID = marinaID
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
 	// Parse pagination params
 	pagination := new(requests.PaginationQuery)
 	if err := c.Bind(pagination); err != nil {
@@ -522,36 +532,86 @@ func (g *UserHandler) GetUsersByMarinaHandler(c echo.Context) error {
 		pagination.PageSize = 10
 	}
 
-	queries := g.server.DB.Queries()
+	sortBy := c.QueryParam("sortBy")
+	sortOrder := c.QueryParam("sortOrder")
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
 
-	// Use the new ListUserMarinasAssignmentsPaginated query
 	var isCustomerVal bool
 	if isCustomer != nil {
 		isCustomerVal = *isCustomer
 	}
-	params := db.ListUserMarinasAssignmentsPaginatedParams{
-		MarinaID: marinaID,
-		Column2:  isCustomerVal,
-		Limit:    pagination.PageSize,
-		Offset:   (pagination.Page - 1) * pagination.PageSize,
+
+	queries := g.server.DB.Queries()
+
+	// Prepare roleID and isActive for query
+	roleID := ""
+	if req.RoleID != uuid.Nil {
+		roleID = req.RoleID.String()
 	}
-	rows, err := queries.ListUserMarinasAssignmentsPaginated(c.Request().Context(), params)
+	isActive := ""
+	if req.IsActive != nil {
+		isActive = fmt.Sprintf("%v", *req.IsActive)
+	}
+
+	var rowsAsc []db.ListUserMarinasAssignmentsPaginatedAscRow
+	var rowsDesc []db.ListUserMarinasAssignmentsPaginatedDescRow
+	if sortOrder == "asc" {
+		rowsAsc, err = queries.ListUserMarinasAssignmentsPaginatedAsc(c.Request().Context(), db.ListUserMarinasAssignmentsPaginatedAscParams{
+			MarinaID: marinaID,
+			Column2:  isCustomerVal,
+			Column3:  req.Search,
+			Column4:  roleID,
+			Column5:  isActive,
+			Column6:  sortBy,
+			Limit:    pagination.PageSize,
+			Offset:   (pagination.Page - 1) * pagination.PageSize,
+		})
+	} else {
+		rowsDesc, err = queries.ListUserMarinasAssignmentsPaginatedDesc(c.Request().Context(), db.ListUserMarinasAssignmentsPaginatedDescParams{
+			MarinaID: marinaID,
+			Column2:  isCustomerVal,
+			Column3:  req.Search,
+			Column4:  roleID,
+			Column5:  isActive,
+			Column6:  sortBy,
+			Limit:    pagination.PageSize,
+			Offset:   (pagination.Page - 1) * pagination.PageSize,
+		})
+	}
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Map to response DTOs
-	userResponses := make([]responses.UserResponse, len(rows))
-	for i, row := range rows {
-		response := responses.NewUserResponseFromUserMarinasAssignmentRow(row, g.server)
-		if response != nil {
-			userResponses[i] = *response
+	var total int64
+	if sortOrder == "asc" {
+		total = int64(len(rowsAsc))
+		userResponses := make([]responses.UserResponse, len(rowsAsc))
+		for i, row := range rowsAsc {
+			response := responses.NewUserResponseFromUserMarinasAssignmentRow(row, g.server)
+			if response != nil {
+				userResponses[i] = *response
+			}
 		}
+
+		return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
+	} else {
+		total = int64(len(rowsDesc))
+		userResponses := make([]responses.UserResponse, len(rowsDesc))
+		for i, row := range rowsDesc {
+			response := responses.NewUserResponseFromUserMarinasAssignmentRow(db.ListUserMarinasAssignmentsPaginatedAscRow(row), g.server)
+			if response != nil {
+				userResponses[i] = *response
+			}
+		}
+
+		return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 	}
 
-	total := int64(len(rows))
-
-	return responses.NewPaginatedResponse(userResponses, total, pagination.PageSize, pagination.Page).JSON(c)
 }
 
 // GetMarinaUsersList gets all users associated with a marina through user_marinas
