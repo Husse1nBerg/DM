@@ -299,3 +299,78 @@ SET password_hash = $2,
     joined_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
+-- name: GetAllUsersFilteredSortedAsc :many
+SELECT *
+FROM users
+WHERE deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR username ILIKE '%' || $1 || '%'
+    OR first_name ILIKE '%' || $1 || '%'
+    OR last_name ILIKE '%' || $1 || '%'
+    OR email ILIKE '%' || $1 || '%'
+    OR phone ILIKE '%' || $1 || '%'
+    OR title ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR role_id = $2::uuid)
+  AND ($3 = '' OR is_active = ($3)::boolean)
+ORDER BY
+  (CASE WHEN $4 = 'username' THEN username END) ASC,
+  (CASE WHEN $4 = 'first_name' THEN first_name END) ASC,
+  (CASE WHEN $4 = 'last_name' THEN last_name END) ASC,
+  (CASE WHEN $4 = 'email' THEN email END) ASC,
+  (CASE WHEN $4 = 'phone' THEN phone END) ASC,
+  (CASE WHEN $4 = 'title' THEN title END) ASC,
+  (CASE WHEN $4 = 'last_login' THEN last_login END) ASC,
+  (CASE WHEN $4 = 'failed_login_attempts' THEN failed_login_attempts END) ASC,
+  (CASE WHEN $4 = 'locked_until' THEN locked_until END) ASC,
+  (CASE WHEN $4 = 'last_password_reset' THEN last_password_reset END) ASC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) ASC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) ASC
+LIMIT $5 OFFSET $6;
+
+-- name: GetAllUsersFilteredSortedDesc :many
+SELECT *
+FROM users
+WHERE deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR username ILIKE '%' || $1 || '%'
+    OR first_name ILIKE '%' || $1 || '%'
+    OR last_name ILIKE '%' || $1 || '%'
+    OR email ILIKE '%' || $1 || '%'
+    OR phone ILIKE '%' || $1 || '%'
+    OR title ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR role_id = $2::uuid)
+  AND ($3 = '' OR is_active = ($3)::boolean)
+ORDER BY
+  (CASE WHEN $4 = 'username' THEN username END) DESC,
+  (CASE WHEN $4 = 'first_name' THEN first_name END) DESC,
+  (CASE WHEN $4 = 'last_name' THEN last_name END) DESC,
+  (CASE WHEN $4 = 'email' THEN email END) DESC,
+  (CASE WHEN $4 = 'phone' THEN phone END) DESC,
+  (CASE WHEN $4 = 'title' THEN title END) DESC,
+  (CASE WHEN $4 = 'last_login' THEN last_login END) DESC,
+  (CASE WHEN $4 = 'failed_login_attempts' THEN failed_login_attempts END) DESC,
+  (CASE WHEN $4 = 'locked_until' THEN locked_until END) DESC,
+  (CASE WHEN $4 = 'last_password_reset' THEN last_password_reset END) DESC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) DESC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) DESC
+LIMIT $5 OFFSET $6;
+
+-- name: CountUsersWithFilters :one
+SELECT COUNT(*)
+FROM users
+WHERE deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR username ILIKE '%' || $1 || '%'
+    OR first_name ILIKE '%' || $1 || '%'
+    OR last_name ILIKE '%' || $1 || '%'
+    OR email ILIKE '%' || $1 || '%'
+    OR phone ILIKE '%' || $1 || '%'
+    OR title ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR role_id = $2::uuid)
+  AND ($3 = '' OR is_active = ($3)::boolean);
