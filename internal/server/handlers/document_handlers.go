@@ -194,55 +194,6 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
 	}
 
-	marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
-		MarinaID:   marinaID,
-		IsCustomer: utils.Pointer(false), // Get marina staff, not customers
-	})
-	if err != nil {
-		h.server.Logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", marinaID, "error", err)
-	} else {
-		// Create notifications for marina staff using smart notification system
-		// Use background context with timeout for notification operations
-		// Timeout calculation: 37 users × 5.5 seconds = ~3.4 minutes, so we use 5 minutes for safety
-		go func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			defer cancel()
-
-			emailData := &notifications.EmailNotificationData{
-				To:      []string{}, // No specific email recipients for document notifications
-				Subject: "New Customer Document Uploaded",
-			}
-
-			results, err := h.notificationService.CreateBulkDocumentNotifications(
-				ctx,
-				marinaUsers,
-				marina.OrganizationID,
-				marinaID,
-				header.Filename, // Document filename
-				entityID,        // Customer ID
-				emailData,
-			)
-			if err != nil {
-				h.server.Logger.Zap.Warnw("Failed to create bulk document notifications", "error", err)
-			} else {
-				// Log notification results
-				for _, result := range results {
-					if len(result.Errors) > 0 {
-						h.server.Logger.Zap.Warnw("Document notification delivery had errors",
-							"user_id", result.UserID,
-							"errors", result.Errors)
-					} else {
-						h.server.Logger.Zap.Infow("Document notification delivered successfully",
-							"user_id", result.UserID,
-							"push", result.PushDelivered,
-							"email", result.EmailDelivered,
-							"sms", result.SMSDelivered)
-					}
-				}
-			}
-		}()
-	}
-
 	// Return created document
 	response := responses.NewDocumentResponseSuccess(doc)
 	response.Code = http.StatusCreated
@@ -679,7 +630,7 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
 	if err != nil {
 		h.server.Logger.Zap.Error("[DME API] Error fetching marina for DME update (document)", err)
-		return
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 
 	marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
