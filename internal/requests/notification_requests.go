@@ -40,7 +40,7 @@ type CreateNotificationRequest struct {
 	UserID         uuid.UUID        `json:"userId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	OrganizationID uuid.UUID        `json:"organizationId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
 	MarinaID       uuid.UUID        `json:"marinaId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Type           string           `json:"type" validate:"required,oneof=message invite system alert esign" example:"message"`
+	Type           string           `json:"type" validate:"required,oneof=message invite system alert esign document payment" example:"message"`
 	Title          string           `json:"title" validate:"required,max=255" example:"New Message Received"`
 	Content        string           `json:"content" validate:"required" example:"You have received a new message from the marina."`
 	Data           NotificationData `json:"data,omitempty" example:"{}"`
@@ -86,7 +86,7 @@ type MarkAllNotificationsAsReadRequest struct {
 // GetNotificationsByTypeRequest represents a request to get notifications by type
 type GetNotificationsByTypeRequest struct {
 	PaginationQuery
-	Type     string     `query:"type" validate:"required,oneof=message invite system alert" example:"message"`
+	Type     string     `query:"type" validate:"required,oneof=message invite system alert esign document payment" example:"message"`
 	MarinaID *uuid.UUID `query:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
 }
 

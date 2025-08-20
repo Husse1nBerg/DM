@@ -14241,7 +14241,10 @@ const docTemplate = `{
                         "message",
                         "invite",
                         "system",
-                        "alert"
+                        "alert",
+                        "document",
+                        "esign",
+                        "payment"
                     ],
                     "example": "message"
                 }
