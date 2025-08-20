@@ -49,6 +49,11 @@ func (s *NotificationService) CreateNotification(ctx context.Context, req reques
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
+	// Check if context is already cancelled
+	if ctx.Err() != nil {
+		return nil, fmt.Errorf("context cancelled: %w", ctx.Err())
+	}
+
 	// Set default priority if not provided
 	priority := "normal"
 	if req.Priority != nil {
@@ -79,16 +84,89 @@ func (s *NotificationService) CreateNotification(ctx context.Context, req reques
 
 	notification, err := s.db.CreateNotification(ctx, params)
 	if err != nil {
-		s.logger.Zap.Errorw("Failed to create notification", "error", err, "userID", req.UserID)
+		// Check if it's a context timeout error
+		if ctx.Err() == context.DeadlineExceeded {
+			s.logger.Zap.Errorw("Notification creation timed out",
+				"userID", req.UserID,
+				"type", req.Type,
+				"error", err)
+			return nil, fmt.Errorf("notification creation timed out: %w", err)
+		}
+
+		s.logger.Zap.Errorw("Failed to create notification",
+			"error", err,
+			"userID", req.UserID,
+			"type", req.Type)
 		return nil, fmt.Errorf("failed to create notification: %w", err)
 	}
 
-	s.logger.Zap.Infow("Notification created", "notificationID", notification.ID, "userID", req.UserID, "type", req.Type)
+	s.logger.Zap.Infow("Notification created",
+		"notificationID", notification.ID,
+		"userID", req.UserID,
+		"type", req.Type)
+
+	// Verify the notification was actually saved by trying to retrieve it
+	// This helps identify if there are transaction rollback issues
+	// Skip verification under time pressure to improve performance
+	if deadline, ok := ctx.Deadline(); ok {
+		remaining := time.Until(deadline)
+		if remaining < 30*time.Second {
+			s.logger.Zap.Debugw("Skipping notification verification due to time pressure",
+				"notificationID", notification.ID,
+				"userID", req.UserID,
+				"remaining_time", remaining)
+		} else {
+			verificationCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			defer cancel()
+
+			_, verifyErr := s.db.GetNotificationByID(verificationCtx, db.GetNotificationByIDParams{
+				ID:     notification.ID,
+				UserID: req.UserID,
+			})
+			if verifyErr != nil {
+				s.logger.Zap.Errorw("Notification verification failed - notification may not have been committed",
+					"notificationID", notification.ID,
+					"userID", req.UserID,
+					"type", req.Type,
+					"error", verifyErr)
+				// Don't fail the operation, but log the warning
+			} else {
+				s.logger.Zap.Debugw("Notification verified in database",
+					"notificationID", notification.ID,
+					"userID", req.UserID,
+					"type", req.Type)
+			}
+		}
+	} else {
+		// No deadline, always verify
+		verificationCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		_, verifyErr := s.db.GetNotificationByID(verificationCtx, db.GetNotificationByIDParams{
+			ID:     notification.ID,
+			UserID: req.UserID,
+		})
+		if verifyErr != nil {
+			s.logger.Zap.Errorw("Notification verification failed - notification may not have been committed",
+				"notificationID", notification.ID,
+				"userID", req.UserID,
+				"type", req.Type,
+				"error", verifyErr)
+			// Don't fail the operation, but log the warning
+		} else {
+			s.logger.Zap.Debugw("Notification verified in database",
+				"notificationID", notification.ID,
+				"userID", req.UserID,
+				"type", req.Type)
+		}
+	}
 
 	// Send real-time notification if requested
 	if sendRealTime {
 		if err := s.SendRealTimeNotification(ctx, notification); err != nil {
-			s.logger.Zap.Warnw("Failed to send real-time notification", "error", err, "notificationID", notification.ID)
+			s.logger.Zap.Warnw("Failed to send real-time notification",
+				"error", err,
+				"notificationID", notification.ID)
 			// Don't fail the entire operation if real-time sending fails
 		}
 	}
@@ -486,16 +564,32 @@ func (s *NotificationService) SendSmartNotification(ctx context.Context, req Sma
 		UserID: req.UserID,
 	}
 
+	// Check if context is already cancelled
+	if ctx.Err() != nil {
+		return nil, fmt.Errorf("context cancelled: %w", ctx.Err())
+	}
+
 	// Get user's notification preferences for this type
 	preference, err := s.db.GetNotificationPreference(ctx, db.GetNotificationPreferenceParams{
 		UserID:           req.UserID,
 		NotificationType: req.Type,
 	})
 	if err != nil {
-		// If no preference found, use default (push only)
+		// Check if it's a context timeout error
+		if ctx.Err() == context.DeadlineExceeded {
+			s.logger.Zap.Warnw("Notification preference lookup timed out, using default",
+				"userID", req.UserID,
+				"type", req.Type,
+				"error", err)
+			return s.sendDefaultNotification(ctx, req)
+		}
+
+		// If no preference found (no rows), use default (push only)
+		// This is the expected case for new users or users who haven't set preferences
 		s.logger.Zap.Debugw("No notification preference found, using default",
 			"userID", req.UserID,
-			"type", req.Type)
+			"type", req.Type,
+			"error", err)
 		return s.sendDefaultNotification(ctx, req)
 	}
 
@@ -535,6 +629,10 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 		UserID: req.UserID,
 	}
 
+	s.logger.Zap.Debugw("Creating default push notification",
+		"userID", req.UserID,
+		"type", req.Type)
+
 	// Create and send push notification
 	notificationReq := requests.CreateNotificationRequest{
 		UserID:         req.UserID,
@@ -549,9 +647,20 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 
 	notification, err := s.CreateNotification(ctx, notificationReq, true)
 	if err != nil {
+		s.logger.Zap.Warnw("Failed to create default push notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+
+		// Add error to result but don't fail completely
 		result.Errors = append(result.Errors, fmt.Sprintf("Push notification failed: %v", err))
-		return result, err
+		return result, nil // Return result with error instead of failing
 	}
+
+	s.logger.Zap.Debugw("Default push notification created successfully",
+		"userID", req.UserID,
+		"type", req.Type,
+		"notificationID", notification.ID)
 
 	result.NotificationID = &notification.ID
 	result.PushDelivered = true
@@ -564,6 +673,10 @@ func (s *NotificationService) sendPushNotification(ctx context.Context, req Smar
 		UserID: req.UserID,
 	}
 
+	s.logger.Zap.Debugw("Creating push notification",
+		"userID", req.UserID,
+		"type", req.Type)
+
 	// Create and send push notification
 	notificationReq := requests.CreateNotificationRequest{
 		UserID:         req.UserID,
@@ -578,9 +691,20 @@ func (s *NotificationService) sendPushNotification(ctx context.Context, req Smar
 
 	notification, err := s.CreateNotification(ctx, notificationReq, true)
 	if err != nil {
+		s.logger.Zap.Warnw("Failed to create push notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+
+		// Add error to result but don't fail completely
 		result.Errors = append(result.Errors, fmt.Sprintf("Push notification failed: %v", err))
-		return result, err
+		return result, nil // Return result with error instead of failing
 	}
+
+	s.logger.Zap.Debugw("Push notification created successfully",
+		"userID", req.UserID,
+		"type", req.Type,
+		"notificationID", notification.ID)
 
 	result.NotificationID = &notification.ID
 	result.PushDelivered = true
@@ -595,8 +719,11 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 
 	// Check if email data is provided
 	if req.EmailData == nil {
+		s.logger.Zap.Warnw("Email data not provided for email notification",
+			"userID", req.UserID,
+			"type", req.Type)
 		result.Errors = append(result.Errors, "Email data not provided")
-		return result, fmt.Errorf("email data not provided")
+		return result, nil // Return result with error instead of failing
 	}
 
 	// Create push notification for in-app display
@@ -613,8 +740,14 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 
 	notification, err := s.CreateNotification(ctx, notificationReq, false) // Don't send real-time for email
 	if err != nil {
-		result.Errors = append(result.Errors, fmt.Sprintf("Push notification creation failed: %v", err))
-		return result, err
+		s.logger.Zap.Warnw("Failed to create email notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+
+		// Add error to result but don't fail completely
+		result.Errors = append(result.Errors, fmt.Sprintf("Email notification creation failed: %v", err))
+		return result, nil // Return result with error instead of failing
 	}
 
 	result.NotificationID = &notification.ID
@@ -634,8 +767,11 @@ func (s *NotificationService) sendSMSNotification(ctx context.Context, req Smart
 
 	// Check if SMS data is provided
 	if req.SMSData == nil {
+		s.logger.Zap.Warnw("SMS data not provided for SMS notification",
+			"userID", req.UserID,
+			"type", req.Type)
 		result.Errors = append(result.Errors, "SMS data not provided")
-		return result, fmt.Errorf("sms data not provided")
+		return result, nil // Return result with error instead of failing
 	}
 
 	// Create push notification for in-app display
@@ -652,8 +788,14 @@ func (s *NotificationService) sendSMSNotification(ctx context.Context, req Smart
 
 	notification, err := s.CreateNotification(ctx, notificationReq, false) // Don't send real-time for SMS
 	if err != nil {
-		result.Errors = append(result.Errors, fmt.Sprintf("Push notification creation failed: %v", err))
-		return result, err
+		s.logger.Zap.Warnw("Failed to create SMS notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+
+		// Add error to result but don't fail completely
+		result.Errors = append(result.Errors, fmt.Sprintf("SMS notification creation failed: %v", err))
+		return result, nil // Return result with error instead of failing
 	}
 
 	result.NotificationID = &notification.ID
@@ -685,8 +827,14 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 
 	notification, err := s.CreateNotification(ctx, notificationReq, true)
 	if err != nil {
-		result.Errors = append(result.Errors, fmt.Sprintf("Push notification failed: %v", err))
-		return result, err
+		s.logger.Zap.Warnw("Failed to create multi-channel notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+
+		// Add error to result but don't fail completely
+		result.Errors = append(result.Errors, fmt.Sprintf("Multi-channel notification failed: %v", err))
+		return result, nil // Return result with error instead of failing
 	}
 
 	result.NotificationID = &notification.ID
@@ -707,17 +855,145 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 func (s *NotificationService) SendBulkSmartNotifications(ctx context.Context, requests []SmartNotificationRequest) ([]*SmartNotificationResult, error) {
 	var results []*SmartNotificationResult
 
-	for _, req := range requests {
-		result, err := s.SendSmartNotification(ctx, req)
-		if err != nil {
-			s.logger.Zap.Warnw("Failed to send smart notification",
-				"userID", req.UserID,
-				"type", req.Type,
-				"error", err)
-			// Continue with other users even if one fails
-		}
-		results = append(results, result)
+	// Check if context is already cancelled
+	if ctx.Err() != nil {
+		return nil, fmt.Errorf("context cancelled before starting bulk notifications: %w", ctx.Err())
 	}
+
+	s.logger.Zap.Infow("Starting bulk smart notifications",
+		"total_requests", len(requests))
+
+	successCount := 0
+	errorCount := 0
+	startTime := time.Now()
+
+	// Process notifications in batches to avoid overwhelming the database
+	// Increased batch size for better efficiency with larger user counts
+	const batchSize = 15
+	totalBatches := (len(requests) + batchSize - 1) / batchSize
+
+	for batchIndex := 0; batchIndex < totalBatches; batchIndex++ {
+		// Check if we're approaching timeout (warn when 80% of time is used)
+		elapsed := time.Since(startTime)
+		if deadline, ok := ctx.Deadline(); ok {
+			remaining := time.Until(deadline)
+			progressPercentage := float64(len(results)) / float64(len(requests)) * 100
+
+			// More aggressive timeout warnings
+			if remaining < elapsed*4 { // Less than 20% time remaining
+				s.logger.Zap.Warnw("Approaching timeout, processing remaining notifications quickly",
+					"elapsed", elapsed,
+					"remaining", remaining,
+					"processed_count", len(results),
+					"total_count", len(requests),
+					"progress_percentage", fmt.Sprintf("%.1f%%", progressPercentage))
+			} else if remaining < elapsed*2 { // Less than 50% time remaining
+				s.logger.Zap.Infow("Moderate time pressure, monitoring progress",
+					"elapsed", elapsed,
+					"remaining", remaining,
+					"processed_count", len(results),
+					"total_count", len(requests),
+					"progress_percentage", fmt.Sprintf("%.1f%%", progressPercentage))
+			}
+		}
+
+		startIdx := batchIndex * batchSize
+		endIdx := startIdx + batchSize
+		if endIdx > len(requests) {
+			endIdx = len(requests)
+		}
+
+		batchRequests := requests[startIdx:endIdx]
+		s.logger.Zap.Infow("Processing notification batch",
+			"batch_index", batchIndex+1,
+			"total_batches", totalBatches,
+			"batch_start", startIdx+1,
+			"batch_end", endIdx,
+			"batch_size", len(batchRequests),
+			"elapsed_time", elapsed,
+			"progress_percentage", fmt.Sprintf("%.1f%%", float64(len(results))/float64(len(requests))*100))
+
+		// Process each request in the current batch
+		for i, req := range batchRequests {
+			// Check context before each notification
+			if ctx.Err() != nil {
+				s.logger.Zap.Warnw("Context cancelled during bulk notifications, stopping",
+					"processed_count", startIdx+i,
+					"total_count", len(requests),
+					"elapsed_time", time.Since(startTime),
+					"error", ctx.Err())
+				goto endProcessing
+			}
+
+			s.logger.Zap.Debugw("Processing notification request",
+				"batch_index", batchIndex+1,
+				"request_in_batch", i+1,
+				"batch_size", len(batchRequests),
+				"overall_progress", fmt.Sprintf("%d/%d", startIdx+i+1, len(requests)),
+				"userID", req.UserID,
+				"type", req.Type)
+
+			result, err := s.SendSmartNotification(ctx, req)
+			if err != nil {
+				errorCount++
+				s.logger.Zap.Warnw("Failed to send smart notification",
+					"batch_index", batchIndex+1,
+					"request_in_batch", i+1,
+					"overall_progress", fmt.Sprintf("%d/%d", startIdx+i+1, len(requests)),
+					"userID", req.UserID,
+					"type", req.Type,
+					"error", err)
+
+				// Create a failed result instead of skipping the user
+				failedResult := &SmartNotificationResult{
+					UserID: req.UserID,
+					Errors: []string{fmt.Sprintf("Notification failed: %v", err)},
+				}
+				results = append(results, failedResult)
+			} else {
+				successCount++
+				s.logger.Zap.Debugw("Successfully processed notification request",
+					"batch_index", batchIndex+1,
+					"request_in_batch", i+1,
+					"overall_progress", fmt.Sprintf("%d/%d", startIdx+i+1, len(requests)),
+					"userID", req.UserID,
+					"type", req.Type,
+					"push_delivered", result.PushDelivered,
+					"email_delivered", result.EmailDelivered,
+					"sms_delivered", result.SMSDelivered)
+				results = append(results, result)
+			}
+		}
+
+		// Small delay between batches to avoid overwhelming the database
+		// Reduced delay for better performance with larger user counts
+		// Skip delay if we're approaching timeout
+		if batchIndex < totalBatches-1 {
+			if deadline, ok := ctx.Deadline(); ok {
+				remaining := time.Until(deadline)
+				if remaining < 30*time.Second {
+					s.logger.Zap.Warnw("Skipping batch delay due to approaching timeout",
+						"remaining_time", remaining,
+						"batch_index", batchIndex+1)
+				} else {
+					time.Sleep(25 * time.Millisecond)
+				}
+			} else {
+				time.Sleep(25 * time.Millisecond)
+			}
+		}
+	}
+
+endProcessing:
+	totalTime := time.Since(startTime)
+	s.logger.Zap.Infow("Bulk notifications completed",
+		"total_requests", len(requests),
+		"processed_results", len(results),
+		"success_count", successCount,
+		"error_count", errorCount,
+		"total_batches", totalBatches,
+		"total_time", totalTime,
+		"average_time_per_notification", totalTime/time.Duration(len(results)))
 
 	return results, nil
 }
@@ -847,4 +1123,96 @@ func (s *NotificationService) CreateBulkMessageNotificationsForCustomers(
 	}
 
 	return s.SendBulkSmartNotifications(ctx, requests)
+}
+
+// CreateBulkDocumentNotifications creates document notifications for multiple marina users based on their preferences
+func (s *NotificationService) CreateBulkDocumentNotifications(
+	ctx context.Context,
+	users []db.GetUsersByMarinaRow,
+	organizationID, marinaID uuid.UUID,
+	fileName string,
+	customerID string,
+	emailData *EmailNotificationData,
+) ([]*SmartNotificationResult, error) {
+	var requests []SmartNotificationRequest
+
+	s.logger.Zap.Infow("Creating bulk document notifications",
+		"total_users", len(users),
+		"fileName", fileName,
+		"customerID", customerID,
+		"marinaID", marinaID)
+
+	activeUserCount := 0
+	inactiveUserCount := 0
+
+	for _, user := range users {
+		// Only notify active users
+		if user.IsActive != nil && *user.IsActive {
+			activeUserCount++
+			title := "New Document Uploaded"
+			content := fmt.Sprintf("A new document '%s' has been uploaded by customer", fileName)
+
+			data := map[string]interface{}{
+				"fileName":   fileName,
+				"customerID": customerID,
+			}
+
+			req := SmartNotificationRequest{
+				UserID:         user.ID,
+				OrganizationID: organizationID,
+				MarinaID:       marinaID,
+				Type:           "document",
+				Title:          title,
+				Content:        content,
+				Data:           data,
+				Priority:       nil,
+				EmailData:      emailData,
+				SMSData:        nil, // No SMS for document notifications
+			}
+
+			requests = append(requests, req)
+			s.logger.Zap.Debugw("Added document notification request",
+				"userID", user.ID,
+				"fileName", fileName)
+		} else {
+			inactiveUserCount++
+			s.logger.Zap.Debugw("Skipping inactive user for document notification",
+				"userID", user.ID,
+				"isActive", user.IsActive)
+		}
+	}
+
+	s.logger.Zap.Infow("Document notification requests prepared",
+		"total_users", len(users),
+		"active_users", activeUserCount,
+		"inactive_users", inactiveUserCount,
+		"notification_requests", len(requests),
+		"fileName", fileName)
+
+	if len(requests) == 0 {
+		s.logger.Zap.Warnw("No active users found for document notifications",
+			"marinaID", marinaID,
+			"fileName", fileName)
+		return []*SmartNotificationResult{}, nil
+	}
+
+	s.logger.Zap.Infow("Sending bulk document notifications",
+		"active_users", len(requests),
+		"fileName", fileName)
+
+	results, err := s.SendBulkSmartNotifications(ctx, requests)
+	if err != nil {
+		s.logger.Zap.Errorw("Failed to send bulk document notifications",
+			"error", err,
+			"requested_count", len(requests),
+			"fileName", fileName)
+		return nil, err
+	}
+
+	s.logger.Zap.Infow("Bulk document notifications completed",
+		"requested_count", len(requests),
+		"results_count", len(results),
+		"fileName", fileName)
+
+	return results, nil
 }

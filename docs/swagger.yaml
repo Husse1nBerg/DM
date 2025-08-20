@@ -1826,6 +1826,9 @@ definitions:
         - invite
         - system
         - alert
+        - document
+        - esign
+        - payment
         example: message
         type: string
     required:
