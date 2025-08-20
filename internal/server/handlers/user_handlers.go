@@ -42,48 +42,86 @@ func NewUserHandler(server *s.Server) *UserHandler {
 	}
 }
 
-// ListUsersHandler lists all existing users
+// ListUsersHandler lists users with pagination, filtering, searching, and sorting
 //
 //	@Summary		List users
-//	@Description	get users
+//	@Description	Returns a paginated list of users. Supports filtering by role, active status, searching by name/email, and sorting.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			page		query		int		false	"Page number"	default(1)
-//	@Param			pageSize	query		int		false	"Page size"		default(10)
-//	@Success		200	{object}	responses.UserListResponse "Paginated list of users"
-//	@Failure		500	{object}	responses.Error "Server error"
+//	@Param			page		query		int		false	"Page number"	default(1) minimum(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10) minimum(1) maximum(100)
+//	@Param			search		query		string	false	"Search term (matches username, first name, last name, email, phone, or title)"
+//	@Param			filters		query		object	false	"Filters (e.g. filters[role_id]=<uuid>&filters[is_active]=true)"
+//	@Param			sortBy		query		string	false	"Sort by field (e.g. username, email, created_at)"	default(created_at)
+//	@Param			sortOrder	query		string	false	"Sort order (asc or desc)"	default(desc)
+//	@Success		200		{object}	responses.UserListResponse "Paginated list of users"
+//	@Failure		500		{object}	responses.Error "Server error"
 //	@Security		ApiKeyAuth
 //
 //	@Router			/user/list [get]
 func (g *UserHandler) ListUsersHandler(c echo.Context) error {
-	// Parse pagination params
-	pagination := new(requests.PaginationQuery)
-	if err := c.Bind(pagination); err != nil {
-		pagination.Page = 1
-		pagination.PageSize = 10
+
+	var req requests.ListUsersRequest
+	if err := c.Bind(&req); err != nil {
+		req.Page = 1
+		req.PageSize = 10
+	}
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
 	}
 
-	queries := g.server.DB.Queries()
-
-	// Get paginated users
-	params := db.GetAllUsersPaginatedParams{
-		Limit:  pagination.PageSize,
-		Offset: (pagination.Page - 1) * pagination.PageSize,
+	sortBy := req.SortBy
+	sortOrder := req.SortOrder
+	if sortBy == "" {
+		sortBy = "created_at"
 	}
-	users, err := queries.GetAllUsersPaginated(c.Request().Context(), params)
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+
+	var users []db.User
+	var err error
+	roleID := req.Filters["role_id"]
+	if roleID != "" {
+		if _, err := uuid.Parse(roleID); err != nil {
+			roleID = ""
+		}
+	}
+	if sortOrder == "asc" {
+		users, err = g.server.DB.Queries().GetAllUsersFilteredSortedAsc(c.Request().Context(), db.GetAllUsersFilteredSortedAscParams{
+			Column1: req.Search,
+			Column2: roleID,
+			Column3: req.Filters["is_active"],
+			Column4: sortBy,
+			Limit:   req.PageSize,
+			Offset:  (req.Page - 1) * req.PageSize,
+		})
+	} else {
+		users, err = g.server.DB.Queries().GetAllUsersFilteredSortedDesc(c.Request().Context(), db.GetAllUsersFilteredSortedDescParams{
+			Column1: req.Search,
+			Column2: roleID,
+			Column3: req.Filters["is_active"],
+			Column4: sortBy,
+			Limit:   req.PageSize,
+			Offset:  (req.Page - 1) * req.PageSize,
+		})
+	}
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-
-	// Get total count for pagination
-	allUsers, err := queries.GetAllUsers(c.Request().Context())
+	total, err := g.server.DB.Queries().CountUsersWithFilters(c.Request().Context(), db.CountUsersWithFiltersParams{
+		Column1: req.Search,
+		Column2: roleID,
+		Column3: req.Filters["is_active"],
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-	total := int64(len(allUsers))
-
-	return responses.NewUsersPaginatedResponse(users, total, pagination.PageSize, pagination.Page).JSON(c)
+	return responses.NewUsersPaginatedResponse(users, total, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateUserHandler creates a new user

@@ -72,15 +72,6 @@ func (h *ContactHandler) ListContacts(c echo.Context) error {
 		sortOrder = "desc"
 	}
 
-	// If no filter/sort/search params, fallback to old behavior
-	if req.Search == "" && req.Filters["type"] == "" && req.SortBy == "" && req.SortOrder == "" && req.Page == 1 && req.PageSize == 10 {
-		contacts, err2 := h.server.DB.Queries().ListContacts(c.Request().Context(), marinaID)
-		if err2 != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err2).JSON(c)
-		}
-		return responses.NewContactListResponse(contacts).JSON(c)
-	}
-
 	// Use new flexible query
 	contactType := req.Filters["type"]
 	if contactType == "" {

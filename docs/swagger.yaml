@@ -10796,18 +10796,41 @@ paths:
     get:
       consumes:
       - application/json
-      description: get users
+      description: Returns a paginated list of users. Supports filtering by role,
+        active status, searching by name/email, and sorting.
       parameters:
       - default: 1
         description: Page number
         in: query
+        minimum: 1
         name: page
         type: integer
       - default: 10
         description: Page size
         in: query
+        maximum: 100
+        minimum: 1
         name: pageSize
         type: integer
+      - description: Search term (matches username, first name, last name, email,
+          phone, or title)
+        in: query
+        name: search
+        type: string
+      - description: Filters (e.g. filters[role_id]=<uuid>&filters[is_active]=true)
+        in: query
+        name: filters
+        type: object
+      - default: created_at
+        description: Sort by field (e.g. username, email, created_at)
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort order (asc or desc)
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:
