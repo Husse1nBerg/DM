@@ -11,7 +11,9 @@ import (
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/notifications"
+	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -183,35 +185,104 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
 	}
 
-	// Create notification for marina staff about new customer document
-	// Find marina users to notify
+	// Return created document
+	response := responses.NewDocumentResponseSuccess(doc)
+	response.Code = http.StatusCreated
+
+	// Get current user to check if they are a customer
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+
+	// Get user details to check IsCustomer property
+	currentUser, userErr := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if userErr != nil {
+		h.server.Logger.Zap.Warnw("Failed to get current user for notification check", "user_id", userID, "error", userErr)
+		// Continue without notifications if we can't determine user type
+	}
+
+	// Get marina information for both notification and DME operations
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 	defer cancel()
 
 	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
 	if err != nil {
-		h.server.Logger.Zap.Error("Error fetching marina", err)
-		return responses.NewErrorResponse(http.StatusNotFound, "Marina not found").JSON(c)
+		h.server.Logger.Zap.Error("[DME API] Error fetching marina for DME update (document)", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 
-	// Return created document
-	response := responses.NewDocumentResponseSuccess(doc)
-	response.Code = http.StatusCreated
+	// Only send notifications if the current user is a customer
+	if userErr == nil && (currentUser.IsCustomer == nil || *currentUser.IsCustomer) {
+		// Create notification for marina staff about new customer document
+		marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
+			MarinaID:   marinaID,
+			IsCustomer: utils.Pointer(false), // Get marina staff, not customers
+		})
+		if err != nil {
+			h.server.Logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", marinaID, "error", err)
+		} else {
+			// Create notifications for marina staff using smart notification system
+			// Use background context with timeout for notification operations
+			// Timeout calculation: 37 users × 5.5 seconds = ~3.4 minutes, so we use 5 minutes for safety
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+				defer cancel()
+
+				emailData := &notifications.EmailNotificationData{
+					To:      []string{}, // No specific email recipients for document notifications
+					Subject: "New Customer Document Uploaded",
+				}
+
+				results, err := h.notificationService.CreateBulkDocumentNotifications(
+					ctx,
+					marinaUsers,
+					marina.OrganizationID,
+					marinaID,
+					header.Filename, // Document filename
+					entityID,        // Customer ID
+					emailData,
+				)
+				if err != nil {
+					h.server.Logger.Zap.Warnw("Failed to create bulk document notifications", "error", err)
+				} else {
+					// Log notification results
+					for _, result := range results {
+						if len(result.Errors) > 0 {
+							h.server.Logger.Zap.Warnw("Document notification delivery had errors",
+								"user_id", result.UserID,
+								"errors", result.Errors)
+						} else {
+							h.server.Logger.Zap.Infow("Document notification delivered successfully",
+								"user_id", result.UserID,
+								"push", result.PushDelivered,
+								"email", result.EmailDelivered,
+								"sms", result.SMSDelivered)
+						}
+					}
+				}
+			}()
+		}
+	} else if userErr == nil {
+		h.server.Logger.Zap.Infow("Skipping notifications - document uploaded by customer user",
+			"user_id", userID,
+			"is_customer", *currentUser.IsCustomer,
+			"document_id", doc.ID)
+	}
 
 	// --- DME Attachment Insert (Async, e-sign/gallery style) ---
 	go func() {
 		ctx := context.Background()
 
 		if marina.SystemID == nil {
-			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME customer update (document)")
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME boat update (document)")
 			return
 		}
 		orgID := marina.OrganizationID
 		systemID := *marina.SystemID
 
-		dmeCustomer, err := h.server.DME.CustomerRetrieve(ctx, entityID, orgID, systemID)
+		dmeBoat, err := h.server.DME.RetrieveBoatByID(ctx, entityID, orgID, systemID)
 		if err != nil {
-			h.server.Logger.Zap.Error("[DME API] Error retrieving customer from DME for attachment update (document)", err)
+			h.server.Logger.Zap.Error("[DME API] Error retrieving boat from DME for attachment update (document)", err)
 			return
 		}
 
@@ -225,54 +296,56 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 			FromDMWeb:   utils.Pointer(true),
 		}
 
-		updatedAttachments := dmeCustomer.Attachments
+		updatedAttachments := dmeBoat.Attachments
 		if updatedAttachments == nil {
 			updatedAttachments = []dme.Attachment{}
 		}
 		updatedAttachments = append(updatedAttachments, newAttachment)
 
-		customerUpdate := &dme.CustomerUpdate{
-			ID:                        dmeCustomer.ID,
-			Name:                      dmeCustomer.Name,
-			FirstName:                 dmeCustomer.FirstName,
-			LastName:                  dmeCustomer.LastName,
-			Email:                     dmeCustomer.Email,
-			Address1:                  dmeCustomer.Address1,
-			Address2:                  dmeCustomer.Address2,
-			Address3:                  dmeCustomer.Address3,
-			City:                      dmeCustomer.City,
-			State:                     dmeCustomer.State,
-			Zip:                       dmeCustomer.Zip,
-			Country:                   dmeCustomer.Country,
-			Phone:                     dmeCustomer.Phone,
-			AltFirstName:              dmeCustomer.AltFirstName,
-			AltLastName:               dmeCustomer.AltLastName,
-			AltAddress1:               dmeCustomer.AltAddress1,
-			AltAddress2:               dmeCustomer.AltAddress2,
-			AltAddress3:               dmeCustomer.AltAddress3,
-			AltCity:                   dmeCustomer.AltCity,
-			AltState:                  dmeCustomer.AltState,
-			AltZip:                    dmeCustomer.AltZip,
-			AltCountry:                dmeCustomer.AltCountry,
-			AltPhone:                  dmeCustomer.AltPhone,
-			UseAltAddress:             dmeCustomer.UseAltAddress,
-			WorkPhone:                 dmeCustomer.WorkPhone,
-			CellPhone:                 dmeCustomer.CellPhone,
-			EmergencyContact:          dmeCustomer.EmergencyContact,
-			EmergencyPhone:            dmeCustomer.EmergencyPhone,
-			CompanyName:               dmeCustomer.CompanyName,
-			ShipmentMethod:            dmeCustomer.ShipmentMethod,
-			ShipmentMethodDescription: dmeCustomer.ShipmentMethodDescription,
-			CustomInformation:         dmeCustomer.CustomInformation,
-			Attachments:               updatedAttachments,
+		boatUpdate := &dme.BoatUpdate{
+			ID:                   dmeBoat.ID,
+			Name:                 dmeBoat.Name,
+			Registration:         dmeBoat.Registration,
+			Year:                 dmeBoat.Year,
+			Make:                 dmeBoat.Make,
+			Model:                dmeBoat.Model,
+			HIN:                  dmeBoat.HIN,
+			LOA:                  dmeBoat.LOA,
+			LWL:                  dmeBoat.LWL,
+			Draft:                dmeBoat.Draft,
+			Beam:                 dmeBoat.Beam,
+			Height:               dmeBoat.Height,
+			Color:                dmeBoat.Color,
+			TrailerMake:          dmeBoat.TrailerMake,
+			TrailerModel:         dmeBoat.TrailerModel,
+			TrailerSerial:        dmeBoat.TrailerSerial,
+			TrailerRegistration:  dmeBoat.TrailerRegistration,
+			TrailerLocation:      dmeBoat.TrailerLocation,
+			SummerSlip:           dmeBoat.SummerSlip,
+			WinterSlip:           dmeBoat.WinterSlip,
+			InsuranceCompany:     dmeBoat.InsuranceCompany,
+			InsuranceExpDate:     dmeBoat.InsuranceExpDate,
+			SlipID:               dmeBoat.SlipID,
+			Slip:                 dmeBoat.Slip,
+			Motors:               dmeBoat.Motors,
+			DoNotLaunch:          dmeBoat.DoNotLaunch,
+			BillingCodes:         dmeBoat.BillingCodes,
+			BoatDescriptionCodes: dmeBoat.BoatDescriptionCodes,
+			CustomInformation:    dmeBoat.CustomInformation,
+			OperationsHistory:    dmeBoat.OperationsHistory,
+			IntegrationID:        dmeBoat.IntegrationID,
+			OwnerIntegrationID:   dmeBoat.OwnerIntegrationID,
+			LastModified:         dmeBoat.LastModified,
+			Comments:             dmeBoat.Comments,
+			Attachments:          updatedAttachments,
 		}
 
-		_, err = h.server.DME.CustomerUpdate(ctx, customerUpdate, orgID, systemID)
+		_, err = h.server.DME.UpdateBoat(ctx, boatUpdate, orgID, systemID)
 		if err != nil {
-			h.server.Logger.Zap.Error("[DME API] Error updating customer attachments in DME (document)", err)
+			h.server.Logger.Zap.Error("[DME API] Error updating boat attachments in DME (document)", err)
 		} else {
-			h.server.Logger.Zap.Info("[DME API] Successfully updated DME customer with document attachment",
-				"customerID", entityID,
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME boat with document attachment",
+				"boatID", entityID,
 				"fileName", header.Filename,
 				"documentID", doc.ID.String())
 		}
@@ -622,8 +695,19 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	response := responses.NewDocumentResponseSuccess(doc)
 	response.Code = http.StatusCreated
 
-	// Create notification for marina staff about new customer document
-	// Find marina users to notify
+	// Get current user to check if they are a customer
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+
+	// Get user details to check IsCustomer property
+	currentUser, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		h.server.Logger.Zap.Warnw("Failed to get current user for notification check", "user_id", userID, "error", err)
+		// Continue without notifications if we can't determine user type
+	}
+
+	// Get marina information for both notification and DME operations
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 	defer cancel()
 
@@ -633,52 +717,62 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 
-	marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
-		MarinaID:   marinaID,
-		IsCustomer: utils.Pointer(false), // Get marina staff, not customers
-	})
-	if err != nil {
-		h.server.Logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", marinaID, "error", err)
-	} else {
-		// Create notifications for marina staff using smart notification system
-		// Use background context with timeout for notification operations
-		go func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			defer cancel()
+	// Only send notifications if the current user is a customer
+	if err == nil && (currentUser.IsCustomer == nil || *currentUser.IsCustomer) {
+		// Create notification for marina staff about new customer document
+		marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
+			MarinaID:   marinaID,
+			IsCustomer: utils.Pointer(false), // Get marina staff, not customers
+		})
+		if err != nil {
+			h.server.Logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", marinaID, "error", err)
+		} else {
+			// Create notifications for marina staff using smart notification system
+			// Use background context with timeout for notification operations
+			// Timeout calculation: 37 users × 5.5 seconds = ~3.4 minutes, so we use 5 minutes for safety
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+				defer cancel()
 
-			emailData := &notifications.EmailNotificationData{
-				To:      []string{}, // No specific email recipients for document notifications
-				Subject: "New Customer Document Uploaded",
-			}
+				emailData := &notifications.EmailNotificationData{
+					To:      []string{}, // No specific email recipients for document notifications
+					Subject: "New Customer Document Uploaded",
+				}
 
-			results, err := h.notificationService.CreateBulkDocumentNotifications(
-				ctx,
-				marinaUsers,
-				marina.OrganizationID,
-				marinaID,
-				header.Filename, // Document filename
-				entityID,        // Customer ID
-				emailData,
-			)
-			if err != nil {
-				h.server.Logger.Zap.Warnw("Failed to create bulk document notifications", "error", err)
-			} else {
-				// Log notification results
-				for _, result := range results {
-					if len(result.Errors) > 0 {
-						h.server.Logger.Zap.Warnw("Document notification delivery had errors",
-							"user_id", result.UserID,
-							"errors", result.Errors)
-					} else {
-						h.server.Logger.Zap.Infow("Document notification delivered successfully",
-							"user_id", result.UserID,
-							"push", result.PushDelivered,
-							"email", result.EmailDelivered,
-							"sms", result.SMSDelivered)
+				results, err := h.notificationService.CreateBulkDocumentNotifications(
+					ctx,
+					marinaUsers,
+					marina.OrganizationID,
+					marinaID,
+					header.Filename, // Document filename
+					entityID,        // Customer ID
+					emailData,
+				)
+				if err != nil {
+					h.server.Logger.Zap.Warnw("Failed to create bulk document notifications", "error", err)
+				} else {
+					// Log notification results
+					for _, result := range results {
+						if len(result.Errors) > 0 {
+							h.server.Logger.Zap.Warnw("Document notification delivery had errors",
+								"user_id", result.UserID,
+								"errors", result.Errors)
+						} else {
+							h.server.Logger.Zap.Infow("Document notification delivered successfully",
+								"user_id", result.UserID,
+								"push", result.PushDelivered,
+								"email", result.EmailDelivered,
+								"sms", result.SMSDelivered)
+						}
 					}
 				}
-			}
-		}()
+			}()
+		}
+	} else if err == nil {
+		h.server.Logger.Zap.Infow("Skipping notifications - document uploaded by customer user",
+			"user_id", userID,
+			"is_customer", *currentUser.IsCustomer,
+			"document_id", doc.ID)
 	}
 
 	go func() {
