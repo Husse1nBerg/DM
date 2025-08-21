@@ -9228,7 +9228,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get paginated notifications for the current user
+      description: Get paginated notifications for the current user with filtering,
+        search, and sorting
       parameters:
       - default: 1
         description: Page number
@@ -9241,10 +9242,48 @@ paths:
         name: pageSize
         type: integer
       - default: false
-        description: Show only unread notifications
+        description: Show only unread notifications (legacy)
         in: query
         name: unreadOnly
         type: boolean
+      - description: Global search across title and content
+        in: query
+        name: search
+        type: string
+      - description: Filter by read status (true/false)
+        in: query
+        name: read
+        type: boolean
+      - description: Filter by notification type
+        enum:
+        - message
+        - invite
+        - system
+        - alert
+        - esign
+        - document
+        - payment
+        in: query
+        name: type
+        type: string
+      - default: priority+created_at
+        description: Sort field
+        enum:
+        - type
+        - read
+        - created_at
+        - title
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:

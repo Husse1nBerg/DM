@@ -51,6 +51,13 @@ type CreateNotificationRequest struct {
 type ListNotificationsRequest struct {
 	PaginationQuery
 	MarinaID *uuid.UUID `query:"marinaId,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	// Filtros adicionales similares a esign_submissions
+	Search     string `query:"search,omitempty" example:"payment"` // Búsqueda global en title y content
+	ReadFilter *bool  `query:"read,omitempty" example:"false"`     // Filtro por estado leído
+	TypeFilter string `query:"type,omitempty" example:"message"`   // Filtro por tipo de notificación
+	// Sorting
+	SortBy    string `query:"sortBy,omitempty" example:"created_at"` // type, read, created_at, title
+	SortOrder string `query:"sortOrder,omitempty" example:"desc"`    // asc, desc
 }
 
 // ListUnreadNotificationsRequest represents a request to list unread notifications

@@ -7996,7 +7996,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get paginated notifications for the current user",
+                "description": "Get paginated notifications for the current user with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -8025,8 +8025,59 @@ const docTemplate = `{
                     {
                         "type": "boolean",
                         "default": false,
-                        "description": "Show only unread notifications",
+                        "description": "Show only unread notifications (legacy)",
                         "name": "unreadOnly",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across title and content",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by read status (true/false)",
+                        "name": "read",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "message",
+                            "invite",
+                            "system",
+                            "alert",
+                            "esign",
+                            "document",
+                            "payment"
+                        ],
+                        "type": "string",
+                        "description": "Filter by notification type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "type",
+                            "read",
+                            "created_at",
+                            "title"
+                        ],
+                        "type": "string",
+                        "default": "priority+created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
