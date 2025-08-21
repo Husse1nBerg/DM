@@ -9224,6 +9224,45 @@ paths:
       summary: Mark notification as read
       tags:
       - Notification
+  /notification/{id}/unread:
+    put:
+      consumes:
+      - application/json
+      description: Mark a specific notification as unread
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated notification
+          schema:
+            $ref: '#/definitions/responses.NotificationResponseWrapper'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Notification not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Mark notification as unread
+      tags:
+      - Notification
   /notification/list:
     get:
       consumes:
