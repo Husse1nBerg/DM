@@ -50,13 +50,16 @@ type EsignSubmissionResponse struct {
 	DocumentID         uuid.UUID        `json:"documentId" example:"550e8400-e29b-41d4-a716-446655440003"`
 	Status             string           `json:"status" example:"pending"`
 	BlobURL            string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
-	BlobMetadata       *json.RawMessage `json:"blobMetadata,omitempty" swaggertype:"object"`
-	CustomerID         *string          `json:"customerId,omitempty" example:"CUST123"`
+	BlobMetadata       *json.RawMessage `json:"blobMetadata"`
+	CustomerID         *string          `json:"customerId,omitempty"`
 	Email              string           `json:"email" example:"customer@example.com"`
-	Name               *string          `json:"name,omitempty" example:"Customer Agreement"`
-	AttachmentRequired *bool            `json:"attachmentRequired,omitempty" example:"false"`
-	CreatedAt          *time.Time       `json:"createdAt,omitempty"`
-	UpdatedAt          *time.Time       `json:"updatedAt,omitempty"`
+	Name               *string          `json:"name,omitempty"`
+	AttachmentRequired *bool            `json:"attachmentRequired,omitempty"`
+	ReplyTo            *string          `json:"replyTo,omitempty"`
+	CustomMessage      *string          `json:"customMessage,omitempty"`
+	Logo               *string          `json:"logo,omitempty" example:"https://s3.amazonaws.com/bucket/marina/logo.png"`
+	CreatedAt          *time.Time       `json:"createdAt"`
+	UpdatedAt          *time.Time       `json:"updatedAt"`
 }
 
 // Convert a database EsignTemplate to a response model
@@ -143,6 +146,9 @@ func ConvertEsignSubmissionToResponse(submission db.EsignSubmission) EsignSubmis
 		Email:              submission.Email,
 		Name:               submission.Name,
 		AttachmentRequired: submission.AttachmentRequired,
+		ReplyTo:            submission.ReplyTo,
+		CustomMessage:      submission.CustomMessage,
+		Logo:               nil,
 		CreatedAt:          utils.PgTimeToTimePtr(submission.CreatedAt),
 		UpdatedAt:          utils.PgTimeToTimePtr(submission.UpdatedAt),
 	}

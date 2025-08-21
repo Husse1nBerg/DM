@@ -1361,6 +1361,9 @@ definitions:
       attachmentRequired:
         example: false
         type: boolean
+      customMessage:
+        example: Custom message to the customer
+        type: string
       customerId:
         example: CUST123
         type: string
@@ -2936,6 +2939,9 @@ definitions:
         type: string
       createdAt:
         type: string
+      customMessage:
+        example: Custom message to the customer
+        type: string
       customerId:
         example: CUST123
         type: string
@@ -2956,6 +2962,9 @@ definitions:
         type: string
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      replyTo:
+        example: marina@example.com
         type: string
       status:
         example: pending
@@ -9500,28 +9509,6 @@ paths:
         in: query
         name: pageSize
         type: integer
-      - description: Sort by field (name, email, website, country, phone, is_active,
-          is_test, created_at, updated_at)
-        in: query
-        name: sortBy
-        type: string
-      - default: asc
-        description: Sort order (asc, desc)
-        in: query
-        name: sortOrder
-        type: string
-      - description: Global search across multiple fields
-        in: query
-        name: search
-        type: string
-      - description: Filter by active status
-        in: query
-        name: isActive
-        type: boolean
-      - description: Filter by test status
-        in: query
-        name: isTest
-        type: boolean
       produces:
       - application/json
       responses:
@@ -9588,6 +9575,28 @@ paths:
         in: query
         name: pageSize
         type: integer
+      - description: Sort by field (name, email, website, country, phone, is_active,
+          is_test, created_at, updated_at)
+        in: query
+        name: sortBy
+        type: string
+      - default: asc
+        description: Sort order (asc, desc)
+        in: query
+        name: sortOrder
+        type: string
+      - description: Global search across multiple fields
+        in: query
+        name: search
+        type: string
+      - description: Filter by active status
+        in: query
+        name: isActive
+        type: boolean
+      - description: Filter by test status
+        in: query
+        name: isTest
+        type: boolean
       produces:
       - application/json
       responses:
