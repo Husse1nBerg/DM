@@ -12,6 +12,26 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countAllNotifications = `-- name: CountAllNotifications :one
+SELECT COUNT(*) as count FROM notifications
+WHERE user_id = $1
+AND organization_id = $2
+AND ($3::uuid IS NULL OR marina_id = $3)
+`
+
+type CountAllNotificationsParams struct {
+	UserID         uuid.UUID
+	OrganizationID uuid.UUID
+	Column3        uuid.UUID
+}
+
+func (q *Queries) CountAllNotifications(ctx context.Context, arg CountAllNotificationsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countAllNotifications, arg.UserID, arg.OrganizationID, arg.Column3)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countNotificationsWithFilters = `-- name: CountNotificationsWithFilters :one
 SELECT COUNT(*) FROM notifications
 WHERE user_id = $1

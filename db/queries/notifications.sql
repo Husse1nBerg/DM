@@ -52,6 +52,12 @@ AND organization_id = $2
 AND ($3::uuid IS NULL OR marina_id = $3)
 AND read = FALSE;
 
+-- name: CountAllNotifications :one
+SELECT COUNT(*) as count FROM notifications
+WHERE user_id = $1
+AND organization_id = $2
+AND ($3::uuid IS NULL OR marina_id = $3);
+
 -- name: MarkNotificationAsRead :one
 UPDATE notifications
 SET read = TRUE, read_at = CURRENT_TIMESTAMP
