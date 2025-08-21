@@ -64,6 +64,12 @@ SET read = TRUE, read_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND user_id = $2
 RETURNING *;
 
+-- name: MarkNotificationAsUnread :one
+UPDATE notifications
+SET read = FALSE, read_at = NULL
+WHERE id = $1 AND user_id = $2
+RETURNING *;
+
 -- name: MarkAllNotificationsAsRead :exec
 UPDATE notifications
 SET read = TRUE, read_at = CURRENT_TIMESTAMP

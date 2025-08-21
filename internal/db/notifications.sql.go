@@ -545,3 +545,36 @@ func (q *Queries) MarkNotificationAsRead(ctx context.Context, arg MarkNotificati
 	)
 	return i, err
 }
+
+const markNotificationAsUnread = `-- name: MarkNotificationAsUnread :one
+UPDATE notifications
+SET read = FALSE, read_at = NULL
+WHERE id = $1 AND user_id = $2
+RETURNING id, user_id, organization_id, marina_id, type, title, content, data, read, read_at, priority, created_at, updated_at
+`
+
+type MarkNotificationAsUnreadParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+func (q *Queries) MarkNotificationAsUnread(ctx context.Context, arg MarkNotificationAsUnreadParams) (Notification, error) {
+	row := q.db.QueryRow(ctx, markNotificationAsUnread, arg.ID, arg.UserID)
+	var i Notification
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OrganizationID,
+		&i.MarinaID,
+		&i.Type,
+		&i.Title,
+		&i.Content,
+		&i.Data,
+		&i.Read,
+		&i.ReadAt,
+		&i.Priority,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

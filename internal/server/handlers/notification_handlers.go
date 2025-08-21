@@ -346,6 +346,49 @@ func (h *NotificationHandler) MarkAsReadHandler(c echo.Context) error {
 	return response.JSON(c)
 }
 
+// MarkAsReadHandler marks a notification as read
+//
+//	@Summary		Mark notification as unread
+//	@Description	Mark a specific notification as unread
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Notification ID"
+//	@Success		200	{object}	responses.NotificationResponseWrapper "Updated notification"
+//	@Failure		400	{object}	responses.Error "Bad request"
+//	@Failure		401	{object}	responses.Error "Unauthorized"
+//	@Failure		404	{object}	responses.Error "Notification not found"
+//	@Failure		500	{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/notification/{id}/unread [put]
+func (h *NotificationHandler) MarkAsUnreadHandler(c echo.Context) error {
+	// Get user info from JWT token
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*token.JwtCustomClaims)
+
+	// Parse notification ID from path
+	notificationIDStr := c.Param("id")
+	notificationID, err := uuid.Parse(notificationIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid notification ID").JSON(c)
+	}
+
+	// Mark notification as unread with real-time update
+	notification, err := h.notificationService.MarkNotificationAsUnread(
+		c.Request().Context(),
+		notificationID,
+		claims.ID,
+		true, // Send real-time update
+	)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.NewNotificationResponseSuccess(*notification)
+	return response.JSON(c)
+}
+
 // MarkAllAsReadHandler marks all notifications as read
 //
 //	@Summary		Mark all notifications as read

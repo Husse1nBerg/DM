@@ -309,6 +309,30 @@ func (s *NotificationService) MarkNotificationAsRead(ctx context.Context, notifi
 	return &notification, nil
 }
 
+func (s *NotificationService) MarkNotificationAsUnread(ctx context.Context, notificationID, userID uuid.UUID, sendRealTime bool) (*db.Notification, error) {
+	params := db.MarkNotificationAsUnreadParams{
+		ID:     notificationID,
+		UserID: userID,
+	}
+
+	notification, err := s.db.MarkNotificationAsUnread(ctx, params)
+	if err != nil {
+		s.logger.Zap.Errorw("Failed to mark notification as unread", "error", err, "notificationID", notificationID, "userID", userID)
+		return nil, fmt.Errorf("failed to mark notification as unread: %w", err)
+	}
+
+	s.logger.Zap.Infow("Notification marked as unread", "notificationID", notificationID, "userID", userID)
+
+	// Send real-time update if requested
+	if sendRealTime {
+		if err := s.SendUnreadCountUpdate(ctx, userID, notification.OrganizationID, &notification.MarinaID); err != nil {
+			s.logger.Zap.Warnw("Failed to send unread count update", "error", err, "notificationID", notificationID)
+		}
+	}
+
+	return &notification, nil
+}
+
 // MarkAllNotificationsAsRead marks all notifications as read for a user
 func (s *NotificationService) MarkAllNotificationsAsRead(ctx context.Context, userID, organizationID uuid.UUID, marinaID *uuid.UUID, sendRealTime bool) error {
 	params := db.MarkAllNotificationsAsReadParams{
