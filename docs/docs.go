@@ -10416,38 +10416,10 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "maximum": 100,
-                        "minimum": 1,
                         "type": "integer",
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Search term (matches username, first name, last name, email, phone, or title)",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "object",
-                        "description": "Filters (e.g. filters[role_id]=\u003cuuid\u003e\u0026filters[is_active]=true)",
-                        "name": "filters",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "default": "created_at",
-                        "description": "Sort by field (e.g. username, email, created_at)",
-                        "name": "sortBy",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "default": "desc",
-                        "description": "Sort order (asc or desc)",
-                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -10605,10 +10577,38 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "maximum": 100,
+                        "minimum": 1,
                         "type": "integer",
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term (matches username, first name, last name, email, phone, or title)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Filters (e.g. filters[role_id]=\u003cuuid\u003e\u0026filters[is_active]=true)",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort by field (e.g. username, email, created_at)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort order (asc or desc)",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -13852,6 +13852,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "customMessage": {
+                    "type": "string",
+                    "example": "Custom message to the customer"
+                },
                 "customerId": {
                     "type": "string",
                     "example": "CUST123"
@@ -16068,6 +16072,10 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "customMessage": {
+                    "type": "string",
+                    "example": "Custom message to the customer"
+                },
                 "customerId": {
                     "type": "string",
                     "example": "CUST123"
@@ -16095,6 +16103,10 @@ const docTemplate = `{
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "replyTo": {
+                    "type": "string",
+                    "example": "marina@example.com"
                 },
                 "status": {
                     "type": "string",
