@@ -182,11 +182,34 @@ func (h *NotificationHandler) ListNotificationsHandler(c echo.Context) error {
 			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 		}
 
-		// Get total count for pagination (simplified - using current page count)
-		total := int64(len(notifications))
-		if len(notifications) == int(req.PaginationQuery.PageSize) {
-			// If we got a full page, there might be more
-			total = int64(req.PaginationQuery.Page * req.PaginationQuery.PageSize)
+		// Get actual total count for pagination
+		var total int64
+		if unreadOnly {
+			// Count unread notifications
+			marinaID := currentUser.MarinaID
+			if marinaID == uuid.Nil {
+				marinaID = uuid.UUID{} // Zero UUID for NULL case
+			}
+			total, err = h.server.DB.Queries().GetUnreadNotificationCount(c.Request().Context(), db.GetUnreadNotificationCountParams{
+				UserID:         claims.ID,
+				OrganizationID: claims.OrgId,
+				Column3:        marinaID,
+			})
+		} else {
+			// Count all notifications
+			marinaID := currentUser.MarinaID
+			if marinaID == uuid.Nil {
+				marinaID = uuid.UUID{} // Zero UUID for NULL case
+			}
+			total, err = h.server.DB.Queries().CountAllNotifications(c.Request().Context(), db.CountAllNotificationsParams{
+				UserID:         claims.ID,
+				OrganizationID: claims.OrgId,
+				Column3:        marinaID,
+			})
+		}
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting notifications", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting notifications").JSON(c)
 		}
 
 		return responses.NewNotificationsPaginatedResponse(notifications, total, req.PaginationQuery.PageSize, req.PaginationQuery.Page).JSON(c)
