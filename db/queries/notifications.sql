@@ -82,3 +82,61 @@ AND type = $3
 AND ($4::uuid IS NULL OR marina_id = $4)
 ORDER BY created_at DESC
 LIMIT $5 OFFSET $6;
+
+-- name: ListNotificationsWithFilters :many
+SELECT * FROM notifications
+WHERE user_id = $1
+  AND organization_id = $2
+  AND ($3 = '00000000-0000-0000-0000-000000000000'::uuid OR marina_id = $3)
+  AND ($4 = '' OR (
+    LOWER(title) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(content) LIKE LOWER('%' || $4 || '%')
+  ))
+  AND ($5::text = '' OR read = $5::boolean)
+  AND ($6 = '' OR type = $6)
+ORDER BY 
+  -- Mantener prioridad como orden principal si no se especifica sort
+  CASE 
+    WHEN $7 = '' THEN (
+      CASE WHEN priority = 'urgent' THEN 1
+           WHEN priority = 'high' THEN 2
+           WHEN priority = 'normal' THEN 3
+           WHEN priority = 'low' THEN 4
+           ELSE 5 END
+    )
+  END,
+  -- Sorting dinámico opcional
+  CASE 
+    WHEN $7 = 'type' AND $8 = 'asc' THEN type
+    WHEN $7 = 'title' AND $8 = 'asc' THEN title
+  END ASC,
+  CASE 
+    WHEN $7 = 'type' AND $8 = 'desc' THEN type
+    WHEN $7 = 'title' AND $8 = 'desc' THEN title
+  END DESC,
+  CASE 
+    WHEN $7 = 'read' AND $8 = 'asc' THEN read
+  END ASC,
+  CASE 
+    WHEN $7 = 'read' AND $8 = 'desc' THEN read
+  END DESC,
+  CASE 
+    WHEN $7 = 'created_at' AND $8 = 'asc' THEN created_at
+  END ASC,
+  CASE 
+    WHEN $7 = 'created_at' AND $8 = 'desc' THEN created_at
+    ELSE created_at
+  END DESC
+LIMIT $9 OFFSET $10;
+
+-- name: CountNotificationsWithFilters :one
+SELECT COUNT(*) FROM notifications
+WHERE user_id = $1
+  AND organization_id = $2
+  AND ($3 = '00000000-0000-0000-0000-000000000000'::uuid OR marina_id = $3)
+  AND ($4 = '' OR (
+    LOWER(title) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(content) LIKE LOWER('%' || $4 || '%')
+  ))
+  AND ($5::text = '' OR read = $5::boolean)
+  AND ($6 = '' OR type = $6);
