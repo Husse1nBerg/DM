@@ -34,6 +34,13 @@ type UpdateContactRequest struct {
 	IsCPContact *bool       `json:"is_cp_contact"`
 }
 
+// ListContactsRequest represents the parameters to list contacts for a marina with filtering, sorting, and pagination
+// swagger:parameters ListContacts
+type ListContactsRequest struct {
+	MarinaID string `json:"marinaId" validate:"required"`
+	FilterSortParams
+}
+
 // Validate validates the request
 func (r *CreateContactRequest) Validate() error {
 	validate := validator.New()

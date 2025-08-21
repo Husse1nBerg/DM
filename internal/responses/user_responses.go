@@ -164,7 +164,7 @@ func NewUserResponseFromMarinaListRow(r db.GetMarinaUsersListPaginatedRow, serve
 	return response
 }
 
-func NewUserResponseFromUserMarinasAssignmentRow(r db.ListUserMarinasAssignmentsPaginatedRow, server *server.Server) *UserResponse {
+func NewUserResponseFromUserMarinasAssignmentRow(r db.ListUserMarinasAssignmentsPaginatedAscRow, server *server.Server) *UserResponse {
 	response := &UserResponse{
 		ID:                  r.ID,
 		Username:            r.Username,

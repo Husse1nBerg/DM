@@ -214,6 +214,164 @@ func (q *Queries) GetOrganizationsPaginated(ctx context.Context, arg GetOrganiza
 	return items, nil
 }
 
+const getOrganizationsWithFiltersAsc = `-- name: GetOrganizationsWithFiltersAsc :many
+SELECT id, email, name, image, website, country, phone, is_active, is_test, created_at, updated_at, deleted_at, address_id
+FROM organizations o
+WHERE o.deleted_at IS NULL
+  -- free text search
+  AND (
+    $1 = '' 
+    OR o.name ILIKE '%' || $1 || '%'
+    OR o.email ILIKE '%' || $1 || '%'
+    OR o.website ILIKE '%' || $1 || '%'
+    OR o.country ILIKE '%' || $1 || '%'
+    OR o.phone ILIKE '%' || $1 || '%'
+  )
+  -- optional filters
+  AND ($2 = '' OR o.is_active = $2::boolean)
+  AND ($3 = '' OR o.is_test = $3::boolean)
+ORDER BY
+  (CASE WHEN $4 = 'name'       THEN o.name END) ASC,
+  (CASE WHEN $4 = 'email'      THEN o.email END) ASC,
+  (CASE WHEN $4 = 'website'    THEN o.website END) ASC,
+  (CASE WHEN $4 = 'country'    THEN o.country END) ASC,
+  (CASE WHEN $4 = 'phone'      THEN o.phone END) ASC,
+  (CASE WHEN $4 = 'is_active'  THEN o.is_active END) ASC,
+  (CASE WHEN $4 = 'is_test'    THEN o.is_test END) ASC,
+  (CASE WHEN $4 = 'created_at' THEN o.created_at END) ASC,
+  (CASE WHEN $4 = 'updated_at' THEN o.updated_at END) ASC
+LIMIT $5 OFFSET $6
+`
+
+type GetOrganizationsWithFiltersAscParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetOrganizationsWithFiltersAsc(ctx context.Context, arg GetOrganizationsWithFiltersAscParams) ([]Organization, error) {
+	rows, err := q.db.Query(ctx, getOrganizationsWithFiltersAsc,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Organization
+	for rows.Next() {
+		var i Organization
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Name,
+			&i.Image,
+			&i.Website,
+			&i.Country,
+			&i.Phone,
+			&i.IsActive,
+			&i.IsTest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AddressID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrganizationsWithFiltersDesc = `-- name: GetOrganizationsWithFiltersDesc :many
+SELECT id, email, name, image, website, country, phone, is_active, is_test, created_at, updated_at, deleted_at, address_id
+FROM organizations o
+WHERE o.deleted_at IS NULL
+  -- free text search
+  AND (
+    $1 = '' 
+    OR o.name ILIKE '%' || $1 || '%'
+    OR o.email ILIKE '%' || $1 || '%'
+    OR o.website ILIKE '%' || $1 || '%'
+    OR o.country ILIKE '%' || $1 || '%'
+    OR o.phone ILIKE '%' || $1 || '%'
+  )
+  -- optional filters
+  AND ($2 = '' OR o.is_active = $2::boolean)
+  AND ($3 = '' OR o.is_test = $3::boolean)
+ORDER BY
+  (CASE WHEN $4 = 'name'       THEN o.name END) DESC,
+  (CASE WHEN $4 = 'email'      THEN o.email END) DESC,
+  (CASE WHEN $4 = 'website'    THEN o.website END) DESC,
+  (CASE WHEN $4 = 'country'    THEN o.country END) DESC,
+  (CASE WHEN $4 = 'phone'      THEN o.phone END) DESC,
+  (CASE WHEN $4 = 'is_active'  THEN o.is_active END) DESC,
+  (CASE WHEN $4 = 'is_test'    THEN o.is_test END) DESC,
+  (CASE WHEN $4 = 'created_at' THEN o.created_at END) DESC,
+  (CASE WHEN $4 = 'updated_at' THEN o.updated_at END) DESC
+LIMIT $5 OFFSET $6
+`
+
+type GetOrganizationsWithFiltersDescParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetOrganizationsWithFiltersDesc(ctx context.Context, arg GetOrganizationsWithFiltersDescParams) ([]Organization, error) {
+	rows, err := q.db.Query(ctx, getOrganizationsWithFiltersDesc,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Organization
+	for rows.Next() {
+		var i Organization
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Name,
+			&i.Image,
+			&i.Website,
+			&i.Country,
+			&i.Phone,
+			&i.IsActive,
+			&i.IsTest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AddressID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const softDeleteOrganization = `-- name: SoftDeleteOrganization :exec
 UPDATE organizations
 SET deleted_at = CURRENT_TIMESTAMP

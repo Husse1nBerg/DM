@@ -53,6 +53,36 @@ func (q *Queries) ActivateUser(ctx context.Context, id uuid.UUID) (User, error) 
 	return i, err
 }
 
+const countUsersWithFilters = `-- name: CountUsersWithFilters :one
+SELECT COUNT(*)
+FROM users
+WHERE deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR username ILIKE '%' || $1 || '%'
+    OR first_name ILIKE '%' || $1 || '%'
+    OR last_name ILIKE '%' || $1 || '%'
+    OR email ILIKE '%' || $1 || '%'
+    OR phone ILIKE '%' || $1 || '%'
+    OR title ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR role_id = $2::uuid)
+  AND ($3 = '' OR is_active = ($3)::boolean)
+`
+
+type CountUsersWithFiltersParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+}
+
+func (q *Queries) CountUsersWithFilters(ctx context.Context, arg CountUsersWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countUsersWithFilters, arg.Column1, arg.Column2, arg.Column3)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createCustomerUser = `-- name: CreateCustomerUser :one
 INSERT INTO users (
         username,
@@ -350,6 +380,194 @@ WHERE deleted_at IS NULL
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 	rows, err := q.db.Query(ctx, getAllUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllUsersFilteredSortedAsc = `-- name: GetAllUsersFilteredSortedAsc :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, customer_id, is_customer, joined_at, user_analytics
+FROM users
+WHERE deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR username ILIKE '%' || $1 || '%'
+    OR first_name ILIKE '%' || $1 || '%'
+    OR last_name ILIKE '%' || $1 || '%'
+    OR email ILIKE '%' || $1 || '%'
+    OR phone ILIKE '%' || $1 || '%'
+    OR title ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR role_id = $2::uuid)
+  AND ($3 = '' OR is_active = ($3)::boolean)
+ORDER BY
+  (CASE WHEN $4 = 'username' THEN username END) ASC,
+  (CASE WHEN $4 = 'first_name' THEN first_name END) ASC,
+  (CASE WHEN $4 = 'last_name' THEN last_name END) ASC,
+  (CASE WHEN $4 = 'email' THEN email END) ASC,
+  (CASE WHEN $4 = 'phone' THEN phone END) ASC,
+  (CASE WHEN $4 = 'title' THEN title END) ASC,
+  (CASE WHEN $4 = 'last_login' THEN last_login END) ASC,
+  (CASE WHEN $4 = 'failed_login_attempts' THEN failed_login_attempts END) ASC,
+  (CASE WHEN $4 = 'locked_until' THEN locked_until END) ASC,
+  (CASE WHEN $4 = 'last_password_reset' THEN last_password_reset END) ASC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) ASC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) ASC
+LIMIT $5 OFFSET $6
+`
+
+type GetAllUsersFilteredSortedAscParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetAllUsersFilteredSortedAsc(ctx context.Context, arg GetAllUsersFilteredSortedAscParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getAllUsersFilteredSortedAsc,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.RoleID,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllUsersFilteredSortedDesc = `-- name: GetAllUsersFilteredSortedDesc :many
+SELECT id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, customer_id, is_customer, joined_at, user_analytics
+FROM users
+WHERE deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR username ILIKE '%' || $1 || '%'
+    OR first_name ILIKE '%' || $1 || '%'
+    OR last_name ILIKE '%' || $1 || '%'
+    OR email ILIKE '%' || $1 || '%'
+    OR phone ILIKE '%' || $1 || '%'
+    OR title ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR role_id = $2::uuid)
+  AND ($3 = '' OR is_active = ($3)::boolean)
+ORDER BY
+  (CASE WHEN $4 = 'username' THEN username END) DESC,
+  (CASE WHEN $4 = 'first_name' THEN first_name END) DESC,
+  (CASE WHEN $4 = 'last_name' THEN last_name END) DESC,
+  (CASE WHEN $4 = 'email' THEN email END) DESC,
+  (CASE WHEN $4 = 'phone' THEN phone END) DESC,
+  (CASE WHEN $4 = 'title' THEN title END) DESC,
+  (CASE WHEN $4 = 'last_login' THEN last_login END) DESC,
+  (CASE WHEN $4 = 'failed_login_attempts' THEN failed_login_attempts END) DESC,
+  (CASE WHEN $4 = 'locked_until' THEN locked_until END) DESC,
+  (CASE WHEN $4 = 'last_password_reset' THEN last_password_reset END) DESC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) DESC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) DESC
+LIMIT $5 OFFSET $6
+`
+
+type GetAllUsersFilteredSortedDescParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetAllUsersFilteredSortedDesc(ctx context.Context, arg GetAllUsersFilteredSortedDescParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, getAllUsersFilteredSortedDesc,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
