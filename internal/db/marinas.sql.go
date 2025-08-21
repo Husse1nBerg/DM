@@ -856,6 +856,208 @@ func (q *Queries) GetMarinasPaginated(ctx context.Context, arg GetMarinasPaginat
 	return items, nil
 }
 
+const getMarinasWithFiltersAsc = `-- name: GetMarinasWithFiltersAsc :many
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage, notes_messages_plan_id, storage_plan_id, modules, internal_announcement, external_announcement, document_plan_id, document_usage
+FROM marinas m
+WHERE m.deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR m.name ILIKE '%' || $1 || '%'
+    OR m.email ILIKE '%' || $1 || '%'
+    OR m.location ILIKE '%' || $1 || '%'
+    OR m.phone ILIKE '%' || $1 || '%'
+    OR m.country ILIKE '%' || $1 || '%'
+    OR m.currency ILIKE '%' || $1 || '%'
+    OR m.website ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR m.organization_id = $2::uuid)
+  AND ($3 = '' OR m.is_active = $3::boolean)
+  AND ($4 = '' OR m.is_test = $4::boolean)
+ORDER BY
+  (CASE WHEN $5 = 'name'         THEN m.name END) ASC,
+  (CASE WHEN $5 = 'email'        THEN m.email END) ASC,
+  (CASE WHEN $5 = 'location'     THEN m.location END) ASC,
+  (CASE WHEN $5 = 'phone'        THEN m.phone END) ASC,
+  (CASE WHEN $5 = 'country'      THEN m.country END) ASC,
+  (CASE WHEN $5 = 'currency'     THEN m.currency END) ASC,
+  (CASE WHEN $5 = 'website'      THEN m.website END) ASC,
+  (CASE WHEN $5 = 'max_users'    THEN m.max_users END) ASC,
+  (CASE WHEN $5 = 'is_active'    THEN m.is_active END) ASC,
+  (CASE WHEN $5 = 'is_test'      THEN m.is_test END) ASC,
+  (CASE WHEN $5 = 'created_at'   THEN m.created_at END) ASC,
+  (CASE WHEN $5 = 'updated_at'   THEN m.updated_at END) ASC
+LIMIT $6 OFFSET $7
+`
+
+type GetMarinasWithFiltersAscParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Column5 interface{}
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetMarinasWithFiltersAsc(ctx context.Context, arg GetMarinasWithFiltersAscParams) ([]Marina, error) {
+	rows, err := q.db.Query(ctx, getMarinasWithFiltersAsc,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Marina
+	for rows.Next() {
+		var i Marina
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.Name,
+			&i.Email,
+			&i.Location,
+			&i.Phone,
+			&i.Country,
+			&i.Currency,
+			&i.WorkingHours,
+			&i.Website,
+			&i.Image,
+			&i.MaxUsers,
+			&i.IsActive,
+			&i.IsTest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AddressID,
+			&i.SystemID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.NotesMessagesPlanID,
+			&i.StoragePlanID,
+			&i.Modules,
+			&i.InternalAnnouncement,
+			&i.ExternalAnnouncement,
+			&i.DocumentPlanID,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMarinasWithFiltersDesc = `-- name: GetMarinasWithFiltersDesc :many
+SELECT id, organization_id, name, email, location, phone, country, currency, working_hours, website, image, max_users, is_active, is_test, created_at, updated_at, deleted_at, address_id, system_id, storage_usage, email_usage, text_usage, notes_messages_plan_id, storage_plan_id, modules, internal_announcement, external_announcement, document_plan_id, document_usage
+FROM marinas m
+WHERE m.deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR m.name ILIKE '%' || $1 || '%'
+    OR m.email ILIKE '%' || $1 || '%'
+    OR m.location ILIKE '%' || $1 || '%'
+    OR m.phone ILIKE '%' || $1 || '%'
+    OR m.country ILIKE '%' || $1 || '%'
+    OR m.currency ILIKE '%' || $1 || '%'
+    OR m.website ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR m.organization_id = $2::uuid)
+  AND ($3 = '' OR m.is_active = $3::boolean)
+  AND ($4 = '' OR m.is_test = $4::boolean)
+ORDER BY
+  (CASE WHEN $5 = 'name'         THEN m.name END) DESC,
+  (CASE WHEN $5 = 'email'        THEN m.email END) DESC,
+  (CASE WHEN $5 = 'location'     THEN m.location END) DESC,
+  (CASE WHEN $5 = 'phone'        THEN m.phone END) DESC,
+  (CASE WHEN $5 = 'country'      THEN m.country END) DESC,
+  (CASE WHEN $5 = 'currency'     THEN m.currency END) DESC,
+  (CASE WHEN $5 = 'website'      THEN m.website END) DESC,
+  (CASE WHEN $5 = 'max_users'    THEN m.max_users END) DESC,
+  (CASE WHEN $5 = 'is_active'    THEN m.is_active END) DESC,
+  (CASE WHEN $5 = 'is_test'      THEN m.is_test END) DESC,
+  (CASE WHEN $5 = 'created_at'   THEN m.created_at END) DESC,
+  (CASE WHEN $5 = 'updated_at'   THEN m.updated_at END) DESC
+LIMIT $6 OFFSET $7
+`
+
+type GetMarinasWithFiltersDescParams struct {
+	Column1 interface{}
+	Column2 interface{}
+	Column3 interface{}
+	Column4 interface{}
+	Column5 interface{}
+	Limit   int32
+	Offset  int32
+}
+
+func (q *Queries) GetMarinasWithFiltersDesc(ctx context.Context, arg GetMarinasWithFiltersDescParams) ([]Marina, error) {
+	rows, err := q.db.Query(ctx, getMarinasWithFiltersDesc,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Marina
+	for rows.Next() {
+		var i Marina
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.Name,
+			&i.Email,
+			&i.Location,
+			&i.Phone,
+			&i.Country,
+			&i.Currency,
+			&i.WorkingHours,
+			&i.Website,
+			&i.Image,
+			&i.MaxUsers,
+			&i.IsActive,
+			&i.IsTest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.AddressID,
+			&i.SystemID,
+			&i.StorageUsage,
+			&i.EmailUsage,
+			&i.TextUsage,
+			&i.NotesMessagesPlanID,
+			&i.StoragePlanID,
+			&i.Modules,
+			&i.InternalAnnouncement,
+			&i.ExternalAnnouncement,
+			&i.DocumentPlanID,
+			&i.DocumentUsage,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const incrementMarinaDocumentUsage = `-- name: IncrementMarinaDocumentUsage :one
 UPDATE marinas
 SET document_usage = COALESCE(document_usage, 0)::bigint + $2::bigint,

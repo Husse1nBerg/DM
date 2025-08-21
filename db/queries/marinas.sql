@@ -75,6 +75,68 @@ FROM marinas
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
+-- name: GetMarinasWithFiltersAsc :many
+SELECT *
+FROM marinas m
+WHERE m.deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR m.name ILIKE '%' || $1 || '%'
+    OR m.email ILIKE '%' || $1 || '%'
+    OR m.location ILIKE '%' || $1 || '%'
+    OR m.phone ILIKE '%' || $1 || '%'
+    OR m.country ILIKE '%' || $1 || '%'
+    OR m.currency ILIKE '%' || $1 || '%'
+    OR m.website ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR m.organization_id = $2::uuid)
+  AND ($3 = '' OR m.is_active = $3::boolean)
+  AND ($4 = '' OR m.is_test = $4::boolean)
+ORDER BY
+  (CASE WHEN $5 = 'name'         THEN m.name END) ASC,
+  (CASE WHEN $5 = 'email'        THEN m.email END) ASC,
+  (CASE WHEN $5 = 'location'     THEN m.location END) ASC,
+  (CASE WHEN $5 = 'phone'        THEN m.phone END) ASC,
+  (CASE WHEN $5 = 'country'      THEN m.country END) ASC,
+  (CASE WHEN $5 = 'currency'     THEN m.currency END) ASC,
+  (CASE WHEN $5 = 'website'      THEN m.website END) ASC,
+  (CASE WHEN $5 = 'max_users'    THEN m.max_users END) ASC,
+  (CASE WHEN $5 = 'is_active'    THEN m.is_active END) ASC,
+  (CASE WHEN $5 = 'is_test'      THEN m.is_test END) ASC,
+  (CASE WHEN $5 = 'created_at'   THEN m.created_at END) ASC,
+  (CASE WHEN $5 = 'updated_at'   THEN m.updated_at END) ASC
+LIMIT $6 OFFSET $7;
+-- name: GetMarinasWithFiltersDesc :many
+SELECT *
+FROM marinas m
+WHERE m.deleted_at IS NULL
+  AND (
+    $1 = '' 
+    OR m.name ILIKE '%' || $1 || '%'
+    OR m.email ILIKE '%' || $1 || '%'
+    OR m.location ILIKE '%' || $1 || '%'
+    OR m.phone ILIKE '%' || $1 || '%'
+    OR m.country ILIKE '%' || $1 || '%'
+    OR m.currency ILIKE '%' || $1 || '%'
+    OR m.website ILIKE '%' || $1 || '%'
+  )
+  AND ($2 = '' OR m.organization_id = $2::uuid)
+  AND ($3 = '' OR m.is_active = $3::boolean)
+  AND ($4 = '' OR m.is_test = $4::boolean)
+ORDER BY
+  (CASE WHEN $5 = 'name'         THEN m.name END) DESC,
+  (CASE WHEN $5 = 'email'        THEN m.email END) DESC,
+  (CASE WHEN $5 = 'location'     THEN m.location END) DESC,
+  (CASE WHEN $5 = 'phone'        THEN m.phone END) DESC,
+  (CASE WHEN $5 = 'country'      THEN m.country END) DESC,
+  (CASE WHEN $5 = 'currency'     THEN m.currency END) DESC,
+  (CASE WHEN $5 = 'website'      THEN m.website END) DESC,
+  (CASE WHEN $5 = 'max_users'    THEN m.max_users END) DESC,
+  (CASE WHEN $5 = 'is_active'    THEN m.is_active END) DESC,
+  (CASE WHEN $5 = 'is_test'      THEN m.is_test END) DESC,
+  (CASE WHEN $5 = 'created_at'   THEN m.created_at END) DESC,
+  (CASE WHEN $5 = 'updated_at'   THEN m.updated_at END) DESC
+LIMIT $6 OFFSET $7;
 -- name: GetMarinasByOrganizationPaginated :many
 SELECT *
 FROM marinas

@@ -53,6 +53,12 @@ type UpdateMarinaRequest struct {
 	ExternalAnnouncement *string               `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
 }
 
+// ListMarinasRequest represents the parameters to list marinas with filtering, sorting, and pagination
+// swagger:parameters ListMarinas
+type ListMarinasRequest struct {
+	FilterSortParams
+}
+
 type OverLimitUsageRequest struct {
 	OrganizationID *uuid.UUID `json:"organizationId" query:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
 	StartMonth     string     `json:"startMonth" query:"startMonth" validate:"required" example:"2024-01"`

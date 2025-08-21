@@ -6601,7 +6601,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves marinas with pagination support",
+                "description": "Retrieves marinas with filtering, sorting, and pagination support",
                 "consumes": [
                     "application/json"
                 ],
@@ -6625,6 +6625,43 @@ const docTemplate = `{
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field (name, email, location, phone, country, currency, website, max_users, is_active, is_test, created_at, updated_at)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "asc",
+                        "description": "Sort order (asc, desc)",
+                        "name": "sortOrder",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across multiple fields",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by organization UUID",
+                        "name": "organizationId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "isActive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by test status",
+                        "name": "isTest",
                         "in": "query"
                     }
                 ],
@@ -8529,7 +8566,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves organizations with pagination support",
+                "description": "Retrieves organizations with filtering, sorting, and pagination support",
                 "consumes": [
                     "application/json"
                 ],
@@ -8554,6 +8591,37 @@ const docTemplate = `{
                         "description": "Page size",
                         "name": "pageSize",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field (name, email, website, country, phone, is_active, is_test, created_at, updated_at)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "asc",
+                        "description": "Sort order (asc, desc)",
+                        "name": "sortOrder",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across multiple fields",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "isActive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by test status",
+                        "name": "isTest",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -8562,7 +8630,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.OrganizationResponse"
+                                "$ref": "#/definitions/responses.OrganizationsPaginatedResponse"
                             }
                         }
                     },
@@ -16807,6 +16875,34 @@ const docTemplate = `{
                 "website": {
                     "type": "string",
                     "example": "https://example.com"
+                }
+            }
+        },
+        "responses.OrganizationsPaginatedResponse": {
+            "description": "Paginated response containing a list of organizations",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.OrganizationResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
                 }
             }
         },

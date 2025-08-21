@@ -3566,6 +3566,26 @@ definitions:
         example: https://example.com
         type: string
     type: object
+  responses.OrganizationsPaginatedResponse:
+    description: Paginated response containing a list of organizations
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/responses.OrganizationResponse'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
   responses.OverLimitUsageResponse:
     properties:
       documentLimit:
@@ -8217,7 +8237,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves marinas with pagination support
+      description: Retrieves marinas with filtering, sorting, and pagination support
       parameters:
       - default: 1
         description: Page number
@@ -8229,6 +8249,32 @@ paths:
         in: query
         name: pageSize
         type: integer
+      - description: Sort by field (name, email, location, phone, country, currency,
+          website, max_users, is_active, is_test, created_at, updated_at)
+        in: query
+        name: sortBy
+        type: string
+      - default: asc
+        description: Sort order (asc, desc)
+        in: query
+        name: sortOrder
+        type: string
+      - description: Global search across multiple fields
+        in: query
+        name: search
+        type: string
+      - description: Filter by organization UUID
+        in: query
+        name: organizationId
+        type: string
+      - description: Filter by active status
+        in: query
+        name: isActive
+        type: boolean
+      - description: Filter by test status
+        in: query
+        name: isTest
+        type: boolean
       produces:
       - application/json
       responses:
@@ -9415,6 +9461,28 @@ paths:
         in: query
         name: pageSize
         type: integer
+      - description: Sort by field (name, email, website, country, phone, is_active,
+          is_test, created_at, updated_at)
+        in: query
+        name: sortBy
+        type: string
+      - default: asc
+        description: Sort order (asc, desc)
+        in: query
+        name: sortOrder
+        type: string
+      - description: Global search across multiple fields
+        in: query
+        name: search
+        type: string
+      - description: Filter by active status
+        in: query
+        name: isActive
+        type: boolean
+      - description: Filter by test status
+        in: query
+        name: isTest
+        type: boolean
       produces:
       - application/json
       responses:
@@ -9468,7 +9536,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves organizations with pagination support
+      description: Retrieves organizations with filtering, sorting, and pagination
+        support
       parameters:
       - default: 1
         description: Page number
@@ -9487,7 +9556,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/responses.OrganizationResponse'
+              $ref: '#/definitions/responses.OrganizationsPaginatedResponse'
             type: array
         "400":
           description: Bad Request
