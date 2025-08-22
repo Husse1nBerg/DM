@@ -1149,7 +1149,10 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 	// Include marina logo if available
 	var logo string
 	if marina.Image != nil && *marina.Image != "" {
-		logo = *marina.Image
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
 	}
 
 	email := sendgrid.ESignSubmissionTemplateData{
