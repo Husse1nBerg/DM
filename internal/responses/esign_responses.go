@@ -50,16 +50,16 @@ type EsignSubmissionResponse struct {
 	DocumentID         uuid.UUID        `json:"documentId" example:"550e8400-e29b-41d4-a716-446655440003"`
 	Status             string           `json:"status" example:"pending"`
 	BlobURL            string           `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
-	BlobMetadata       *json.RawMessage `json:"blobMetadata"`
-	CustomerID         *string          `json:"customerId,omitempty"`
+	BlobMetadata       *json.RawMessage `json:"blobMetadata,omitempty" swaggertype:"object"`
+	CustomerID         *string          `json:"customerId,omitempty" example:"CUST123"`
 	Email              string           `json:"email" example:"customer@example.com"`
-	Name               *string          `json:"name,omitempty"`
-	AttachmentRequired *bool            `json:"attachmentRequired,omitempty"`
-	ReplyTo            *string          `json:"replyTo,omitempty"`
-	CustomMessage      *string          `json:"customMessage,omitempty"`
+	Name               *string          `json:"name,omitempty" example:"Customer Agreement"`
+	AttachmentRequired *bool            `json:"attachmentRequired,omitempty" example:"false"`
+	ReplyTo            *string          `json:"replyTo,omitempty" example:"support@example.com"`
+	CustomMessage      *string          `json:"customMessage,omitempty" example:"Please sign the document as soon as possible."`
 	Logo               *string          `json:"logo,omitempty" example:"https://s3.amazonaws.com/bucket/marina/logo.png"`
-	CreatedAt          *time.Time       `json:"createdAt"`
-	UpdatedAt          *time.Time       `json:"updatedAt"`
+	CreatedAt          *time.Time       `json:"createdAt,omitempty"`
+	UpdatedAt          *time.Time       `json:"updatedAt,omitempty"`
 }
 
 // Convert a database EsignTemplate to a response model

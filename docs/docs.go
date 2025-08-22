@@ -16074,7 +16074,7 @@ const docTemplate = `{
                 },
                 "customMessage": {
                     "type": "string",
-                    "example": "Custom message to the customer"
+                    "example": "Please sign the document as soon as possible."
                 },
                 "customerId": {
                     "type": "string",
@@ -16092,6 +16092,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
+                "logo": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/marina/logo.png"
+                },
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
@@ -16106,7 +16110,7 @@ const docTemplate = `{
                 },
                 "replyTo": {
                     "type": "string",
-                    "example": "marina@example.com"
+                    "example": "support@example.com"
                 },
                 "status": {
                     "type": "string",
