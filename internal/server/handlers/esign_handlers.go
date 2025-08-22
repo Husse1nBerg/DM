@@ -1136,8 +1136,6 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 
 	if req.ReplyName != nil && *req.ReplyName != "" {
 		replyName = *req.ReplyName
-	} else {
-		replyName = marina.Name
 	}
 
 	// Safely handle optional Name
