@@ -1675,6 +1675,7 @@ func (h *EsignHandler) GetEsignSubmissionPublic(c echo.Context) error {
 	}
 
 	// Convert BlobMetadata to *json.RawMessage
+	blobURL := utils.GetFullESignURL(&submission.BlobUrl)
 	var blobMetadata *json.RawMessage
 	if len(submission.BlobMetadata) > 0 {
 		raw := json.RawMessage(submission.BlobMetadata)
@@ -1687,7 +1688,7 @@ func (h *EsignHandler) GetEsignSubmissionPublic(c echo.Context) error {
 		MarinaID:           submission.MarinaID,
 		DocumentID:         submission.DocumentID,
 		Status:             submission.Status,
-		BlobURL:            submission.BlobUrl,
+		BlobURL:            *blobURL,
 		BlobMetadata:       blobMetadata,
 		CustomerID:         submission.CustomerID,
 		Email:              submission.Email,
