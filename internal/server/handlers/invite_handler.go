@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -10,8 +11,11 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
+	tokenpkg "github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -182,6 +186,89 @@ func (h *InviteHandler) AcceptInvitation(c echo.Context) error {
 			Message: "Failed to process invitation",
 		})
 	}
+
+	// Get the user's role to check if they are a customer (more efficient than full user query)
+	userRole, err := queries.GetRoleByID(ctx, invite.UserID)
+	if err != nil {
+		logger.Zap.Error("Failed to get user role after invitation acceptance", err)
+		// Don't fail the request, just log the error and continue
+	} else {
+		// Only send notifications if the user who accepted the invitation has a customer role
+		if userRole.IsCustomerRole != nil && *userRole.IsCustomerRole {
+			// Send notifications to marina staff asynchronously
+			go func() {
+				// Use background context with timeout for notification operations
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+				defer cancel()
+
+				// Get the user's basic info needed for notifications (minimal query)
+				user, err := queries.GetUserByID(ctx, invite.UserID)
+				if err != nil {
+					logger.Zap.Warnw("Failed to get user info for notification", "user_id", invite.UserID, "error", err)
+					return
+				}
+
+				// Get marina staff users (non-customers) for notifications
+				marinaUsers, err := queries.GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
+					MarinaID:   user.MarinaID,
+					IsCustomer: utils.Pointer(false), // Get marina staff, not customers
+				})
+				if err != nil {
+					logger.Zap.Warnw("Failed to get marina users for invitation notification",
+						"marina_id", user.MarinaID, "error", err)
+					return
+				}
+
+				// Create notifications for marina staff using smart notification system
+				emailData := &notifications.EmailNotificationData{
+					To:      []string{}, // No specific email recipients for invitation notifications
+					Subject: "New Customer User Joined",
+				}
+
+				// Create notification service instance
+				notificationService := notifications.NewNotificationService(
+					queries,
+					h.server.Redis,
+					h.server.Logger,
+				)
+
+				// Get customer ID safely
+				customerID := ""
+				if user.CustomerID != nil {
+					customerID = *user.CustomerID
+				}
+
+				results, err := notificationService.CreateBulkDocumentNotifications(
+					ctx,
+					marinaUsers,
+					user.OrganizationID,
+					user.MarinaID,
+					"Customer Invitation Accepted", // Use a descriptive filename
+					customerID,                     // Customer ID
+					emailData,
+				)
+				if err != nil {
+					logger.Zap.Warnw("Failed to create bulk invitation notifications", "error", err)
+				} else {
+					// Log notification results
+					for _, result := range results {
+						if len(result.Errors) > 0 {
+							logger.Zap.Warnw("Invitation notification delivery had errors",
+								"user_id", result.UserID,
+								"errors", result.Errors)
+						} else {
+							logger.Zap.Infow("Invitation notification delivered successfully",
+								"user_id", result.UserID,
+								"push", result.PushDelivered,
+								"email", result.EmailDelivered,
+								"sms", result.SMSDelivered)
+						}
+					}
+				}
+			}()
+		}
+	}
+
 	return c.JSON(http.StatusOK, responses.AcceptInvitationResponse{
 		BaseResponse: responses.BaseResponse{
 			Message: "Invitation accepted successfully",
@@ -285,12 +372,16 @@ func (h *InviteHandler) RefreshInvite(c echo.Context) error {
 		})
 	}
 
+	// Get user info from JWT token instead of database query to determine customer status
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*tokenpkg.JwtCustomClaims)
+
 	// Check if user is a customer to determine email type
 	var inviteURL string
 	var templateData interface{}
 	var subject string
 
-	if user.IsCustomer != nil && *user.IsCustomer {
+	if claims.IsCustomer != nil && *claims.IsCustomer {
 		// Customer user - use customer invite template
 		inviteURL = fmt.Sprintf("%s/%s?token=%s&email=%s",
 			cfg.App.FrontendBaseURL,
@@ -334,7 +425,7 @@ func (h *InviteHandler) RefreshInvite(c echo.Context) error {
 	var taskID uuid.UUID
 	var resultChan <-chan sendgrid.EmailStatus
 
-	if user.IsCustomer != nil && *user.IsCustomer {
+	if claims.IsCustomer != nil && *claims.IsCustomer {
 		taskID, resultChan, err = h.server.SendGrid.SendInviteCustomerEmail(
 			[]string{user.Email},
 			subject,

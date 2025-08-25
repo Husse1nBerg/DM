@@ -194,13 +194,6 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID
 
-	// Get user details to check IsCustomer property
-	currentUser, userErr := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
-	if userErr != nil {
-		h.server.Logger.Zap.Warnw("Failed to get current user for notification check", "user_id", userID, "error", userErr)
-		// Continue without notifications if we can't determine user type
-	}
-
 	// Get marina information for both notification and DME operations
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 	defer cancel()
@@ -212,7 +205,7 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 	}
 
 	// Only send notifications if the current user is a customer
-	if userErr == nil && (currentUser.IsCustomer == nil || *currentUser.IsCustomer) {
+	if claims.IsCustomer == nil || *claims.IsCustomer {
 		// Create notification for marina staff about new customer document
 		marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
 			MarinaID:   marinaID,
@@ -262,10 +255,10 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 				}
 			}()
 		}
-	} else if userErr == nil {
+	} else {
 		h.server.Logger.Zap.Infow("Skipping notifications - document uploaded by customer user",
 			"user_id", userID,
-			"is_customer", *currentUser.IsCustomer,
+			"is_customer", *claims.IsCustomer,
 			"document_id", doc.ID)
 	}
 
@@ -700,13 +693,6 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID
 
-	// Get user details to check IsCustomer property
-	currentUser, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
-	if err != nil {
-		h.server.Logger.Zap.Warnw("Failed to get current user for notification check", "user_id", userID, "error", err)
-		// Continue without notifications if we can't determine user type
-	}
-
 	// Get marina information for both notification and DME operations
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 	defer cancel()
@@ -718,7 +704,7 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	}
 
 	// Only send notifications if the current user is a customer
-	if err == nil && (currentUser.IsCustomer == nil || *currentUser.IsCustomer) {
+	if claims.IsCustomer == nil || *claims.IsCustomer {
 		// Create notification for marina staff about new customer document
 		marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
 			MarinaID:   marinaID,
@@ -768,10 +754,10 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 				}
 			}()
 		}
-	} else if err == nil {
+	} else {
 		h.server.Logger.Zap.Infow("Skipping notifications - document uploaded by customer user",
 			"user_id", userID,
-			"is_customer", *currentUser.IsCustomer,
+			"is_customer", *claims.IsCustomer,
 			"document_id", doc.ID)
 	}
 
