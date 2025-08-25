@@ -55,6 +55,9 @@ type EsignSubmissionResponse struct {
 	Email              string           `json:"email" example:"customer@example.com"`
 	Name               *string          `json:"name,omitempty" example:"Customer Agreement"`
 	AttachmentRequired *bool            `json:"attachmentRequired,omitempty" example:"false"`
+	ReplyTo            *string          `json:"replyTo,omitempty" example:"support@example.com"`
+	CustomMessage      *string          `json:"customMessage,omitempty" example:"Please sign the document as soon as possible."`
+	Logo               *string          `json:"logo,omitempty" example:"https://s3.amazonaws.com/bucket/marina/logo.png"`
 	CreatedAt          *time.Time       `json:"createdAt,omitempty"`
 	UpdatedAt          *time.Time       `json:"updatedAt,omitempty"`
 }
@@ -143,6 +146,9 @@ func ConvertEsignSubmissionToResponse(submission db.EsignSubmission) EsignSubmis
 		Email:              submission.Email,
 		Name:               submission.Name,
 		AttachmentRequired: submission.AttachmentRequired,
+		ReplyTo:            submission.ReplyTo,
+		CustomMessage:      submission.CustomMessage,
+		Logo:               nil,
 		CreatedAt:          utils.PgTimeToTimePtr(submission.CreatedAt),
 		UpdatedAt:          utils.PgTimeToTimePtr(submission.UpdatedAt),
 	}

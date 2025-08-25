@@ -483,6 +483,8 @@ func (c *Client) SendESignSubmissionEmail(to []string, subject string, data ESig
 		"terms_conditions": data.TermsConditions,
 		"reply_name":       data.ReplyName,
 		"name":             data.Name,
+		"custom_message":   data.CustomMessage,
+		"logo":             data.Logo,
 	}
 
 	email := &TemplateEmail{

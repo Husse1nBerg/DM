@@ -1094,6 +1094,8 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		Email:              req.Email,
 		Name:               req.Name,
 		AttachmentRequired: req.AttachmentRequired,
+		ReplyTo:            req.ReplyTo,
+		CustomMessage:      req.CustomMessage,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature submission", err)
@@ -1125,10 +1127,15 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		replyTo = marina.Email
 	}
 
+	var customMessage string
+	if req.CustomMessage != nil && *req.CustomMessage != "" {
+		customMessage = *req.CustomMessage
+	} else {
+		customMessage = ""
+	}
+
 	if req.ReplyName != nil && *req.ReplyName != "" {
 		replyName = *req.ReplyName
-	} else {
-		replyName = marina.Name
 	}
 
 	// Safely handle optional Name
@@ -1139,6 +1146,15 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		submissionName = ""
 	}
 
+	// Include marina logo if available
+	var logo string
+	if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
+
 	email := sendgrid.ESignSubmissionTemplateData{
 		DocumentURL:     h.server.Config.App.EsignDocumentURL(submission.ID.String()),
 		Recipient:       "",
@@ -1147,6 +1163,8 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		ReplyName:       replyName,
 		TermsConditions: h.server.Config.App.TermsConditionsURL(),
 		Name:            submissionName,
+		CustomMessage:   customMessage,
+		Logo:            logo,
 	}
 	to := []string{req.Email}
 	subject := "New e-signature submission"
@@ -1644,8 +1662,47 @@ func (h *EsignHandler) GetEsignSubmissionPublic(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusNotFound, "Submission not found").JSON(c)
 	}
 
-	response := responses.NewEsignSubmissionResponseSuccess(submission)
-	return response.JSON(c)
+	// Fetch marina for logo
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), submission.MarinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching marina by ID", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+
+	// Include marina logo if available
+	var logo *string
+	if marina.Image != nil && *marina.Image != "" {
+		logo = marina.Image
+	}
+
+	// Convert BlobMetadata to *json.RawMessage
+	blobURL := utils.GetFullESignURL(&submission.BlobUrl)
+	var blobMetadata *json.RawMessage
+	if len(submission.BlobMetadata) > 0 {
+		raw := json.RawMessage(submission.BlobMetadata)
+		blobMetadata = &raw
+	}
+
+	response := responses.EsignSubmissionResponse{
+		ID:                 submission.ID,
+		OrganizationID:     submission.OrganizationID,
+		MarinaID:           submission.MarinaID,
+		DocumentID:         submission.DocumentID,
+		Status:             submission.Status,
+		BlobURL:            *blobURL,
+		BlobMetadata:       blobMetadata,
+		CustomerID:         submission.CustomerID,
+		Email:              submission.Email,
+		Name:               submission.Name,
+		AttachmentRequired: submission.AttachmentRequired,
+		ReplyTo:            submission.ReplyTo,
+		CustomMessage:      submission.CustomMessage,
+		Logo:               logo,
+		CreatedAt:          utils.PgTimeToTimePtr(submission.CreatedAt),
+		UpdatedAt:          utils.PgTimeToTimePtr(submission.UpdatedAt),
+	}
+
+	return responses.NewSuccessResponse(response).JSON(c)
 }
 
 // UpdateEsignSubmissionPublic updates an e-signature submission (public endpoint)
