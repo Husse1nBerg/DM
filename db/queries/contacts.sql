@@ -72,3 +72,55 @@ WHERE marina_id = $1
 UPDATE contacts
 SET deleted_at = CURRENT_TIMESTAMP
 WHERE id = $1;
+
+-- name: ListContactsWithFiltersAsc :many
+SELECT *
+FROM contacts
+WHERE marina_id = $1
+  AND deleted_at IS NULL
+  AND (
+    ($2 = '' OR name ILIKE '%' || $2 || '%'
+      OR email ILIKE '%' || $2 || '%'
+      OR phone ILIKE '%' || $2 || '%')
+  )
+  AND ($3 = '' OR type = $3)
+ORDER BY
+  (CASE WHEN $4 = 'name' THEN name END) ASC,
+  (CASE WHEN $4 = 'email' THEN email END) ASC,
+  (CASE WHEN $4 = 'phone' THEN phone END) ASC,
+  (CASE WHEN $4 = 'type' THEN type END) ASC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) ASC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) ASC
+LIMIT $5 OFFSET $6;
+
+-- name: ListContactsWithFiltersDesc :many
+SELECT *
+FROM contacts
+WHERE marina_id = $1
+  AND deleted_at IS NULL
+  AND (
+    ($2 = '' OR name ILIKE '%' || $2 || '%'
+      OR email ILIKE '%' || $2 || '%'
+      OR phone ILIKE '%' || $2 || '%')
+  )
+  AND ($3 = '' OR type = $3)
+ORDER BY
+  (CASE WHEN $4 = 'name' THEN name END) DESC,
+  (CASE WHEN $4 = 'email' THEN email END) DESC,
+  (CASE WHEN $4 = 'phone' THEN phone END) DESC,
+  (CASE WHEN $4 = 'type' THEN type END) DESC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) DESC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) DESC
+LIMIT $5 OFFSET $6;
+
+-- name: CountContactsWithFilters :one
+SELECT COUNT(*)
+FROM contacts
+WHERE marina_id = $1
+  AND deleted_at IS NULL
+  AND (
+    ($2 = '' OR name ILIKE '%' || $2 || '%'
+      OR email ILIKE '%' || $2 || '%'
+      OR phone ILIKE '%' || $2 || '%')
+  )
+  AND ($3 = '' OR type = $3);

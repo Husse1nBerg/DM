@@ -18,7 +18,8 @@ func RegisterNotificationRoutes(server *s.Server, permissionProtected *echo.Grou
 	notifications.GET("/stream", notificationHandler.NotificationStreamHandler)
 	notifications.GET("/:id", notificationHandler.GetNotificationHandler)
 	notifications.PUT("/:id/read", notificationHandler.MarkAsReadHandler)
+	notifications.PUT("/:id/unread", notificationHandler.MarkAsUnreadHandler)
 	notifications.PUT("/mark-all-read", notificationHandler.MarkAllAsReadHandler)
 	notifications.GET("/type/:type", notificationHandler.GetNotificationsByTypeHandler)
 	notifications.DELETE("/:id", notificationHandler.DeleteNotificationHandler)
-} 
+}

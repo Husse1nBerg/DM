@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
 	"strings"
 
@@ -198,22 +199,27 @@ func (h *OrganizationHandler) GetOrganizationByEmail(c echo.Context) error {
 	return responses.NewOrganizationResponseSuccess(org).JSON(c)
 }
 
-// GetOrganizationsPaginated retrieves organizations with pagination
+// GetOrganizationsPaginated retrieves organizations with filtering, sorting, and pagination
 //
 //	@Summary		Get paginated organizations
-//	@Description	Retrieves organizations with pagination support
+//	@Description	Retrieves organizations with filtering, sorting, and pagination support
 //	@Tags			Organizations
 //	@Accept			json
 //	@Produce		json
-//	@Param			page		query		int		false	"Page number"	default(1)
-//	@Param			pageSize	query		int		false	"Page size"		default(10)
-//	@Success		200		{array}		responses.OrganizationResponse
+//	@Param			page		query		int		false	"Page number" default(1)
+//	@Param			pageSize	query		int		false	"Page size" default(10)
+//	@Param			sortBy		query		string	false	"Sort by field (name, email, website, country, phone, is_active, is_test, created_at, updated_at)"
+//	@Param			sortOrder	query		string	false	"Sort order (asc, desc)" default(asc)
+//	@Param			search		query		string	false	"Global search across multiple fields"
+//	@Param			isActive	query		bool	false	"Filter by active status"
+//	@Param			isTest		query		bool	false	"Filter by test status"
+//	@Success		200		{array}		responses.OrganizationsPaginatedResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/organizations [get]
 func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
-	var req requests.PaginationQuery
+	var req requests.ListOrganizationsRequest
 
 	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -227,28 +233,67 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 	if req.PageSize <= 0 {
 		req.PageSize = 10
 	}
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.SortOrder == "" {
+		req.SortOrder = "asc"
+	}
+	if req.SortBy == "" {
+		req.SortBy = "created_at"
+	}
 
-	// Calculate total count (in a real app, you'd use a COUNT query)
-	allOrgs, err := h.server.DB.Queries().GetAllOrganizations(c.Request().Context())
+	// Prepare filter params
+	search := req.Search
+	isActive := ""
+	if v, ok := req.Filters["isActive"]; ok {
+		isActive = v
+	}
+	isTest := ""
+	if v, ok := req.Filters["isTest"]; ok {
+		isTest = v
+	}
+
+	// Count total (for pagination)
+	allOrgsAsc, err := h.server.DB.Queries().GetOrganizationsWithFiltersAsc(c.Request().Context(), db.GetOrganizationsWithFiltersAscParams{
+		Column1: search,
+		Column2: isActive,
+		Column3: isTest,
+		Column4: req.SortBy,
+		Limit:   int32(math.MaxInt32),
+		Offset:  0,
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-	total := int64(len(allOrgs))
+	total := int64(len(allOrgsAsc))
 
-	// Fetch paginated data
-	params := db.GetOrganizationsPaginatedParams{
-		Limit:  req.PageSize,
-		Offset: (req.Page - 1) * req.PageSize,
+	// Choose ASC or DESC query
+	var orgs []db.Organization
+	if req.SortOrder == "desc" {
+		orgs, err = h.server.DB.Queries().GetOrganizationsWithFiltersDesc(c.Request().Context(), db.GetOrganizationsWithFiltersDescParams{
+			Column1: search,
+			Column2: isActive,
+			Column3: isTest,
+			Column4: req.SortBy,
+			Limit:   req.PageSize,
+			Offset:  (req.Page - 1) * req.PageSize,
+		})
+	} else {
+		orgs, err = h.server.DB.Queries().GetOrganizationsWithFiltersAsc(c.Request().Context(), db.GetOrganizationsWithFiltersAscParams{
+			Column1: search,
+			Column2: isActive,
+			Column3: isTest,
+			Column4: req.SortBy,
+			Limit:   req.PageSize,
+			Offset:  (req.Page - 1) * req.PageSize,
+		})
 	}
-
-	orgs, err := h.server.DB.Queries().GetOrganizationsPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Calculate current page
 	currentPage := req.Page
-
 	return responses.NewOrganizationsPaginatedResponse(orgs, total, req.PageSize, currentPage).JSON(c)
 }
 

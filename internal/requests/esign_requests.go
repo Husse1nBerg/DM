@@ -85,6 +85,7 @@ type CreateEsignSubmissionRequest struct {
 	CustomerID         *string   `json:"customerId,omitempty" example:"CUST123"`
 	Email              string    `json:"email" validate:"required,email" example:"customer@example.com"`
 	ReplyTo            *string   `json:"replyTo,omitempty" example:"marina@example.com"`
+	CustomMessage      *string   `json:"customMessage,omitempty" example:"Custom message to the customer"`
 	ReplyName          *string   `json:"replyName,omitempty" example:"Marina Manager"`
 	Name               *string   `json:"name,omitempty" example:"Customer Agreement"`
 	AttachmentRequired *bool     `json:"attachmentRequired,omitempty" example:"false"`

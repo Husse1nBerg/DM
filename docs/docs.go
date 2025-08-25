@@ -6310,7 +6310,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Lists all contacts for a marina, optionally filtered by type",
+                "description": "Lists all contacts for a marina, with optional filtering, search, sorting, and pagination",
                 "consumes": [
                     "application/json"
                 ],
@@ -6332,8 +6332,57 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Global search across name, email, phone",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Contact type (phone or email)",
                         "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "name",
+                            "email",
+                            "phone",
+                            "type",
+                            "created_at",
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -6341,7 +6390,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ContactListResponse"
+                            "$ref": "#/definitions/responses.ContactListPaginatedResponse"
                         }
                     },
                     "400": {
@@ -6552,7 +6601,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves marinas with pagination support",
+                "description": "Retrieves marinas with filtering, sorting, and pagination support",
                 "consumes": [
                     "application/json"
                 ],
@@ -6576,6 +6625,43 @@ const docTemplate = `{
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field (name, email, location, phone, country, currency, website, max_users, is_active, is_test, created_at, updated_at)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "asc",
+                        "description": "Sort order (asc, desc)",
+                        "name": "sortOrder",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across multiple fields",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by organization UUID",
+                        "name": "organizationId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "isActive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by test status",
+                        "name": "isTest",
                         "in": "query"
                     }
                 ],
@@ -7996,7 +8082,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get paginated notifications for the current user",
+                "description": "Get paginated notifications for the current user with filtering, search, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -8025,8 +8111,59 @@ const docTemplate = `{
                     {
                         "type": "boolean",
                         "default": false,
-                        "description": "Show only unread notifications",
+                        "description": "Show only unread notifications (legacy)",
                         "name": "unreadOnly",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across title and content",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by read status (true/false)",
+                        "name": "read",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "message",
+                            "invite",
+                            "system",
+                            "alert",
+                            "esign",
+                            "document",
+                            "payment"
+                        ],
+                        "type": "string",
+                        "description": "Filter by notification type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "type",
+                            "read",
+                            "created_at",
+                            "title"
+                        ],
+                        "type": "string",
+                        "default": "priority+created_at",
+                        "description": "Sort field",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -8422,6 +8559,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/notification/{id}/unread": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Mark a specific notification as unread",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Mark notification as unread",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated notification",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NotificationResponseWrapper"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Notification not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/organizations": {
             "get": {
                 "security": [
@@ -8429,7 +8627,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves organizations with pagination support",
+                "description": "Retrieves organizations with filtering, sorting, and pagination support",
                 "consumes": [
                     "application/json"
                 ],
@@ -8454,6 +8652,37 @@ const docTemplate = `{
                         "description": "Page size",
                         "name": "pageSize",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by field (name, email, website, country, phone, is_active, is_test, created_at, updated_at)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "asc",
+                        "description": "Sort order (asc, desc)",
+                        "name": "sortOrder",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global search across multiple fields",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "isActive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by test status",
+                        "name": "isTest",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -8462,7 +8691,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.OrganizationResponse"
+                                "$ref": "#/definitions/responses.OrganizationsPaginatedResponse"
                             }
                         }
                     },
@@ -10327,7 +10556,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "get users",
+                "description": "Returns a paginated list of users. Supports filtering by role, active status, searching by name/email, and sorting.",
                 "consumes": [
                     "application/json"
                 ],
@@ -10340,6 +10569,7 @@ const docTemplate = `{
                 "summary": "List users",
                 "parameters": [
                     {
+                        "minimum": 1,
                         "type": "integer",
                         "default": 1,
                         "description": "Page number",
@@ -10347,10 +10577,38 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "maximum": 100,
+                        "minimum": 1,
                         "type": "integer",
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term (matches username, first name, last name, email, phone, or title)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Filters (e.g. filters[role_id]=\u003cuuid\u003e\u0026filters[is_active]=true)",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort by field (e.g. username, email, created_at)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort order (asc or desc)",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
@@ -13594,6 +13852,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "customMessage": {
+                    "type": "string",
+                    "example": "Custom message to the customer"
+                },
                 "customerId": {
                     "type": "string",
                     "example": "CUST123"
@@ -14241,7 +14503,10 @@ const docTemplate = `{
                         "message",
                         "invite",
                         "system",
-                        "alert"
+                        "alert",
+                        "document",
+                        "esign",
+                        "payment"
                     ],
                     "example": "message"
                 }
@@ -15233,12 +15498,13 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ContactListResponse": {
-            "description": "Contact list response model",
+        "responses.ContactListPaginatedResponse": {
+            "description": "Contact list paginated response model",
             "type": "object",
             "properties": {
                 "currentPage": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "data": {
                     "type": "array",
@@ -15246,17 +15512,17 @@ const docTemplate = `{
                         "$ref": "#/definitions/responses.ContactResponse"
                     }
                 },
-                "details": {},
-                "error": {},
                 "lastPage": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 5
                 },
-                "message": {},
                 "perPage": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
                 "total": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
@@ -15806,6 +16072,10 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "customMessage": {
+                    "type": "string",
+                    "example": "Please sign the document as soon as possible."
+                },
                 "customerId": {
                     "type": "string",
                     "example": "CUST123"
@@ -15822,6 +16092,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
+                "logo": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/marina/logo.png"
+                },
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
@@ -15833,6 +16107,10 @@ const docTemplate = `{
                 "organizationId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "replyTo": {
+                    "type": "string",
+                    "example": "support@example.com"
                 },
                 "status": {
                     "type": "string",
@@ -16674,6 +16952,34 @@ const docTemplate = `{
                 "website": {
                     "type": "string",
                     "example": "https://example.com"
+                }
+            }
+        },
+        "responses.OrganizationsPaginatedResponse": {
+            "description": "Paginated response containing a list of organizations",
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.OrganizationResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
                 }
             }
         },

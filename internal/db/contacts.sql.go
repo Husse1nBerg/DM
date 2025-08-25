@@ -11,6 +11,32 @@ import (
 	"github.com/google/uuid"
 )
 
+const countContactsWithFilters = `-- name: CountContactsWithFilters :one
+SELECT COUNT(*)
+FROM contacts
+WHERE marina_id = $1
+  AND deleted_at IS NULL
+  AND (
+    ($2 = '' OR name ILIKE '%' || $2 || '%'
+      OR email ILIKE '%' || $2 || '%'
+      OR phone ILIKE '%' || $2 || '%')
+  )
+  AND ($3 = '' OR type = $3)
+`
+
+type CountContactsWithFiltersParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+}
+
+func (q *Queries) CountContactsWithFilters(ctx context.Context, arg CountContactsWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countContactsWithFilters, arg.MarinaID, arg.Column2, arg.Column3)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createContact = `-- name: CreateContact :one
 INSERT INTO contacts (
     marina_id,
@@ -205,6 +231,144 @@ type ListContactsByTypeParams struct {
 
 func (q *Queries) ListContactsByType(ctx context.Context, arg ListContactsByTypeParams) ([]Contact, error) {
 	rows, err := q.db.Query(ctx, listContactsByType, arg.MarinaID, arg.Type)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Contact
+	for rows.Next() {
+		var i Contact
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.Type,
+			&i.Name,
+			&i.Description,
+			&i.Email,
+			&i.Phone,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.IsCpContact,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listContactsWithFiltersAsc = `-- name: ListContactsWithFiltersAsc :many
+SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
+FROM contacts
+WHERE marina_id = $1
+  AND deleted_at IS NULL
+  AND (
+    ($2 = '' OR name ILIKE '%' || $2 || '%'
+      OR email ILIKE '%' || $2 || '%'
+      OR phone ILIKE '%' || $2 || '%')
+  )
+  AND ($3 = '' OR type = $3)
+ORDER BY
+  (CASE WHEN $4 = 'name' THEN name END) ASC,
+  (CASE WHEN $4 = 'email' THEN email END) ASC,
+  (CASE WHEN $4 = 'phone' THEN phone END) ASC,
+  (CASE WHEN $4 = 'type' THEN type END) ASC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) ASC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) ASC
+LIMIT $5 OFFSET $6
+`
+
+type ListContactsWithFiltersAscParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListContactsWithFiltersAsc(ctx context.Context, arg ListContactsWithFiltersAscParams) ([]Contact, error) {
+	rows, err := q.db.Query(ctx, listContactsWithFiltersAsc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Contact
+	for rows.Next() {
+		var i Contact
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.Type,
+			&i.Name,
+			&i.Description,
+			&i.Email,
+			&i.Phone,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.IsCpContact,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listContactsWithFiltersDesc = `-- name: ListContactsWithFiltersDesc :many
+SELECT id, marina_id, type, name, description, email, phone, created_at, updated_at, deleted_at, is_cp_contact
+FROM contacts
+WHERE marina_id = $1
+  AND deleted_at IS NULL
+  AND (
+    ($2 = '' OR name ILIKE '%' || $2 || '%'
+      OR email ILIKE '%' || $2 || '%'
+      OR phone ILIKE '%' || $2 || '%')
+  )
+  AND ($3 = '' OR type = $3)
+ORDER BY
+  (CASE WHEN $4 = 'name' THEN name END) DESC,
+  (CASE WHEN $4 = 'email' THEN email END) DESC,
+  (CASE WHEN $4 = 'phone' THEN phone END) DESC,
+  (CASE WHEN $4 = 'type' THEN type END) DESC,
+  (CASE WHEN $4 = 'created_at' THEN created_at END) DESC,
+  (CASE WHEN $4 = 'updated_at' THEN updated_at END) DESC
+LIMIT $5 OFFSET $6
+`
+
+type ListContactsWithFiltersDescParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListContactsWithFiltersDesc(ctx context.Context, arg ListContactsWithFiltersDescParams) ([]Contact, error) {
+	rows, err := q.db.Query(ctx, listContactsWithFiltersDesc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

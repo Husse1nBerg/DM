@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"math"
+
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
@@ -256,22 +258,28 @@ func (h *MarinaHandler) GetMarinaByEmail(c echo.Context) error {
 	return responses.NewMarinaResponseSuccess(marina).JSON(c)
 }
 
-// GetMarinasPaginated retrieves marinas with pagination
+// GetMarinasPaginated retrieves marinas with filtering, sorting, and pagination
 //
 //	@Summary		Get paginated marinas
-//	@Description	Retrieves marinas with pagination support
+//	@Description	Retrieves marinas with filtering, sorting, and pagination support
 //	@Tags			Marinas
 //	@Accept			json
 //	@Produce		json
-//	@Param			page		query		int		false	"Page number"	default(1)
-//	@Param			pageSize	query		int		false	"Page size"		default(10)
+//	@Param			page		query		int		false	"Page number" default(1)
+//	@Param			pageSize	query		int		false	"Page size" default(10)
+//	@Param			sortBy		query		string	false	"Sort by field (name, email, location, phone, country, currency, website, max_users, is_active, is_test, created_at, updated_at)"
+//	@Param			sortOrder	query		string	false	"Sort order (asc, desc)" default(asc)
+//	@Param			search		query		string	false	"Global search across multiple fields"
+//	@Param			organizationId	query	string	false	"Filter by organization UUID"
+//	@Param			isActive	query		bool	false	"Filter by active status"
+//	@Param			isTest		query		bool	false	"Filter by test status"
 //	@Success		200		{array}		responses.MarinaListResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/marinas [get]
 func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
-	var req requests.PaginationQuery
+	var req requests.ListMarinasRequest
 
 	if err := c.Bind(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -285,28 +293,75 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 	if req.PageSize <= 0 {
 		req.PageSize = 10
 	}
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.SortOrder == "" {
+		req.SortOrder = "asc"
+	}
+	if req.SortBy == "" {
+		req.SortBy = "created_at"
+	}
 
-	// Calculate total count
-	allMarinas, err := h.server.DB.Queries().GetAllMarinas(c.Request().Context())
+	// Prepare filter params
+	search := req.Search
+	orgID := ""
+	if v, ok := req.Filters["organizationId"]; ok {
+		orgID = v
+	}
+	isActive := ""
+	if v, ok := req.Filters["isActive"]; ok {
+		isActive = v
+	}
+	isTest := ""
+	if v, ok := req.Filters["isTest"]; ok {
+		isTest = v
+	}
+
+	// Count total (for pagination)
+	// NOTE: For large datasets, consider a COUNT(*) query with same filters for better perf
+	allMarinasAsc, err := h.server.DB.Queries().GetMarinasWithFiltersAsc(c.Request().Context(), db.GetMarinasWithFiltersAscParams{
+		Column1: search,
+		Column2: orgID,
+		Column3: isActive,
+		Column4: isTest,
+		Column5: req.SortBy,
+		Limit:   int32(math.MaxInt32),
+		Offset:  0,
+	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
-	total := int64(len(allMarinas))
+	total := int64(len(allMarinasAsc))
 
-	// Fetch paginated data
-	params := db.GetMarinasPaginatedParams{
-		Limit:  req.PageSize,
-		Offset: (req.Page - 1) * req.PageSize,
+	// Choose ASC or DESC query
+	var marinas []db.Marina
+	if req.SortOrder == "desc" {
+		marinas, err = h.server.DB.Queries().GetMarinasWithFiltersDesc(c.Request().Context(), db.GetMarinasWithFiltersDescParams{
+			Column1: search,
+			Column2: orgID,
+			Column3: isActive,
+			Column4: isTest,
+			Column5: req.SortBy,
+			Limit:   req.PageSize,
+			Offset:  (req.Page - 1) * req.PageSize,
+		})
+	} else {
+		marinas, err = h.server.DB.Queries().GetMarinasWithFiltersAsc(c.Request().Context(), db.GetMarinasWithFiltersAscParams{
+			Column1: search,
+			Column2: orgID,
+			Column3: isActive,
+			Column4: isTest,
+			Column5: req.SortBy,
+			Limit:   req.PageSize,
+			Offset:  (req.Page - 1) * req.PageSize,
+		})
 	}
-
-	marinas, err := h.server.DB.Queries().GetMarinasPaginated(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Calculate current page
 	currentPage := req.Page
-
 	return responses.NewMarinasPaginatedResponse(marinas, total, req.PageSize, currentPage).JSON(c)
 }
 

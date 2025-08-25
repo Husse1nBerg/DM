@@ -738,119 +738,6 @@ func (q *Queries) GetUsersNotAssignedToMarinaPaginatedAdmin(ctx context.Context,
 	return items, nil
 }
 
-const listUserMarinasAssignmentsPaginated = `-- name: ListUserMarinasAssignmentsPaginated :many
-SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
-FROM user_marinas um
-JOIN users u ON u.id = um.user_id
-LEFT JOIN roles r ON um.role_id = r.id
-WHERE um.marina_id = $1
-  AND ($2::bool IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
-  AND u.is_superuser = FALSE
-  AND u.deleted_at IS NULL
-ORDER BY u.created_at DESC
-LIMIT $3 OFFSET $4
-`
-
-type ListUserMarinasAssignmentsPaginatedParams struct {
-	MarinaID uuid.UUID
-	Column2  bool
-	Limit    int32
-	Offset   int32
-}
-
-type ListUserMarinasAssignmentsPaginatedRow struct {
-	UserID              uuid.UUID
-	MarinaID            uuid.UUID
-	AssignedAt          pgtype.Timestamp
-	CustomerID          *string
-	RoleID              uuid.UUID
-	ID                  uuid.UUID
-	Username            string
-	FirstName           string
-	LastName            string
-	Email               string
-	EmailVerified       pgtype.Timestamp
-	Phone               *string
-	Title               *string
-	Image               *string
-	PasswordHash        *string
-	LastLogin           pgtype.Timestamp
-	FailedLoginAttempts *int32
-	LockedUntil         pgtype.Timestamp
-	LastPasswordReset   pgtype.Timestamp
-	OrganizationID      uuid.UUID
-	MarinaID_2          uuid.UUID
-	RoleID_2            uuid.UUID
-	IsSuperuser         *bool
-	IsActive            *bool
-	CreatedAt           pgtype.Timestamp
-	UpdatedAt           pgtype.Timestamp
-	DeletedAt           pgtype.Timestamp
-	CustomerID_2        *string
-	IsCustomer          *bool
-	JoinedAt            pgtype.Timestamp
-	UserAnalytics       *bool
-	RoleName            *string
-}
-
-func (q *Queries) ListUserMarinasAssignmentsPaginated(ctx context.Context, arg ListUserMarinasAssignmentsPaginatedParams) ([]ListUserMarinasAssignmentsPaginatedRow, error) {
-	rows, err := q.db.Query(ctx, listUserMarinasAssignmentsPaginated,
-		arg.MarinaID,
-		arg.Column2,
-		arg.Limit,
-		arg.Offset,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListUserMarinasAssignmentsPaginatedRow
-	for rows.Next() {
-		var i ListUserMarinasAssignmentsPaginatedRow
-		if err := rows.Scan(
-			&i.UserID,
-			&i.MarinaID,
-			&i.AssignedAt,
-			&i.CustomerID,
-			&i.RoleID,
-			&i.ID,
-			&i.Username,
-			&i.FirstName,
-			&i.LastName,
-			&i.Email,
-			&i.EmailVerified,
-			&i.Phone,
-			&i.Title,
-			&i.Image,
-			&i.PasswordHash,
-			&i.LastLogin,
-			&i.FailedLoginAttempts,
-			&i.LockedUntil,
-			&i.LastPasswordReset,
-			&i.OrganizationID,
-			&i.MarinaID_2,
-			&i.RoleID_2,
-			&i.IsSuperuser,
-			&i.IsActive,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-			&i.CustomerID_2,
-			&i.IsCustomer,
-			&i.JoinedAt,
-			&i.UserAnalytics,
-			&i.RoleName,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listUserMarinasAssignmentsPaginatedAdmin = `-- name: ListUserMarinasAssignmentsPaginatedAdmin :many
 SELECT um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, r.name as role_name
 FROM user_marinas um
@@ -1025,6 +912,312 @@ func (q *Queries) ListUserMarinasAssignmentsPaginatedAdminOnly(ctx context.Conte
 	var items []ListUserMarinasAssignmentsPaginatedAdminOnlyRow
 	for rows.Next() {
 		var i ListUserMarinasAssignmentsPaginatedAdminOnlyRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.MarinaID,
+			&i.AssignedAt,
+			&i.CustomerID,
+			&i.RoleID,
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID_2,
+			&i.RoleID_2,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID_2,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+			&i.RoleName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserMarinasAssignmentsPaginatedAsc = `-- name: ListUserMarinasAssignmentsPaginatedAsc :many
+SELECT 
+    um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, 
+    u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, 
+    r.name AS role_name
+FROM user_marinas um
+JOIN users u ON u.id = um.user_id
+LEFT JOIN roles r ON um.role_id = r.id
+WHERE um.marina_id = $1
+  -- customer_id filter (true = must exist, false = must not exist, null = ignore)
+  AND ($2::boolean IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
+  -- search filter across user fields
+  AND (
+    $3 = '' 
+    OR u.username ILIKE '%' || $3 || '%'
+    OR u.first_name ILIKE '%' || $3 || '%'
+    OR u.last_name ILIKE '%' || $3 || '%'
+    OR u.email ILIKE '%' || $3 || '%'
+    OR u.phone ILIKE '%' || $3 || '%'
+    OR u.title ILIKE '%' || $3 || '%'
+  )
+  -- optional role filter
+  AND ($4 = '' OR um.role_id = $4::uuid)
+  -- optional is_active filter
+  AND ($5 = '' OR u.is_active = $5::boolean)
+  -- fixed rules
+  AND u.is_superuser = FALSE
+  AND u.deleted_at IS NULL
+ORDER BY
+  (CASE WHEN $6 = 'username'             THEN u.username END) ASC,
+  (CASE WHEN $6 = 'first_name'           THEN u.first_name END) ASC,
+  (CASE WHEN $6 = 'last_name'            THEN u.last_name END) ASC,
+  (CASE WHEN $6 = 'email'                THEN u.email END) ASC,
+  (CASE WHEN $6 = 'phone'                THEN u.phone END) ASC,
+  (CASE WHEN $6 = 'title'                THEN u.title END) ASC,
+  (CASE WHEN $6 = 'last_login'           THEN u.last_login END) ASC,
+  (CASE WHEN $6 = 'failed_login_attempts'THEN u.failed_login_attempts END) ASC,
+  (CASE WHEN $6 = 'locked_until'         THEN u.locked_until END) ASC,
+  (CASE WHEN $6 = 'last_password_reset'  THEN u.last_password_reset END) ASC,
+  (CASE WHEN $6 = 'created_at'           THEN u.created_at END) ASC,
+  (CASE WHEN $6 = 'updated_at'           THEN u.updated_at END) ASC,
+  (CASE WHEN $6 = 'role_name'            THEN r.name END) ASC
+LIMIT $7 OFFSET $8
+`
+
+type ListUserMarinasAssignmentsPaginatedAscParams struct {
+	MarinaID uuid.UUID
+	Column2  bool
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Limit    int32
+	Offset   int32
+}
+
+type ListUserMarinasAssignmentsPaginatedAscRow struct {
+	UserID              uuid.UUID
+	MarinaID            uuid.UUID
+	AssignedAt          pgtype.Timestamp
+	CustomerID          *string
+	RoleID              uuid.UUID
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID_2          uuid.UUID
+	RoleID_2            uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	CustomerID_2        *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
+	RoleName            *string
+}
+
+func (q *Queries) ListUserMarinasAssignmentsPaginatedAsc(ctx context.Context, arg ListUserMarinasAssignmentsPaginatedAscParams) ([]ListUserMarinasAssignmentsPaginatedAscRow, error) {
+	rows, err := q.db.Query(ctx, listUserMarinasAssignmentsPaginatedAsc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUserMarinasAssignmentsPaginatedAscRow
+	for rows.Next() {
+		var i ListUserMarinasAssignmentsPaginatedAscRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.MarinaID,
+			&i.AssignedAt,
+			&i.CustomerID,
+			&i.RoleID,
+			&i.ID,
+			&i.Username,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.EmailVerified,
+			&i.Phone,
+			&i.Title,
+			&i.Image,
+			&i.PasswordHash,
+			&i.LastLogin,
+			&i.FailedLoginAttempts,
+			&i.LockedUntil,
+			&i.LastPasswordReset,
+			&i.OrganizationID,
+			&i.MarinaID_2,
+			&i.RoleID_2,
+			&i.IsSuperuser,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.CustomerID_2,
+			&i.IsCustomer,
+			&i.JoinedAt,
+			&i.UserAnalytics,
+			&i.RoleName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserMarinasAssignmentsPaginatedDesc = `-- name: ListUserMarinasAssignmentsPaginatedDesc :many
+SELECT 
+    um.user_id, um.marina_id, um.assigned_at, um.customer_id, um.role_id, 
+    u.id, u.username, u.first_name, u.last_name, u.email, u.email_verified, u.phone, u.title, u.image, u.password_hash, u.last_login, u.failed_login_attempts, u.locked_until, u.last_password_reset, u.organization_id, u.marina_id, u.role_id, u.is_superuser, u.is_active, u.created_at, u.updated_at, u.deleted_at, u.customer_id, u.is_customer, u.joined_at, u.user_analytics, 
+    r.name AS role_name
+FROM user_marinas um
+JOIN users u ON u.id = um.user_id
+LEFT JOIN roles r ON um.role_id = r.id
+WHERE um.marina_id = $1
+  -- customer_id filter (true = must exist, false = must not exist, null = ignore)
+  AND ($2::boolean IS NULL OR ($2 = TRUE AND um.customer_id IS NOT NULL) OR ($2 = FALSE AND um.customer_id IS NULL))
+  -- search filter across user fields
+  AND (
+    $3 = '' 
+    OR u.username ILIKE '%' || $3 || '%'
+    OR u.first_name ILIKE '%' || $3 || '%'
+    OR u.last_name ILIKE '%' || $3 || '%'
+    OR u.email ILIKE '%' || $3 || '%'
+    OR u.phone ILIKE '%' || $3 || '%'
+    OR u.title ILIKE '%' || $3 || '%'
+  )
+  -- optional role filter
+  AND ($4 = '' OR um.role_id = $4::uuid)
+  -- optional is_active filter
+  AND ($5 = '' OR u.is_active = $5::boolean)
+  -- fixed rules
+  AND u.is_superuser = FALSE
+  AND u.deleted_at IS NULL
+ORDER BY
+  (CASE WHEN $6 = 'username'             THEN u.username END) DESC,
+  (CASE WHEN $6 = 'first_name'           THEN u.first_name END) DESC,
+  (CASE WHEN $6 = 'last_name'            THEN u.last_name END) DESC,
+  (CASE WHEN $6 = 'email'                THEN u.email END) DESC,
+  (CASE WHEN $6 = 'phone'                THEN u.phone END) DESC,
+  (CASE WHEN $6 = 'title'                THEN u.title END) DESC,
+  (CASE WHEN $6 = 'last_login'           THEN u.last_login END) DESC,
+  (CASE WHEN $6 = 'failed_login_attempts'THEN u.failed_login_attempts END) DESC,
+  (CASE WHEN $6 = 'locked_until'         THEN u.locked_until END) DESC,
+  (CASE WHEN $6 = 'last_password_reset'  THEN u.last_password_reset END) DESC,
+  (CASE WHEN $6 = 'created_at'           THEN u.created_at END) DESC,
+  (CASE WHEN $6 = 'updated_at'           THEN u.updated_at END) DESC,
+  (CASE WHEN $6 = 'role_name'            THEN r.name END) DESC
+LIMIT $7 OFFSET $8
+`
+
+type ListUserMarinasAssignmentsPaginatedDescParams struct {
+	MarinaID uuid.UUID
+	Column2  bool
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Limit    int32
+	Offset   int32
+}
+
+type ListUserMarinasAssignmentsPaginatedDescRow struct {
+	UserID              uuid.UUID
+	MarinaID            uuid.UUID
+	AssignedAt          pgtype.Timestamp
+	CustomerID          *string
+	RoleID              uuid.UUID
+	ID                  uuid.UUID
+	Username            string
+	FirstName           string
+	LastName            string
+	Email               string
+	EmailVerified       pgtype.Timestamp
+	Phone               *string
+	Title               *string
+	Image               *string
+	PasswordHash        *string
+	LastLogin           pgtype.Timestamp
+	FailedLoginAttempts *int32
+	LockedUntil         pgtype.Timestamp
+	LastPasswordReset   pgtype.Timestamp
+	OrganizationID      uuid.UUID
+	MarinaID_2          uuid.UUID
+	RoleID_2            uuid.UUID
+	IsSuperuser         *bool
+	IsActive            *bool
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	CustomerID_2        *string
+	IsCustomer          *bool
+	JoinedAt            pgtype.Timestamp
+	UserAnalytics       *bool
+	RoleName            *string
+}
+
+func (q *Queries) ListUserMarinasAssignmentsPaginatedDesc(ctx context.Context, arg ListUserMarinasAssignmentsPaginatedDescParams) ([]ListUserMarinasAssignmentsPaginatedDescRow, error) {
+	rows, err := q.db.Query(ctx, listUserMarinasAssignmentsPaginatedDesc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUserMarinasAssignmentsPaginatedDescRow
+	for rows.Next() {
+		var i ListUserMarinasAssignmentsPaginatedDescRow
 		if err := rows.Scan(
 			&i.UserID,
 			&i.MarinaID,

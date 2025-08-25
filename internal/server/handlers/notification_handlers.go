@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -76,13 +77,18 @@ func (h *NotificationHandler) CreateNotificationHandler(c echo.Context) error {
 // ListNotificationsHandler lists notifications for the current user
 //
 //	@Summary		List notifications
-//	@Description	Get paginated notifications for the current user
+//	@Description	Get paginated notifications for the current user with filtering, search, and sorting
 //	@Tags			Notification
 //	@Accept			json
 //	@Produce		json
 //	@Param			page		query		int		false	"Page number"	default(1)
 //	@Param			pageSize	query		int		false	"Page size"		default(10)
-//	@Param			unreadOnly	query		bool	false	"Show only unread notifications"	default(false)
+//	@Param			unreadOnly	query		bool	false	"Show only unread notifications (legacy)"	default(false)
+//	@Param			search		query		string	false	"Global search across title and content"
+//	@Param			read		query		bool	false	"Filter by read status (true/false)"
+//	@Param			type		query		string	false	"Filter by notification type" Enums(message, invite, system, alert, esign, document, payment)
+//	@Param			sortBy		query		string	false	"Sort field" Enums(type, read, created_at, title) default(priority+created_at)
+//	@Param			sortOrder	query		string	false	"Sort direction" Enums(asc, desc) default(desc)
 //	@Success		200			{object}	responses.NotificationListResponse "Paginated list of notifications"
 //	@Failure		401			{object}	responses.Error "Unauthorized"
 //	@Failure		500			{object}	responses.Error "Server error"
@@ -116,8 +122,28 @@ func (h *NotificationHandler) ListNotificationsHandler(c echo.Context) error {
 		req.PaginationQuery.PageSize = 10
 	}
 
-	// Check for unreadOnly query parameter
+	// Extract new filter parameters (similar to esign submissions pattern)
+	search := c.QueryParam("search")
+	typeFilter := c.QueryParam("type")
+	sortBy := c.QueryParam("sortBy")
+	sortOrder := c.QueryParam("sortOrder")
 	unreadOnly := c.QueryParam("unreadOnly") == "true"
+
+	// Handle read filter
+	var readFilter *bool
+	if unreadOnly {
+		// Maintain compatibility with unreadOnly parameter
+		readFilter = &[]bool{false}[0]
+	} else if readParam := c.QueryParam("read"); readParam != "" {
+		if parsed, err := strconv.ParseBool(readParam); err == nil {
+			readFilter = &parsed
+		}
+	}
+
+	// Set defaults for sorting
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
 
 	// Calculate offset (ensure it's not negative)
 	offset := (req.PaginationQuery.Page - 1) * req.PaginationQuery.PageSize
@@ -127,39 +153,116 @@ func (h *NotificationHandler) ListNotificationsHandler(c echo.Context) error {
 
 	var notifications []db.Notification
 
-	// Get notifications based on filter, using current marina ID from database
-	if unreadOnly {
-		notifications, err = h.notificationService.GetUnreadNotifications(
-			c.Request().Context(),
-			claims.ID,
-			claims.OrgId,
-			&currentUser.MarinaID,
-			req.PaginationQuery.PageSize,
-			offset,
-		)
+	// Detect if we should use new filtered query or maintain current behavior
+	useNewQuery := search != "" || typeFilter != "" || sortBy != "" || (readFilter != nil && !unreadOnly)
+
+	if !useNewQuery {
+		// Use current behavior to maintain compatibility
+		if unreadOnly {
+			notifications, err = h.notificationService.GetUnreadNotifications(
+				c.Request().Context(),
+				claims.ID,
+				claims.OrgId,
+				&currentUser.MarinaID,
+				req.PaginationQuery.PageSize,
+				offset,
+			)
+		} else {
+			notifications, err = h.notificationService.GetUserNotifications(
+				c.Request().Context(),
+				claims.ID,
+				claims.OrgId,
+				&currentUser.MarinaID,
+				req.PaginationQuery.PageSize,
+				offset,
+			)
+		}
+
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+
+		// Get actual total count for pagination
+		var total int64
+		if unreadOnly {
+			// Count unread notifications
+			marinaID := currentUser.MarinaID
+			if marinaID == uuid.Nil {
+				marinaID = uuid.UUID{} // Zero UUID for NULL case
+			}
+			total, err = h.server.DB.Queries().GetUnreadNotificationCount(c.Request().Context(), db.GetUnreadNotificationCountParams{
+				UserID:         claims.ID,
+				OrganizationID: claims.OrgId,
+				Column3:        marinaID,
+			})
+		} else {
+			// Count all notifications
+			marinaID := currentUser.MarinaID
+			if marinaID == uuid.Nil {
+				marinaID = uuid.UUID{} // Zero UUID for NULL case
+			}
+			total, err = h.server.DB.Queries().CountAllNotifications(c.Request().Context(), db.CountAllNotificationsParams{
+				UserID:         claims.ID,
+				OrganizationID: claims.OrgId,
+				Column3:        marinaID,
+			})
+		}
+		if err != nil {
+			h.server.Logger.Zap.Error("Error counting notifications", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting notifications").JSON(c)
+		}
+
+		return responses.NewNotificationsPaginatedResponse(notifications, total, req.PaginationQuery.PageSize, req.PaginationQuery.Page).JSON(c)
 	} else {
-		notifications, err = h.notificationService.GetUserNotifications(
-			c.Request().Context(),
-			claims.ID,
-			claims.OrgId,
-			&currentUser.MarinaID,
-			req.PaginationQuery.PageSize,
-			offset,
-		)
-	}
+		// Use new filtered query
+		ctx := c.Request().Context()
 
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-	}
+		// Handle nullable marina_id for SQLC - use zero UUID for NULL case
+		marinaID := currentUser.MarinaID
+		if marinaID == uuid.Nil {
+			marinaID = uuid.UUID{} // Zero UUID to match '00000000-0000-0000-0000-000000000000'
+		}
 
-	// Get total count for pagination (simplified - using current page count)
-	total := int64(len(notifications))
-	if len(notifications) == int(req.PaginationQuery.PageSize) {
-		// If we got a full page, there might be more
-		total = int64(req.PaginationQuery.Page * req.PaginationQuery.PageSize)
-	}
+		// Handle nullable read filter for SQLC - use empty string for NULL case
+		readFilterStr := ""
+		if readFilter != nil {
+			if *readFilter {
+				readFilterStr = "true"
+			} else {
+				readFilterStr = "false"
+			}
+		}
 
-	return responses.NewNotificationsPaginatedResponse(notifications, total, req.PaginationQuery.PageSize, req.PaginationQuery.Page).JSON(c)
+		notifications, err = h.server.DB.Queries().ListNotificationsWithFilters(ctx, db.ListNotificationsWithFiltersParams{
+			UserID:         claims.ID,
+			OrganizationID: claims.OrgId,
+			Column3:        marinaID,
+			Column4:        search,
+			Column5:        readFilterStr,
+			Column6:        typeFilter,
+			Column7:        sortBy,
+			Column8:        sortOrder,
+			Limit:          req.PaginationQuery.PageSize,
+			Offset:         offset,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+
+		total, err := h.server.DB.Queries().CountNotificationsWithFilters(ctx, db.CountNotificationsWithFiltersParams{
+			UserID:         claims.ID,
+			OrganizationID: claims.OrgId,
+			Column3:        marinaID,
+			Column4:        search,
+			Column5:        readFilterStr,
+			Column6:        typeFilter,
+		})
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+
+		return responses.NewNotificationsPaginatedResponse(notifications, total, req.PaginationQuery.PageSize, req.PaginationQuery.Page).JSON(c)
+	}
 }
 
 // GetUnreadCountHandler returns the count of unread notifications
@@ -230,6 +333,49 @@ func (h *NotificationHandler) MarkAsReadHandler(c echo.Context) error {
 
 	// Mark notification as read with real-time update
 	notification, err := h.notificationService.MarkNotificationAsRead(
+		c.Request().Context(),
+		notificationID,
+		claims.ID,
+		true, // Send real-time update
+	)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.NewNotificationResponseSuccess(*notification)
+	return response.JSON(c)
+}
+
+// MarkAsReadHandler marks a notification as read
+//
+//	@Summary		Mark notification as unread
+//	@Description	Mark a specific notification as unread
+//	@Tags			Notification
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Notification ID"
+//	@Success		200	{object}	responses.NotificationResponseWrapper "Updated notification"
+//	@Failure		400	{object}	responses.Error "Bad request"
+//	@Failure		401	{object}	responses.Error "Unauthorized"
+//	@Failure		404	{object}	responses.Error "Notification not found"
+//	@Failure		500	{object}	responses.Error "Server error"
+//	@Security		ApiKeyAuth
+//
+//	@Router			/notification/{id}/unread [put]
+func (h *NotificationHandler) MarkAsUnreadHandler(c echo.Context) error {
+	// Get user info from JWT token
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*token.JwtCustomClaims)
+
+	// Parse notification ID from path
+	notificationIDStr := c.Param("id")
+	notificationID, err := uuid.Parse(notificationIDStr)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid notification ID").JSON(c)
+	}
+
+	// Mark notification as unread with real-time update
+	notification, err := h.notificationService.MarkNotificationAsUnread(
 		c.Request().Context(),
 		notificationID,
 		claims.ID,

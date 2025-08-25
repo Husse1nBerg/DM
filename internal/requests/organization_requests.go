@@ -24,3 +24,9 @@ type UpdateOrganizationRequest struct {
 	IsActive *bool   `json:"is_active,omitempty" example:"true"`
 	IsTest   *bool   `json:"is_test,omitempty" example:"false"`
 }
+
+// ListOrganizationsRequest represents the parameters to list organizations with filtering, sorting, and pagination
+// swagger:parameters ListOrganizations
+type ListOrganizationsRequest struct {
+	FilterSortParams
+}

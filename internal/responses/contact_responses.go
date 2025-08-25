@@ -32,6 +32,17 @@ type ContactListResponse struct {
 	Data []ContactResponse `json:"data"`
 }
 
+// ContactListPaginatedResponse is for Swagger and paginated responses
+// @Description Contact list paginated response model
+// @Schema responses.ContactListPaginatedResponse
+type ContactListPaginatedResponse struct {
+	Data        []ContactResponse `json:"data"`
+	Total       int64             `json:"total" example:"42"`
+	PerPage     int32             `json:"perPage" example:"10"`
+	CurrentPage int32             `json:"currentPage" example:"1"`
+	LastPage    int32             `json:"lastPage" example:"5"`
+}
+
 // ConvertContactToResponse converts a database contact to a response model
 func ConvertContactToResponse(contact db.Contact) ContactResponse {
 	return ContactResponse{
@@ -61,4 +72,13 @@ func NewContactListResponse(contacts []db.Contact) BaseResponse {
 	}
 
 	return NewSuccessResponse(contactResponses)
+}
+
+// NewContactListPaginatedResponse creates a paginated response for contacts
+func NewContactListPaginatedResponse(contacts []db.Contact, total int64, perPage, currentPage int32) BaseResponse {
+	contactResponses := make([]ContactResponse, len(contacts))
+	for i, contact := range contacts {
+		contactResponses[i] = ConvertContactToResponse(contact)
+	}
+	return NewPaginatedResponse(contactResponses, total, perPage, currentPage)
 }

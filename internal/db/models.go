@@ -145,6 +145,8 @@ type EsignSubmission struct {
 	DeletedAt          pgtype.Timestamp
 	Name               *string
 	AttachmentRequired *bool
+	ReplyTo            *string
+	CustomMessage      *string
 }
 
 type EsignTemplate struct {
