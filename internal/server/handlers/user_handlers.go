@@ -731,30 +731,33 @@ func (g *UserHandler) AssignUserToMarinaHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	queries := g.server.DB.Queries()
-	user, err := queries.GetUserByID(c.Request().Context(), req.UserID)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-	}
-	if *user.IsCustomer && req.CustomerID == nil {
+	// Get user info from JWT token instead of database query
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+
+	// Check if the user being assigned is a customer (from JWT claims)
+	isCustomer := claims.IsCustomer != nil && *claims.IsCustomer
+
+	if isCustomer && req.CustomerID == nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Customer User must have a customer ID").JSON(c)
 	}
 
+	queries := g.server.DB.Queries()
 	params := db.AssignUserToMarinaParams{
 		UserID:   req.UserID,
 		MarinaID: req.MarinaID,
 		RoleID:   req.RoleID,
 	}
-	if *user.IsCustomer && req.CustomerID != nil {
+	if isCustomer && req.CustomerID != nil {
 		params.CustomerID = req.CustomerID
 	}
-	err = queries.AssignUserToMarina(c.Request().Context(), params)
+	err := queries.AssignUserToMarina(c.Request().Context(), params)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
 	// Only upsert customer settings if this is a customer user with a customer ID
-	if *user.IsCustomer && req.CustomerID != nil {
+	if isCustomer && req.CustomerID != nil {
 		queries.UpsertCustomerSettings(c.Request().Context(), db.UpsertCustomerSettingsParams{
 			MarinaID:     req.MarinaID,
 			CustomerID:   *req.CustomerID,
