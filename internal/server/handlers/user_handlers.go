@@ -1509,7 +1509,74 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 		return responses.NewMessageResponse(http.StatusOK, "If your email is registered, you will receive password recovery instructions").JSON(c)
 	}
 
-	// Generate a random token
+	// If password hash is null, send invitation refresh instead
+	if user.PasswordHash == nil || *user.PasswordHash == "" {
+		// Generate a random token for invitation
+		token, err := utils.GenerateRandomToken(32)
+		if err != nil {
+			logger.Zap.Error("failed to generate invitation token", err, c.Response().Header().Get(echo.HeaderXRequestID))
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing request").JSON(c)
+		}
+
+		// Create new invitation record
+		_, err = queries.CreateInvite(c.Request().Context(), db.CreateInviteParams{
+			UserID:    user.ID,
+			Email:     user.Email,
+			Token:     token,
+			ExpiresAt: utils.PgTimeNowAdd(240 * time.Hour), // 10 days
+		})
+		if err != nil {
+			logger.Zap.Error("Failed to create new invite", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create new invitation").JSON(c)
+		}
+
+		// Initialize the SendGrid client
+		sgClient := g.server.SendGrid
+
+		// Build the invitation URL
+		inviteURL := g.server.Config.App.InvitationURL() + "?token=" + token + "&email=" + url.QueryEscape(user.Email)
+
+		// Create template data for invitation
+		templateData := sendgrid.InviteTemplateData{
+			UserName:        user.FirstName + " " + user.LastName,
+			InviteURL:       inviteURL,
+			TermsConditions: g.server.Config.App.TermsConditionsURL(),
+		}
+
+		// Send invitation email
+		taskID, resultChan, err := sgClient.SendInviteEmail(
+			[]string{user.Email},
+			"Complete Your Account Setup",
+			templateData,
+		)
+
+		if err != nil {
+			logger.Zap.Errorw("Failed to send invitation email", "error", err)
+		} else {
+			logger.Zap.Infow("Invitation email queued",
+				"email", user.Email,
+				"task_id", taskID.String())
+
+			// Log the email attempt (non-blocking)
+			go func() {
+				result := <-resultChan
+				if result.Status == sendgrid.StatusSent {
+					logger.Zap.Infow("Invitation email sent successfully",
+						"email", user.Email,
+						"task_id", result.ID.String())
+				} else {
+					logger.Zap.Errorw("Failed to send invitation email",
+						"email", user.Email,
+						"task_id", result.ID.String(),
+						"error", result.Error)
+				}
+			}()
+		}
+
+		return responses.NewMessageResponse(http.StatusOK, "If your email is registered, you will receive account setup instructions").JSON(c)
+	}
+
+	// Generate a random token for password reset
 	token, err := utils.GenerateRandomToken(32)
 	if err != nil {
 		logger.Zap.Error("failed to generate recovery token", err, c.Response().Header().Get(echo.HeaderXRequestID))
