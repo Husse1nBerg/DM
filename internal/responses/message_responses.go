@@ -43,6 +43,16 @@ type MessageListResponse struct {
 	LastPage    int32             `json:"lastPage" example:"5"`
 }
 
+// BedrockRewriteResponse represents the response from the Bedrock API rewrite
+// @Description Response from the Bedrock API rewrite
+type BedrockRewriteResponse struct {
+	Message string `json:"message"`
+	Tokens  struct {
+		Input  int `json:"input"`
+		Output int `json:"output"`
+	} `json:"tokens"`
+}
+
 // NewMessageResponseSuccess creates a new successful message response
 func NewMessageResponseSuccess(message db.Message) BaseResponse {
 	return NewSuccessResponse(MessageDBToResponse(message))
