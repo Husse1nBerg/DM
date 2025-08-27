@@ -7321,6 +7321,52 @@
                 }
             }
         },
+        "/message/compose-message": {
+            "post": {
+                "description": "Rewrite a draft message to be more professional using Bedrock API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Rewrite customer-facing message",
+                "parameters": [
+                    {
+                        "description": "Rewrite request",
+                        "name": "rewrite",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.BedrockRewriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rewritten message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BedrockRewriteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/message/customer": {
             "get": {
                 "security": [
@@ -13447,6 +13493,32 @@
                 }
             }
         },
+        "requests.BedrockRewriteRequest": {
+            "type": "object",
+            "required": [
+                "draft",
+                "marinaName",
+                "tone",
+                "userName"
+            ],
+            "properties": {
+                "draft": {
+                    "type": "string"
+                },
+                "extraInstructions": {
+                    "type": "string"
+                },
+                "marinaName": {
+                    "type": "string"
+                },
+                "tone": {
+                    "type": "string"
+                },
+                "userName": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.BoatCreateRequest": {
             "type": "object",
             "required": [
@@ -15419,6 +15491,26 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.BedrockRewriteResponse": {
+            "description": "Response from the Bedrock API rewrite",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "tokens": {
+                    "type": "object",
+                    "properties": {
+                        "input": {
+                            "type": "integer"
+                        },
+                        "output": {
+                            "type": "integer"
+                        }
+                    }
                 }
             }
         },

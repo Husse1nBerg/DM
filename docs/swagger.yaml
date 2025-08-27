@@ -1083,6 +1083,24 @@ definitions:
     - roleId
     - userId
     type: object
+  requests.BedrockRewriteRequest:
+    properties:
+      draft:
+        type: string
+      extraInstructions:
+        type: string
+      marinaName:
+        type: string
+      tone:
+        type: string
+      userName:
+        type: string
+    required:
+    - draft
+    - marinaName
+    - tone
+    - userName
+    type: object
   requests.BoatCreateRequest:
     properties:
       attachments:
@@ -2483,6 +2501,19 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  responses.BedrockRewriteResponse:
+    description: Response from the Bedrock API rewrite
+    properties:
+      message:
+        type: string
+      tokens:
+        properties:
+          input:
+            type: integer
+          output:
+            type: integer
+        type: object
     type: object
   responses.BoatListMinimalResponse:
     properties:
@@ -8723,6 +8754,36 @@ paths:
       summary: Get user marinas
       tags:
       - Marinas
+  /message/compose-message:
+    post:
+      consumes:
+      - application/json
+      description: Rewrite a draft message to be more professional using Bedrock API
+      parameters:
+      - description: Rewrite request
+        in: body
+        name: rewrite
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BedrockRewriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Rewritten message
+          schema:
+            $ref: '#/definitions/responses.BedrockRewriteResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Rewrite customer-facing message
+      tags:
+      - Message
   /message/customer:
     delete:
       consumes:

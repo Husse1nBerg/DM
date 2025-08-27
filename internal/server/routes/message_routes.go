@@ -27,4 +27,5 @@ func RegisterMessageRoutes(server *s.Server, permissionProtected *echo.Group) {
 
 	// General message routes
 	messages.GET("/get", messageHandler.GetMessageByIDHandler)
+	messages.POST("/compose-message", messageHandler.RewriteMessageHandler)
 }
