@@ -377,7 +377,7 @@ func main() {
 				"messages.create":     true,
 				"documents.read":      true,
 				"documents.write":     true,
-				"documents.delete":    false,
+				"documents.delete":    true,
 				"documents.create":    true,
 				"boat_gallery.read":   true,
 				"boat_gallery.write":  true,
