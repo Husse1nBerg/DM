@@ -12634,6 +12634,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "inactive": {
+                    "type": "boolean"
+                },
                 "lastName": {
                     "type": "string"
                 },
