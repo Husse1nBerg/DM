@@ -160,6 +160,7 @@ type CustomerUpdate struct {
 	ShipmentMethodDescription string              `json:"shipmentMethodDescription"`
 	CustomInformation         []CustomInformation `json:"customInformation"`
 	Attachments               []Attachment        `json:"attachments"`
+	Inactive                  bool                `json:"inactive"`
 }
 
 // Customer Create
