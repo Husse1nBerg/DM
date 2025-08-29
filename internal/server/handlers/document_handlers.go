@@ -247,7 +247,7 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 						} else {
 							h.server.Logger.Zap.Infow("Document notification delivered successfully",
 								"user_id", result.UserID,
-								"push", result.PushDelivered,
+								"system", result.SystemDelivered,
 								"email", result.EmailDelivered)
 						}
 					}
@@ -745,7 +745,7 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 						} else {
 							h.server.Logger.Zap.Infow("Document notification delivered successfully",
 								"user_id", result.UserID,
-								"push", result.PushDelivered,
+								"system", result.SystemDelivered,
 								"email", result.EmailDelivered)
 						}
 					}

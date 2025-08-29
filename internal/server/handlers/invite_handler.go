@@ -259,7 +259,7 @@ func (h *InviteHandler) AcceptInvitation(c echo.Context) error {
 						} else {
 							logger.Zap.Infow("Invitation notification delivered successfully",
 								"user_id", result.UserID,
-								"push", result.PushDelivered,
+								"system", result.SystemDelivered,
 								"email", result.EmailDelivered)
 						}
 					}

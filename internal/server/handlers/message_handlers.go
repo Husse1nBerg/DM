@@ -382,7 +382,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 				} else {
 					logger.Zap.Infow("Notification delivered successfully",
 						"user_id", result.UserID,
-						"push", result.PushDelivered,
+						"system", result.SystemDelivered,
 						"email", result.EmailDelivered)
 				}
 			}
@@ -679,7 +679,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				} else {
 					logger.Zap.Infow("Customer notification delivered successfully",
 						"user_id", result.UserID,
-						"push", result.PushDelivered,
+						"system", result.SystemDelivered,
 						"email", result.EmailDelivered)
 				}
 			}
