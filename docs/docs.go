@@ -14561,12 +14561,11 @@ const docTemplate = `{
                 "deliveryMethod": {
                     "type": "string",
                     "enum": [
-                        "push",
+                        "system",
                         "email",
-                        "sms",
                         "all"
                     ],
-                    "example": "push"
+                    "example": "system"
                 },
                 "enabled": {
                     "type": "boolean",
