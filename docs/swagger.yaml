@@ -1834,11 +1834,10 @@ definitions:
     properties:
       deliveryMethod:
         enum:
-        - push
+        - system
         - email
-        - sms
         - all
-        example: push
+        example: system
         type: string
       enabled:
         example: true

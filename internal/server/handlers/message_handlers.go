@@ -369,7 +369,6 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 			req.Sender,     // Customer name
 			req.CustomerID, // Customer ID
 			emailData,
-			nil, // No SMS data for customer messages
 		)
 		if err != nil {
 			logger.Zap.Warnw("Failed to create bulk message notifications", "error", err)
@@ -384,8 +383,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 					logger.Zap.Infow("Notification delivered successfully",
 						"user_id", result.UserID,
 						"push", result.PushDelivered,
-						"email", result.EmailDelivered,
-						"sms", result.SMSDelivered)
+						"email", result.EmailDelivered)
 				}
 			}
 		}
@@ -650,18 +648,12 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	if len(customers) > 0 {
 		// Create notification for customer users about new marina message using smart notification system
 		var emailData *notifications.EmailNotificationData
-		var smsData *notifications.SMSNotificationData
 
 		// Prepare delivery data based on message type
 		if req.Type == "email" {
 			emailData = &notifications.EmailNotificationData{
 				To:      []string{req.Contact},
 				Subject: "Message from " + req.Sender,
-			}
-		} else if req.Type == "sms" {
-			smsData = &notifications.SMSNotificationData{
-				To:      req.Contact,
-				Message: req.Body,
 			}
 		}
 
@@ -674,7 +666,6 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 			req.Sender,
 			req.CustomerID,
 			emailData,
-			smsData,
 		)
 		if err != nil {
 			logger.Zap.Errorw("Failed to create bulk message notifications for customers", "error", err)
@@ -689,8 +680,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 					logger.Zap.Infow("Customer notification delivered successfully",
 						"user_id", result.UserID,
 						"push", result.PushDelivered,
-						"email", result.EmailDelivered,
-						"sms", result.SMSDelivered)
+						"email", result.EmailDelivered)
 				}
 			}
 		}

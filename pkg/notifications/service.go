@@ -556,7 +556,6 @@ type SmartNotificationRequest struct {
 	Priority       *string                `json:"priority,omitempty"`
 	// Additional fields for multi-channel delivery
 	EmailData *EmailNotificationData `json:"emailData,omitempty"`
-	SMSData   *SMSNotificationData   `json:"smsData,omitempty"`
 }
 
 // EmailNotificationData contains email-specific information
@@ -566,20 +565,13 @@ type EmailNotificationData struct {
 	ReplyTo string   `json:"replyTo,omitempty"`
 }
 
-// SMSNotificationData contains SMS-specific information
-type SMSNotificationData struct {
-	To      string `json:"to"`
-	Message string `json:"message"`
-}
-
 // SmartNotificationResult represents the result of smart notification delivery
 type SmartNotificationResult struct {
-	UserID         uuid.UUID  `json:"userId"`
-	NotificationID *uuid.UUID `json:"notificationId,omitempty"`
-	PushDelivered  bool       `json:"pushDelivered"`
-	EmailDelivered bool       `json:"emailDelivered"`
-	SMSDelivered   bool       `json:"smsDelivered"`
-	Errors         []string   `json:"errors,omitempty"`
+	UserID          uuid.UUID  `json:"userId"`
+	NotificationID  *uuid.UUID `json:"notificationId,omitempty"`
+	SystemDelivered bool       `json:"systemDelivered"`
+	EmailDelivered  bool       `json:"emailDelivered"`
+	Errors          []string   `json:"errors,omitempty"`
 }
 
 // SendSmartNotification sends notifications based on user preferences and available delivery methods
@@ -626,38 +618,36 @@ func (s *NotificationService) SendSmartNotification(ctx context.Context, req Sma
 	}
 
 	// Determine delivery method
-	deliveryMethod := "push" // default
+	deliveryMethod := "system" // default
 	if preference.DeliveryMethod != nil {
 		deliveryMethod = *preference.DeliveryMethod
 	}
 
 	// Send notifications based on delivery method
 	switch deliveryMethod {
-	case "push":
-		return s.sendPushNotification(ctx, req)
+	case "system":
+		return s.sendSystemNotification(ctx, req)
 	case "email":
 		return s.sendEmailNotification(ctx, req)
-	case "sms":
-		return s.sendSMSNotification(ctx, req)
 	case "all":
 		return s.sendMultiChannelNotification(ctx, req)
 	default:
-		// Fallback to push
-		return s.sendPushNotification(ctx, req)
+		// Fallback to system
+		return s.sendSystemNotification(ctx, req)
 	}
 }
 
-// sendDefaultNotification sends a default push notification when no preferences are set
+// sendDefaultNotification sends a default system notification when no preferences are set
 func (s *NotificationService) sendDefaultNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
 	result := &SmartNotificationResult{
 		UserID: req.UserID,
 	}
 
-	s.logger.Zap.Debugw("Creating default push notification",
+	s.logger.Zap.Debugw("Creating default system notification",
 		"userID", req.UserID,
 		"type", req.Type)
 
-	// Create and send push notification
+	// Create and send system notification
 	notificationReq := requests.CreateNotificationRequest{
 		UserID:         req.UserID,
 		OrganizationID: req.OrganizationID,
@@ -671,37 +661,37 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 
 	notification, err := s.CreateNotification(ctx, notificationReq, true)
 	if err != nil {
-		s.logger.Zap.Warnw("Failed to create default push notification",
+		s.logger.Zap.Warnw("Failed to create default system notification",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
 
 		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("Push notification failed: %v", err))
+		result.Errors = append(result.Errors, fmt.Sprintf("System notification failed: %v", err))
 		return result, nil // Return result with error instead of failing
 	}
 
-	s.logger.Zap.Debugw("Default push notification created successfully",
+	s.logger.Zap.Debugw("Default system notification created successfully",
 		"userID", req.UserID,
 		"type", req.Type,
 		"notificationID", notification.ID)
 
 	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+	result.SystemDelivered = true
 	return result, nil
 }
 
-// sendPushNotification sends only a push notification
-func (s *NotificationService) sendPushNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
+// sendSystemNotification sends only a system notification
+func (s *NotificationService) sendSystemNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
 	result := &SmartNotificationResult{
 		UserID: req.UserID,
 	}
 
-	s.logger.Zap.Debugw("Creating push notification",
+	s.logger.Zap.Debugw("Creating system notification",
 		"userID", req.UserID,
 		"type", req.Type)
 
-	// Create and send push notification
+	// Create and send system notification
 	notificationReq := requests.CreateNotificationRequest{
 		UserID:         req.UserID,
 		OrganizationID: req.OrganizationID,
@@ -715,23 +705,23 @@ func (s *NotificationService) sendPushNotification(ctx context.Context, req Smar
 
 	notification, err := s.CreateNotification(ctx, notificationReq, true)
 	if err != nil {
-		s.logger.Zap.Warnw("Failed to create push notification",
+		s.logger.Zap.Warnw("Failed to create system notification",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
 
 		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("Push notification failed: %v", err))
+		result.Errors = append(result.Errors, fmt.Sprintf("System notification failed: %v", err))
 		return result, nil // Return result with error instead of failing
 	}
 
-	s.logger.Zap.Debugw("Push notification created successfully",
+	s.logger.Zap.Debugw("System notification created successfully",
 		"userID", req.UserID,
 		"type", req.Type,
 		"notificationID", notification.ID)
 
 	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+	result.SystemDelivered = true
 	return result, nil
 }
 
@@ -775,59 +765,11 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 	}
 
 	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+	result.SystemDelivered = true
 
 	// Note: Email sending would be handled by the calling code
 	// This method focuses on notification creation and preference checking
 	result.EmailDelivered = true
-	return result, nil
-}
-
-// sendSMSNotification sends only an SMS notification
-func (s *NotificationService) sendSMSNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
-	result := &SmartNotificationResult{
-		UserID: req.UserID,
-	}
-
-	// Check if SMS data is provided
-	if req.SMSData == nil {
-		s.logger.Zap.Warnw("SMS data not provided for SMS notification",
-			"userID", req.UserID,
-			"type", req.Type)
-		result.Errors = append(result.Errors, "SMS data not provided")
-		return result, nil // Return result with error instead of failing
-	}
-
-	// Create push notification for in-app display
-	notificationReq := requests.CreateNotificationRequest{
-		UserID:         req.UserID,
-		OrganizationID: req.OrganizationID,
-		MarinaID:       req.MarinaID,
-		Type:           req.Type,
-		Title:          req.Title,
-		Content:        req.Content,
-		Data:           req.Data,
-		Priority:       req.Priority,
-	}
-
-	notification, err := s.CreateNotification(ctx, notificationReq, false) // Don't send real-time for SMS
-	if err != nil {
-		s.logger.Zap.Warnw("Failed to create SMS notification",
-			"userID", req.UserID,
-			"type", req.Type,
-			"error", err)
-
-		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("SMS notification creation failed: %v", err))
-		return result, nil // Return result with error instead of failing
-	}
-
-	result.NotificationID = &notification.ID
-	result.PushDelivered = true
-
-	// Note: SMS sending would be handled by the calling code
-	// This method focuses on notification creation and preference checking
-	result.SMSDelivered = true
 	return result, nil
 }
 
@@ -862,14 +804,11 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 	}
 
 	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+	result.SystemDelivered = true
 
-	// Mark email and SMS as delivered if data is provided
+	// Mark email as delivered if data is provided
 	if req.EmailData != nil {
 		result.EmailDelivered = true
-	}
-	if req.SMSData != nil {
-		result.SMSDelivered = true
 	}
 
 	return result, nil
@@ -982,9 +921,8 @@ func (s *NotificationService) SendBulkSmartNotifications(ctx context.Context, re
 					"overall_progress", fmt.Sprintf("%d/%d", startIdx+i+1, len(requests)),
 					"userID", req.UserID,
 					"type", req.Type,
-					"push_delivered", result.PushDelivered,
-					"email_delivered", result.EmailDelivered,
-					"sms_delivered", result.SMSDelivered)
+					"system_delivered", result.SystemDelivered,
+					"email_delivered", result.EmailDelivered)
 				results = append(results, result)
 			}
 		}
@@ -1031,7 +969,6 @@ func (s *NotificationService) CreateSmartMessageNotification(
 	sender string,
 	customerID string,
 	emailData *EmailNotificationData,
-	smsData *SMSNotificationData,
 ) (*SmartNotificationResult, error) {
 	title := "New Message Received"
 	content := fmt.Sprintf("You have received a new message from %s", sender)
@@ -1053,7 +990,6 @@ func (s *NotificationService) CreateSmartMessageNotification(
 		Data:           data,
 		Priority:       nil, // Use default priority
 		EmailData:      emailData,
-		SMSData:        smsData,
 	}
 
 	return s.SendSmartNotification(ctx, req)
@@ -1068,7 +1004,6 @@ func (s *NotificationService) CreateBulkMessageNotifications(
 	sender string,
 	customerID string,
 	emailData *EmailNotificationData,
-	smsData *SMSNotificationData,
 ) ([]*SmartNotificationResult, error) {
 	var requests []SmartNotificationRequest
 
@@ -1094,7 +1029,6 @@ func (s *NotificationService) CreateBulkMessageNotifications(
 				Data:           data,
 				Priority:       nil,
 				EmailData:      emailData,
-				SMSData:        smsData,
 			}
 
 			requests = append(requests, req)
@@ -1113,7 +1047,6 @@ func (s *NotificationService) CreateBulkMessageNotificationsForCustomers(
 	sender string,
 	customerID string,
 	emailData *EmailNotificationData,
-	smsData *SMSNotificationData,
 ) ([]*SmartNotificationResult, error) {
 	var requests []SmartNotificationRequest
 
@@ -1139,7 +1072,6 @@ func (s *NotificationService) CreateBulkMessageNotificationsForCustomers(
 				Data:           data,
 				Priority:       nil,
 				EmailData:      emailData,
-				SMSData:        smsData,
 			}
 
 			requests = append(requests, req)
@@ -1191,7 +1123,6 @@ func (s *NotificationService) CreateBulkDocumentNotifications(
 				Data:           data,
 				Priority:       nil,
 				EmailData:      emailData,
-				SMSData:        nil, // No SMS for document notifications
 			}
 
 			requests = append(requests, req)
