@@ -9152,6 +9152,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/pdf/detect-form-fields": {
+            "post": {
+                "description": "Detect form fields in a PDF page image and return structured JSON",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PDF"
+                ],
+                "summary": "Detect form fields",
+                "parameters": [
+                    {
+                        "description": "PDF page image",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.BedrockDetectFormFieldsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detected form fields",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BedrockDetectFormFieldsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/plans/document": {
             "get": {
                 "description": "Get all document plans with pagination",
@@ -13503,6 +13549,21 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.BedrockDetectFormFieldsRequest": {
+            "type": "object",
+            "required": [
+                "document",
+                "pageNumber"
+            ],
+            "properties": {
+                "document": {
+                    "type": "string"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                }
+            }
+        },
         "requests.BedrockRewriteRequest": {
             "type": "object",
             "required": [
@@ -15503,6 +15564,28 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.BedrockDetectFormFieldsResponse": {
+            "type": "object",
+            "properties": {
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.Field"
+                    }
+                },
+                "tokens": {
+                    "type": "object",
+                    "properties": {
+                        "input": {
+                            "type": "integer"
+                        },
+                        "output": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
         "responses.BedrockRewriteResponse": {
             "description": "Response from the Bedrock API rewrite",
             "type": "object",
@@ -15566,6 +15649,40 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.BoatSearch"
                     }
+                }
+            }
+        },
+        "responses.BoundingBox": {
+            "type": "object",
+            "properties": {
+                "h": {
+                    "type": "integer"
+                },
+                "w": {
+                    "type": "integer"
+                },
+                "x": {
+                    "type": "integer"
+                },
+                "y": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.BoundingBoxNorm": {
+            "type": "object",
+            "properties": {
+                "h": {
+                    "type": "number"
+                },
+                "w": {
+                    "type": "number"
+                },
+                "x": {
+                    "type": "number"
+                },
+                "y": {
+                    "type": "number"
                 }
             }
         },
@@ -16289,6 +16406,32 @@ const docTemplate = `{
                     "example": "agreement"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.Field": {
+            "type": "object",
+            "properties": {
+                "bbox": {
+                    "$ref": "#/definitions/responses.BoundingBox"
+                },
+                "bboxNorm": {
+                    "$ref": "#/definitions/responses.BoundingBoxNorm"
+                },
+                "confidence": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
                     "type": "string"
                 }
             }

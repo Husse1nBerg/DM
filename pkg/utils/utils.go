@@ -141,3 +141,157 @@ func StringToInt16Ptr(s string) (*int16, error) {
 	res := int16(v)
 	return &res, nil
 }
+
+// DetectFormFields is a placeholder function for detecting form fields in PDF pages
+func DetectFormFields(pages []struct {
+	ImageBase64 string
+	PageNumber  int
+}) []struct {
+	PageNumber int
+	PageSize   struct {
+		WidthPx  int
+		HeightPx int
+	}
+	Fields []struct {
+		ID         string
+		Type       string
+		Label      string
+		Required   bool
+		Confidence float64
+		BBox       struct {
+			X int
+			Y int
+			W int
+			H int
+		}
+		BBoxNorm struct {
+			X float64
+			Y float64
+			W float64
+			H float64
+		}
+	}
+} {
+	// Placeholder logic for form field detection
+	// This should be replaced with actual detection logic
+	var detectedFields []struct {
+		PageNumber int
+		PageSize   struct {
+			WidthPx  int
+			HeightPx int
+		}
+		Fields []struct {
+			ID         string
+			Type       string
+			Label      string
+			Required   bool
+			Confidence float64
+			BBox       struct {
+				X int
+				Y int
+				W int
+				H int
+			}
+			BBoxNorm struct {
+				X float64
+				Y float64
+				W float64
+				H float64
+			}
+		}
+	}
+
+	for _, page := range pages {
+		detectedFields = append(detectedFields, struct {
+			PageNumber int
+			PageSize   struct {
+				WidthPx  int
+				HeightPx int
+			}
+			Fields []struct {
+				ID         string
+				Type       string
+				Label      string
+				Required   bool
+				Confidence float64
+				BBox       struct {
+					X int
+					Y int
+					W int
+					H int
+				}
+				BBoxNorm struct {
+					X float64
+					Y float64
+					W float64
+					H float64
+				}
+			}
+		}{
+			PageNumber: page.PageNumber,
+			PageSize: struct {
+				WidthPx  int
+				HeightPx int
+			}{
+				WidthPx:  2550, // Example width
+				HeightPx: 3300, // Example height
+			},
+			Fields: []struct {
+				ID         string
+				Type       string
+				Label      string
+				Required   bool
+				Confidence float64
+				BBox       struct {
+					X int
+					Y int
+					W int
+					H int
+				}
+				BBoxNorm struct {
+					X float64
+					Y float64
+					W float64
+					H float64
+				}
+			}{
+				{
+					ID:         "fld_001",
+					Type:       "text",
+					Label:      "Customer Name",
+					Required:   true,
+					Confidence: 0.97,
+					BBox: struct {
+						X int
+						Y int
+						W int
+						H int
+					}{
+						X: 210,
+						Y: 480,
+						W: 820,
+						H: 60,
+					},
+					BBoxNorm: struct {
+						X float64
+						Y float64
+						W float64
+						H float64
+					}{
+						X: 0.082,
+						Y: 0.145,
+						W: 0.322,
+						H: 0.018,
+					},
+				},
+			},
+		})
+	}
+
+	return detectedFields
+}
+
+// GenerateRequestID generates a unique request ID
+func GenerateRequestID() string {
+	return uuid.New().String()
+}
