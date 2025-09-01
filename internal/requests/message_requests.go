@@ -77,3 +77,8 @@ type BedrockRewriteRequest struct {
 	Tone              string `json:"tone" validate:"required"`
 	ExtraInstructions string `json:"extraInstructions"`
 }
+
+type BedrockDetectFormFieldsRequest struct {
+	Document   string `json:"document" validate:"required"`
+	PageNumber int    `json:"pageNumber" validate:"required"`
+}

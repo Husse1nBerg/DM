@@ -1085,6 +1085,16 @@ definitions:
     - roleId
     - userId
     type: object
+  requests.BedrockDetectFormFieldsRequest:
+    properties:
+      document:
+        type: string
+      pageNumber:
+        type: integer
+    required:
+    - document
+    - pageNumber
+    type: object
   requests.BedrockRewriteRequest:
     properties:
       draft:
@@ -2503,6 +2513,20 @@ definitions:
       total:
         type: integer
     type: object
+  responses.BedrockDetectFormFieldsResponse:
+    properties:
+      fields:
+        items:
+          $ref: '#/definitions/responses.Field'
+        type: array
+      tokens:
+        properties:
+          input:
+            type: integer
+          output:
+            type: integer
+        type: object
+    type: object
   responses.BedrockRewriteResponse:
     description: Response from the Bedrock API rewrite
     properties:
@@ -2546,6 +2570,28 @@ definitions:
         items:
           $ref: '#/definitions/dme.BoatSearch'
         type: array
+    type: object
+  responses.BoundingBox:
+    properties:
+      h:
+        type: integer
+      w:
+        type: integer
+      x:
+        type: integer
+      "y":
+        type: integer
+    type: object
+  responses.BoundingBoxNorm:
+    properties:
+      h:
+        type: number
+      w:
+        type: number
+      x:
+        type: number
+      "y":
+        type: number
     type: object
   responses.ConfirmTokenResponse:
     properties:
@@ -3061,6 +3107,23 @@ definitions:
         example: agreement
         type: string
       updatedAt:
+        type: string
+    type: object
+  responses.Field:
+    properties:
+      bbox:
+        $ref: '#/definitions/responses.BoundingBox'
+      bboxNorm:
+        $ref: '#/definitions/responses.BoundingBoxNorm'
+      confidence:
+        type: number
+      id:
+        type: string
+      label:
+        type: string
+      required:
+        type: boolean
+      type:
         type: string
     type: object
   responses.InviteResponse:
@@ -9939,6 +10002,36 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /pdf/detect-form-fields:
+    post:
+      consumes:
+      - application/json
+      description: Detect form fields in a PDF page image and return structured JSON
+      parameters:
+      - description: PDF page image
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BedrockDetectFormFieldsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detected form fields
+          schema:
+            $ref: '#/definitions/responses.BedrockDetectFormFieldsResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Detect form fields
+      tags:
+      - PDF
   /plans/document:
     get:
       consumes:
