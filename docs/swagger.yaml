@@ -9004,6 +9004,36 @@ paths:
       summary: Update customer message
       tags:
       - Message
+  /message/detect-form-fields:
+    post:
+      consumes:
+      - application/json
+      description: Detect form fields in a PDF page image and return structured JSON
+      parameters:
+      - description: PDF page image
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BedrockDetectFormFieldsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detected form fields
+          schema:
+            $ref: '#/definitions/responses.BedrockDetectFormFieldsResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Detect form fields
+      tags:
+      - Message
   /message/get:
     get:
       consumes:
@@ -10002,36 +10032,6 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
-  /pdf/detect-form-fields:
-    post:
-      consumes:
-      - application/json
-      description: Detect form fields in a PDF page image and return structured JSON
-      parameters:
-      - description: PDF page image
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.BedrockDetectFormFieldsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Detected form fields
-          schema:
-            $ref: '#/definitions/responses.BedrockDetectFormFieldsResponse'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Server error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Detect form fields
-      tags:
-      - PDF
   /plans/document:
     get:
       consumes:
