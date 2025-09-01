@@ -7608,6 +7608,52 @@
                 }
             }
         },
+        "/message/detect-form-fields": {
+            "post": {
+                "description": "Detect form fields in a PDF page image and return structured JSON",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Detect form fields",
+                "parameters": [
+                    {
+                        "description": "PDF page image",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.BedrockDetectFormFieldsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detected form fields",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BedrockDetectFormFieldsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/message/get": {
             "get": {
                 "security": [
@@ -9140,52 +9186,6 @@
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/pdf/detect-form-fields": {
-            "post": {
-                "description": "Detect form fields in a PDF page image and return structured JSON",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "PDF"
-                ],
-                "summary": "Detect form fields",
-                "parameters": [
-                    {
-                        "description": "PDF page image",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.BedrockDetectFormFieldsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Detected form fields",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BedrockDetectFormFieldsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
                         }
                     }
                 }

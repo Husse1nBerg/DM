@@ -798,14 +798,14 @@ func (h *MessageHandler) RewriteMessageHandler(c echo.Context) error {
 //
 // @Summary Detect form fields
 // @Description Detect form fields in a PDF page image and return structured JSON
-// @Tags PDF
+// @Tags Message
 // @Accept json
 // @Produce json
 // @Param request body requests.BedrockDetectFormFieldsRequest true "PDF page image"
 // @Success 200 {object} responses.BedrockDetectFormFieldsResponse "Detected form fields"
 // @Failure 400 {object} responses.Error "Bad request"
 // @Failure 500 {object} responses.Error "Server error"
-// @Router /pdf/detect-form-fields [post]
+// @Router /message/detect-form-fields [post]
 func (h *MessageHandler) DetectFormFieldsHandler(c echo.Context) error {
 	logger := h.server.Logger
 
