@@ -14615,7 +14615,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "deliveryMethod",
-                "enabled",
                 "notificationType"
             ],
             "properties": {
@@ -16692,12 +16691,16 @@ const docTemplate = `{
             }
         },
         "responses.MarinaUsageHistoryResponse": {
-            "description": "Marina usage history data including storage, email, and text usage",
+            "description": "Marina usage history data including storage, email, text, and document usage",
             "type": "object",
             "properties": {
                 "createdAt": {
                     "type": "string",
                     "example": "2024-01-01T00:00:00Z"
+                },
+                "documentUsage": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "emailUsage": {
                     "type": "integer",
