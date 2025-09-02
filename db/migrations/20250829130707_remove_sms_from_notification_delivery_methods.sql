@@ -33,6 +33,6 @@ DROP CONSTRAINT IF EXISTS chk_delivery_method;
 
 -- Revert the default value
 ALTER TABLE notification_preferences 
-ALTER COLUMN delivery_method SET DEFAULT 'push';
+ALTER COLUMN delivery_method SET DEFAULT 'system';
 
 -- +goose StatementEnd

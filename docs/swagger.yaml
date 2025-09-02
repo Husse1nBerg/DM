@@ -1865,7 +1865,6 @@ definitions:
         type: string
     required:
     - deliveryMethod
-    - enabled
     - notificationType
     type: object
   requests.OperationCode:
@@ -3311,11 +3310,15 @@ definitions:
         type: integer
     type: object
   responses.MarinaUsageHistoryResponse:
-    description: Marina usage history data including storage, email, and text usage
+    description: Marina usage history data including storage, email, text, and document
+      usage
     properties:
       createdAt:
         example: "2024-01-01T00:00:00Z"
         type: string
+      documentUsage:
+        example: 0
+        type: integer
       emailUsage:
         example: 0
         type: integer
