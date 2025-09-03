@@ -674,16 +674,146 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 
 		// Add error to result but don't fail completely
 		result.Errors = append(result.Errors, fmt.Sprintf("System notification failed: %v", err))
-		return result, nil // Return result with error instead of failing
+		// Don't return here - continue to try email if EmailData is provided
+	} else {
+		s.logger.Zap.Debugw("Default system notification created successfully",
+			"userID", req.UserID,
+			"type", req.Type,
+			"notificationID", notification.ID)
+
+		result.NotificationID = &notification.ID
+		result.SystemDelivered = true
 	}
 
-	s.logger.Zap.Debugw("Default system notification created successfully",
-		"userID", req.UserID,
-		"type", req.Type,
-		"notificationID", notification.ID)
+	// If EmailData is provided, also send an email notification
+	if req.EmailData != nil {
+		s.logger.Zap.Debugw("Sending default email notification",
+			"userID", req.UserID,
+			"type", req.Type)
 
-	result.NotificationID = &notification.ID
-	result.SystemDelivered = true
+		// Get user information to construct email data
+		user, err := s.db.GetUserByID(ctx, req.UserID)
+		if err != nil {
+			s.logger.Zap.Warnw("Failed to get user information for default email notification",
+				"userID", req.UserID,
+				"type", req.Type,
+				"error", err)
+			result.Errors = append(result.Errors, fmt.Sprintf("Failed to get user information: %v", err))
+
+			// Even if user lookup fails, try to send email using provided EmailData
+			if req.EmailData != nil && len(req.EmailData.To) > 0 {
+				s.logger.Zap.Debugw("Attempting to send email using provided EmailData",
+					"userID", req.UserID,
+					"type", req.Type,
+					"to_emails", req.EmailData.To)
+
+				// Send email using SendGrid with fallback data
+				emailData := sendgrid.NotificationTemplateData{
+					Recipient:    "User", // Fallback recipient name
+					Type:         req.Type,
+					CustomerName: "DockMaster", // Default fallback
+					HomeURL:      s.Config.App.FrontendBaseURL,
+				}
+
+				subject := req.Title
+				if req.EmailData.Subject != "" {
+					subject = req.EmailData.Subject
+				}
+
+				taskID, resultChan, err := s.sendgrid.SendNotificationEmail(req.EmailData.To, subject, emailData)
+				if err != nil {
+					s.logger.Zap.Warnw("Failed to send default email notification with fallback data",
+						"userID", req.UserID,
+						"type", req.Type,
+						"error", err)
+					result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+				} else {
+					// Monitor email delivery status
+					go func() {
+						for status := range resultChan {
+							if status.Error != "" {
+								s.logger.Zap.Errorw("Default email notification delivery failed",
+									"userID", req.UserID,
+									"taskID", taskID,
+									"error", status.Error)
+							} else {
+								s.logger.Zap.Infow("Default email notification delivered successfully",
+									"userID", req.UserID,
+									"taskID", taskID,
+									"status", status.Status)
+							}
+						}
+					}()
+
+					result.EmailDelivered = true
+				}
+			}
+		} else {
+			// Get organization information for customer name
+			organization, err := s.db.GetOrganizationByID(ctx, req.OrganizationID)
+			if err != nil {
+				s.logger.Zap.Warnw("Failed to get organization information for default email notification",
+					"userID", req.UserID,
+					"organizationID", req.OrganizationID,
+					"type", req.Type,
+					"error", err)
+				// Continue without organization info
+			}
+
+			// Send email using SendGrid
+			emailData := sendgrid.NotificationTemplateData{
+				Recipient: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+				Type:      req.Type,
+				CustomerName: func() string {
+					if err == nil && organization.Name != "" {
+						return organization.Name
+					}
+					return "DockMaster" // Default fallback
+				}(),
+				HomeURL: s.Config.App.FrontendBaseURL,
+			}
+
+			// Use provided email data if available, otherwise use user's email
+			toEmails := []string{user.Email}
+			if req.EmailData != nil && len(req.EmailData.To) > 0 {
+				toEmails = req.EmailData.To
+			}
+
+			subject := req.Title
+			if req.EmailData != nil && req.EmailData.Subject != "" {
+				subject = req.EmailData.Subject
+			}
+
+			taskID, resultChan, err := s.sendgrid.SendNotificationEmail(toEmails, subject, emailData)
+			if err != nil {
+				s.logger.Zap.Warnw("Failed to send default email notification",
+					"userID", req.UserID,
+					"type", req.Type,
+					"error", err)
+				result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+			} else {
+				// Monitor email delivery status
+				go func() {
+					for status := range resultChan {
+						if status.Error != "" {
+							s.logger.Zap.Errorw("Default email notification delivery failed",
+								"userID", req.UserID,
+								"taskID", taskID,
+								"error", status.Error)
+						} else {
+							s.logger.Zap.Infow("Default email notification delivered successfully",
+								"userID", req.UserID,
+								"taskID", taskID,
+								"status", status.Status)
+						}
+					}
+				}()
+
+				result.EmailDelivered = true
+			}
+		}
+	}
+
 	return result, nil
 }
 
@@ -756,15 +886,20 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 			"organizationID", req.OrganizationID,
 			"type", req.Type,
 			"error", err)
-		// Continue without organization info
+		// Continue without organization info - use default fallback
 	}
 
 	// Send email using SendGrid
 	emailData := sendgrid.NotificationTemplateData{
-		Recipient:    fmt.Sprintf("%s %s", user.FirstName, user.LastName),
-		Type:         req.Type,
-		CustomerName: organization.Name,
-		HomeURL:      s.Config.App.FrontendBaseURL,
+		Recipient: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		Type:      req.Type,
+		CustomerName: func() string {
+			if err == nil && organization.Name != "" {
+				return organization.Name
+			}
+			return "DockMaster" // Default fallback
+		}(),
+		HomeURL: s.Config.App.FrontendBaseURL,
 	}
 
 	// Use provided email data if available, otherwise use user's email
@@ -862,15 +997,20 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 			"organizationID", req.OrganizationID,
 			"type", req.Type,
 			"error", err)
-		// Continue without organization info
+		// Continue without organization info - use empty string for customer name
 	}
 
 	// Send email using SendGrid
 	emailData := sendgrid.NotificationTemplateData{
-		Recipient:    fmt.Sprintf("%s %s", user.FirstName, user.LastName),
-		Type:         req.Type,
-		CustomerName: organization.Name,
-		HomeURL:      s.Config.App.FrontendBaseURL,
+		Recipient: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		Type:      req.Type,
+		CustomerName: func() string {
+			if err == nil && organization.Name != "" {
+				return organization.Name
+			}
+			return "DockMaster" // Default fallback
+		}(),
+		HomeURL: s.Config.App.FrontendBaseURL,
 	}
 
 	// Use provided email data if available, otherwise use user's email
