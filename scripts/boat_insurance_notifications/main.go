@@ -58,7 +58,7 @@ func main() {
 	redisClient := redis.NewClient(cfg.Redis, logger)
 
 	// Set up notification service
-	notificationService := notifications.NewNotificationService(q, redisClient, logger)
+	notificationService := notifications.NewNotificationService(q, redisClient, logger, nil, cfg)
 
 	// Set up DME client
 	dmeClient := dme.NewClientFromConfig(cfg, logger, db)

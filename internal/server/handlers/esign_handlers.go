@@ -36,6 +36,8 @@ func NewEsignHandler(server *s.Server) *EsignHandler {
 		server.DB.Queries(),
 		server.Redis,
 		server.Logger,
+		server.SendGrid,
+		server.Config,
 	)
 	return &EsignHandler{server: server, esignService: server.ESignService, notificationService: notificationService}
 }

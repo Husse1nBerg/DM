@@ -34,6 +34,8 @@ func NewUserHandler(server *s.Server) *UserHandler {
 		server.DB.Queries(),
 		server.Redis,
 		server.Logger,
+		server.SendGrid,
+		server.Config,
 	)
 
 	return &UserHandler{

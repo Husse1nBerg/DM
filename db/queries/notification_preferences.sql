@@ -9,8 +9,10 @@ INSERT INTO notification_preferences (
 ) RETURNING *;
 
 -- name: GetNotificationPreferences :many
-SELECT * FROM notification_preferences
-WHERE user_id = $1
+SELECT u.email, np.* 
+FROM notification_preferences np
+INNER JOIN users u on np.user_id = u.id
+WHERE np.user_id = $1
 ORDER BY notification_type;
 
 -- name: GetNotificationPreference :one

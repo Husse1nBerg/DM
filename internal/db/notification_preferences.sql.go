@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createNotificationPreference = `-- name: CreateNotificationPreference :one
@@ -123,21 +124,35 @@ func (q *Queries) GetNotificationPreference(ctx context.Context, arg GetNotifica
 }
 
 const getNotificationPreferences = `-- name: GetNotificationPreferences :many
-SELECT id, user_id, notification_type, enabled, delivery_method, created_at, updated_at FROM notification_preferences
-WHERE user_id = $1
+SELECT u.email, np.id, np.user_id, np.notification_type, np.enabled, np.delivery_method, np.created_at, np.updated_at 
+FROM notification_preferences np
+INNER JOIN users u on np.user_id = u.id
+WHERE np.user_id = $1
 ORDER BY notification_type
 `
 
-func (q *Queries) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) ([]NotificationPreference, error) {
+type GetNotificationPreferencesRow struct {
+	Email            string
+	ID               uuid.UUID
+	UserID           uuid.UUID
+	NotificationType string
+	Enabled          *bool
+	DeliveryMethod   *string
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) ([]GetNotificationPreferencesRow, error) {
 	rows, err := q.db.Query(ctx, getNotificationPreferences, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []NotificationPreference
+	var items []GetNotificationPreferencesRow
 	for rows.Next() {
-		var i NotificationPreference
+		var i GetNotificationPreferencesRow
 		if err := rows.Scan(
+			&i.Email,
 			&i.ID,
 			&i.UserID,
 			&i.NotificationType,
