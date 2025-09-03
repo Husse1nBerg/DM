@@ -31,6 +31,8 @@ func NewDocumentHandler(server *s.Server) *DocumentHandler {
 		server.DB.Queries(),
 		server.Redis,
 		server.Logger,
+		server.SendGrid,
+		server.Config,
 	)
 
 	return &DocumentHandler{

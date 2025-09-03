@@ -31,6 +31,8 @@ func NewNotificationHandler(server *s.Server) *NotificationHandler {
 		server.DB.Queries(),
 		server.Redis,
 		server.Logger,
+		server.SendGrid,
+		server.Config,
 	)
 
 	return &NotificationHandler{

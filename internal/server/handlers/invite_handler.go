@@ -230,6 +230,8 @@ func (h *InviteHandler) AcceptInvitation(c echo.Context) error {
 					queries,
 					h.server.Redis,
 					h.server.Logger,
+					h.server.SendGrid,
+					h.server.Config,
 				)
 
 				// Get customer ID safely

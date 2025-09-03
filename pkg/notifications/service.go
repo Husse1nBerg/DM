@@ -6,19 +6,23 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dockworks/dm-web-backend/internal/config"
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/dockworks/dm-web-backend/pkg/redis"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 )
 
 // NotificationService provides notification management functionality
 type NotificationService struct {
-	db     *db.Queries
-	redis  *redis.Client
-	logger *logger.Logger
+	db       *db.Queries
+	redis    *redis.Client
+	logger   *logger.Logger
+	sendgrid *sendgrid.Client
+	Config   *config.Config
 }
 
 // NotificationEvent represents different types of notification events
@@ -34,11 +38,13 @@ type NotificationEvent struct {
 }
 
 // NewNotificationService creates a new notification service
-func NewNotificationService(database *db.Queries, redisClient *redis.Client, logger *logger.Logger) *NotificationService {
+func NewNotificationService(database *db.Queries, redisClient *redis.Client, logger *logger.Logger, sendgrid *sendgrid.Client, config *config.Config) *NotificationService {
 	return &NotificationService{
-		db:     database,
-		redis:  redisClient,
-		logger: logger,
+		db:       database,
+		redis:    redisClient,
+		logger:   logger,
+		sendgrid: sendgrid,
+		Config:   config,
 	}
 }
 
@@ -731,44 +737,74 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 		UserID: req.UserID,
 	}
 
-	// Check if email data is provided
-	if req.EmailData == nil {
-		s.logger.Zap.Warnw("Email data not provided for email notification",
-			"userID", req.UserID,
-			"type", req.Type)
-		result.Errors = append(result.Errors, "Email data not provided")
-		return result, nil // Return result with error instead of failing
-	}
-
-	// Create push notification for in-app display
-	notificationReq := requests.CreateNotificationRequest{
-		UserID:         req.UserID,
-		OrganizationID: req.OrganizationID,
-		MarinaID:       req.MarinaID,
-		Type:           req.Type,
-		Title:          req.Title,
-		Content:        req.Content,
-		Data:           req.Data,
-		Priority:       req.Priority,
-	}
-
-	notification, err := s.CreateNotification(ctx, notificationReq, false) // Don't send real-time for email
+	// Get user information to construct email data
+	user, err := s.db.GetUserByID(ctx, req.UserID)
 	if err != nil {
-		s.logger.Zap.Warnw("Failed to create email notification",
+		s.logger.Zap.Warnw("Failed to get user information for email notification",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
-
-		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("Email notification creation failed: %v", err))
-		return result, nil // Return result with error instead of failing
+		result.Errors = append(result.Errors, fmt.Sprintf("Failed to get user information: %v", err))
+		return result, nil
 	}
 
-	result.NotificationID = &notification.ID
-	result.SystemDelivered = true
+	// Get organization information for customer name
+	organization, err := s.db.GetOrganizationByID(ctx, req.OrganizationID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get organization information for email notification",
+			"userID", req.UserID,
+			"organizationID", req.OrganizationID,
+			"type", req.Type,
+			"error", err)
+		// Continue without organization info
+	}
 
-	// Note: Email sending would be handled by the calling code
-	// This method focuses on notification creation and preference checking
+	// Send email using SendGrid
+	emailData := sendgrid.NotificationTemplateData{
+		Recipient:    fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		Type:         req.Type,
+		CustomerName: organization.Name,
+		HomeURL:      s.Config.App.FrontendBaseURL,
+	}
+
+	// Use provided email data if available, otherwise use user's email
+	toEmails := []string{user.Email}
+	if req.EmailData != nil && len(req.EmailData.To) > 0 {
+		toEmails = req.EmailData.To
+	}
+
+	subject := req.Title
+	if req.EmailData != nil && req.EmailData.Subject != "" {
+		subject = req.EmailData.Subject
+	}
+
+	taskID, resultChan, err := s.sendgrid.SendNotificationEmail(toEmails, subject, emailData)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to send email notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+		result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+		return result, nil
+	}
+
+	// Monitor email delivery status
+	go func() {
+		for status := range resultChan {
+			if status.Error != "" {
+				s.logger.Zap.Errorw("Email notification delivery failed",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"error", status.Error)
+			} else {
+				s.logger.Zap.Infow("Email notification delivered successfully",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"status", status.Status)
+			}
+		}
+	}()
+
 	result.EmailDelivered = true
 	return result, nil
 }
@@ -806,11 +842,76 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 	result.NotificationID = &notification.ID
 	result.SystemDelivered = true
 
-	// Mark email as delivered if data is provided
-	if req.EmailData != nil {
-		result.EmailDelivered = true
+	// Send email notification as well
+	// Get user information to construct email data
+	user, err := s.db.GetUserByID(ctx, req.UserID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get user information for multi-channel email notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+		result.Errors = append(result.Errors, fmt.Sprintf("Failed to get user information: %v", err))
+		return result, nil
 	}
 
+	// Get organization information for customer name
+	organization, err := s.db.GetOrganizationByID(ctx, req.OrganizationID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get organization information for multi-channel email notification",
+			"userID", req.UserID,
+			"organizationID", req.OrganizationID,
+			"type", req.Type,
+			"error", err)
+		// Continue without organization info
+	}
+
+	// Send email using SendGrid
+	emailData := sendgrid.NotificationTemplateData{
+		Recipient:    fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		Type:         req.Type,
+		CustomerName: organization.Name,
+		HomeURL:      s.Config.App.FrontendBaseURL,
+	}
+
+	// Use provided email data if available, otherwise use user's email
+	toEmails := []string{user.Email}
+	if req.EmailData != nil && len(req.EmailData.To) > 0 {
+		toEmails = req.EmailData.To
+	}
+
+	subject := req.Title
+	if req.EmailData != nil && req.EmailData.Subject != "" {
+		subject = req.EmailData.Subject
+	}
+
+	taskID, resultChan, err := s.sendgrid.SendNotificationEmail(toEmails, subject, emailData)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to send multi-channel email notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+		result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+		return result, nil
+	}
+
+	// Monitor email delivery status
+	go func() {
+		for status := range resultChan {
+			if status.Error != "" {
+				s.logger.Zap.Errorw("Multi-channel email notification delivery failed",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"error", status.Error)
+			} else {
+				s.logger.Zap.Infow("Multi-channel email notification delivered successfully",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"status", status.Status)
+			}
+		}
+	}()
+
+	result.EmailDelivered = true
 	return result, nil
 }
 

@@ -48,7 +48,7 @@ func (h *NotificationPreferenceHandler) ListNotificationPreferencesHandler(c ech
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve notification preferences").JSON(c)
 	}
 
-	response := responses.NotificationPreferenceDBToResponseList(preferences)
+	response := responses.NotificationPreferenceRowDBToResponseList(preferences)
 	return response.JSON(c)
 }
 
