@@ -307,6 +307,98 @@ const docTemplate = `{
                 }
             }
         },
+        "/ai/compose-message": {
+            "post": {
+                "description": "Rewrite a draft message to be more professional using Bedrock API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Rewrite customer-facing message",
+                "parameters": [
+                    {
+                        "description": "Rewrite request",
+                        "name": "rewrite",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.BedrockRewriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rewritten message",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BedrockRewriteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/ai/detect-form-fields": {
+            "post": {
+                "description": "Detect form fields in a PDF page image and return structured JSON",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Detect form fields",
+                "parameters": [
+                    {
+                        "description": "PDF page image",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.BedrockDetectFormFieldsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detected form fields",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BedrockDetectFormFieldsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/invite/accept": {
             "post": {
                 "description": "Accepts an invitation and sets the user's password",
@@ -7328,52 +7420,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/message/compose-message": {
-            "post": {
-                "description": "Rewrite a draft message to be more professional using Bedrock API",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Message"
-                ],
-                "summary": "Rewrite customer-facing message",
-                "parameters": [
-                    {
-                        "description": "Rewrite request",
-                        "name": "rewrite",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.BedrockRewriteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Rewritten message",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BedrockRewriteResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/message/customer": {
             "get": {
                 "security": [
@@ -7602,52 +7648,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Message not found",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Server error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/message/detect-form-fields": {
-            "post": {
-                "description": "Detect form fields in a PDF page image and return structured JSON",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Message"
-                ],
-                "summary": "Detect form fields",
-                "parameters": [
-                    {
-                        "description": "PDF page image",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.BedrockDetectFormFieldsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Detected form fields",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BedrockDetectFormFieldsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }

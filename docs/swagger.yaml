@@ -4241,6 +4241,66 @@ paths:
       summary: Get users by marina
       tags:
       - Admin
+  /ai/compose-message:
+    post:
+      consumes:
+      - application/json
+      description: Rewrite a draft message to be more professional using Bedrock API
+      parameters:
+      - description: Rewrite request
+        in: body
+        name: rewrite
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BedrockRewriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Rewritten message
+          schema:
+            $ref: '#/definitions/responses.BedrockRewriteResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Rewrite customer-facing message
+      tags:
+      - AI
+  /ai/detect-form-fields:
+    post:
+      consumes:
+      - application/json
+      description: Detect form fields in a PDF page image and return structured JSON
+      parameters:
+      - description: PDF page image
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BedrockDetectFormFieldsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detected form fields
+          schema:
+            $ref: '#/definitions/responses.BedrockDetectFormFieldsResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Detect form fields
+      tags:
+      - AI
   /api/v1/invite/accept:
     post:
       consumes:
@@ -8821,36 +8881,6 @@ paths:
       summary: Get user marinas
       tags:
       - Marinas
-  /message/compose-message:
-    post:
-      consumes:
-      - application/json
-      description: Rewrite a draft message to be more professional using Bedrock API
-      parameters:
-      - description: Rewrite request
-        in: body
-        name: rewrite
-        required: true
-        schema:
-          $ref: '#/definitions/requests.BedrockRewriteRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Rewritten message
-          schema:
-            $ref: '#/definitions/responses.BedrockRewriteResponse'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Server error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Rewrite customer-facing message
-      tags:
-      - Message
   /message/customer:
     delete:
       consumes:
@@ -9005,36 +9035,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update customer message
-      tags:
-      - Message
-  /message/detect-form-fields:
-    post:
-      consumes:
-      - application/json
-      description: Detect form fields in a PDF page image and return structured JSON
-      parameters:
-      - description: PDF page image
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.BedrockDetectFormFieldsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Detected form fields
-          schema:
-            $ref: '#/definitions/responses.BedrockDetectFormFieldsResponse'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Server error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Detect form fields
       tags:
       - Message
   /message/get:
