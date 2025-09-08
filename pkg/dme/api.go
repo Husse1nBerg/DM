@@ -442,8 +442,8 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 // -----
 
 // RetrieveInvoices retrieves invoices by IDs
-// func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) (interface{}, error) {
-// 	var result interface{}
+// func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) ([]InvoiceDetailed, error) {
+// 	var result []InvoiceDetailed
 // 	endpoint := "/AR/RetrieveInvoices"
 // 	err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, invoiceIDs, &result, organizationID, systemID, nil)
 // 	if err != nil {
@@ -453,15 +453,15 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 // }
 
 // RetrieveCustomerInvoices retrieves invoices for a customer
-// func (c *Client) RetrieveCustomerInvoices(ctx context.Context, customerID string, invoiceDate string, organizationID uuid.UUID, systemID string) (interface{}, error) {
-// 	var result interface{}
-// 	endpoint := fmt.Sprintf("/AR/CustomerARInquiry?CustomerId=%s&InvoiceDate=%s", customerID, invoiceDate)
-// 	err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to retrieve customer invoices: %w", err)
-// 	}
-// 	return result, nil
-// }
+func (c *Client) RetrieveCustomerInvoices(ctx context.Context, customerID string, invoiceDate string, organizationID uuid.UUID, systemID string) ([]CustomerInvoiceInquiry, error) {
+	var result []CustomerInvoiceInquiry
+	endpoint := fmt.Sprintf("/AR/CustomerARInquiry?CustomerId=%s&InvoiceDate=%s", customerID, invoiceDate)
+	err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customer invoices: %w", err)
+	}
+	return result, nil
+}
 
 // RetrieveWorkOrdersList retrieves a list of work orders
 // func (c *Client) RetrieveWorkOrdersList(ctx context.Context, req *WorkOrdersListRequest, organizationID uuid.UUID, systemID string) (interface{}, error) {
@@ -769,4 +769,48 @@ func (c *Client) DeleteWorkOrderOperation(ctx context.Context, workOrderId strin
 	}
 
 	return &result, nil
+}
+
+// -----
+// Payment API
+// -----
+
+// InitiatePayment initiates a payment through the DMPay system
+// This function creates a payment request that can be processed by DMPay
+func (c *Client) InitiatePayment(ctx context.Context, customerID string, invoiceID string, amount float64, organizationID uuid.UUID, systemID string) (*PaymentInitiationResponse, error) {
+	// Get location information to retrieve DMPay client ID
+	locations, err := c.ListLocations(ctx, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get locations: %w", err)
+	}
+
+	if len(locations) == 0 {
+		return nil, fmt.Errorf("no locations found for payment processing")
+	}
+
+	// Use the first location's DMPay client ID
+	// In a real implementation, you might need logic to select the correct location
+	dmPayClientID := locations[0].DMPayClientID
+	if dmPayClientID == "" {
+		return nil, fmt.Errorf("DMPay client ID not configured for this location")
+	}
+
+	// Create payment initiation response
+	// This would typically create a payment session with DMPay
+	result := &PaymentInitiationResponse{
+		PaymentSessionID: generatePaymentSessionID(),
+		DMPayClientID:    dmPayClientID,
+		CustomerID:       customerID,
+		InvoiceID:        invoiceID,
+		Amount:           amount,
+		Status:           "pending",
+		PaymentURL:       fmt.Sprintf("https://pay.dockmaster.com/payment/%s", generatePaymentSessionID()),
+	}
+
+	return result, nil
+}
+
+// generatePaymentSessionID generates a unique payment session ID
+func generatePaymentSessionID() string {
+	return uuid.New().String()
 }

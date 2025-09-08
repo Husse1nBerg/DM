@@ -493,6 +493,7 @@ type Installment struct {
 	ID      string  `json:"id"`
 	DueDate string  `json:"dueDate"`
 	Amount  float64 `json:"amount"`
+	Balance float64 `json:"balance"`
 }
 
 // InvoiceDetailed represents detailed invoice information
@@ -732,4 +733,86 @@ type WorkOrderOperation struct {
 	ForecastedPartsCharges float64 `json:"forecastedPartsCharges"`
 	ForecastedLaborCharges float64 `json:"forecastedLaborCharges"`
 	ForecastedLaborHours   float64 `json:"forecastedLaborHours"`
+}
+
+//
+// PAYMENT MODELS
+//
+
+// CustomerInvoiceInquiry represents the response from the AR/CustomerARInquiry endpoint
+type CustomerInvoiceInquiry struct {
+	CustomerID      string           `json:"customerId"`
+	FirstName       string           `json:"firstName"`
+	LastName        string           `json:"lastName"`
+	Email           string           `json:"email"`
+	HomePhone       string           `json:"homePhone"`
+	CellPhone       string           `json:"cellPhone"`
+	CompanyName     string           `json:"companyName"`
+	CurrentBalance  float64          `json:"currentBalance"`
+	AgingCurrent    float64          `json:"agingCurrent"`
+	Aging30         float64          `json:"aging30"`
+	Aging60         float64          `json:"aging60"`
+	Aging90         float64          `json:"aging90"`
+	Aging120        float64          `json:"aging120"`
+	OpenARInvoices  []OpenARInvoice  `json:"openARInvoices"`
+	PendingPayments []PendingPayment `json:"pendingPayments"`
+	LastPayment     LastPayment      `json:"lastPayment"`
+}
+
+// OpenARInvoice represents an open AR invoice in the customer inquiry
+type OpenARInvoice struct {
+	ID               string        `json:"id"`
+	CustomerID       string        `json:"customerId"`
+	Amount           float64       `json:"amount"`
+	InvoiceAmount    float64       `json:"invoiceAmount"`
+	InvoiceBalance   float64       `json:"invoiceBalance"`
+	DueDate          string        `json:"dueDate,omitempty"`
+	Description      string        `json:"description"`
+	TransactionType  string        `json:"transactionType"`
+	InvoiceType      string        `json:"invoiceType"`
+	SourceID         string        `json:"sourceId"`
+	ScheduleAcct     string        `json:"scheduleAcct"`
+	LocationCode     string        `json:"locationCode"`
+	UnAppliedPayment bool          `json:"unAppliedPayment"`
+	Installments     []Installment `json:"installments"`
+	BoatName         string        `json:"boatName,omitempty"`
+	WohBillingID     string        `json:"wohBillingId,omitempty"`
+	JtglTotal        string        `json:"jtglTotal,omitempty"`
+}
+
+// PendingPayment represents a pending payment in the customer inquiry
+type PendingPayment struct {
+	BatchID         string                 `json:"batchId"`
+	PaymentDate     string                 `json:"paymentDate"`
+	TotalPaymentAmt float64                `json:"totalPaymentAmt"`
+	ReferenceNum    string                 `json:"referenceNum"`
+	PaymentDetails  []PendingPaymentDetail `json:"paymentDetails"`
+}
+
+// PendingPaymentDetail represents details of a pending payment
+type PendingPaymentDetail struct {
+	InvoiceID         string  `json:"invoiceId"`
+	TotalInvoiceAmt   float64 `json:"totalInvoiceAmt"`
+	PaymentAmount     float64 `json:"paymentAmount"`
+	InvoiceBalance    float64 `json:"invoiceBalance"`
+	PaymentActionCode string  `json:"paymentActionCode"`
+	PaymentActionDesc string  `json:"paymentActionDesc"`
+}
+
+// LastPayment represents the last payment information in the customer inquiry
+type LastPayment struct {
+	PaymentDate   string  `json:"paymentDate"`
+	PaymentAmount float64 `json:"paymentAmount"`
+	PaymentMethod string  `json:"paymentMethod"`
+}
+
+// PaymentInitiationResponse represents the response when initiating a payment
+type PaymentInitiationResponse struct {
+	PaymentSessionID string  `json:"paymentSessionId"`
+	DMPayClientID    string  `json:"dmPayClientId"`
+	CustomerID       string  `json:"customerId"`
+	InvoiceID        string  `json:"invoiceId"`
+	Amount           float64 `json:"amount"`
+	Status           string  `json:"status"`
+	PaymentURL       string  `json:"paymentUrl"`
 }

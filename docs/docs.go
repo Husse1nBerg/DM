@@ -6063,6 +6063,102 @@ const docTemplate = `{
                 }
             }
         },
+        "/invoices/customer": {
+            "get": {
+                "description": "Retrieves invoices for a specific customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Get customer invoices",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Invoice date (format: YYYY-MM-DD)",
+                        "name": "invoiceDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.InvoiceListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoices/pay": {
+            "post": {
+                "description": "Initiates a payment process for a specific invoice",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Initiate payment for invoice",
+                "parameters": [
+                    {
+                        "description": "Payment information",
+                        "name": "payment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.InitiatePaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentInitiationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/marina-usage-history/all": {
             "get": {
                 "description": "Retrieves all marina usage history records, optionally filtered by one or more marinaIds and date range",
@@ -12762,6 +12858,9 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
+                "balance": {
+                    "type": "number"
+                },
                 "dueDate": {
                     "type": "string"
                 },
@@ -12957,6 +13056,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workOrder": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.PaymentInitiationResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "dmPayClientId": {
+                    "type": "string"
+                },
+                "invoiceId": {
+                    "type": "string"
+                },
+                "paymentSessionId": {
+                    "type": "string"
+                },
+                "paymentUrl": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -14557,6 +14682,25 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "john.doe@example.com"
+                }
+            }
+        },
+        "requests.InitiatePaymentRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "customerId",
+                "invoiceId"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "invoiceId": {
+                    "type": "string"
                 }
             }
         },
@@ -16399,6 +16543,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.InvoiceListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.InvoiceDetailed"
+                    }
+                }
+            }
+        },
         "responses.LoginResponse": {
             "description": "Authentication token response containing access token, refresh token and expiration",
             "type": "object",
@@ -17210,6 +17365,14 @@ const docTemplate = `{
                 },
                 "textUsage": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentInitiationResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.PaymentInitiationResponse"
                 }
             }
         },
