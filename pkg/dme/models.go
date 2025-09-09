@@ -43,6 +43,7 @@ type CustomerSearch struct {
 	State       string `json:"state"`
 	Zip         string `json:"zip"`
 	ProspectID  string `json:"prospectId"`
+	Inactive    bool   `json:"inactive"`
 }
 
 // Attachment represents customer attachment information
