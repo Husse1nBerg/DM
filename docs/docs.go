@@ -355,9 +355,9 @@ const docTemplate = `{
         },
         "/ai/detect-form-fields": {
             "post": {
-                "description": "Detect form fields in a PDF page image and return structured JSON",
+                "description": "Detect form fields in an image (supports jpg, jpeg, png) and return structured JSON",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -368,13 +368,11 @@ const docTemplate = `{
                 "summary": "Detect form fields",
                 "parameters": [
                     {
-                        "description": "PDF page image",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.BedrockDetectFormFieldsRequest"
-                        }
+                        "type": "file",
+                        "description": "Image file (jpg, jpeg, png)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -385,7 +383,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad request",
+                        "description": "Bad request - invalid file type or missing file",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -13549,21 +13547,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.BedrockDetectFormFieldsRequest": {
-            "type": "object",
-            "required": [
-                "document",
-                "pageNumber"
-            ],
-            "properties": {
-                "document": {
-                    "type": "string"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                }
-            }
-        },
         "requests.BedrockRewriteRequest": {
             "type": "object",
             "required": [
@@ -15566,19 +15549,43 @@ const docTemplate = `{
         "responses.BedrockDetectFormFieldsResponse": {
             "type": "object",
             "properties": {
-                "fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.Field"
-                    }
-                },
-                "tokens": {
+                "output": {
                     "type": "object",
                     "properties": {
-                        "input": {
+                        "message": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "text": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                "role": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "stopReason": {
+                    "type": "string"
+                },
+                "usage": {
+                    "type": "object",
+                    "properties": {
+                        "inputTokens": {
                             "type": "integer"
                         },
-                        "output": {
+                        "outputTokens": {
+                            "type": "integer"
+                        },
+                        "totalTokens": {
                             "type": "integer"
                         }
                     }
@@ -15648,40 +15655,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.BoatSearch"
                     }
-                }
-            }
-        },
-        "responses.BoundingBox": {
-            "type": "object",
-            "properties": {
-                "h": {
-                    "type": "integer"
-                },
-                "w": {
-                    "type": "integer"
-                },
-                "x": {
-                    "type": "integer"
-                },
-                "y": {
-                    "type": "integer"
-                }
-            }
-        },
-        "responses.BoundingBoxNorm": {
-            "type": "object",
-            "properties": {
-                "h": {
-                    "type": "number"
-                },
-                "w": {
-                    "type": "number"
-                },
-                "x": {
-                    "type": "number"
-                },
-                "y": {
-                    "type": "number"
                 }
             }
         },
@@ -16405,32 +16378,6 @@ const docTemplate = `{
                     "example": "agreement"
                 },
                 "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.Field": {
-            "type": "object",
-            "properties": {
-                "bbox": {
-                    "$ref": "#/definitions/responses.BoundingBox"
-                },
-                "bboxNorm": {
-                    "$ref": "#/definitions/responses.BoundingBoxNorm"
-                },
-                "confidence": {
-                    "type": "number"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string"
-                },
-                "required": {
-                    "type": "boolean"
-                },
-                "type": {
                     "type": "string"
                 }
             }

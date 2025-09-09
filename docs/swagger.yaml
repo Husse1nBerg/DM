@@ -1085,16 +1085,6 @@ definitions:
     - roleId
     - userId
     type: object
-  requests.BedrockDetectFormFieldsRequest:
-    properties:
-      document:
-        type: string
-      pageNumber:
-        type: integer
-    required:
-    - document
-    - pageNumber
-    type: object
   requests.BedrockRewriteRequest:
     properties:
       draft:
@@ -2514,15 +2504,30 @@ definitions:
     type: object
   responses.BedrockDetectFormFieldsResponse:
     properties:
-      fields:
-        items:
-          $ref: '#/definitions/responses.Field'
-        type: array
-      tokens:
+      output:
         properties:
-          input:
+          message:
+            properties:
+              content:
+                items:
+                  properties:
+                    text:
+                      type: string
+                  type: object
+                type: array
+              role:
+                type: string
+            type: object
+        type: object
+      stopReason:
+        type: string
+      usage:
+        properties:
+          inputTokens:
             type: integer
-          output:
+          outputTokens:
+            type: integer
+          totalTokens:
             type: integer
         type: object
     type: object
@@ -2569,28 +2574,6 @@ definitions:
         items:
           $ref: '#/definitions/dme.BoatSearch'
         type: array
-    type: object
-  responses.BoundingBox:
-    properties:
-      h:
-        type: integer
-      w:
-        type: integer
-      x:
-        type: integer
-      "y":
-        type: integer
-    type: object
-  responses.BoundingBoxNorm:
-    properties:
-      h:
-        type: number
-      w:
-        type: number
-      x:
-        type: number
-      "y":
-        type: number
     type: object
   responses.ConfirmTokenResponse:
     properties:
@@ -3106,23 +3089,6 @@ definitions:
         example: agreement
         type: string
       updatedAt:
-        type: string
-    type: object
-  responses.Field:
-    properties:
-      bbox:
-        $ref: '#/definitions/responses.BoundingBox'
-      bboxNorm:
-        $ref: '#/definitions/responses.BoundingBoxNorm'
-      confidence:
-        type: number
-      id:
-        type: string
-      label:
-        type: string
-      required:
-        type: boolean
-      type:
         type: string
     type: object
   responses.InviteResponse:
@@ -4274,15 +4240,15 @@ paths:
   /ai/detect-form-fields:
     post:
       consumes:
-      - application/json
-      description: Detect form fields in a PDF page image and return structured JSON
+      - multipart/form-data
+      description: Detect form fields in an image (supports jpg, jpeg, png) and return
+        structured JSON
       parameters:
-      - description: PDF page image
-        in: body
-        name: request
+      - description: Image file (jpg, jpeg, png)
+        in: formData
+        name: file
         required: true
-        schema:
-          $ref: '#/definitions/requests.BedrockDetectFormFieldsRequest'
+        type: file
       produces:
       - application/json
       responses:
@@ -4291,7 +4257,7 @@ paths:
           schema:
             $ref: '#/definitions/responses.BedrockDetectFormFieldsResponse'
         "400":
-          description: Bad request
+          description: Bad request - invalid file type or missing file
           schema:
             $ref: '#/definitions/responses.Error'
         "500":

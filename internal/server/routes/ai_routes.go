@@ -12,6 +12,19 @@ func RegisterAIRoutes(server *s.Server, permissionProtected *echo.Group) {
 
 	// Message routes
 	ai := permissionProtected.Group("/ai")
+
+	// Add debug middleware
+	ai.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			server.Logger.Zap.Info("\n\nAI Route Debug - Request received",
+				"path", c.Path(),
+				"method", c.Request().Method,
+				"content_type", c.Request().Header.Get("Content-Type"),
+				"content_length", c.Request().ContentLength)
+			return next(c)
+		}
+	})
+
 	ai.POST("/compose-message", aiHandler.RewriteHandler)
 	ai.POST("/detect-form-fields", aiHandler.DetectFormFieldsHandler)
 }
