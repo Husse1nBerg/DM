@@ -152,6 +152,9 @@ func RegisterRoutes(s *s.Server) {
 	// Message routes
 	RegisterMessageRoutes(s, permissionProtected)
 
+	// AI routes
+	RegisterAIRoutes(s, permissionProtected)
+
 	// Marina Usage History routes
 	RegisterMarinaUsageHistoryRoutes(s, protected)
 
