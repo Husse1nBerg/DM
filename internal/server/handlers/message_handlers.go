@@ -352,6 +352,13 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	if err != nil {
 		logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", req.MarinaID, "error", err)
 	} else {
+		// Get marina to get organization ID
+		marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+		if err != nil {
+			logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+		}
+
 		// Create notifications for marina staff using smart notification system
 		emailData := &notifications.EmailNotificationData{
 			To:      []string{req.Contact},
@@ -361,7 +368,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		results, err := h.notificationService.CreateBulkMessageNotifications(
 			c.Request().Context(),
 			marinaUsers,
-			req.MarinaID, // Using marina ID as organization ID for now
+			marina.OrganizationID, // organization ID from marina
 			req.MarinaID,
 			req.Body,       // Message content preview
 			req.Sender,     // Customer name
@@ -655,10 +662,17 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 			}
 		}
 
+		// Get marina to get organization ID
+		marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+		if err != nil {
+			logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+		}
+
 		results, err := h.notificationService.CreateBulkMessageNotificationsForCustomers(
 			c.Request().Context(),
 			customers,
-			req.MarinaID, // Using marina ID as organization ID for now
+			marina.OrganizationID, // Using marina organization ID
 			req.MarinaID,
 			req.Body,
 			req.Sender,
