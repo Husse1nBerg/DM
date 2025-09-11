@@ -481,9 +481,10 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 	if reqStruct.Motors != nil {
 		existingBoat.Motors = reqStruct.Motors
 	}
-	if reqStruct.BillingCodes != nil {
-		existingBoat.BillingCodes = reqStruct.BillingCodes
-	}
+	// BillingCodes are intentionally NOT updated to preserve existing billing configuration
+	// if reqStruct.BillingCodes != nil {
+	//	existingBoat.BillingCodes = reqStruct.BillingCodes
+	// }
 	if reqStruct.BoatDescriptionCodes != nil {
 		existingBoat.BoatDescriptionCodes = reqStruct.BoatDescriptionCodes
 	}
