@@ -49,7 +49,7 @@ func NewNotificationService(database *db.Queries, redisClient *redis.Client, log
 }
 
 // CreateNotification creates a new notification and optionally sends it in real-time
-func (s *NotificationService) CreateNotification(ctx context.Context, req requests.CreateNotificationRequest, sendRealTime bool) (*db.Notification, error) {
+func (s *NotificationService) CreateNotificationService(ctx context.Context, req requests.CreateNotificationRequest, sendRealTime bool) (*db.Notification, error) {
 	// Validate the request
 	if err := req.Validate(); err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
@@ -168,14 +168,14 @@ func (s *NotificationService) CreateNotification(ctx context.Context, req reques
 	}
 
 	// Send real-time notification if requested
-	if sendRealTime {
-		if err := s.SendRealTimeNotification(ctx, notification); err != nil {
-			s.logger.Zap.Warnw("Failed to send real-time notification",
-				"error", err,
-				"notificationID", notification.ID)
-			// Don't fail the entire operation if real-time sending fails
-		}
-	}
+	// if sendRealTime {
+	// 	if err := s.SendRealTimeNotification(ctx, notification); err != nil {
+	// 		s.logger.Zap.Warnw("Failed to send real-time notification",
+	// 			"error", err,
+	// 			"notificationID", notification.ID)
+	// 		// Don't fail the entire operation if real-time sending fails
+	// 	}
+	// }
 
 	return &notification, nil
 }
@@ -454,7 +454,9 @@ func (s *NotificationService) GetNotificationsByType(ctx context.Context, userID
 // CreateMessageNotification creates a notification for new messages
 func (s *NotificationService) CreateMessageNotification(
 	ctx context.Context,
-	userID, organizationID, marinaID uuid.UUID,
+	userID uuid.UUID,
+	organizationID uuid.UUID,
+	marinaID uuid.UUID,
 	messageContent string,
 	sender string,
 	customerID string,
@@ -480,7 +482,7 @@ func (s *NotificationService) CreateMessageNotification(
 		Priority:       nil, // Use default priority
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
 }
 
@@ -506,7 +508,7 @@ func (s *NotificationService) CreateESignNotification(ctx context.Context, userI
 		Priority:       nil, // Use default priority
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
 }
 
@@ -530,7 +532,7 @@ func (s *NotificationService) CreateInviteNotification(ctx context.Context, user
 		Priority:       utils.Pointer("high"), // Invites are high priority
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
 }
 
@@ -546,7 +548,7 @@ func (s *NotificationService) CreateSystemNotification(ctx context.Context, user
 		Priority:       &priority,
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
 }
 
@@ -665,7 +667,7 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 		Priority:       req.Priority,
 	}
 
-	notification, err := s.CreateNotification(ctx, notificationReq, true)
+	notification, err := s.CreateNotificationService(ctx, notificationReq, true)
 	if err != nil {
 		s.logger.Zap.Warnw("Failed to create default system notification",
 			"userID", req.UserID,
@@ -839,7 +841,7 @@ func (s *NotificationService) sendSystemNotification(ctx context.Context, req Sm
 		Priority:       req.Priority,
 	}
 
-	notification, err := s.CreateNotification(ctx, notificationReq, true)
+	notification, err := s.CreateNotificationService(ctx, notificationReq, true)
 	if err != nil {
 		s.logger.Zap.Warnw("Failed to create system notification",
 			"userID", req.UserID,
@@ -962,7 +964,7 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 		Priority:       req.Priority,
 	}
 
-	notification, err := s.CreateNotification(ctx, notificationReq, true)
+	notification, err := s.CreateNotificationService(ctx, notificationReq, true)
 	if err != nil {
 		s.logger.Zap.Warnw("Failed to create multi-channel notification",
 			"userID", req.UserID,
