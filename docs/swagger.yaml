@@ -559,6 +559,8 @@ definitions:
     properties:
       amount:
         type: number
+      balance:
+        type: number
       dueDate:
         type: string
       id:
@@ -688,6 +690,23 @@ definitions:
       type:
         type: string
       workOrder:
+        type: string
+    type: object
+  dme.PaymentInitiationResponse:
+    properties:
+      amount:
+        type: number
+      customerId:
+        type: string
+      dmPayClientId:
+        type: string
+      invoiceId:
+        type: string
+      paymentSessionId:
+        type: string
+      paymentUrl:
+        type: string
+      status:
         type: string
     type: object
   dme.Rate:
@@ -1805,6 +1824,19 @@ definitions:
         type: string
     required:
     - email
+    type: object
+  requests.InitiatePaymentRequest:
+    properties:
+      amount:
+        type: number
+      customerId:
+        type: string
+      invoiceId:
+        type: string
+    required:
+    - amount
+    - customerId
+    - invoiceId
     type: object
   requests.LinkDMESysIDRequest:
     properties:
@@ -3102,6 +3134,13 @@ definitions:
       valid:
         type: boolean
     type: object
+  responses.InvoiceListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.InvoiceDetailed'
+        type: array
+    type: object
   responses.LoginResponse:
     description: Authentication token response containing access token, refresh token
       and expiration
@@ -3691,6 +3730,11 @@ definitions:
         type: integer
       textUsage:
         type: integer
+    type: object
+  responses.PaymentInitiationResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.PaymentInitiationResponse'
     type: object
   responses.RedisGetResponse:
     properties:
@@ -7950,6 +7994,69 @@ paths:
       summary: Health check
       tags:
       - Generic
+  /invoices/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves invoices for a specific customer
+      parameters:
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      - description: 'Invoice date (format: YYYY-MM-DD)'
+        in: query
+        name: invoiceDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.InvoiceListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Get customer invoices
+      tags:
+      - Invoices
+  /invoices/pay:
+    post:
+      consumes:
+      - application/json
+      description: Initiates a payment process for a specific invoice
+      parameters:
+      - description: Payment information
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/requests.InitiatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentInitiationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Initiate payment for invoice
+      tags:
+      - Invoices
   /marina-usage-history/{marinaId}/date-range:
     get:
       description: Retrieves marina usage history records within a specified date

@@ -149,6 +149,9 @@ func RegisterRoutes(s *s.Server) {
 	// Work Order routes
 	RegisterWorkOrderRoutes(s, permissionProtected)
 
+	// Invoice routes
+	RegisterInvoiceRoutes(s, permissionProtected)
+
 	// Message routes
 	RegisterMessageRoutes(s, permissionProtected)
 
