@@ -202,10 +202,33 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["GET /api/v1/work-orders/customer"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["GET /api/v1/work-orders/operations"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["GET /api/v1/work-orders/completed"] = RoutePermission{Object: "work_orders", Action: "read"}
+	routeMap["GET /api/v1/work-orders/sublets"] = RoutePermission{Object: "work_orders", Action: "read"}
+	routeMap["GET /api/v1/work-orders/group-descriptions"] = RoutePermission{Object: "work_orders", Action: "read"}
+	routeMap["GET /api/v1/work-orders/time-entries"] = RoutePermission{Object: "work_orders", Action: "read"}
+	routeMap["GET /api/v1/work-orders/new-or-changed"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["POST /api/v1/work-orders/create"] = RoutePermission{Object: "work_orders", Action: "create"}
 	routeMap["POST /api/v1/work-orders/update"] = RoutePermission{Object: "work_orders", Action: "write"}
 	routeMap["POST /api/v1/work-orders/create-from-estimate"] = RoutePermission{Object: "work_orders", Action: "create"}
 	routeMap["POST /api/v1/work-orders/delete-operation"] = RoutePermission{Object: "work_orders", Action: "delete"}
+	routeMap["POST /api/v1/work-orders/submit-part-entry"] = RoutePermission{Object: "work_orders", Action: "write"}
+	routeMap["POST /api/v1/work-orders/submit-time-entry"] = RoutePermission{Object: "work_orders", Action: "write"}
+	routeMap["POST /api/v1/work-orders/retrieve-list"] = RoutePermission{Object: "work_orders", Action: "read"}
+
+	// Estimate routes (service management)
+	routeMap["GET /api/v1/estimates/customer"] = RoutePermission{Object: "estimates", Action: "read"}
+	routeMap["GET /api/v1/estimates/retrieve"] = RoutePermission{Object: "estimates", Action: "read"}
+	routeMap["GET /api/v1/estimates/sublets"] = RoutePermission{Object: "estimates", Action: "read"}
+	routeMap["GET /api/v1/estimates/search"] = RoutePermission{Object: "estimates", Action: "read"}
+	routeMap["POST /api/v1/estimates/delete-operation"] = RoutePermission{Object: "estimates", Action: "delete"}
+	routeMap["POST /api/v1/estimates/retrieve-list"] = RoutePermission{Object: "estimates", Action: "read"}
+	routeMap["POST /api/v1/estimates/update"] = RoutePermission{Object: "estimates", Action: "write"}
+
+	// Service routes (general service management)
+	routeMap["GET /api/v1/service/opcodes/new-or-changed"] = RoutePermission{Object: "service_management", Action: "read"}
+	routeMap["GET /api/v1/service/work-order-category-codes"] = RoutePermission{Object: "service_management", Action: "read"}
+	routeMap["GET /api/v1/service/operation-category-codes"] = RoutePermission{Object: "service_management", Action: "read"}
+	routeMap["GET /api/v1/service/operation-descriptions"] = RoutePermission{Object: "service_management", Action: "read"}
+	routeMap["GET /api/v1/service/technicians"] = RoutePermission{Object: "service_management", Action: "read"}
 
 	// Gallery routes (vessel and marina management)
 	routeMap["POST /api/v1/gallery/marina"] = RoutePermission{Object: "marina_gallery", Action: "write"}

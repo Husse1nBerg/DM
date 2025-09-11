@@ -125,3 +125,91 @@ func ConvertCompletedWorkOrders(dmeResponse []dme.WorkOrder) *WorkOrderCompleted
 		Data: dmeResponse,
 	}
 }
+
+// WorkOrderSubletsResponse represents a list of work order sublets
+type WorkOrderSubletsResponse struct {
+	Data []interface{} `json:"data"`
+}
+
+// WorkOrderGroupDescriptionsResponse represents a list of work order group descriptions
+type WorkOrderGroupDescriptionsResponse struct {
+	Data []interface{} `json:"data"`
+}
+
+// WorkOrderPartEntryResponse represents the response from submitting a part entry
+type WorkOrderPartEntryResponse struct {
+	Data interface{} `json:"data"`
+	Result string `json:"result"`
+	Message string `json:"message"`
+}
+
+// WorkOrderTimeEntryResponse represents the response from submitting a time entry
+type WorkOrderTimeEntryResponse struct {
+	Data interface{} `json:"data"`
+	Result string `json:"result"`
+	Message string `json:"message"`
+}
+
+// WorkOrderTimeEntriesResponse represents a list of time entries
+type WorkOrderTimeEntriesResponse struct {
+	Data interface{} `json:"data"`
+}
+
+// WorkOrderListNewOrChangedResponse represents a paginated list of new or changed work orders
+type WorkOrderListNewOrChangedResponse struct {
+	Data        []dme.WorkOrder `json:"data"`
+	Total       int64           `json:"total" example:"100"`
+	PerPage     int32           `json:"perPage" example:"10"`
+	CurrentPage int32           `json:"currentPage" example:"1"`
+	LastPage    int32           `json:"lastPage" example:"10"`
+}
+
+// ConvertWorkOrderSublets converts a slice of interface{} to WorkOrderSubletsResponse
+func ConvertWorkOrderSublets(dmeResponse []interface{}) *WorkOrderSubletsResponse {
+	return &WorkOrderSubletsResponse{
+		Data: dmeResponse,
+	}
+}
+
+// ConvertWorkOrderGroupDescriptions converts a slice of interface{} to WorkOrderGroupDescriptionsResponse
+func ConvertWorkOrderGroupDescriptions(dmeResponse []interface{}) *WorkOrderGroupDescriptionsResponse {
+	return &WorkOrderGroupDescriptionsResponse{
+		Data: dmeResponse,
+	}
+}
+
+// ConvertWorkOrderPartEntry converts interface{} to WorkOrderPartEntryResponse
+func ConvertWorkOrderPartEntry(dmeResponse *interface{}) *WorkOrderPartEntryResponse {
+	return &WorkOrderPartEntryResponse{
+		Data: *dmeResponse,
+		Result: "success",
+		Message: "Part entry submitted successfully",
+	}
+}
+
+// ConvertWorkOrderTimeEntry converts interface{} to WorkOrderTimeEntryResponse
+func ConvertWorkOrderTimeEntry(dmeResponse *interface{}) *WorkOrderTimeEntryResponse {
+	return &WorkOrderTimeEntryResponse{
+		Data: *dmeResponse,
+		Result: "success",
+		Message: "Time entry submitted successfully",
+	}
+}
+
+// ConvertWorkOrderTimeEntries converts interface{} to WorkOrderTimeEntriesResponse
+func ConvertWorkOrderTimeEntries(dmeResponse *interface{}) *WorkOrderTimeEntriesResponse {
+	return &WorkOrderTimeEntriesResponse{
+		Data: *dmeResponse,
+	}
+}
+
+// ConvertWorkOrderListNewOrChanged converts DME WorkOrderList to WorkOrderListNewOrChangedResponse
+func ConvertWorkOrderListNewOrChanged(dmeResponse *dme.WorkOrderList) *WorkOrderListNewOrChangedResponse {
+	return &WorkOrderListNewOrChangedResponse{
+		Data:        dmeResponse.Content,
+		Total:       int64(dmeResponse.MaxPages * dmeResponse.PageSize),
+		PerPage:     int32(dmeResponse.PageSize),
+		CurrentPage: int32(dmeResponse.CurrentPage),
+		LastPage:    int32(dmeResponse.MaxPages),
+	}
+}

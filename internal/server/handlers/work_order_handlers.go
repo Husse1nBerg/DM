@@ -655,3 +655,382 @@ func (h *WorkOrderHandler) DeleteWorkOrderOperation(c echo.Context) error {
 	// Return the response directly
 	return c.JSON(http.StatusOK, dmeResponse)
 }
+
+// @Summary List work order sublets
+// @Description Retrieves sublet purchase orders for work orders
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.WorkOrderSubletsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/sublets [get]
+func (h *WorkOrderHandler) ListWorkOrderSublets(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.ListWorkOrderSublets(ctx, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to list work order sublets",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderSublets(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve work order group descriptions
+// @Description Retrieves a list of work order group descriptions
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.WorkOrderGroupDescriptionsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/group-descriptions [get]
+func (h *WorkOrderHandler) RetrieveWorkOrderGroupDescriptions(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveWorkOrderGroupDescriptions(ctx, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order group descriptions",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderGroupDescriptions(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit work order part entry
+// @Description Submits a part entry for a work order
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param partEntry body requests.WorkOrderPartEntryRequest true "Part entry information"
+// @Success 200 {object} responses.WorkOrderPartEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/submit-part-entry [post]
+func (h *WorkOrderHandler) SubmitWorkOrderPartEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.WorkOrderPartEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	partEntryData := map[string]interface{}{
+		"workOrderId": req.WorkOrderID,
+		"partNumber":  req.PartNumber,
+		"quantity":    req.Quantity,
+		"unitPrice":   req.UnitPrice,
+		"description": req.Description,
+		"operationId": req.OperationID,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitWorkOrderPartEntry(ctx, partEntryData, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit work order part entry",
+			zap.Error(err),
+			zap.String("workOrderId", req.WorkOrderID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderPartEntry(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit work order time entry
+// @Description Submits a labor time entry for a technician
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param timeEntry body requests.WorkOrderTimeEntryRequest true "Time entry information"
+// @Success 200 {object} responses.WorkOrderTimeEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/submit-time-entry [post]
+func (h *WorkOrderHandler) SubmitWorkOrderTimeEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.WorkOrderTimeEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	timeEntryData := map[string]interface{}{
+		"workOrderId":  req.WorkOrderID,
+		"operationId":  req.OperationID,
+		"technicianId": req.TechnicianID,
+		"hours":        req.Hours,
+		"rate":         req.Rate,
+		"date":         req.Date,
+		"description":  req.Description,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitWorkOrderTimeEntry(ctx, timeEntryData, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit work order time entry",
+			zap.Error(err),
+			zap.String("workOrderId", req.WorkOrderID))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderTimeEntry(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary List work order time entries
+// @Description Retrieves time entries for work orders
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param AsOfDate query string true "As of date"
+// @Param page query int true "Page number" minimum(1)
+// @Param pageSize query int true "Page size" minimum(1) maximum(100)
+// @Success 200 {object} responses.WorkOrderTimeEntriesResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/time-entries [get]
+func (h *WorkOrderHandler) ListWorkOrderTimeEntries(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrderListTimeEntryRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.ListWorkOrderTimeEntries(ctx, req.AsOfDate, req.Page, req.PageSize, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to list work order time entries",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderTimeEntries(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary List new or changed work orders
+// @Description Searches for work orders created or changed as of a date
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param AsOfDate query string true "As of date"
+// @Param page query int true "Page number" minimum(1)
+// @Param pageSize query int true "Page size" minimum(1) maximum(100)
+// @Success 200 {object} responses.WorkOrderListNewOrChangedResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/new-or-changed [get]
+func (h *WorkOrderHandler) ListNewOrChangedWorkOrders(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrderListNewOrChangedRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.ListNewOrChangedWorkOrders(ctx, req.AsOfDate, req.Page, req.PageSize, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to list new or changed work orders",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderListNewOrChanged(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve work orders list
+// @Description Retrieves a list of work orders with detail or summary information
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param listRequest body requests.WorkOrderRetrieveListRequest true "List request parameters"
+// @Success 200 {object} responses.WorkOrderListResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/retrieve-list [post]
+func (h *WorkOrderHandler) RetrieveWorkOrdersList(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.WorkOrderRetrieveListRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	listRequestData := map[string]interface{}{
+		"withDetail": req.WithDetail,
+		"status":     req.Status,
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveWorkOrdersList(ctx, listRequestData, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work orders list",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderList(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
