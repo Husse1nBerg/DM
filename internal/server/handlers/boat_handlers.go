@@ -481,10 +481,13 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 	if reqStruct.Motors != nil {
 		existingBoat.Motors = reqStruct.Motors
 	}
+	// BillingCodes are intentionally set to empty array to clear existing billing configuration
+	existingBoat.BillingCodes = []dme.BillingCode{}
 	// BillingCodes are intentionally NOT updated to preserve existing billing configuration
 	// if reqStruct.BillingCodes != nil {
 	//	existingBoat.BillingCodes = reqStruct.BillingCodes
 	// }
+
 	if reqStruct.BoatDescriptionCodes != nil {
 		existingBoat.BoatDescriptionCodes = reqStruct.BoatDescriptionCodes
 	}
