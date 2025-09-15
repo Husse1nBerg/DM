@@ -601,20 +601,20 @@ func (s *NotificationService) SendSmartNotification(ctx context.Context, req Sma
 	if err != nil {
 		// Check if it's a context timeout error
 		if ctx.Err() == context.DeadlineExceeded {
-			s.logger.Zap.Warnw("Notification preference lookup timed out, using default",
+			s.logger.Zap.Warnw("Notification preference lookup timed out, notifications disabled by default",
 				"userID", req.UserID,
 				"type", req.Type,
 				"error", err)
-			return s.sendDefaultNotification(ctx, req)
+			return result, nil
 		}
 
-		// If no preference found (no rows), use default (push only)
-		// This is the expected case for new users or users who haven't set preferences
-		s.logger.Zap.Debugw("No notification preference found, using default",
+		// If no preference found (no rows), respect user's choice to not receive notifications
+		// This implements an opt-in approach where users must explicitly enable notifications
+		s.logger.Zap.Debugw("No notification preference found, notifications disabled by default",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
-		return s.sendDefaultNotification(ctx, req)
+		return result, nil
 	}
 
 	// Check if notifications are enabled for this user and type

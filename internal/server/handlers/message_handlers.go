@@ -10,7 +10,6 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/notifications"
-	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/telgorithm"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
@@ -269,7 +268,6 @@ func (h *MessageHandler) ListMessagesCustomerHandler(c echo.Context) error {
 func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	// Parse and validate request
 	logger := h.server.Logger
-	cfg := h.server.Config
 
 	req := new(requests.CreateMessageRequest)
 	if err := c.Bind(req); err != nil {
@@ -324,24 +322,8 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		}
 	}
 
-	// Create email data
-	email := sendgrid.MessageTemplateData{
-		Content:   req.Body,
-		Recipient: req.Recipient,
-		Sender:    req.Sender,
-		HomeURL:   cfg.App.HomeURL(),
-	}
-	to := []string{req.Contact}
-	subject := "Message from " + req.Sender
-
-	// Send email asynchronously
-	taskID, resultChan, err := h.server.SendGrid.SendMessageEmail(to, subject, email)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-	}
-
-	// Log the task
-	logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Recipient)
+	// Email sending is now handled by the smart notification system below
+	// This ensures user notification preferences are respected
 
 	// Create notification for marina staff about new customer message
 	// Find marina users to notify
@@ -385,46 +367,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		}
 	}
 
-	// Process the result asynchronously to log success/failure and update message usage
-	go func() {
-		result := <-resultChan
-		if result.Status == telgorithm.StatusSent {
-			logger.Zap.Infow("Email sent successfully",
-				"to", req.Contact,
-				"task_id", result.ID.String(),
-				"message_id", result.ID,
-				"status", result.Status)
-			// Use background context for DB update
-			if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
-				ID:     message.ID,
-				Status: "sent",
-			}); err != nil {
-				logger.Zap.Errorw("Failed to update message status",
-					"message_id", message.ID,
-					"error", err)
-			}
-			// Increment message usage count
-			if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
-				logger.Zap.Errorw("Failed to update message usage",
-					"marina_id", req.MarinaID,
-					"error", err)
-			}
-		} else {
-			logger.Zap.Errorw("Failed to send email",
-				"to", req.Contact,
-				"task_id", result.ID.String(),
-				"error", result.Error)
-			// Use background context for DB update
-			if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
-				ID:     message.ID,
-				Status: "failed",
-			}); err != nil {
-				logger.Zap.Errorw("Failed to update message status",
-					"message_id", message.ID,
-					"error", err)
-			}
-		}
-	}()
+	// Message status and usage tracking is now handled by the smart notification system
 
 	response := responses.NewMessageResponseSuccess(message)
 	return c.JSON(http.StatusCreated, response)
@@ -447,7 +390,6 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	// Parse and validate request
 	logger := h.server.Logger
-	cfg := h.server.Config
 	req := new(requests.CreateMessageRequest)
 	if err := c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -560,68 +502,8 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 			}
 		}()
 	} else if req.Type == "email" {
-		var taskID uuid.UUID
-		var resultChan <-chan sendgrid.EmailStatus
-
-		// Create email data
-		email := sendgrid.MessageTemplateData{
-			Content:   req.Body,
-			Recipient: req.Recipient,
-			Sender:    req.Sender,
-			HomeURL:   cfg.App.HomeURL(),
-		}
-		to := []string{req.Contact}
-		subject := "Message from " + req.Sender
-
-		// Send email asynchronously
-		taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
-		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-		}
-
-		// Log the task
-		logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Recipient)
-
-		// Process the result asynchronously to log success/failure and update message usage
-		go func() {
-			result := <-resultChan
-			if result.Status == telgorithm.StatusSent {
-				logger.Zap.Infow("Email sent successfully",
-					"to", req.Contact,
-					"task_id", result.ID.String(),
-					"message_id", result.ID,
-					"status", result.Status)
-				// Use background context for DB update
-				if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
-					ID:     message.ID,
-					Status: "sent",
-				}); err != nil {
-					logger.Zap.Errorw("Failed to update message status",
-						"message_id", message.ID,
-						"error", err)
-				}
-				// Increment message usage count
-				if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
-					logger.Zap.Errorw("Failed to update message usage",
-						"marina_id", req.MarinaID,
-						"error", err)
-				}
-			} else {
-				logger.Zap.Errorw("Failed to send email",
-					"to", req.Contact,
-					"task_id", result.ID.String(),
-					"error", result.Error)
-				// Use background context for DB update
-				if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
-					ID:     message.ID,
-					Status: "failed",
-				}); err != nil {
-					logger.Zap.Errorw("Failed to update message status",
-						"message_id", message.ID,
-						"error", err)
-				}
-			}
-		}()
+		// Email sending is now handled by the smart notification system below
+		// This ensures user notification preferences are respected
 	} else {
 		// For internal messages, just mark as sent
 		if err := queries.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
