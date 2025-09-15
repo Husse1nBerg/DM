@@ -633,59 +633,67 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				"error", err)
 		}
 	}
-	// Get the user id of the customer
-	customers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
-		MarinaID:   req.MarinaID,
-		CustomerID: &req.CustomerID,
-	})
-	if err != nil {
-		logger.Zap.Errorw("Failed to get customer users", "error", err)
-	}
-	if len(customers) > 0 {
-		// Create notification for customer users about new marina message using smart notification system
-		var emailData *notifications.EmailNotificationData
 
-		// Prepare delivery data based on message type
-		if req.Type == "email" {
-			emailData = &notifications.EmailNotificationData{
-				To:      []string{req.Contact},
-				Subject: "Message from " + req.Sender,
-			}
-		}
-
-		// Get marina to get organization ID
-		marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	// Only create notifications for external-facing messages (not internal notes)
+	if req.Type != "internal" {
+		// Get the user id of the customer
+		customers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
+			MarinaID:   req.MarinaID,
+			CustomerID: &req.CustomerID,
+		})
 		if err != nil {
-			logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+			logger.Zap.Errorw("Failed to get customer users", "error", err)
 		}
+		if len(customers) > 0 {
+			// Create notification for customer users about new marina message using smart notification system
+			var emailData *notifications.EmailNotificationData
 
-		results, err := h.notificationService.CreateBulkMessageNotificationsForCustomers(
-			c.Request().Context(),
-			customers,
-			marina.OrganizationID, // Using marina organization ID
-			req.MarinaID,
-			req.Body,
-			req.Sender,
-			req.CustomerID,
-			emailData,
-		)
-		if err != nil {
-			logger.Zap.Errorw("Failed to create bulk message notifications for customers", "error", err)
-		} else {
-			// Log notification results
-			for _, result := range results {
-				if len(result.Errors) > 0 {
-					logger.Zap.Warnw("Customer notification delivery had errors",
-						"user_id", result.UserID,
-						"errors", result.Errors)
-				} else {
-					logger.Zap.Infow("Customer notification delivered successfully",
-						"user_id", result.UserID,
-						"system", result.SystemDelivered,
-						"email", result.EmailDelivered)
+			// Prepare delivery data based on message type
+			if req.Type == "email" {
+				emailData = &notifications.EmailNotificationData{
+					To:      []string{req.Contact},
+					Subject: "Message from " + req.Sender,
 				}
 			}
+
+			// Get marina to get organization ID
+			marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+			if err != nil {
+				logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+			}
+
+			results, err := h.notificationService.CreateBulkMessageNotificationsForCustomers(
+				c.Request().Context(),
+				customers,
+				marina.OrganizationID, // Using marina organization ID
+				req.MarinaID,
+				req.Body,
+				req.Sender,
+				req.CustomerID,
+				emailData,
+			)
+			if err != nil {
+				logger.Zap.Errorw("Failed to create bulk message notifications for customers", "error", err)
+			} else {
+				// Log notification results
+				for _, result := range results {
+					if len(result.Errors) > 0 {
+						logger.Zap.Warnw("Customer notification delivery had errors",
+							"user_id", result.UserID,
+							"errors", result.Errors)
+					} else {
+						logger.Zap.Infow("Customer notification delivered successfully",
+							"user_id", result.UserID,
+							"system", result.SystemDelivered,
+							"email", result.EmailDelivered)
+					}
+				}
+			}
+		} else {
+			logger.Zap.Debugw("Skipping customer notifications for internal message",
+				"message_id", message.ID,
+				"customer_id", req.CustomerID)
 		}
 	}
 	response := responses.NewMessageResponseSuccess(message)
