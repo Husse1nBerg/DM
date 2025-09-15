@@ -5201,6 +5201,345 @@
                 }
             }
         },
+        "/estimates/customer": {
+            "get": {
+                "description": "Retrieves a list of basic estimate information for a specific customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "List estimates for customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "custId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Status filter",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location code list",
+                        "name": "locationCodeList",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateShortListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/delete-operation": {
+            "post": {
+                "description": "Delete an operation from an estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Delete estimate operation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "WorkOrder",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code to delete",
+                        "name": "Operation",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateDeleteOperationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/retrieve": {
+            "get": {
+                "description": "Retrieves a single estimate with detail or summary information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "Id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Include detail information",
+                        "name": "Detail",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/retrieve-list": {
+            "post": {
+                "description": "Retrieves a list of estimates with detail or summary information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimates list",
+                "parameters": [
+                    {
+                        "description": "List request parameters",
+                        "name": "listRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.EstimateRetrieveListRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/search": {
+            "get": {
+                "description": "Search for estimates based on provided criteria",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Search estimates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search string",
+                        "name": "SearchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "true",
+                            "false"
+                        ],
+                        "type": "string",
+                        "description": "Direct hit flag",
+                        "name": "DirectHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/sublets": {
+            "get": {
+                "description": "Retrieves sublet purchase orders for estimates",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "List estimate sublets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateSubletsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/update": {
+            "post": {
+                "description": "Create a new or update an existing estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Update estimate",
+                "parameters": [
+                    {
+                        "description": "Estimate information",
+                        "name": "estimate",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.EstimateUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/external/dme/esign/documents": {
             "post": {
                 "description": "Creates a new e-signature document for the DME system",
@@ -10210,6 +10549,245 @@
                 }
             }
         },
+        "/service/opcodes/new-or-changed": {
+            "get": {
+                "description": "Searches for operation codes created or changed as of a date",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Service"
+                ],
+                "summary": "List new or changed operation codes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "As of date",
+                        "name": "AsOfDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ServiceOpCodesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/operation-category-codes": {
+            "get": {
+                "description": "Returns a list of operation category codes for the page and page size specified",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Service"
+                ],
+                "summary": "List operation category codes",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ServiceOPCategoryCodesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/operation-descriptions": {
+            "get": {
+                "description": "Retrieve the operation descriptions from the opcode template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Service"
+                ],
+                "summary": "Retrieve operation descriptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ServiceOperationDescriptionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/technicians": {
+            "get": {
+                "description": "Retrieves a list of technician records",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Service"
+                ],
+                "summary": "List technicians",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ServiceTechniciansResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/work-order-category-codes": {
+            "get": {
+                "description": "Returns a list of work order category codes for the page and page size specified",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Service"
+                ],
+                "summary": "List work order category codes",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ServiceWOCategoryCodesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sms/send": {
             "post": {
                 "description": "Send SMS message to one or more recipients",
@@ -11773,6 +12351,41 @@
                 }
             }
         },
+        "/work-orders/group-descriptions": {
+            "get": {
+                "description": "Retrieves a list of work order group descriptions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order group descriptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderGroupDescriptionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/list": {
             "get": {
                 "description": "Retrieves a paginated list of work orders",
@@ -11810,6 +12423,67 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.WorkOrderListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/new-or-changed": {
+            "get": {
+                "description": "Searches for work orders created or changed as of a date",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "List new or changed work orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "As of date",
+                        "name": "AsOfDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderListNewOrChangedResponse"
                         }
                     },
                     "400": {
@@ -11906,6 +12580,52 @@
                 }
             }
         },
+        "/work-orders/retrieve-list": {
+            "post": {
+                "description": "Retrieves a list of work orders with detail or summary information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work orders list",
+                "parameters": [
+                    {
+                        "description": "List request parameters",
+                        "name": "listRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderRetrieveListRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/search": {
             "get": {
                 "description": "Searches for work orders based on search string",
@@ -11940,6 +12660,194 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.WorkOrderSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/sublets": {
+            "get": {
+                "description": "Retrieves sublet purchase orders for work orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "List work order sublets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderSubletsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/submit-part-entry": {
+            "post": {
+                "description": "Submits a part entry for a work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Submit work order part entry",
+                "parameters": [
+                    {
+                        "description": "Part entry information",
+                        "name": "partEntry",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderPartEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderPartEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/submit-time-entry": {
+            "post": {
+                "description": "Submits a labor time entry for a technician",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Submit work order time entry",
+                "parameters": [
+                    {
+                        "description": "Time entry information",
+                        "name": "timeEntry",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.WorkOrderTimeEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderTimeEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/time-entries": {
+            "get": {
+                "description": "Retrieves time entries for work orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "List work order time entries",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "As of date",
+                        "name": "AsOfDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderTimeEntriesResponse"
                         }
                     },
                     "400": {
@@ -12700,6 +13608,9 @@
                 },
                 "email": {
                     "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -14665,6 +15576,80 @@
                 }
             }
         },
+        "requests.EstimateRetrieveListRequest": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                },
+                "withDetail": {
+                    "description": "Add fields as needed based on API requirements",
+                    "type": "boolean"
+                }
+            }
+        },
+        "requests.EstimateUpdateRequest": {
+            "type": "object",
+            "required": [
+                "estId"
+            ],
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "custId": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estId": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operationCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.OperationCode"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
@@ -15528,6 +16513,85 @@
                     "type": "string"
                 },
                 "woId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.WorkOrderPartEntryRequest": {
+            "type": "object",
+            "required": [
+                "partNumber",
+                "quantity",
+                "unitPrice",
+                "workOrderId"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "operationId": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "unitPrice": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.WorkOrderRetrieveListRequest": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                },
+                "withDetail": {
+                    "description": "Add fields as needed based on API requirements",
+                    "type": "boolean"
+                }
+            }
+        },
+        "requests.WorkOrderTimeEntryRequest": {
+            "type": "object",
+            "required": [
+                "date",
+                "hours",
+                "operationId",
+                "rate",
+                "technicianId",
+                "workOrderId"
+            ],
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "operationId": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "technicianId": {
+                    "type": "string"
+                },
+                "workOrderId": {
                     "type": "string"
                 }
             }
@@ -16519,6 +17583,91 @@
                 }
             }
         },
+        "responses.EstimateDeleteOperationResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.EstimateListResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrder"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "responses.EstimateResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.WorkOrder"
+                }
+            }
+        },
+        "responses.EstimateSearchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderSearch"
+                    }
+                }
+            }
+        },
+        "responses.EstimateShortListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderShort"
+                    }
+                }
+            }
+        },
+        "responses.EstimateSubletsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
+        "responses.EstimateUpdateResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.WorkOrder"
+                }
+            }
+        },
         "responses.InviteResponse": {
             "type": "object",
             "properties": {
@@ -17507,6 +18656,36 @@
                 }
             }
         },
+        "responses.ServiceOPCategoryCodesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "responses.ServiceOpCodesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "responses.ServiceOperationDescriptionsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "responses.ServiceTechniciansResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "responses.ServiceWOCategoryCodesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
         "responses.UnreadCountResponse": {
             "description": "Unread notification count",
             "type": "object",
@@ -17761,6 +18940,42 @@
                 }
             }
         },
+        "responses.WorkOrderGroupDescriptionsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
+        "responses.WorkOrderListNewOrChangedResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrder"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
         "responses.WorkOrderListResponse": {
             "type": "object",
             "properties": {
@@ -17799,6 +19014,18 @@
                 }
             }
         },
+        "responses.WorkOrderPartEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.WorkOrderResponse": {
             "type": "object",
             "properties": {
@@ -17826,6 +19053,33 @@
                     "items": {
                         "$ref": "#/definitions/dme.WorkOrderShort"
                     }
+                }
+            }
+        },
+        "responses.WorkOrderSubletsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
+        "responses.WorkOrderTimeEntriesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "responses.WorkOrderTimeEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
                 }
             }
         }

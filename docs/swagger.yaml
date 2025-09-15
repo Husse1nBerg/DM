@@ -460,6 +460,8 @@ definitions:
         type: string
       email:
         type: string
+      inactive:
+        type: boolean
       name:
         type: string
       prospectId:
@@ -1816,6 +1818,55 @@ definitions:
     - customerId
     - marinaId
     type: object
+  requests.EstimateRetrieveListRequest:
+    properties:
+      status:
+        type: string
+      withDetail:
+        description: Add fields as needed based on API requirements
+        type: boolean
+    type: object
+  requests.EstimateUpdateRequest:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      boatId:
+        type: string
+      boatName:
+        type: string
+      categoryCode:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      custId:
+        type: string
+      custPromiseDate:
+        type: string
+      customerEmail:
+        type: string
+      customerPhone:
+        type: string
+      estCompDate:
+        type: string
+      estId:
+        type: string
+      estStartDate:
+        type: string
+      locationCode:
+        type: string
+      operationCodes:
+        items:
+          $ref: '#/definitions/requests.OperationCode'
+        type: array
+      title:
+        type: string
+    required:
+    - estId
+    type: object
   requests.ForgotPasswordRequest:
     description: Forgot password request payload
     properties:
@@ -2427,6 +2478,62 @@ definitions:
     required:
     - custId
     - title
+    type: object
+  requests.WorkOrderPartEntryRequest:
+    properties:
+      description:
+        type: string
+      operationId:
+        type: string
+      partNumber:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+      unitPrice:
+        minimum: 0
+        type: number
+      workOrderId:
+        type: string
+    required:
+    - partNumber
+    - quantity
+    - unitPrice
+    - workOrderId
+    type: object
+  requests.WorkOrderRetrieveListRequest:
+    properties:
+      status:
+        type: string
+      withDetail:
+        description: Add fields as needed based on API requirements
+        type: boolean
+    type: object
+  requests.WorkOrderTimeEntryRequest:
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      hours:
+        minimum: 0
+        type: number
+      operationId:
+        type: string
+      rate:
+        minimum: 0
+        type: number
+      technicianId:
+        type: string
+      workOrderId:
+        type: string
+    required:
+    - date
+    - hours
+    - operationId
+    - rate
+    - technicianId
+    - workOrderId
     type: object
   requests.WorkOrderUpdateRequest:
     properties:
@@ -3122,6 +3229,62 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  responses.EstimateDeleteOperationResponse:
+    properties:
+      message:
+        type: string
+      result:
+        type: string
+    type: object
+  responses.EstimateListResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrder'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  responses.EstimateResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.WorkOrder'
+    type: object
+  responses.EstimateSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderSearch'
+        type: array
+    type: object
+  responses.EstimateShortListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderShort'
+        type: array
+    type: object
+  responses.EstimateSubletsResponse:
+    properties:
+      data:
+        items: {}
+        type: array
+    type: object
+  responses.EstimateUpdateResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.WorkOrder'
     type: object
   responses.InviteResponse:
     properties:
@@ -3831,6 +3994,26 @@ definitions:
       task_id:
         type: string
     type: object
+  responses.ServiceOPCategoryCodesResponse:
+    properties:
+      data: {}
+    type: object
+  responses.ServiceOpCodesResponse:
+    properties:
+      data: {}
+    type: object
+  responses.ServiceOperationDescriptionsResponse:
+    properties:
+      data: {}
+    type: object
+  responses.ServiceTechniciansResponse:
+    properties:
+      data: {}
+    type: object
+  responses.ServiceWOCategoryCodesResponse:
+    properties:
+      data: {}
+    type: object
   responses.UnreadCountResponse:
     description: Unread notification count
     properties:
@@ -4012,6 +4195,31 @@ definitions:
       result:
         type: string
     type: object
+  responses.WorkOrderGroupDescriptionsResponse:
+    properties:
+      data:
+        items: {}
+        type: array
+    type: object
+  responses.WorkOrderListNewOrChangedResponse:
+    properties:
+      currentPage:
+        example: 1
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrder'
+        type: array
+      lastPage:
+        example: 10
+        type: integer
+      perPage:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
   responses.WorkOrderListResponse:
     properties:
       currentPage:
@@ -4038,6 +4246,14 @@ definitions:
           $ref: '#/definitions/dme.WorkOrderOperation'
         type: array
     type: object
+  responses.WorkOrderPartEntryResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      result:
+        type: string
+    type: object
   responses.WorkOrderResponse:
     properties:
       data:
@@ -4056,6 +4272,24 @@ definitions:
         items:
           $ref: '#/definitions/dme.WorkOrderShort'
         type: array
+    type: object
+  responses.WorkOrderSubletsResponse:
+    properties:
+      data:
+        items: {}
+        type: array
+    type: object
+  responses.WorkOrderTimeEntriesResponse:
+    properties:
+      data: {}
+    type: object
+  responses.WorkOrderTimeEntryResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      result:
+        type: string
     type: object
 info:
   contact: {}
@@ -7461,6 +7695,230 @@ paths:
       summary: Update e-signature template
       tags:
       - E-signature Templates
+  /estimates/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of basic estimate information for a specific customer
+      parameters:
+      - description: Customer ID
+        in: query
+        name: custId
+        required: true
+        type: string
+      - description: Status filter
+        in: query
+        name: status
+        type: string
+      - description: Location code list
+        in: query
+        name: locationCodeList
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateShortListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List estimates for customer
+      tags:
+      - Estimates
+  /estimates/delete-operation:
+    post:
+      consumes:
+      - application/json
+      description: Delete an operation from an estimate
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: WorkOrder
+        required: true
+        type: string
+      - description: Operation code to delete
+        in: query
+        name: Operation
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateDeleteOperationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Delete estimate operation
+      tags:
+      - Estimates
+  /estimates/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a single estimate with detail or summary information
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: Id
+        required: true
+        type: string
+      - default: true
+        description: Include detail information
+        in: query
+        name: Detail
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate
+      tags:
+      - Estimates
+  /estimates/retrieve-list:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves a list of estimates with detail or summary information
+      parameters:
+      - description: List request parameters
+        in: body
+        name: listRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.EstimateRetrieveListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimates list
+      tags:
+      - Estimates
+  /estimates/search:
+    get:
+      consumes:
+      - application/json
+      description: Search for estimates based on provided criteria
+      parameters:
+      - description: Search string
+        in: query
+        name: SearchString
+        required: true
+        type: string
+      - description: Direct hit flag
+        enum:
+        - "true"
+        - "false"
+        in: query
+        name: DirectHit
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search estimates
+      tags:
+      - Estimates
+  /estimates/sublets:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves sublet purchase orders for estimates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateSubletsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List estimate sublets
+      tags:
+      - Estimates
+  /estimates/update:
+    post:
+      consumes:
+      - application/json
+      description: Create a new or update an existing estimate
+      parameters:
+      - description: Estimate information
+        in: body
+        name: estimate
+        required: true
+        schema:
+          $ref: '#/definitions/requests.EstimateUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateUpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update estimate
+      tags:
+      - Estimates
   /external/dme/esign/documents:
     post:
       consumes:
@@ -10705,6 +11163,170 @@ paths:
       summary: Get role by name
       tags:
       - Role
+  /service/opcodes/new-or-changed:
+    get:
+      consumes:
+      - application/json
+      description: Searches for operation codes created or changed as of a date
+      parameters:
+      - description: As of date
+        in: query
+        name: AsOfDate
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServiceOpCodesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List new or changed operation codes
+      tags:
+      - Service
+  /service/operation-category-codes:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of operation category codes for the page and page
+        size specified
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServiceOPCategoryCodesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List operation category codes
+      tags:
+      - Service
+  /service/operation-descriptions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the operation descriptions from the opcode template
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServiceOperationDescriptionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve operation descriptions
+      tags:
+      - Service
+  /service/technicians:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of technician records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServiceTechniciansResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List technicians
+      tags:
+      - Service
+  /service/work-order-category-codes:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of work order category codes for the page and page
+        size specified
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServiceWOCategoryCodesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List work order category codes
+      tags:
+      - Service
   /sms/send:
     post:
       consumes:
@@ -11722,6 +12344,29 @@ paths:
       summary: Delete work order operation
       tags:
       - WorkOrders
+  /work-orders/group-descriptions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of work order group descriptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderGroupDescriptionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order group descriptions
+      tags:
+      - WorkOrders
   /work-orders/list:
     get:
       consumes:
@@ -11757,6 +12402,48 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: List work orders by page
+      tags:
+      - WorkOrders
+  /work-orders/new-or-changed:
+    get:
+      consumes:
+      - application/json
+      description: Searches for work orders created or changed as of a date
+      parameters:
+      - description: As of date
+        in: query
+        name: AsOfDate
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderListNewOrChangedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List new or changed work orders
       tags:
       - WorkOrders
   /work-orders/operations:
@@ -11811,6 +12498,36 @@ paths:
       summary: Retrieve work order by ID
       tags:
       - WorkOrders
+  /work-orders/retrieve-list:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves a list of work orders with detail or summary information
+      parameters:
+      - description: List request parameters
+        in: body
+        name: listRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderRetrieveListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work orders list
+      tags:
+      - WorkOrders
   /work-orders/search:
     get:
       consumes:
@@ -11843,6 +12560,131 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search work orders
+      tags:
+      - WorkOrders
+  /work-orders/sublets:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves sublet purchase orders for work orders
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderSubletsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List work order sublets
+      tags:
+      - WorkOrders
+  /work-orders/submit-part-entry:
+    post:
+      consumes:
+      - application/json
+      description: Submits a part entry for a work order
+      parameters:
+      - description: Part entry information
+        in: body
+        name: partEntry
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderPartEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderPartEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit work order part entry
+      tags:
+      - WorkOrders
+  /work-orders/submit-time-entry:
+    post:
+      consumes:
+      - application/json
+      description: Submits a labor time entry for a technician
+      parameters:
+      - description: Time entry information
+        in: body
+        name: timeEntry
+        required: true
+        schema:
+          $ref: '#/definitions/requests.WorkOrderTimeEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderTimeEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit work order time entry
+      tags:
+      - WorkOrders
+  /work-orders/time-entries:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves time entries for work orders
+      parameters:
+      - description: As of date
+        in: query
+        name: AsOfDate
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderTimeEntriesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List work order time entries
       tags:
       - WorkOrders
   /work-orders/update:
