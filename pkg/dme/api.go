@@ -1071,8 +1071,8 @@ func (c *Client) DeleteEstimateOperation(ctx context.Context, estimateId string,
 }
 
 // RetrieveEstimatesList retrieves a list of estimates with detail or summary information
-func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
-	var result WorkOrderList
+func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[string]interface{}, organizationID uuid.UUID, systemID string) ([]WorkOrder, error) {
+	var result []WorkOrder
 	endpoint := "/Service/Estimates/RetrieveList"
 
 	err := c.DoJSONRequest(
@@ -1089,7 +1089,7 @@ func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[stri
 		return nil, fmt.Errorf("failed to retrieve estimates list: %w", err)
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // UpdateEstimate updates an estimate
