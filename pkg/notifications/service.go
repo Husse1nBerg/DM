@@ -512,6 +512,52 @@ func (s *NotificationService) CreateESignNotification(ctx context.Context, userI
 	return err
 }
 
+// CreateESignSmartNotification creates a smart notification for e-sign submissions that respects user preferences
+func (s *NotificationService) CreateESignSmartNotification(ctx context.Context, userID, organizationID, marinaID uuid.UUID, documentURL, submissionID, email string) error {
+	title := "New E-Sign Submission Update"
+	content := fmt.Sprintf("You have received a new e-sign submission update from %s", email)
+
+	data := map[string]interface{}{
+		"document_url":  documentURL,
+		"submission_id": submissionID,
+		"email":         email,
+	}
+
+	// Create smart notification request
+	smartReq := SmartNotificationRequest{
+		UserID:         userID,
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		Type:           "esign",
+		Title:          title,
+		Content:        content,
+		Data:           data,
+		Priority:       nil, // Use default priority
+	}
+
+	// Send smart notification (respects user preferences)
+	result, err := s.SendSmartNotification(ctx, smartReq)
+	if err != nil {
+		s.logger.Zap.Errorw("Failed to send smart e-sign notification",
+			"userID", userID,
+			"submissionID", submissionID,
+			"email", email,
+			"error", err)
+		return err
+	}
+
+	// Log the result
+	s.logger.Zap.Infow("Smart e-sign notification sent",
+		"userID", userID,
+		"submissionID", submissionID,
+		"email", email,
+		"systemDelivered", result.SystemDelivered,
+		"emailDelivered", result.EmailDelivered,
+		"errors", result.Errors)
+
+	return nil
+}
+
 // CreateInviteNotification creates a notification for invitations
 func (s *NotificationService) CreateInviteNotification(ctx context.Context, userID, organizationID, marinaID uuid.UUID, inviterName string) error {
 	title := "Invitation Received"

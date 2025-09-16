@@ -1915,7 +1915,7 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 		for _, userRow := range marinaUsers {
 			// Only notify active users
 			if userRow.IsActive != nil && *userRow.IsActive {
-				notificationErr := h.notificationService.CreateESignNotification(
+				notificationErr := h.notificationService.CreateESignSmartNotification(
 					c.Request().Context(),
 					userRow.ID,
 					userRow.OrganizationID,
