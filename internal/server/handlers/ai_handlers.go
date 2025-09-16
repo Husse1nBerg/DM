@@ -168,14 +168,13 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 	// Get image format from content type
 	format := getImageFormat(contentType)
 
-	// Prepare Bedrock API request
 	bedrockRequest := map[string]interface{}{
 		"messages": []map[string]interface{}{
 			{
 				"role": "user",
 				"content": []map[string]interface{}{
 					{
-						"text": "Detect form fields in the PDF image and return a valid JSON object. Follow these strict rules:\n\n1. Schema:\n{\n  \"pages\": [{\n    \"pageNumber\": integer,\n    \"pageSize\": {\n      \"widthPx\": integer,\n      \"heightPx\": integer\n    },\n    \"fields\": [{\n      \"id\": string,\n      \"type\": string (one of: text|textarea|checkbox|radio|signature|date|initials|email|phone|number),\n      \"label\": string or null,\n      \"required\": boolean,\n      \"confidence\": number between 0-1,\n      \"bbox\": {\n        \"x\": integer,\n        \"y\": integer,\n        \"w\": integer,\n        \"h\": integer\n      },\n      \"bboxNorm\": {\n        \"x\": number between 0-1,\n        \"y\": number between 0-1,\n        \"w\": number between 0-1,\n        \"h\": number between 0-1\n      }\n    }]\n  }]\n}\n\n2. Rules:\n- Use double quotes for all JSON keys and string values\n- All numbers must be valid JSON numbers (no spaces, valid decimals)\n- Coordinates origin is top-left\n- Normalized coordinates must be calculated by dividing by width/height\n- Set required=true only for fields with asterisk or explicit required indicator\n- Use radio type only for mutually exclusive option groups\n- Exclude decorative elements\n- Return only the JSON object, no markdown or commentary",
+						"text": "Detect form fields in image. Return JSON with pages array. Each page has: pageNumber(int), pageSize(widthPx,heightPx), fields array. Each field has: id(str), type(text|textarea|checkbox|radio|signature|date|initials|email|phone|number), label(str|null), required(bool,true if *), confidence(0-1), bbox(x,y,w,h ints), bboxNorm(x,y,w,h 0-1). Rules: double quotes, valid numbers, origin top-left, bboxNorm=bbox/pageSize",
 					},
 					{
 						"image": map[string]interface{}{
@@ -198,7 +197,7 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to prepare request").JSON(c)
 	}
 
-	bedrockReq, err := http.NewRequest("POST", "https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-lite-v1:0/invoke", bytes.NewBuffer(reqBody))
+	bedrockReq, err := http.NewRequest("POST", "https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-pro-v1:0/invoke", bytes.NewBuffer(reqBody))
 	if err != nil {
 		logger.Zap.Errorw("Failed to create new HTTP request", "error", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create request").JSON(c)
@@ -221,12 +220,12 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 
 	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
 		logger.Zap.Errorw("Failed to decode response from Bedrock API", "error", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to decode response").JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to decode response: "+err.Error()).JSON(c)
 	}
 
 	// Safely extract the message text
 	if len(apiResponse.Output.Message.Content) == 0 {
-		logger.Zap.Error("No content in Bedrock response")
+		logger.Zap.Errorw("No content in Bedrock response", "response", apiResponse)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "No content in response").JSON(c)
 	}
 
