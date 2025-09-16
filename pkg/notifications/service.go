@@ -610,18 +610,27 @@ func (s *NotificationService) SendSmartNotification(ctx context.Context, req Sma
 
 		// If no preference found (no rows), respect user's choice to not receive notifications
 		// This implements an opt-in approach where users must explicitly enable notifications
-		s.logger.Zap.Debugw("No notification preference found, notifications disabled by default",
+		s.logger.Zap.Infow("DEBUG: No notification preference found, notifications disabled by default",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
 		return result, nil
 	}
 
+	// Debug: Log the preference details
+	s.logger.Zap.Infow("DEBUG: Notification preference found",
+		"userID", req.UserID,
+		"type", req.Type,
+		"preference_id", preference.ID,
+		"enabled", preference.Enabled,
+		"delivery_method", preference.DeliveryMethod)
+
 	// Check if notifications are enabled for this user and type
 	if preference.Enabled == nil || !*preference.Enabled {
-		s.logger.Zap.Debugw("Notifications disabled for user",
+		s.logger.Zap.Infow("DEBUG: Notifications disabled for user",
 			"userID", req.UserID,
-			"type", req.Type)
+			"type", req.Type,
+			"enabled", preference.Enabled)
 		return result, nil
 	}
 
