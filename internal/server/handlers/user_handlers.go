@@ -87,17 +87,26 @@ func (g *UserHandler) ListUsersHandler(c echo.Context) error {
 
 	var users []db.User
 	var err error
-	roleID := req.Filters["role_id"]
+
+	roleID := c.QueryParam("filters[role_id]")
+	if roleID == "" && req.Filters != nil {
+		roleID = req.Filters["role_id"]
+	}
 	if roleID != "" {
 		if _, err := uuid.Parse(roleID); err != nil {
 			roleID = ""
 		}
 	}
+
+	isActive := c.QueryParam("filters[is_active]")
+	if isActive == "" && req.Filters != nil {
+		isActive = req.Filters["is_active"]
+	}
 	if sortOrder == "asc" {
 		users, err = g.server.DB.Queries().GetAllUsersFilteredSortedAsc(c.Request().Context(), db.GetAllUsersFilteredSortedAscParams{
 			Column1: req.Search,
 			Column2: roleID,
-			Column3: req.Filters["is_active"],
+			Column3: isActive,
 			Column4: sortBy,
 			Limit:   req.PageSize,
 			Offset:  (req.Page - 1) * req.PageSize,
@@ -106,7 +115,7 @@ func (g *UserHandler) ListUsersHandler(c echo.Context) error {
 		users, err = g.server.DB.Queries().GetAllUsersFilteredSortedDesc(c.Request().Context(), db.GetAllUsersFilteredSortedDescParams{
 			Column1: req.Search,
 			Column2: roleID,
-			Column3: req.Filters["is_active"],
+			Column3: isActive,
 			Column4: sortBy,
 			Limit:   req.PageSize,
 			Offset:  (req.Page - 1) * req.PageSize,
@@ -118,7 +127,7 @@ func (g *UserHandler) ListUsersHandler(c echo.Context) error {
 	total, err := g.server.DB.Queries().CountUsersWithFilters(c.Request().Context(), db.CountUsersWithFiltersParams{
 		Column1: req.Search,
 		Column2: roleID,
-		Column3: req.Filters["is_active"],
+		Column3: isActive,
 	})
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
