@@ -334,6 +334,50 @@ type PasswordRecovery struct {
 	CreatedAt pgtype.Timestamp
 }
 
+type Payment struct {
+	ID                        uuid.UUID
+	OrganizationID            uuid.UUID
+	MarinaID                  uuid.UUID
+	CustomerID                uuid.UUID
+	Amount                    pgtype.Numeric
+	Currency                  string
+	Status                    string
+	PaymentMethod             *string
+	PaymentType               string
+	Reference                 string
+	Description               *string
+	Metadata                  []byte
+	AdyenPaymentID            *string
+	AdyenMerchantReference    *string
+	AdyenPspReference         *string
+	AdyenPaymentMethodDetails []byte
+	ErrorMessage              *string
+	CreatedAt                 pgtype.Timestamp
+	UpdatedAt                 pgtype.Timestamp
+	DeletedAt                 pgtype.Timestamp
+}
+
+type PaymentCredential struct {
+	ID              uuid.UUID
+	OrganizationID  uuid.UUID
+	MarinaID        uuid.UUID
+	ApiKey          string
+	MerchantAccount string
+	StoreID         *string
+	IsTest          *bool
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+	DeletedAt       pgtype.Timestamp
+}
+
+type PaymentEvent struct {
+	ID        uuid.UUID
+	PaymentID uuid.UUID
+	EventType string
+	EventData []byte
+	CreatedAt pgtype.Timestamp
+}
+
 type Role struct {
 	ID             uuid.UUID
 	Name           string
