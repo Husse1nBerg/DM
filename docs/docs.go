@@ -7172,21 +7172,9 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Filter by organization UUID",
-                        "name": "organizationId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by active status",
-                        "name": "isActive",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by test status",
-                        "name": "isTest",
+                        "type": "object",
+                        "description": "Filters (e.g. filters[organizationId]=\u003cuuid\u003e\u0026filters[is_active]=true\u0026filters[is_test]=true)",
+                        "name": "filters",
                         "in": "query"
                     }
                 ],
@@ -9152,7 +9140,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves organizations with filtering, sorting, and pagination support",
+                "description": "Returns a paginated list of organizations. Supports filtering by active status, test status, searching by name/email, and sorting.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9165,6 +9153,7 @@ const docTemplate = `{
                 "summary": "Get paginated organizations",
                 "parameters": [
                     {
+                        "minimum": 1,
                         "type": "integer",
                         "default": 1,
                         "description": "Page number",
@@ -9172,6 +9161,8 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "maximum": 100,
+                        "minimum": 1,
                         "type": "integer",
                         "default": 10,
                         "description": "Page size",
@@ -9180,33 +9171,28 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Sort by field (name, email, website, country, phone, is_active, is_test, created_at, updated_at)",
+                        "description": "Search term (matches name, email, website, country, or phone)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Filters (e.g. filters[is_active]=true\u0026filters[is_test]=false)",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort by field (e.g. name, email, created_at)",
                         "name": "sortBy",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "default": "asc",
-                        "description": "Sort order (asc, desc)",
+                        "description": "Sort order (asc or desc)",
                         "name": "sortOrder",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Global search across multiple fields",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by active status",
-                        "name": "isActive",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by test status",
-                        "name": "isTest",
                         "in": "query"
                     }
                 ],
@@ -11495,7 +11481,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all users in a specific marina",
+                "description": "Returns a paginated list of users in a specific marina. Supports filtering by role, active status, customer status, searching by name/email, and sorting.",
                 "consumes": [
                     "application/json"
                 ],
@@ -11515,12 +11501,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "boolean",
-                        "description": "Filter by customer status. If not provided, returns all users",
-                        "name": "isCustomer",
-                        "in": "query"
-                    },
-                    {
+                        "minimum": 1,
                         "type": "integer",
                         "default": 1,
                         "description": "Page number",
@@ -11528,10 +11509,38 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "maximum": 100,
+                        "minimum": 1,
                         "type": "integer",
                         "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term (matches username, first name, last name, email, phone, or title)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Filters (e.g. filters[role_id]=\u003cuuid\u003e\u0026filters[is_active]=true\u0026filters[is_customer]=true)",
+                        "name": "filters",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort by field (e.g. username, email, created_at)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort order (asc or desc)",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],

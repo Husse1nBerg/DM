@@ -8964,18 +8964,10 @@ paths:
         in: query
         name: search
         type: string
-      - description: Filter by organization UUID
+      - description: Filters (e.g. filters[organizationId]=<uuid>&filters[is_active]=true&filters[is_test]=true)
         in: query
-        name: organizationId
-        type: string
-      - description: Filter by active status
-        in: query
-        name: isActive
-        type: boolean
-      - description: Filter by test status
-        in: query
-        name: isTest
-        type: boolean
+        name: filters
+        type: object
       produces:
       - application/json
       responses:
@@ -10254,41 +10246,40 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves organizations with filtering, sorting, and pagination
-        support
+      description: Returns a paginated list of organizations. Supports filtering by
+        active status, test status, searching by name/email, and sorting.
       parameters:
       - default: 1
         description: Page number
         in: query
+        minimum: 1
         name: page
         type: integer
       - default: 10
         description: Page size
         in: query
+        maximum: 100
+        minimum: 1
         name: pageSize
         type: integer
-      - description: Sort by field (name, email, website, country, phone, is_active,
-          is_test, created_at, updated_at)
+      - description: Search term (matches name, email, website, country, or phone)
+        in: query
+        name: search
+        type: string
+      - description: Filters (e.g. filters[is_active]=true&filters[is_test]=false)
+        in: query
+        name: filters
+        type: object
+      - default: created_at
+        description: Sort by field (e.g. name, email, created_at)
         in: query
         name: sortBy
         type: string
       - default: asc
-        description: Sort order (asc, desc)
+        description: Sort order (asc or desc)
         in: query
         name: sortOrder
         type: string
-      - description: Global search across multiple fields
-        in: query
-        name: search
-        type: string
-      - description: Filter by active status
-        in: query
-        name: isActive
-        type: boolean
-      - description: Filter by test status
-        in: query
-        name: isTest
-        type: boolean
       produces:
       - application/json
       responses:
@@ -11824,27 +11815,47 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get all users in a specific marina
+      description: Returns a paginated list of users in a specific marina. Supports
+        filtering by role, active status, customer status, searching by name/email,
+        and sorting.
       parameters:
       - description: Marina ID
         in: path
         name: marinaId
         required: true
         type: string
-      - description: Filter by customer status. If not provided, returns all users
-        in: query
-        name: isCustomer
-        type: boolean
       - default: 1
         description: Page number
         in: query
+        minimum: 1
         name: page
         type: integer
       - default: 10
         description: Page size
         in: query
+        maximum: 100
+        minimum: 1
         name: pageSize
         type: integer
+      - description: Search term (matches username, first name, last name, email,
+          phone, or title)
+        in: query
+        name: search
+        type: string
+      - description: Filters (e.g. filters[role_id]=<uuid>&filters[is_active]=true&filters[is_customer]=true)
+        in: query
+        name: filters
+        type: object
+      - default: created_at
+        description: Sort by field (e.g. username, email, created_at)
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort order (asc or desc)
+        in: query
+        name: sortOrder
+        type: string
       produces:
       - application/json
       responses:

@@ -270,9 +270,7 @@ func (h *MarinaHandler) GetMarinaByEmail(c echo.Context) error {
 //	@Param			sortBy		query		string	false	"Sort by field (name, email, location, phone, country, currency, website, max_users, is_active, is_test, created_at, updated_at)"
 //	@Param			sortOrder	query		string	false	"Sort order (asc, desc)" default(asc)
 //	@Param			search		query		string	false	"Global search across multiple fields"
-//	@Param			organizationId	query	string	false	"Filter by organization UUID"
-//	@Param			isActive	query		bool	false	"Filter by active status"
-//	@Param			isTest		query		bool	false	"Filter by test status"
+//	@Param			filters		query		object	false	"Filters (e.g. filters[organizationId]=<uuid>&filters[is_active]=true&filters[is_test]=true)"
 //	@Success		200		{array}		responses.MarinaListResponse
 //	@Failure		400		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
@@ -303,25 +301,26 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 		req.SortBy = "created_at"
 	}
 
-	// Prepare filter params
-	search := req.Search
-	orgID := ""
-	if v, ok := req.Filters["organizationId"]; ok {
-		orgID = v
+	// Parse filters from query parameters (same pattern as ListUsersHandler)
+	orgID := c.QueryParam("filters[organizationId]")
+	if orgID == "" && req.Filters != nil {
+		orgID = req.Filters["organizationId"]
 	}
-	isActive := ""
-	if v, ok := req.Filters["isActive"]; ok {
-		isActive = v
+
+	isActive := c.QueryParam("filters[is_active]")
+	if isActive == "" && req.Filters != nil {
+		isActive = req.Filters["is_active"]
 	}
-	isTest := ""
-	if v, ok := req.Filters["isTest"]; ok {
-		isTest = v
+
+	isTest := c.QueryParam("filters[is_test]")
+	if isTest == "" && req.Filters != nil {
+		isTest = req.Filters["is_test"]
 	}
 
 	// Count total (for pagination)
 	// NOTE: For large datasets, consider a COUNT(*) query with same filters for better perf
 	allMarinasAsc, err := h.server.DB.Queries().GetMarinasWithFiltersAsc(c.Request().Context(), db.GetMarinasWithFiltersAscParams{
-		Column1: search,
+		Column1: req.Search,
 		Column2: orgID,
 		Column3: isActive,
 		Column4: isTest,
@@ -338,7 +337,7 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 	var marinas []db.Marina
 	if req.SortOrder == "desc" {
 		marinas, err = h.server.DB.Queries().GetMarinasWithFiltersDesc(c.Request().Context(), db.GetMarinasWithFiltersDescParams{
-			Column1: search,
+			Column1: req.Search,
 			Column2: orgID,
 			Column3: isActive,
 			Column4: isTest,
@@ -348,7 +347,7 @@ func (h *MarinaHandler) GetMarinasPaginated(c echo.Context) error {
 		})
 	} else {
 		marinas, err = h.server.DB.Queries().GetMarinasWithFiltersAsc(c.Request().Context(), db.GetMarinasWithFiltersAscParams{
-			Column1: search,
+			Column1: req.Search,
 			Column2: orgID,
 			Column3: isActive,
 			Column4: isTest,
