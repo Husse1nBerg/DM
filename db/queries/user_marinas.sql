@@ -234,6 +234,31 @@ JOIN users u ON u.id = um.user_id
 WHERE um.marina_id = $1
   AND u.is_superuser = TRUE 
   AND u.deleted_at IS NULL;
+
+-- name: CountUserMarinasAssignmentsWithFilters :one
+SELECT COUNT(*)
+FROM user_marinas um
+JOIN users u ON u.id = um.user_id
+WHERE um.marina_id = $1
+  -- customer_id filter (true = must exist, false = must not exist, null = ignore)
+  AND ($2 = '' OR ($2 = 'true' AND um.customer_id IS NOT NULL) OR ($2 = 'false' AND um.customer_id IS NULL))
+  -- search filter across user fields
+  AND (
+    $3 = '' 
+    OR u.username ILIKE '%' || $3 || '%'
+    OR u.first_name ILIKE '%' || $3 || '%'
+    OR u.last_name ILIKE '%' || $3 || '%'
+    OR u.email ILIKE '%' || $3 || '%'
+    OR u.phone ILIKE '%' || $3 || '%'
+    OR u.title ILIKE '%' || $3 || '%'
+  )
+  -- optional role filter
+  AND ($4 = '' OR um.role_id = $4::uuid)
+  -- optional is_active filter
+  AND ($5 = '' OR u.is_active = $5::boolean)
+  -- fixed rules
+  AND u.is_superuser = FALSE
+  AND u.deleted_at IS NULL;
 -- name: GetUserMarinaAssignmentByUserAndMarina :one
 SELECT role_id, customer_id
 FROM user_marinas
