@@ -49,7 +49,7 @@ func (h *GeneralHandler) ListClerksHandler(c echo.Context) error {
 
 	// Use organization ID from claims if not provided in request
 	if req.OrganizationID.String() == "00000000-0000-0000-0000-000000000000" {
-		req.OrganizationID = claims.OrganizationID
+		req.OrganizationID = claims.OrgId
 	}
 
 	// Call DME API to list clerks
@@ -62,7 +62,7 @@ func (h *GeneralHandler) ListClerksHandler(c echo.Context) error {
 	// Convert to response format
 	response := responses.NewClerkListResponse(clerks)
 
-	return responses.NewSuccessResponse("Clerks retrieved successfully", response).JSON(c)
+	return responses.NewSuccessResponse(response).JSON(c)
 }
 
 // RetrieveClerkHandler godoc
@@ -94,7 +94,7 @@ func (h *GeneralHandler) RetrieveClerkHandler(c echo.Context) error {
 
 	// Use organization ID from claims if not provided in request
 	if req.OrganizationID.String() == "00000000-0000-0000-0000-000000000000" {
-		req.OrganizationID = claims.OrganizationID
+		req.OrganizationID = claims.OrgId
 	}
 
 	// Call DME API to retrieve clerk
@@ -107,7 +107,7 @@ func (h *GeneralHandler) RetrieveClerkHandler(c echo.Context) error {
 	// Convert to response format
 	response := responses.NewClerkResponse(*clerk)
 
-	return responses.NewSuccessResponse("Clerk retrieved successfully", response).JSON(c)
+	return responses.NewSuccessResponse(response).JSON(c)
 }
 
 // ListLocationsHandler godoc
@@ -138,7 +138,7 @@ func (h *GeneralHandler) ListLocationsHandler(c echo.Context) error {
 
 	// Use organization ID from claims if not provided in request
 	if req.OrganizationID.String() == "00000000-0000-0000-0000-000000000000" {
-		req.OrganizationID = claims.OrganizationID
+		req.OrganizationID = claims.OrgId
 	}
 
 	// Call DME API to list locations
@@ -151,5 +151,5 @@ func (h *GeneralHandler) ListLocationsHandler(c echo.Context) error {
 	// Convert to response format
 	response := responses.NewLocationListResponse(locations)
 
-	return responses.NewSuccessResponse("Locations retrieved successfully", response).JSON(c)
+	return responses.NewSuccessResponse(response).JSON(c)
 }
