@@ -390,6 +390,168 @@
                 }
             }
         },
+        "/api/v1/general/clerks": {
+            "get": {
+                "description": "Retrieves a specific clerk (user) record from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "General"
+                ],
+                "summary": "Retrieve a specific clerk (user) record",
+                "parameters": [
+                    {
+                        "description": "Retrieve clerk request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ClerkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ClerkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/general/clerks/list": {
+            "get": {
+                "description": "Retrieves a list of system clerks (users) from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "General"
+                ],
+                "summary": "List system clerks (users)",
+                "parameters": [
+                    {
+                        "description": "List clerks request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ClerkListRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ClerkListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/general/locations": {
+            "get": {
+                "description": "Retrieves a list of business locations from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "General"
+                ],
+                "summary": "List business locations",
+                "parameters": [
+                    {
+                        "description": "List locations request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.LocationListRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.LocationListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/invite/accept": {
             "post": {
                 "description": "Accepts an invitation and sets the user's password",
@@ -14734,6 +14896,45 @@
                 }
             }
         },
+        "requests.ClerkListRequest": {
+            "type": "object",
+            "required": [
+                "organizationId",
+                "systemId"
+            ],
+            "properties": {
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS001"
+                }
+            }
+        },
+        "requests.ClerkRequest": {
+            "type": "object",
+            "required": [
+                "clerkId",
+                "organizationId",
+                "systemId"
+            ],
+            "properties": {
+                "clerkId": {
+                    "type": "string",
+                    "example": "CLERK001"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS001"
+                }
+            }
+        },
         "requests.CompletePasswordRecoveryRequest": {
             "description": "Complete password recovery request payload",
             "type": "object",
@@ -15700,6 +15901,23 @@
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
+                }
+            }
+        },
+        "requests.LocationListRequest": {
+            "type": "object",
+            "required": [
+                "organizationId",
+                "systemId"
+            ],
+            "properties": {
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS001"
                 }
             }
         },
@@ -16868,6 +17086,68 @@
                 }
             }
         },
+        "responses.ClerkListResponse": {
+            "description": "List of system clerks/users from DME API",
+            "type": "object",
+            "properties": {
+                "clerks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ClerkResponse"
+                    }
+                }
+            }
+        },
+        "responses.ClerkResponse": {
+            "description": "System clerk/user information from DME API",
+            "type": "object",
+            "properties": {
+                "createdDate": {
+                    "type": "string",
+                    "example": "2023-06-01T08:00:00Z"
+                },
+                "department": {
+                    "type": "string",
+                    "example": "Service"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@marina.com"
+                },
+                "firstName": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "CLERK001"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "lastLogin": {
+                    "type": "string",
+                    "example": "2024-01-15T10:30:00Z"
+                },
+                "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "Technician"
+                }
+            }
+        },
         "responses.ConfirmTokenResponse": {
             "type": "object",
             "properties": {
@@ -17702,6 +17982,112 @@
                     "items": {
                         "$ref": "#/definitions/dme.InvoiceDetailed"
                     }
+                }
+            }
+        },
+        "responses.LocationListResponse": {
+            "description": "List of business locations from DME API",
+            "type": "object",
+            "properties": {
+                "locations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.LocationResponse"
+                    }
+                }
+            }
+        },
+        "responses.LocationResponse": {
+            "description": "Business location information from DME API",
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string",
+                    "example": "123 Marina Drive"
+                },
+                "address2": {
+                    "type": "string",
+                    "example": "Suite 100"
+                },
+                "address3": {
+                    "type": "string",
+                    "example": ""
+                },
+                "billToAddress1": {
+                    "type": "string",
+                    "example": "123 Marina Drive"
+                },
+                "billToAddress2": {
+                    "type": "string",
+                    "example": "Suite 100"
+                },
+                "billToAddress3": {
+                    "type": "string",
+                    "example": ""
+                },
+                "billToCity": {
+                    "type": "string",
+                    "example": "Harbor City"
+                },
+                "billToCountry": {
+                    "type": "string",
+                    "example": "USA"
+                },
+                "billToFax": {
+                    "type": "string",
+                    "example": "+15551234568"
+                },
+                "billToPhone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "billToState": {
+                    "type": "string",
+                    "example": "CA"
+                },
+                "billToZip": {
+                    "type": "string",
+                    "example": "90210"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "Harbor City"
+                },
+                "country": {
+                    "type": "string",
+                    "example": "USA"
+                },
+                "dmPayClientId": {
+                    "type": "string",
+                    "example": "DMPAY123"
+                },
+                "fax": {
+                    "type": "string",
+                    "example": "+15551234568"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "LOC001"
+                },
+                "locationNumber": {
+                    "type": "string",
+                    "example": "001"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Main Marina"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+15551234567"
+                },
+                "state": {
+                    "type": "string",
+                    "example": "CA"
+                },
+                "zipCode": {
+                    "type": "string",
+                    "example": "90210"
                 }
             }
         },

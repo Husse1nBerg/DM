@@ -36,6 +36,50 @@ func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, sy
 	return result, nil
 }
 
+// ListClerks retrieves a list of system clerks (users)
+func (c *Client) ListClerks(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Clerk, error) {
+	var result []Clerk
+	endpoint := "/General/Clerks/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list clerks: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveClerk retrieves a specific clerk (user) record
+func (c *Client) RetrieveClerk(ctx context.Context, clerkID string, organizationID uuid.UUID, systemID string) (*Clerk, error) {
+	var result Clerk
+	endpoint := fmt.Sprintf("/General/Clerks?Id=%s", clerkID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve clerk: %w", err)
+	}
+
+	return &result, nil
+}
+
 // -----
 // Customer API
 // -----
