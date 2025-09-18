@@ -181,4 +181,7 @@ func RegisterRoutes(s *s.Server) {
 
 	// Notification preference routes
 	RegisterNotificationPreferenceRoutes(s, permissionProtected)
+
+	// General DME API routes
+	RegisterGeneralRoutes(s, permissionProtected)
 }

@@ -1206,6 +1206,34 @@ definitions:
     - name
     - ownerId
     type: object
+  requests.ClerkListRequest:
+    properties:
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS001
+        type: string
+    required:
+    - organizationId
+    - systemId
+    type: object
+  requests.ClerkRequest:
+    properties:
+      clerkId:
+        example: CLERK001
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS001
+        type: string
+    required:
+    - clerkId
+    - organizationId
+    - systemId
+    type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
     properties:
@@ -1896,6 +1924,18 @@ definitions:
         type: string
     required:
     - marinaId
+    type: object
+  requests.LocationListRequest:
+    properties:
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS001
+        type: string
+    required:
+    - organizationId
+    - systemId
     type: object
   requests.LoginRequest:
     properties:
@@ -2714,6 +2754,51 @@ definitions:
           $ref: '#/definitions/dme.BoatSearch'
         type: array
     type: object
+  responses.ClerkListResponse:
+    description: List of system clerks/users from DME API
+    properties:
+      clerks:
+        items:
+          $ref: '#/definitions/responses.ClerkResponse'
+        type: array
+    type: object
+  responses.ClerkResponse:
+    description: System clerk/user information from DME API
+    properties:
+      createdDate:
+        example: "2023-06-01T08:00:00Z"
+        type: string
+      department:
+        example: Service
+        type: string
+      email:
+        example: john.doe@marina.com
+        type: string
+      firstName:
+        example: John
+        type: string
+      id:
+        example: CLERK001
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      lastLogin:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      lastName:
+        example: Doe
+        type: string
+      name:
+        example: John Doe
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      role:
+        example: Technician
+        type: string
+    type: object
   responses.ConfirmTokenResponse:
     properties:
       currentPage:
@@ -3303,6 +3388,84 @@ definitions:
         items:
           $ref: '#/definitions/dme.InvoiceDetailed'
         type: array
+    type: object
+  responses.LocationListResponse:
+    description: List of business locations from DME API
+    properties:
+      locations:
+        items:
+          $ref: '#/definitions/responses.LocationResponse'
+        type: array
+    type: object
+  responses.LocationResponse:
+    description: Business location information from DME API
+    properties:
+      address1:
+        example: 123 Marina Drive
+        type: string
+      address2:
+        example: Suite 100
+        type: string
+      address3:
+        example: ""
+        type: string
+      billToAddress1:
+        example: 123 Marina Drive
+        type: string
+      billToAddress2:
+        example: Suite 100
+        type: string
+      billToAddress3:
+        example: ""
+        type: string
+      billToCity:
+        example: Harbor City
+        type: string
+      billToCountry:
+        example: USA
+        type: string
+      billToFax:
+        example: "+15551234568"
+        type: string
+      billToPhone:
+        example: "+15551234567"
+        type: string
+      billToState:
+        example: CA
+        type: string
+      billToZip:
+        example: "90210"
+        type: string
+      city:
+        example: Harbor City
+        type: string
+      country:
+        example: USA
+        type: string
+      dmPayClientId:
+        example: DMPAY123
+        type: string
+      fax:
+        example: "+15551234568"
+        type: string
+      id:
+        example: LOC001
+        type: string
+      locationNumber:
+        example: "001"
+        type: string
+      name:
+        example: Main Marina
+        type: string
+      phone:
+        example: "+15551234567"
+        type: string
+      state:
+        example: CA
+        type: string
+      zipCode:
+        example: "90210"
+        type: string
     type: object
   responses.LoginResponse:
     description: Authentication token response containing access token, refresh token
@@ -4545,6 +4708,112 @@ paths:
       summary: Detect form fields
       tags:
       - AI
+  /api/v1/general/clerks:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific clerk (user) record from the DME API
+      parameters:
+      - description: Retrieve clerk request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ClerkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ClerkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a specific clerk (user) record
+      tags:
+      - General
+  /api/v1/general/clerks/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of system clerks (users) from the DME API
+      parameters:
+      - description: List clerks request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ClerkListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ClerkListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List system clerks (users)
+      tags:
+      - General
+  /api/v1/general/locations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of business locations from the DME API
+      parameters:
+      - description: List locations request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.LocationListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.LocationListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List business locations
+      tags:
+      - General
   /api/v1/invite/accept:
     post:
       consumes:
