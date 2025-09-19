@@ -1086,18 +1086,19 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 
 	// Create submission with duplicated file
 	submission, err := h.server.DB.Queries().CreateEsignSubmission(c.Request().Context(), db.CreateEsignSubmissionParams{
-		OrganizationID:     organizationID,
-		MarinaID:           marinaID,
-		DocumentID:         req.DocumentID,
-		Status:             "pending", // Default status
-		BlobUrl:            duplicatedFilePath,
-		BlobMetadata:       nil, // Ignoring blob metadata for now as requested
-		CustomerID:         req.CustomerID,
-		Email:              req.Email,
-		Name:               req.Name,
-		AttachmentRequired: req.AttachmentRequired,
-		ReplyTo:            req.ReplyTo,
-		CustomMessage:      req.CustomMessage,
+		OrganizationID:      organizationID,
+		MarinaID:            marinaID,
+		DocumentID:          req.DocumentID,
+		Status:              "pending", // Default status
+		BlobUrl:             duplicatedFilePath,
+		BlobMetadata:        nil, // Ignoring blob metadata for now as requested
+		CustomerID:          req.CustomerID,
+		Email:               req.Email,
+		Name:                req.Name,
+		AttachmentRequired:  req.AttachmentRequired,
+		ReplyTo:             req.ReplyTo,
+		CustomMessage:       req.CustomMessage,
+		IsMultipleSignature: false, // Single signature submission
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature submission", err)

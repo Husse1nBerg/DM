@@ -4411,6 +4411,158 @@ const docTemplate = `{
                 }
             }
         },
+        "/esign/submissions/multiple": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new e-signature submission with multiple signers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Create multiple e-signature submission",
+                "parameters": [
+                    {
+                        "description": "Multiple e-signature submission data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMultipleEsignSubmissionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionWithSignersResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/esign/submissions/signers/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates a signer's status in an e-signature submission",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Update e-signature submission signer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Signer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Signer update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateEsignSubmissionSignerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/esign/submissions/status": {
             "get": {
                 "security": [
@@ -4739,6 +4891,157 @@ const docTemplate = `{
                         "description": "No Content",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/esign/submissions/{id}/signers": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all signers for an e-signature submission",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Get e-signature submission signers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Submission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/esign/submissions/{id}/with-signers": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves an e-signature submission with all its signers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "E-signature Submissions"
+                ],
+                "summary": "Get e-signature submission with signers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Submission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.EsignSubmissionWithSignersResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -15175,6 +15478,9 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CreateMultipleEsignSubmissionRequest": {
+            "type": "object"
+        },
         "requests.CreateNotificationRequest": {
             "type": "object"
         },
@@ -15589,6 +15895,28 @@ const docTemplate = `{
                 },
                 "marinaId": {
                     "type": "string"
+                }
+            }
+        },
+        "requests.EsignSubmissionSigner": {
+            "type": "object",
+            "required": [
+                "email",
+                "signOrder"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "signer@example.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "signOrder": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
                 }
             }
         },
@@ -16177,6 +16505,28 @@ const docTemplate = `{
                 "systemId": {
                     "type": "string",
                     "example": "SYS123456"
+                }
+            }
+        },
+        "requests.UpdateEsignSubmissionSignerRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "declinedReason": {
+                    "type": "string",
+                    "example": "Document needs revision"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "signed",
+                        "declined",
+                        "expired"
+                    ],
+                    "example": "signed"
                 }
             }
         },
@@ -17511,6 +17861,129 @@ const docTemplate = `{
                 "replyTo": {
                     "type": "string",
                     "example": "support@example.com"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.EsignSubmissionSignerResponse": {
+            "description": "E-signature submission signer data including status and signing order",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "declinedAt": {
+                    "type": "string"
+                },
+                "declinedReason": {
+                    "type": "string",
+                    "example": "Document needs revision"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "signer@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "signOrder": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "signedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                },
+                "submissionId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.EsignSubmissionWithSignersResponse": {
+            "description": "E-signature submission data including signers for multiple signature submissions",
+            "type": "object",
+            "properties": {
+                "attachmentRequired": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "blobMetadata": {
+                    "type": "object"
+                },
+                "blobUrl": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "customMessage": {
+                    "type": "string",
+                    "example": "Please sign the document as soon as possible."
+                },
+                "customerId": {
+                    "type": "string",
+                    "example": "CUST123"
+                },
+                "documentId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "customer@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMultipleSignature": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "logo": {
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/marina/logo.png"
+                },
+                "marinaId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Multi-Signature Agreement"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "replyTo": {
+                    "type": "string",
+                    "example": "support@example.com"
+                },
+                "signers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                    }
                 },
                 "status": {
                     "type": "string",
