@@ -11,9 +11,10 @@ INSERT INTO esign_submissions (
     name,
     attachment_required,
     reply_to,
-    custom_message
+    custom_message,
+    is_multiple_signature
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
 ) RETURNING *;
 
 -- name: GetEsignSubmissionByID :one
@@ -273,3 +274,22 @@ WHERE organization_id = $1
   AND ($5 = '' OR LOWER(email) LIKE LOWER('%' || $5 || '%'))
   AND ($6 = '' OR LOWER(name) LIKE LOWER('%' || $6 || '%'))
   AND ($7 = '' OR document_id = $7::uuid);
+
+-- name: GetEsignSubmissionWithSigners :many
+SELECT 
+    es.*,
+    ess.id as signer_id,
+    ess.email as signer_email,
+    ess.name as signer_name,
+    ess.sign_order,
+    ess.status as signer_status,
+    ess.signed_at,
+    ess.declined_at,
+    ess.declined_reason,
+    ess.created_at as signer_created_at,
+    ess.updated_at as signer_updated_at
+FROM esign_submissions es
+LEFT JOIN esign_submission_signers ess ON es.id = ess.submission_id AND ess.deleted_at IS NULL
+WHERE es.id = $1
+    AND es.deleted_at IS NULL
+ORDER BY ess.sign_order ASC;
