@@ -773,15 +773,15 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		}
 		if len(customers) > 0 {
 			// Create notification for customer users about new marina message using smart notification system
-			var emailData *notifications.EmailNotificationData
+			// var emailData *notifications.EmailNotificationData
 
 			// Prepare delivery data based on message type
-			if req.Type == "email" {
-				emailData = &notifications.EmailNotificationData{
-					To:      []string{req.Contact},
-					Subject: "Message from " + req.Sender,
-				}
-			}
+			// if req.Type == "email" {
+			// 	emailData = &notifications.EmailNotificationData{
+			// 		To:      []string{req.Contact},
+			// 		Subject: "Message from " + req.Sender,
+			// 	}
+			// }
 
 			// Get marina to get organization ID
 			marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
@@ -803,7 +803,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				req.Body,
 				req.Sender,
 				req.CustomerID,
-				emailData,
+				req.Type,
 			)
 			if err != nil {
 				logger.Zap.Errorw("Failed to create bulk message notifications for customers", "error", err)

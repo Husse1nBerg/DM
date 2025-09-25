@@ -15673,7 +15673,48 @@
             }
         },
         "requests.CreateMultipleEsignSubmissionRequest": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "documentId",
+                "signers"
+            ],
+            "properties": {
+                "attachmentRequired": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "customMessage": {
+                    "type": "string",
+                    "example": "Custom message to the signers"
+                },
+                "customerId": {
+                    "type": "string",
+                    "example": "CUST123"
+                },
+                "documentId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Multi-Signature Agreement"
+                },
+                "replyName": {
+                    "type": "string",
+                    "example": "Marina Manager"
+                },
+                "replyTo": {
+                    "type": "string",
+                    "example": "marina@example.com"
+                },
+                "signers": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                        "$ref": "#/definitions/requests.EsignSubmissionSigner"
+                    }
+                }
+            }
         },
         "requests.CreateNotificationRequest": {
             "type": "object"

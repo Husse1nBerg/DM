@@ -28,7 +28,7 @@ func (q *Queries) CountRolesByMarina(ctx context.Context, marinaID uuid.UUID) (i
 
 const createRole = `-- name: CreateRole :one
 INSERT INTO roles (name, description, permissions, is_active, is_customer_role, type, marina_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7::uuid, '00000000-0000-0000-0000-000000000000'))
 RETURNING id, name, description, permissions, is_active, created_at, updated_at, deleted_at, is_customer_role, type, marina_id
 `
 
@@ -39,7 +39,7 @@ type CreateRoleParams struct {
 	IsActive       *bool
 	IsCustomerRole *bool
 	Type           string
-	MarinaID       uuid.UUID
+	Column7        uuid.UUID
 }
 
 func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error) {
@@ -50,7 +50,7 @@ func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, e
 		arg.IsActive,
 		arg.IsCustomerRole,
 		arg.Type,
-		arg.MarinaID,
+		arg.Column7,
 	)
 	var i Role
 	err := row.Scan(
