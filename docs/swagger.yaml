@@ -1551,6 +1551,36 @@ definitions:
     - type
     type: object
   requests.CreateMultipleEsignSubmissionRequest:
+    properties:
+      attachmentRequired:
+        example: false
+        type: boolean
+      customMessage:
+        example: Custom message to the signers
+        type: string
+      customerId:
+        example: CUST123
+        type: string
+      documentId:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        example: Multi-Signature Agreement
+        type: string
+      replyName:
+        example: Marina Manager
+        type: string
+      replyTo:
+        example: marina@example.com
+        type: string
+      signers:
+        items:
+          $ref: '#/definitions/requests.EsignSubmissionSigner'
+        minItems: 2
+        type: array
+    required:
+    - documentId
+    - signers
     type: object
   requests.CreateNotificationRequest:
     type: object

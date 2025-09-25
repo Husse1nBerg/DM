@@ -1344,7 +1344,7 @@ func (s *NotificationService) CreateBulkMessageNotificationsForCustomers(
 	messageContent string,
 	sender string,
 	customerID string,
-	emailData *EmailNotificationData,
+	messageType string,
 ) ([]*SmartNotificationResult, error) {
 	var requests []SmartNotificationRequest
 
@@ -1360,16 +1360,37 @@ func (s *NotificationService) CreateBulkMessageNotificationsForCustomers(
 				"customerID":     customerID,
 			}
 
-			req := SmartNotificationRequest{
-				UserID:         user.ID,
-				OrganizationID: organizationID,
-				MarinaID:       marinaID,
-				Type:           "message",
-				Title:          title,
-				Content:        content,
-				Data:           data,
-				Priority:       nil,
-				EmailData:      emailData,
+			var req SmartNotificationRequest
+
+			if messageType == "email" {
+				emailData := &EmailNotificationData{
+					To:      []string{user.Email},
+					Subject: "Message from " + sender,
+				}
+
+				req = SmartNotificationRequest{
+					UserID:         user.ID,
+					OrganizationID: organizationID,
+					MarinaID:       marinaID,
+					Type:           "message",
+					Title:          title,
+					Content:        content,
+					Data:           data,
+					Priority:       nil,
+					EmailData:      emailData,
+				}
+			} else {
+				req = SmartNotificationRequest{
+					UserID:         user.ID,
+					OrganizationID: organizationID,
+					MarinaID:       marinaID,
+					Type:           "message",
+					Title:          title,
+					Content:        content,
+					Data:           data,
+					Priority:       nil,
+					EmailData:      nil,
+				}
 			}
 
 			requests = append(requests, req)
