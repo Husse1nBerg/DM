@@ -114,3 +114,45 @@ type WorkOrderDeleteOperationRequest struct {
 	WorkOrder string `query:"WorkOrder" validate:"required"`
 	Operation string `query:"Operation" validate:"required"`
 }
+
+// WorkOrderListNewOrChangedRequest represents a request to list new or changed work orders
+type WorkOrderListNewOrChangedRequest struct {
+	AsOfDate string `query:"AsOfDate" validate:"required"`
+	Page     int    `query:"page" validate:"required,min=1"`
+	PageSize int    `query:"pageSize" validate:"required,min=1,max=100"`
+}
+
+// WorkOrderRetrieveListRequest represents a request to retrieve a list of work orders
+type WorkOrderRetrieveListRequest struct {
+	// Add fields as needed based on API requirements
+	WithDetail bool `json:"withDetail"`
+	Status     string `json:"status,omitempty"`
+}
+
+// WorkOrderPartEntryRequest represents a request to submit a part entry
+type WorkOrderPartEntryRequest struct {
+	WorkOrderID string  `json:"workOrderId" validate:"required"`
+	PartNumber  string  `json:"partNumber" validate:"required"`
+	Quantity    int     `json:"quantity" validate:"required,min=1"`
+	UnitPrice   float64 `json:"unitPrice" validate:"required,min=0"`
+	Description string  `json:"description"`
+	OperationID string  `json:"operationId"`
+}
+
+// WorkOrderTimeEntryRequest represents a request to submit a time entry
+type WorkOrderTimeEntryRequest struct {
+	WorkOrderID   string  `json:"workOrderId" validate:"required"`
+	OperationID   string  `json:"operationId" validate:"required"`
+	TechnicianID  string  `json:"technicianId" validate:"required"`
+	Hours         float64 `json:"hours" validate:"required,min=0"`
+	Rate          float64 `json:"rate" validate:"required,min=0"`
+	Date          string  `json:"date" validate:"required"`
+	Description   string  `json:"description"`
+}
+
+// WorkOrderListTimeEntryRequest represents a request to list time entries
+type WorkOrderListTimeEntryRequest struct {
+	AsOfDate string `query:"AsOfDate" validate:"required"`
+	Page     int    `query:"page" validate:"required,min=1"`
+	PageSize int    `query:"pageSize" validate:"required,min=1,max=100"`
+}

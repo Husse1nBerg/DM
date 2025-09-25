@@ -28,6 +28,8 @@ func NewMessageHandler(server *s.Server) *MessageHandler {
 		server.DB.Queries(),
 		server.Redis,
 		server.Logger,
+		server.SendGrid,
+		server.Config,
 	)
 
 	return &MessageHandler{
@@ -109,6 +111,88 @@ func (h *MessageHandler) updateUsage(ctx context.Context, marinaID uuid.UUID, me
 	}
 
 	return nil
+}
+
+// checkRecipientEmailPreferences checks if the recipient has email notifications enabled
+func (h *MessageHandler) checkRecipientEmailPreferences(ctx context.Context, recipientEmail string, marinaID uuid.UUID) (bool, error) {
+	queries := h.server.DB.Queries()
+
+	// Find the user by email in this marina
+	users, err := queries.GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
+		MarinaID: marinaID,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Warnw("Failed to get marina users for email preference check", "error", err)
+		return true, nil // Default to allowing emails if we can't check
+	}
+
+	// Find the user with matching email
+	var recipientUser *db.GetUsersByMarinaRow
+	for _, user := range users {
+		if user.Email == recipientEmail {
+			recipientUser = &user
+			break
+		}
+	}
+
+	if recipientUser == nil {
+		h.server.Logger.Zap.Debugw("Recipient not found in marina users, allowing email", "email", recipientEmail)
+		return true, nil // If user not found, allow email (external recipient)
+	}
+
+	// Check user's notification preferences for message type
+	preference, err := queries.GetNotificationPreference(ctx, db.GetNotificationPreferenceParams{
+		UserID:           recipientUser.ID,
+		NotificationType: "message",
+	})
+	if err != nil {
+		h.server.Logger.Zap.Debugw("No notification preference found for recipient, allowing email",
+			"user_id", recipientUser.ID, "email", recipientEmail)
+		return true, nil // If no preference found, allow email (opt-in approach)
+	}
+
+	// Check if notifications are enabled and delivery method includes email
+	if preference.Enabled != nil && *preference.Enabled {
+		if preference.DeliveryMethod != nil {
+			deliveryMethod := *preference.DeliveryMethod
+			// Allow email if delivery method is "email" or "all"
+			return deliveryMethod == "email" || deliveryMethod == "all", nil
+		}
+		// If enabled but no delivery method specified, default to system only
+		return false, nil
+	}
+
+	h.server.Logger.Zap.Debugw("Recipient has email notifications disabled",
+		"user_id", recipientUser.ID, "email", recipientEmail)
+	return false, nil
+}
+
+// debugUserNotificationPreferences logs detailed information about user notification preferences
+func (h *MessageHandler) debugUserNotificationPreferences(ctx context.Context, userID uuid.UUID, notificationType string) {
+	queries := h.server.DB.Queries()
+
+	// Get user's notification preferences
+	preference, err := queries.GetNotificationPreference(ctx, db.GetNotificationPreferenceParams{
+		UserID:           userID,
+		NotificationType: notificationType,
+	})
+
+	if err != nil {
+		h.server.Logger.Zap.Infow("DEBUG: No notification preference found",
+			"user_id", userID,
+			"type", notificationType,
+			"error", err)
+		return
+	}
+
+	h.server.Logger.Zap.Infow("DEBUG: User notification preference found",
+		"user_id", userID,
+		"type", notificationType,
+		"preference_id", preference.ID,
+		"enabled", preference.Enabled,
+		"delivery_method", preference.DeliveryMethod,
+		"created_at", preference.CreatedAt,
+		"updated_at", preference.UpdatedAt)
 }
 
 // ListMessagesHandler lists messages for a marina and customer
@@ -322,6 +406,27 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		}
 	}
 
+	// Check recipient's email preferences before sending
+	allowEmail, err := h.checkRecipientEmailPreferences(c.Request().Context(), req.Contact, req.MarinaID)
+	if err != nil {
+		logger.Zap.Warnw("Failed to check recipient email preferences, allowing email", "error", err)
+		allowEmail = true // Default to allowing if check fails
+	}
+
+	if !allowEmail {
+		logger.Zap.Infow("Skipping email send due to recipient preferences",
+			"recipient", req.Contact, "marina_id", req.MarinaID)
+		// Still create the message but mark it as sent without email
+		if err := queries.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
+			ID:     message.ID,
+			Status: "sent",
+		}); err != nil {
+			logger.Zap.Errorw("Failed to update message status", "message_id", message.ID, "error", err)
+		}
+		response := responses.NewMessageResponseSuccess(message)
+		return c.JSON(http.StatusCreated, response)
+	}
+
 	// Create email data
 	email := sendgrid.MessageTemplateData{
 		Content:   req.Body,
@@ -350,40 +455,41 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	if err != nil {
 		logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", req.MarinaID, "error", err)
 	} else {
-		// Create notifications for marina staff using smart notification system
-		emailData := &notifications.EmailNotificationData{
-			To:      []string{req.Contact},
-			Subject: "New Customer Message",
+		// Filter marinaUsers to only include active users
+		activeUsers := make([]db.GetUsersByMarinaRow, 0)
+		for _, user := range marinaUsers {
+			if user.IsActive != nil && *user.IsActive {
+				activeUsers = append(activeUsers, user)
+			}
+		}
+		marinaUsers = activeUsers
+
+		// Get marina to get organization ID
+		marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+		if err != nil {
+			logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+		}
+
+		// Debug: Log notification preferences for each marina user
+		for _, user := range marinaUsers {
+			h.debugUserNotificationPreferences(c.Request().Context(), user.ID, "message")
 		}
 
 		results, err := h.notificationService.CreateBulkMessageNotifications(
 			c.Request().Context(),
 			marinaUsers,
-			req.MarinaID, // Using marina ID as organization ID for now
-			req.MarinaID,
+			marina.OrganizationID,
+			marina.ID,
 			req.Body,       // Message content preview
 			req.Sender,     // Customer name
 			req.CustomerID, // Customer ID
-			emailData,
-			nil, // No SMS data for customer messages
+			nil,
 		)
 		if err != nil {
 			logger.Zap.Warnw("Failed to create bulk message notifications", "error", err)
 		} else {
-			// Log notification results
-			for _, result := range results {
-				if len(result.Errors) > 0 {
-					logger.Zap.Warnw("Notification delivery had errors",
-						"user_id", result.UserID,
-						"errors", result.Errors)
-				} else {
-					logger.Zap.Infow("Notification delivered successfully",
-						"user_id", result.UserID,
-						"push", result.PushDelivered,
-						"email", result.EmailDelivered,
-						"sms", result.SMSDelivered)
-				}
-			}
+			logger.Zap.Infow("Bulk message notifications created successfully", "count", len(results))
 		}
 	}
 
@@ -562,68 +668,87 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 			}
 		}()
 	} else if req.Type == "email" {
-		var taskID uuid.UUID
-		var resultChan <-chan sendgrid.EmailStatus
-
-		// Create email data
-		email := sendgrid.MessageTemplateData{
-			Content:   req.Body,
-			Recipient: req.Recipient,
-			Sender:    req.Sender,
-			HomeURL:   cfg.App.HomeURL(),
-		}
-		to := []string{req.Contact}
-		subject := "Message from " + req.Sender
-
-		// Send email asynchronously
-		taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
+		// Check recipient's email preferences before sending
+		allowEmail, err := h.checkRecipientEmailPreferences(c.Request().Context(), req.Contact, req.MarinaID)
 		if err != nil {
-			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			logger.Zap.Warnw("Failed to check recipient email preferences, allowing email", "error", err)
+			allowEmail = true // Default to allowing if check fails
 		}
 
-		// Log the task
-		logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Recipient)
-
-		// Process the result asynchronously to log success/failure and update message usage
-		go func() {
-			result := <-resultChan
-			if result.Status == telgorithm.StatusSent {
-				logger.Zap.Infow("Email sent successfully",
-					"to", req.Contact,
-					"task_id", result.ID.String(),
-					"message_id", result.ID,
-					"status", result.Status)
-				// Use background context for DB update
-				if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
-					ID:     message.ID,
-					Status: "sent",
-				}); err != nil {
-					logger.Zap.Errorw("Failed to update message status",
-						"message_id", message.ID,
-						"error", err)
-				}
-				// Increment message usage count
-				if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
-					logger.Zap.Errorw("Failed to update message usage",
-						"marina_id", req.MarinaID,
-						"error", err)
-				}
-			} else {
-				logger.Zap.Errorw("Failed to send email",
-					"to", req.Contact,
-					"task_id", result.ID.String(),
-					"error", result.Error)
-				// Use background context for DB update
-				if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
-					ID:     message.ID,
-					Status: "failed",
-				}); err != nil {
-					logger.Zap.Errorw("Failed to update message status",
-						"message_id", message.ID,
-						"error", err)
-				}
+		if !allowEmail {
+			logger.Zap.Infow("Skipping email send due to recipient preferences",
+				"recipient", req.Contact, "marina_id", req.MarinaID)
+			// Still create the message but mark it as sent without email
+			if err := queries.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
+				ID:     message.ID,
+				Status: "sent",
+			}); err != nil {
+				logger.Zap.Errorw("Failed to update message status", "message_id", message.ID, "error", err)
 			}
-		}()
+		} else {
+			var taskID uuid.UUID
+			var resultChan <-chan sendgrid.EmailStatus
+
+			// Create email data
+			email := sendgrid.MessageTemplateData{
+				Content:   req.Body,
+				Recipient: req.Recipient,
+				Sender:    req.Sender,
+				HomeURL:   cfg.App.HomeURL(),
+			}
+			to := []string{req.Contact}
+			subject := "Message from " + req.Sender
+
+			// Send email asynchronously
+			taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			}
+
+			// Log the task
+			logger.Zap.Infow("Email queued", "task_id", taskID.String(), "to", req.Recipient)
+
+			// Process the result asynchronously to log success/failure and update message usage
+			go func() {
+				result := <-resultChan
+				if result.Status == telgorithm.StatusSent {
+					logger.Zap.Infow("Email sent successfully",
+						"to", req.Contact,
+						"task_id", result.ID.String(),
+						"message_id", result.ID,
+						"status", result.Status)
+					// Use background context for DB update
+					if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
+						ID:     message.ID,
+						Status: "sent",
+					}); err != nil {
+						logger.Zap.Errorw("Failed to update message status",
+							"message_id", message.ID,
+							"error", err)
+					}
+					// Increment message usage count
+					if err := h.updateUsage(context.Background(), req.MarinaID, "email"); err != nil {
+						logger.Zap.Errorw("Failed to update message usage",
+							"marina_id", req.MarinaID,
+							"error", err)
+					}
+				} else {
+					logger.Zap.Errorw("Failed to send email",
+						"to", req.Contact,
+						"task_id", result.ID.String(),
+						"error", result.Error)
+					// Use background context for DB update
+					if err := queries.UpdateMessageStatus(context.Background(), db.UpdateMessageStatusParams{
+						ID:     message.ID,
+						Status: "failed",
+					}); err != nil {
+						logger.Zap.Errorw("Failed to update message status",
+							"message_id", message.ID,
+							"error", err)
+					}
+				}
+			}()
+		}
 	} else {
 		// For internal messages, just mark as sent
 		if err := queries.UpdateMessageStatus(c.Request().Context(), db.UpdateMessageStatusParams{
@@ -635,60 +760,72 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				"error", err)
 		}
 	}
-	// Get the user id of the customer
-	customers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
-		MarinaID:   req.MarinaID,
-		CustomerID: &req.CustomerID,
-	})
-	if err != nil {
-		logger.Zap.Errorw("Failed to get customer users", "error", err)
-	}
-	if len(customers) > 0 {
-		// Create notification for customer users about new marina message using smart notification system
-		var emailData *notifications.EmailNotificationData
-		var smsData *notifications.SMSNotificationData
 
-		// Prepare delivery data based on message type
-		if req.Type == "email" {
-			emailData = &notifications.EmailNotificationData{
-				To:      []string{req.Contact},
-				Subject: "Message from " + req.Sender,
-			}
-		} else if req.Type == "sms" {
-			smsData = &notifications.SMSNotificationData{
-				To:      req.Contact,
-				Message: req.Body,
-			}
-		}
-
-		results, err := h.notificationService.CreateBulkMessageNotificationsForCustomers(
-			c.Request().Context(),
-			customers,
-			req.MarinaID, // Using marina ID as organization ID for now
-			req.MarinaID,
-			req.Body,
-			req.Sender,
-			req.CustomerID,
-			emailData,
-			smsData,
-		)
+	// Only create notifications for external-facing messages (not internal notes)
+	if req.Type != "internal" {
+		// Get the user id of the customer
+		customers, err := queries.GetMarinaCustomerUsersByCustomerID(c.Request().Context(), db.GetMarinaCustomerUsersByCustomerIDParams{
+			MarinaID:   req.MarinaID,
+			CustomerID: &req.CustomerID,
+		})
 		if err != nil {
-			logger.Zap.Errorw("Failed to create bulk message notifications for customers", "error", err)
-		} else {
-			// Log notification results
-			for _, result := range results {
-				if len(result.Errors) > 0 {
-					logger.Zap.Warnw("Customer notification delivery had errors",
-						"user_id", result.UserID,
-						"errors", result.Errors)
-				} else {
-					logger.Zap.Infow("Customer notification delivered successfully",
-						"user_id", result.UserID,
-						"push", result.PushDelivered,
-						"email", result.EmailDelivered,
-						"sms", result.SMSDelivered)
+			logger.Zap.Errorw("Failed to get customer users", "error", err)
+		}
+		if len(customers) > 0 {
+			// Create notification for customer users about new marina message using smart notification system
+			// var emailData *notifications.EmailNotificationData
+
+			// Prepare delivery data based on message type
+			// if req.Type == "email" {
+			// 	emailData = &notifications.EmailNotificationData{
+			// 		To:      []string{req.Contact},
+			// 		Subject: "Message from " + req.Sender,
+			// 	}
+			// }
+
+			// Get marina to get organization ID
+			marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+			if err != nil {
+				logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+			}
+
+			// Debug: Log notification preferences for each customer user
+			for _, customer := range customers {
+				h.debugUserNotificationPreferences(c.Request().Context(), customer.ID, "message")
+			}
+
+			results, err := h.notificationService.CreateBulkMessageNotificationsForCustomers(
+				c.Request().Context(),
+				customers,
+				marina.OrganizationID, // Using marina organization ID
+				req.MarinaID,
+				req.Body,
+				req.Sender,
+				req.CustomerID,
+				req.Type,
+			)
+			if err != nil {
+				logger.Zap.Errorw("Failed to create bulk message notifications for customers", "error", err)
+			} else {
+				// Log notification results
+				for _, result := range results {
+					if len(result.Errors) > 0 {
+						logger.Zap.Warnw("Customer notification delivery had errors",
+							"user_id", result.UserID,
+							"errors", result.Errors)
+					} else {
+						logger.Zap.Infow("Customer notification delivered successfully",
+							"user_id", result.UserID,
+							"system", result.SystemDelivered,
+							"email", result.EmailDelivered)
+					}
 				}
 			}
+		} else {
+			logger.Zap.Debugw("Skipping customer notifications for internal message",
+				"message_id", message.ID,
+				"customer_id", req.CustomerID)
 		}
 	}
 	response := responses.NewMessageResponseSuccess(message)

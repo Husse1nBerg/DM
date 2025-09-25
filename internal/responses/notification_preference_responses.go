@@ -62,6 +62,41 @@ func NewNotificationPreferencesResponse(preferences []db.NotificationPreference)
 	return NewSuccessResponse(NotificationPreferencesResponse{Data: preferenceResponses})
 }
 
+// NotificationPreferenceRowDBToResponse creates a NotificationPreferenceResponse from GetNotificationPreferencesRow
+func NotificationPreferenceRowDBToResponse(pref db.GetNotificationPreferencesRow) NotificationPreferenceResponse {
+	response := NotificationPreferenceResponse{
+		ID:               pref.ID,
+		UserID:           pref.UserID,
+		NotificationType: pref.NotificationType,
+		Enabled:          true,   // Default to true
+		DeliveryMethod:   "push", // Default delivery method
+		CreatedAt:        pref.CreatedAt.Time,
+		UpdatedAt:        pref.UpdatedAt.Time,
+	}
+
+	// Handle nullable Enabled field
+	if pref.Enabled != nil {
+		response.Enabled = *pref.Enabled
+	}
+
+	// Handle nullable DeliveryMethod field
+	if pref.DeliveryMethod != nil {
+		response.DeliveryMethod = *pref.DeliveryMethod
+	}
+
+	return response
+}
+
+// NotificationPreferenceRowDBToResponseList creates a response from GetNotificationPreferencesRow slice
+func NotificationPreferenceRowDBToResponseList(preferences []db.GetNotificationPreferencesRow) BaseResponse {
+	preferenceResponses := make([]NotificationPreferenceResponse, len(preferences))
+	for i, pref := range preferences {
+		preferenceResponses[i] = NotificationPreferenceRowDBToResponse(pref)
+	}
+
+	return NewSuccessResponse(NotificationPreferencesResponse{Data: preferenceResponses})
+}
+
 func NotificationPreferenceDBToResponseList(preferences []db.NotificationPreference) BaseResponse {
 	preferenceResponses := make([]NotificationPreferenceResponse, len(preferences))
 	for i, pref := range preferences {

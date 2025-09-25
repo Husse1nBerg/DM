@@ -27,6 +27,7 @@ func LoadSendGridConfig() SendGridConfig {
 	templatesMap["message_external"] = os.Getenv("SENDGRID_TEMPLATE_MESSAGE_EXTERNAL")
 	templatesMap["assigned_to_marina"] = os.Getenv("SENDGRID_TEMPLATE_ASSIGNED_TO_MARINA")
 	templatesMap["esign_submission"] = os.Getenv("SENDGRID_TEMPLATE_ESIGN_SUBMISSION")
+	templatesMap["notification"] = os.Getenv("SENDGRID_TEMPLATE_NOTIFICATION")
 	if templatesMap["message"] == "" {
 		templatesMap["message"] = "d-2a2afe50d47d417c99019692dc20079a"
 	}
@@ -50,6 +51,9 @@ func LoadSendGridConfig() SendGridConfig {
 	}
 	if templatesMap["esign_submission"] == "" {
 		templatesMap["esign_submission"] = "d-b14c44271dbb4893a34730bc59cb3c62"
+	}
+	if templatesMap["notification"] == "" {
+		templatesMap["notification"] = "d-e6168ddc800045b6abf536dfaa5681d9"
 	}
 	return SendGridConfig{
 		APIKey:       os.Getenv("SENDGRID_API_KEY"),

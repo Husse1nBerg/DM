@@ -437,6 +437,9 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 			}
 		}
 	}
+	if req.Inactive != nil {
+		existingCustomer.Inactive = *req.Inactive
+	}
 
 	// Convert to CustomerUpdate
 	customer := dme.CustomerUpdate{
@@ -473,6 +476,7 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		ShipmentMethodDescription: existingCustomer.ShipmentMethodDescription,
 		CustomInformation:         existingCustomer.CustomInformation,
 		Attachments:               existingCustomer.Attachments,
+		Inactive:                  existingCustomer.Inactive,
 	}
 
 	dmeResponse, err := h.server.DME.CustomerUpdate(ctx, &customer, orgID, *systemID)

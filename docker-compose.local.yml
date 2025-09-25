@@ -26,6 +26,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    environment:
+      - VALKEY_PASSWORD=${REDIS_PASSWORD:-}
+    command: valkey-server
+    volumes:
+      - valkey_data:/data
+
   test_db:
     image: postgres:17.0-alpine
     restart: always

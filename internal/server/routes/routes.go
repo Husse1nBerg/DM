@@ -149,8 +149,20 @@ func RegisterRoutes(s *s.Server) {
 	// Work Order routes
 	RegisterWorkOrderRoutes(s, permissionProtected)
 
+	// Estimate routes
+	RegisterEstimateRoutes(s, permissionProtected)
+
+	// Service routes
+	RegisterServiceRoutes(s, permissionProtected)
+
+	// Invoice routes
+	RegisterInvoiceRoutes(s, permissionProtected)
+
 	// Message routes
 	RegisterMessageRoutes(s, permissionProtected)
+
+	// AI routes
+	RegisterAIRoutes(s, permissionProtected)
 
 	// Marina Usage History routes
 	RegisterMarinaUsageHistoryRoutes(s, protected)
@@ -169,4 +181,7 @@ func RegisterRoutes(s *s.Server) {
 
 	// Notification preference routes
 	RegisterNotificationPreferenceRoutes(s, permissionProtected)
+
+	// General DME API routes
+	RegisterGeneralRoutes(s, permissionProtected)
 }

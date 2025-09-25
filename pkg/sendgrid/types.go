@@ -113,3 +113,10 @@ type ESignSubmissionTemplateData struct {
 	CustomMessage   string `json:"custom_message,omitempty"` // Custom message to the customer
 	Logo            string `json:"logo,omitempty"`           // URL for the customer logo
 }
+
+type NotificationTemplateData struct {
+	Recipient    string `json:"recipient"` // Recipient name
+	Type         string `json:"type"`      // Type of notification
+	CustomerName string `json:"customer_name"`
+	HomeURL      string `json:"home_url"`
+}

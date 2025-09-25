@@ -137,3 +137,34 @@ type ListEsignSubmissionsByMarinaFilteredRequest struct {
 type PublicUpdateEsignSubmissionRequest struct {
 	Status string `form:"status" validate:"required,oneof=pending signed questions sent" example:"signed"`
 }
+
+// EsignSubmissionSigner represents a signer in a multiple signature submission
+type EsignSubmissionSigner struct {
+	Email     string  `json:"email" validate:"required,email" example:"signer@example.com"`
+	Name      *string `json:"name,omitempty" example:"John Doe"`
+	SignOrder int32   `json:"signOrder" validate:"required,min=1" example:"1"`
+}
+
+// CreateMultipleEsignSubmissionRequest represents the required parameters to create a new multiple e-signature submission
+type CreateMultipleEsignSubmissionRequest struct {
+	DocumentID         uuid.UUID               `json:"documentId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
+	CustomerID         *string                 `json:"customerId,omitempty" example:"CUST123"`
+	Signers            []EsignSubmissionSigner `json:"signers" validate:"required,min=2"`
+	ReplyTo            *string                 `json:"replyTo,omitempty" example:"marina@example.com"`
+	CustomMessage      *string                 `json:"customMessage,omitempty" example:"Custom message to the signers"`
+	ReplyName          *string                 `json:"replyName,omitempty" example:"Marina Manager"`
+	Name               *string                 `json:"name,omitempty" example:"Multi-Signature Agreement"`
+	AttachmentRequired *bool                   `json:"attachmentRequired,omitempty" example:"false"`
+}
+
+// UpdateEsignSubmissionSignerRequest represents the parameters to update a signer's status
+type UpdateEsignSubmissionSignerRequest struct {
+	Status         string  `json:"status" validate:"required,oneof=pending signed declined expired" example:"signed"`
+	DeclinedReason *string `json:"declinedReason,omitempty" example:"Document needs revision"`
+}
+
+// ListEsignSubmissionSignersRequest represents the parameters to list signers for a submission
+type ListEsignSubmissionSignersRequest struct {
+	SubmissionID uuid.UUID `json:"submissionId" validate:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
+	FilterSortParams
+}
