@@ -79,6 +79,10 @@ func RunProdSeed() {
 			if err != nil {
 				log.Fatalf("failed to get storage plan: %v", err)
 			}
+			documentPlan, err := q.GetDocumentPlanByName(ctx, "Free")
+			if err != nil {
+				log.Fatalf("failed to get document plan: %v", err)
+			}
 			marina, err = q.CreateMarina(ctx, sqlc.CreateMarinaParams{
 				Name:                "Dockmaster Web",
 				Email:               "marina@dockmaster.com",
@@ -89,6 +93,7 @@ func RunProdSeed() {
 				Modules:             marinaModulesBytes,
 				NotesMessagesPlanID: notesMessagesPlan.ID,
 				StoragePlanID:       storagePlan.ID,
+				DocumentPlanID:      documentPlan.ID,
 			})
 			if err != nil {
 				log.Fatalf("failed to create marina: %v", err)
@@ -456,7 +461,7 @@ func RunProdSeed() {
 				"messages.create":     true,
 				"documents.read":      true,
 				"documents.write":     true,
-				"documents.delete":    false,
+				"documents.delete":    true,
 				"documents.create":    true,
 				"boat_gallery.read":   true,
 				"boat_gallery.write":  true,

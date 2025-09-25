@@ -138,4 +138,5 @@ type CustomerUpdateRequest struct {
 	ShipmentMethodDescription string                  `json:"shipmentMethodDescription"`
 	CustomInformation         []dme.CustomInformation `json:"customInformation"`
 	Attachments               []AttachmentWithPublic  `json:"attachments"`
+	Inactive                  *bool                   `json:"inactive"`
 }

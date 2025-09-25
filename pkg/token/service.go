@@ -13,12 +13,13 @@ const ExpireCount = 2
 const ExpireRefreshCount = 168
 
 type JwtCustomClaims struct {
-	ID       uuid.UUID `json:"id"`
-	OrgId    uuid.UUID `json:"organizationId"`
-	MarinaId uuid.UUID `json:"marinaId"`
-	Name     string    `json:"name"`
-	Email    string    `json:"email"`
-	RoleID   uuid.UUID `json:"roleId"`
+	ID         uuid.UUID `json:"id"`
+	OrgId      uuid.UUID `json:"organizationId"`
+	MarinaId   uuid.UUID `json:"marinaId"`
+	Name       string    `json:"name"`
+	Email      string    `json:"email"`
+	RoleID     uuid.UUID `json:"roleId"`
+	IsCustomer *bool     `json:"isCustomer"`
 	jwt.RegisteredClaims
 }
 
@@ -51,6 +52,7 @@ func (tokenService *Service) CreateAccessToken(user *db.User) (t string, expired
 		user.FirstName + " " + user.LastName,
 		user.Email,
 		user.RoleID,
+		user.IsCustomer,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(exp),
 		},

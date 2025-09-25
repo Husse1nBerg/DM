@@ -6,19 +6,23 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dockworks/dm-web-backend/internal/config"
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/dockworks/dm-web-backend/pkg/redis"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
 )
 
 // NotificationService provides notification management functionality
 type NotificationService struct {
-	db     *db.Queries
-	redis  *redis.Client
-	logger *logger.Logger
+	db       *db.Queries
+	redis    *redis.Client
+	logger   *logger.Logger
+	sendgrid *sendgrid.Client
+	Config   *config.Config
 }
 
 // NotificationEvent represents different types of notification events
@@ -34,16 +38,18 @@ type NotificationEvent struct {
 }
 
 // NewNotificationService creates a new notification service
-func NewNotificationService(database *db.Queries, redisClient *redis.Client, logger *logger.Logger) *NotificationService {
+func NewNotificationService(database *db.Queries, redisClient *redis.Client, logger *logger.Logger, sendgrid *sendgrid.Client, config *config.Config) *NotificationService {
 	return &NotificationService{
-		db:     database,
-		redis:  redisClient,
-		logger: logger,
+		db:       database,
+		redis:    redisClient,
+		logger:   logger,
+		sendgrid: sendgrid,
+		Config:   config,
 	}
 }
 
 // CreateNotification creates a new notification and optionally sends it in real-time
-func (s *NotificationService) CreateNotification(ctx context.Context, req requests.CreateNotificationRequest, sendRealTime bool) (*db.Notification, error) {
+func (s *NotificationService) CreateNotificationService(ctx context.Context, req requests.CreateNotificationRequest, sendRealTime bool) (*db.Notification, error) {
 	// Validate the request
 	if err := req.Validate(); err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
@@ -162,14 +168,14 @@ func (s *NotificationService) CreateNotification(ctx context.Context, req reques
 	}
 
 	// Send real-time notification if requested
-	if sendRealTime {
-		if err := s.SendRealTimeNotification(ctx, notification); err != nil {
-			s.logger.Zap.Warnw("Failed to send real-time notification",
-				"error", err,
-				"notificationID", notification.ID)
-			// Don't fail the entire operation if real-time sending fails
-		}
-	}
+	// if sendRealTime {
+	// 	if err := s.SendRealTimeNotification(ctx, notification); err != nil {
+	// 		s.logger.Zap.Warnw("Failed to send real-time notification",
+	// 			"error", err,
+	// 			"notificationID", notification.ID)
+	// 		// Don't fail the entire operation if real-time sending fails
+	// 	}
+	// }
 
 	return &notification, nil
 }
@@ -448,7 +454,9 @@ func (s *NotificationService) GetNotificationsByType(ctx context.Context, userID
 // CreateMessageNotification creates a notification for new messages
 func (s *NotificationService) CreateMessageNotification(
 	ctx context.Context,
-	userID, organizationID, marinaID uuid.UUID,
+	userID uuid.UUID,
+	organizationID uuid.UUID,
+	marinaID uuid.UUID,
 	messageContent string,
 	sender string,
 	customerID string,
@@ -474,7 +482,7 @@ func (s *NotificationService) CreateMessageNotification(
 		Priority:       nil, // Use default priority
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
 }
 
@@ -500,8 +508,54 @@ func (s *NotificationService) CreateESignNotification(ctx context.Context, userI
 		Priority:       nil, // Use default priority
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
+}
+
+// CreateESignSmartNotification creates a smart notification for e-sign submissions that respects user preferences
+func (s *NotificationService) CreateESignSmartNotification(ctx context.Context, userID, organizationID, marinaID uuid.UUID, documentURL, submissionID, email string) error {
+	title := "New E-Sign Submission Update"
+	content := fmt.Sprintf("You have received a new e-sign submission update from %s", email)
+
+	data := map[string]interface{}{
+		"document_url":  documentURL,
+		"submission_id": submissionID,
+		"email":         email,
+	}
+
+	// Create smart notification request
+	smartReq := SmartNotificationRequest{
+		UserID:         userID,
+		OrganizationID: organizationID,
+		MarinaID:       marinaID,
+		Type:           "esign",
+		Title:          title,
+		Content:        content,
+		Data:           data,
+		Priority:       nil, // Use default priority
+	}
+
+	// Send smart notification (respects user preferences)
+	result, err := s.SendSmartNotification(ctx, smartReq)
+	if err != nil {
+		s.logger.Zap.Errorw("Failed to send smart e-sign notification",
+			"userID", userID,
+			"submissionID", submissionID,
+			"email", email,
+			"error", err)
+		return err
+	}
+
+	// Log the result
+	s.logger.Zap.Infow("Smart e-sign notification sent",
+		"userID", userID,
+		"submissionID", submissionID,
+		"email", email,
+		"systemDelivered", result.SystemDelivered,
+		"emailDelivered", result.EmailDelivered,
+		"errors", result.Errors)
+
+	return nil
 }
 
 // CreateInviteNotification creates a notification for invitations
@@ -524,7 +578,7 @@ func (s *NotificationService) CreateInviteNotification(ctx context.Context, user
 		Priority:       utils.Pointer("high"), // Invites are high priority
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
 }
 
@@ -540,7 +594,7 @@ func (s *NotificationService) CreateSystemNotification(ctx context.Context, user
 		Priority:       &priority,
 	}
 
-	_, err := s.CreateNotification(ctx, req, true) // Send real-time
+	_, err := s.CreateNotificationService(ctx, req, true) // Send real-time
 	return err
 }
 
@@ -556,7 +610,6 @@ type SmartNotificationRequest struct {
 	Priority       *string                `json:"priority,omitempty"`
 	// Additional fields for multi-channel delivery
 	EmailData *EmailNotificationData `json:"emailData,omitempty"`
-	SMSData   *SMSNotificationData   `json:"smsData,omitempty"`
 }
 
 // EmailNotificationData contains email-specific information
@@ -566,20 +619,13 @@ type EmailNotificationData struct {
 	ReplyTo string   `json:"replyTo,omitempty"`
 }
 
-// SMSNotificationData contains SMS-specific information
-type SMSNotificationData struct {
-	To      string `json:"to"`
-	Message string `json:"message"`
-}
-
 // SmartNotificationResult represents the result of smart notification delivery
 type SmartNotificationResult struct {
-	UserID         uuid.UUID  `json:"userId"`
-	NotificationID *uuid.UUID `json:"notificationId,omitempty"`
-	PushDelivered  bool       `json:"pushDelivered"`
-	EmailDelivered bool       `json:"emailDelivered"`
-	SMSDelivered   bool       `json:"smsDelivered"`
-	Errors         []string   `json:"errors,omitempty"`
+	UserID          uuid.UUID  `json:"userId"`
+	NotificationID  *uuid.UUID `json:"notificationId,omitempty"`
+	SystemDelivered bool       `json:"systemDelivered"`
+	EmailDelivered  bool       `json:"emailDelivered"`
+	Errors          []string   `json:"errors,omitempty"`
 }
 
 // SendSmartNotification sends notifications based on user preferences and available delivery methods
@@ -601,63 +647,70 @@ func (s *NotificationService) SendSmartNotification(ctx context.Context, req Sma
 	if err != nil {
 		// Check if it's a context timeout error
 		if ctx.Err() == context.DeadlineExceeded {
-			s.logger.Zap.Warnw("Notification preference lookup timed out, using default",
+			s.logger.Zap.Warnw("Notification preference lookup timed out, notifications disabled by default",
 				"userID", req.UserID,
 				"type", req.Type,
 				"error", err)
-			return s.sendDefaultNotification(ctx, req)
+			return result, nil
 		}
 
-		// If no preference found (no rows), use default (push only)
-		// This is the expected case for new users or users who haven't set preferences
-		s.logger.Zap.Debugw("No notification preference found, using default",
+		// If no preference found (no rows), respect user's choice to not receive notifications
+		// This implements an opt-in approach where users must explicitly enable notifications
+		s.logger.Zap.Infow("DEBUG: No notification preference found, notifications disabled by default",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
-		return s.sendDefaultNotification(ctx, req)
+		return result, nil
 	}
+
+	// Debug: Log the preference details
+	s.logger.Zap.Infow("DEBUG: Notification preference found",
+		"userID", req.UserID,
+		"type", req.Type,
+		"preference_id", preference.ID,
+		"enabled", preference.Enabled,
+		"delivery_method", preference.DeliveryMethod)
 
 	// Check if notifications are enabled for this user and type
 	if preference.Enabled == nil || !*preference.Enabled {
-		s.logger.Zap.Debugw("Notifications disabled for user",
+		s.logger.Zap.Infow("DEBUG: Notifications disabled for user",
 			"userID", req.UserID,
-			"type", req.Type)
+			"type", req.Type,
+			"enabled", preference.Enabled)
 		return result, nil
 	}
 
 	// Determine delivery method
-	deliveryMethod := "push" // default
+	deliveryMethod := "system" // default
 	if preference.DeliveryMethod != nil {
 		deliveryMethod = *preference.DeliveryMethod
 	}
 
 	// Send notifications based on delivery method
 	switch deliveryMethod {
-	case "push":
-		return s.sendPushNotification(ctx, req)
+	case "system":
+		return s.sendSystemNotification(ctx, req)
 	case "email":
 		return s.sendEmailNotification(ctx, req)
-	case "sms":
-		return s.sendSMSNotification(ctx, req)
 	case "all":
 		return s.sendMultiChannelNotification(ctx, req)
 	default:
-		// Fallback to push
-		return s.sendPushNotification(ctx, req)
+		// Fallback to system
+		return s.sendSystemNotification(ctx, req)
 	}
 }
 
-// sendDefaultNotification sends a default push notification when no preferences are set
+// sendDefaultNotification sends a default system notification when no preferences are set
 func (s *NotificationService) sendDefaultNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
 	result := &SmartNotificationResult{
 		UserID: req.UserID,
 	}
 
-	s.logger.Zap.Debugw("Creating default push notification",
+	s.logger.Zap.Debugw("Creating default system notification",
 		"userID", req.UserID,
 		"type", req.Type)
 
-	// Create and send push notification
+	// Create and send system notification
 	notificationReq := requests.CreateNotificationRequest{
 		UserID:         req.UserID,
 		OrganizationID: req.OrganizationID,
@@ -669,39 +722,169 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 		Priority:       req.Priority,
 	}
 
-	notification, err := s.CreateNotification(ctx, notificationReq, true)
+	notification, err := s.CreateNotificationService(ctx, notificationReq, true)
 	if err != nil {
-		s.logger.Zap.Warnw("Failed to create default push notification",
+		s.logger.Zap.Warnw("Failed to create default system notification",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
 
 		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("Push notification failed: %v", err))
-		return result, nil // Return result with error instead of failing
+		result.Errors = append(result.Errors, fmt.Sprintf("System notification failed: %v", err))
+		// Don't return here - continue to try email if EmailData is provided
+	} else {
+		s.logger.Zap.Debugw("Default system notification created successfully",
+			"userID", req.UserID,
+			"type", req.Type,
+			"notificationID", notification.ID)
+
+		result.NotificationID = &notification.ID
+		result.SystemDelivered = true
 	}
 
-	s.logger.Zap.Debugw("Default push notification created successfully",
-		"userID", req.UserID,
-		"type", req.Type,
-		"notificationID", notification.ID)
+	// If EmailData is provided, also send an email notification
+	if req.EmailData != nil {
+		s.logger.Zap.Debugw("Sending default email notification",
+			"userID", req.UserID,
+			"type", req.Type)
 
-	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+		// Get user information to construct email data
+		user, err := s.db.GetUserByID(ctx, req.UserID)
+		if err != nil {
+			s.logger.Zap.Warnw("Failed to get user information for default email notification",
+				"userID", req.UserID,
+				"type", req.Type,
+				"error", err)
+			result.Errors = append(result.Errors, fmt.Sprintf("Failed to get user information: %v", err))
+
+			// Even if user lookup fails, try to send email using provided EmailData
+			if req.EmailData != nil && len(req.EmailData.To) > 0 {
+				s.logger.Zap.Debugw("Attempting to send email using provided EmailData",
+					"userID", req.UserID,
+					"type", req.Type,
+					"to_emails", req.EmailData.To)
+
+				// Send email using SendGrid with fallback data
+				emailData := sendgrid.NotificationTemplateData{
+					Recipient:    "User", // Fallback recipient name
+					Type:         req.Type,
+					CustomerName: "DockMaster", // Default fallback
+					HomeURL:      s.Config.App.FrontendBaseURL,
+				}
+
+				subject := req.Title
+				if req.EmailData.Subject != "" {
+					subject = req.EmailData.Subject
+				}
+
+				taskID, resultChan, err := s.sendgrid.SendNotificationEmail(req.EmailData.To, subject, emailData)
+				if err != nil {
+					s.logger.Zap.Warnw("Failed to send default email notification with fallback data",
+						"userID", req.UserID,
+						"type", req.Type,
+						"error", err)
+					result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+				} else {
+					// Monitor email delivery status
+					go func() {
+						for status := range resultChan {
+							if status.Error != "" {
+								s.logger.Zap.Errorw("Default email notification delivery failed",
+									"userID", req.UserID,
+									"taskID", taskID,
+									"error", status.Error)
+							} else {
+								s.logger.Zap.Infow("Default email notification delivered successfully",
+									"userID", req.UserID,
+									"taskID", taskID,
+									"status", status.Status)
+							}
+						}
+					}()
+
+					result.EmailDelivered = true
+				}
+			}
+		} else {
+			// Get organization information for customer name
+			organization, err := s.db.GetOrganizationByID(ctx, req.OrganizationID)
+			if err != nil {
+				s.logger.Zap.Warnw("Failed to get organization information for default email notification",
+					"userID", req.UserID,
+					"organizationID", req.OrganizationID,
+					"type", req.Type,
+					"error", err)
+				// Continue without organization info
+			}
+
+			// Send email using SendGrid
+			emailData := sendgrid.NotificationTemplateData{
+				Recipient: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+				Type:      req.Type,
+				CustomerName: func() string {
+					if err == nil && organization.Name != "" {
+						return organization.Name
+					}
+					return "DockMaster" // Default fallback
+				}(),
+				HomeURL: s.Config.App.FrontendBaseURL,
+			}
+
+			// Use provided email data if available, otherwise use user's email
+			toEmails := []string{user.Email}
+			if req.EmailData != nil && len(req.EmailData.To) > 0 {
+				toEmails = req.EmailData.To
+			}
+
+			subject := req.Title
+			if req.EmailData != nil && req.EmailData.Subject != "" {
+				subject = req.EmailData.Subject
+			}
+
+			taskID, resultChan, err := s.sendgrid.SendNotificationEmail(toEmails, subject, emailData)
+			if err != nil {
+				s.logger.Zap.Warnw("Failed to send default email notification",
+					"userID", req.UserID,
+					"type", req.Type,
+					"error", err)
+				result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+			} else {
+				// Monitor email delivery status
+				go func() {
+					for status := range resultChan {
+						if status.Error != "" {
+							s.logger.Zap.Errorw("Default email notification delivery failed",
+								"userID", req.UserID,
+								"taskID", taskID,
+								"error", status.Error)
+						} else {
+							s.logger.Zap.Infow("Default email notification delivered successfully",
+								"userID", req.UserID,
+								"taskID", taskID,
+								"status", status.Status)
+						}
+					}
+				}()
+
+				result.EmailDelivered = true
+			}
+		}
+	}
+
 	return result, nil
 }
 
-// sendPushNotification sends only a push notification
-func (s *NotificationService) sendPushNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
+// sendSystemNotification sends only a system notification
+func (s *NotificationService) sendSystemNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
 	result := &SmartNotificationResult{
 		UserID: req.UserID,
 	}
 
-	s.logger.Zap.Debugw("Creating push notification",
+	s.logger.Zap.Debugw("Creating system notification",
 		"userID", req.UserID,
 		"type", req.Type)
 
-	// Create and send push notification
+	// Create and send system notification
 	notificationReq := requests.CreateNotificationRequest{
 		UserID:         req.UserID,
 		OrganizationID: req.OrganizationID,
@@ -713,25 +896,25 @@ func (s *NotificationService) sendPushNotification(ctx context.Context, req Smar
 		Priority:       req.Priority,
 	}
 
-	notification, err := s.CreateNotification(ctx, notificationReq, true)
+	notification, err := s.CreateNotificationService(ctx, notificationReq, true)
 	if err != nil {
-		s.logger.Zap.Warnw("Failed to create push notification",
+		s.logger.Zap.Warnw("Failed to create system notification",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
 
 		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("Push notification failed: %v", err))
+		result.Errors = append(result.Errors, fmt.Sprintf("System notification failed: %v", err))
 		return result, nil // Return result with error instead of failing
 	}
 
-	s.logger.Zap.Debugw("Push notification created successfully",
+	s.logger.Zap.Debugw("System notification created successfully",
 		"userID", req.UserID,
 		"type", req.Type,
 		"notificationID", notification.ID)
 
 	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+	result.SystemDelivered = true
 	return result, nil
 }
 
@@ -741,93 +924,80 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 		UserID: req.UserID,
 	}
 
-	// Check if email data is provided
-	if req.EmailData == nil {
-		s.logger.Zap.Warnw("Email data not provided for email notification",
-			"userID", req.UserID,
-			"type", req.Type)
-		result.Errors = append(result.Errors, "Email data not provided")
-		return result, nil // Return result with error instead of failing
-	}
-
-	// Create push notification for in-app display
-	notificationReq := requests.CreateNotificationRequest{
-		UserID:         req.UserID,
-		OrganizationID: req.OrganizationID,
-		MarinaID:       req.MarinaID,
-		Type:           req.Type,
-		Title:          req.Title,
-		Content:        req.Content,
-		Data:           req.Data,
-		Priority:       req.Priority,
-	}
-
-	notification, err := s.CreateNotification(ctx, notificationReq, false) // Don't send real-time for email
+	// Get user information to construct email data
+	user, err := s.db.GetUserByID(ctx, req.UserID)
 	if err != nil {
-		s.logger.Zap.Warnw("Failed to create email notification",
+		s.logger.Zap.Warnw("Failed to get user information for email notification",
 			"userID", req.UserID,
 			"type", req.Type,
 			"error", err)
-
-		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("Email notification creation failed: %v", err))
-		return result, nil // Return result with error instead of failing
+		result.Errors = append(result.Errors, fmt.Sprintf("Failed to get user information: %v", err))
+		return result, nil
 	}
 
-	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+	// Get organization information for customer name
+	organization, err := s.db.GetOrganizationByID(ctx, req.OrganizationID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get organization information for email notification",
+			"userID", req.UserID,
+			"organizationID", req.OrganizationID,
+			"type", req.Type,
+			"error", err)
+		// Continue without organization info - use default fallback
+	}
 
-	// Note: Email sending would be handled by the calling code
-	// This method focuses on notification creation and preference checking
+	// Send email using SendGrid
+	emailData := sendgrid.NotificationTemplateData{
+		Recipient: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		Type:      req.Type,
+		CustomerName: func() string {
+			if err == nil && organization.Name != "" {
+				return organization.Name
+			}
+			return "DockMaster" // Default fallback
+		}(),
+		HomeURL: s.Config.App.FrontendBaseURL,
+	}
+
+	// Use provided email data if available, otherwise use user's email
+	toEmails := []string{user.Email}
+	if req.EmailData != nil && len(req.EmailData.To) > 0 {
+		toEmails = req.EmailData.To
+	}
+
+	subject := req.Title
+	if req.EmailData != nil && req.EmailData.Subject != "" {
+		subject = req.EmailData.Subject
+	}
+
+	taskID, resultChan, err := s.sendgrid.SendNotificationEmail(toEmails, subject, emailData)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to send email notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+		result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+		return result, nil
+	}
+
+	// Monitor email delivery status
+	go func() {
+		for status := range resultChan {
+			if status.Error != "" {
+				s.logger.Zap.Errorw("Email notification delivery failed",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"error", status.Error)
+			} else {
+				s.logger.Zap.Infow("Email notification delivered successfully",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"status", status.Status)
+			}
+		}
+	}()
+
 	result.EmailDelivered = true
-	return result, nil
-}
-
-// sendSMSNotification sends only an SMS notification
-func (s *NotificationService) sendSMSNotification(ctx context.Context, req SmartNotificationRequest) (*SmartNotificationResult, error) {
-	result := &SmartNotificationResult{
-		UserID: req.UserID,
-	}
-
-	// Check if SMS data is provided
-	if req.SMSData == nil {
-		s.logger.Zap.Warnw("SMS data not provided for SMS notification",
-			"userID", req.UserID,
-			"type", req.Type)
-		result.Errors = append(result.Errors, "SMS data not provided")
-		return result, nil // Return result with error instead of failing
-	}
-
-	// Create push notification for in-app display
-	notificationReq := requests.CreateNotificationRequest{
-		UserID:         req.UserID,
-		OrganizationID: req.OrganizationID,
-		MarinaID:       req.MarinaID,
-		Type:           req.Type,
-		Title:          req.Title,
-		Content:        req.Content,
-		Data:           req.Data,
-		Priority:       req.Priority,
-	}
-
-	notification, err := s.CreateNotification(ctx, notificationReq, false) // Don't send real-time for SMS
-	if err != nil {
-		s.logger.Zap.Warnw("Failed to create SMS notification",
-			"userID", req.UserID,
-			"type", req.Type,
-			"error", err)
-
-		// Add error to result but don't fail completely
-		result.Errors = append(result.Errors, fmt.Sprintf("SMS notification creation failed: %v", err))
-		return result, nil // Return result with error instead of failing
-	}
-
-	result.NotificationID = &notification.ID
-	result.PushDelivered = true
-
-	// Note: SMS sending would be handled by the calling code
-	// This method focuses on notification creation and preference checking
-	result.SMSDelivered = true
 	return result, nil
 }
 
@@ -849,7 +1019,7 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 		Priority:       req.Priority,
 	}
 
-	notification, err := s.CreateNotification(ctx, notificationReq, true)
+	notification, err := s.CreateNotificationService(ctx, notificationReq, true)
 	if err != nil {
 		s.logger.Zap.Warnw("Failed to create multi-channel notification",
 			"userID", req.UserID,
@@ -862,16 +1032,83 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 	}
 
 	result.NotificationID = &notification.ID
-	result.PushDelivered = true
+	result.SystemDelivered = true
 
-	// Mark email and SMS as delivered if data is provided
-	if req.EmailData != nil {
-		result.EmailDelivered = true
-	}
-	if req.SMSData != nil {
-		result.SMSDelivered = true
+	// Send email notification as well
+	// Get user information to construct email data
+	user, err := s.db.GetUserByID(ctx, req.UserID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get user information for multi-channel email notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+		result.Errors = append(result.Errors, fmt.Sprintf("Failed to get user information: %v", err))
+		return result, nil
 	}
 
+	// Get organization information for customer name
+	organization, err := s.db.GetOrganizationByID(ctx, req.OrganizationID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get organization information for multi-channel email notification",
+			"userID", req.UserID,
+			"organizationID", req.OrganizationID,
+			"type", req.Type,
+			"error", err)
+		// Continue without organization info - use empty string for customer name
+	}
+
+	// Send email using SendGrid
+	emailData := sendgrid.NotificationTemplateData{
+		Recipient: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		Type:      req.Type,
+		CustomerName: func() string {
+			if err == nil && organization.Name != "" {
+				return organization.Name
+			}
+			return "DockMaster" // Default fallback
+		}(),
+		HomeURL: s.Config.App.FrontendBaseURL,
+	}
+
+	// Use provided email data if available, otherwise use user's email
+	toEmails := []string{user.Email}
+	if req.EmailData != nil && len(req.EmailData.To) > 0 {
+		toEmails = req.EmailData.To
+	}
+
+	subject := req.Title
+	if req.EmailData != nil && req.EmailData.Subject != "" {
+		subject = req.EmailData.Subject
+	}
+
+	taskID, resultChan, err := s.sendgrid.SendNotificationEmail(toEmails, subject, emailData)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to send multi-channel email notification",
+			"userID", req.UserID,
+			"type", req.Type,
+			"error", err)
+		result.Errors = append(result.Errors, fmt.Sprintf("Email sending failed: %v", err))
+		return result, nil
+	}
+
+	// Monitor email delivery status
+	go func() {
+		for status := range resultChan {
+			if status.Error != "" {
+				s.logger.Zap.Errorw("Multi-channel email notification delivery failed",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"error", status.Error)
+			} else {
+				s.logger.Zap.Infow("Multi-channel email notification delivered successfully",
+					"userID", req.UserID,
+					"taskID", taskID,
+					"status", status.Status)
+			}
+		}
+	}()
+
+	result.EmailDelivered = true
 	return result, nil
 }
 
@@ -982,9 +1219,8 @@ func (s *NotificationService) SendBulkSmartNotifications(ctx context.Context, re
 					"overall_progress", fmt.Sprintf("%d/%d", startIdx+i+1, len(requests)),
 					"userID", req.UserID,
 					"type", req.Type,
-					"push_delivered", result.PushDelivered,
-					"email_delivered", result.EmailDelivered,
-					"sms_delivered", result.SMSDelivered)
+					"system_delivered", result.SystemDelivered,
+					"email_delivered", result.EmailDelivered)
 				results = append(results, result)
 			}
 		}
@@ -1031,7 +1267,6 @@ func (s *NotificationService) CreateSmartMessageNotification(
 	sender string,
 	customerID string,
 	emailData *EmailNotificationData,
-	smsData *SMSNotificationData,
 ) (*SmartNotificationResult, error) {
 	title := "New Message Received"
 	content := fmt.Sprintf("You have received a new message from %s", sender)
@@ -1053,7 +1288,6 @@ func (s *NotificationService) CreateSmartMessageNotification(
 		Data:           data,
 		Priority:       nil, // Use default priority
 		EmailData:      emailData,
-		SMSData:        smsData,
 	}
 
 	return s.SendSmartNotification(ctx, req)
@@ -1068,7 +1302,6 @@ func (s *NotificationService) CreateBulkMessageNotifications(
 	sender string,
 	customerID string,
 	emailData *EmailNotificationData,
-	smsData *SMSNotificationData,
 ) ([]*SmartNotificationResult, error) {
 	var requests []SmartNotificationRequest
 
@@ -1094,7 +1327,6 @@ func (s *NotificationService) CreateBulkMessageNotifications(
 				Data:           data,
 				Priority:       nil,
 				EmailData:      emailData,
-				SMSData:        smsData,
 			}
 
 			requests = append(requests, req)
@@ -1112,8 +1344,7 @@ func (s *NotificationService) CreateBulkMessageNotificationsForCustomers(
 	messageContent string,
 	sender string,
 	customerID string,
-	emailData *EmailNotificationData,
-	smsData *SMSNotificationData,
+	messageType string,
 ) ([]*SmartNotificationResult, error) {
 	var requests []SmartNotificationRequest
 
@@ -1129,17 +1360,37 @@ func (s *NotificationService) CreateBulkMessageNotificationsForCustomers(
 				"customerID":     customerID,
 			}
 
-			req := SmartNotificationRequest{
-				UserID:         user.ID,
-				OrganizationID: organizationID,
-				MarinaID:       marinaID,
-				Type:           "message",
-				Title:          title,
-				Content:        content,
-				Data:           data,
-				Priority:       nil,
-				EmailData:      emailData,
-				SMSData:        smsData,
+			var req SmartNotificationRequest
+
+			if messageType == "email" {
+				emailData := &EmailNotificationData{
+					To:      []string{user.Email},
+					Subject: "Message from " + sender,
+				}
+
+				req = SmartNotificationRequest{
+					UserID:         user.ID,
+					OrganizationID: organizationID,
+					MarinaID:       marinaID,
+					Type:           "message",
+					Title:          title,
+					Content:        content,
+					Data:           data,
+					Priority:       nil,
+					EmailData:      emailData,
+				}
+			} else {
+				req = SmartNotificationRequest{
+					UserID:         user.ID,
+					OrganizationID: organizationID,
+					MarinaID:       marinaID,
+					Type:           "message",
+					Title:          title,
+					Content:        content,
+					Data:           data,
+					Priority:       nil,
+					EmailData:      nil,
+				}
 			}
 
 			requests = append(requests, req)
@@ -1191,7 +1442,6 @@ func (s *NotificationService) CreateBulkDocumentNotifications(
 				Data:           data,
 				Priority:       nil,
 				EmailData:      emailData,
-				SMSData:        nil, // No SMS for document notifications
 			}
 
 			requests = append(requests, req)

@@ -36,6 +36,50 @@ func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, sy
 	return result, nil
 }
 
+// ListClerks retrieves a list of system clerks (users)
+func (c *Client) ListClerks(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Clerk, error) {
+	var result []Clerk
+	endpoint := "/General/Clerks/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list clerks: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveClerk retrieves a specific clerk (user) record
+func (c *Client) RetrieveClerk(ctx context.Context, clerkID string, organizationID uuid.UUID, systemID string) (*Clerk, error) {
+	var result Clerk
+	endpoint := fmt.Sprintf("/General/Clerks?Id=%s", clerkID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve clerk: %w", err)
+	}
+
+	return &result, nil
+}
+
 // -----
 // Customer API
 // -----
@@ -442,8 +486,8 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 // -----
 
 // RetrieveInvoices retrieves invoices by IDs
-// func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) (interface{}, error) {
-// 	var result interface{}
+// func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) ([]InvoiceDetailed, error) {
+// 	var result []InvoiceDetailed
 // 	endpoint := "/AR/RetrieveInvoices"
 // 	err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, invoiceIDs, &result, organizationID, systemID, nil)
 // 	if err != nil {
@@ -453,15 +497,15 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 // }
 
 // RetrieveCustomerInvoices retrieves invoices for a customer
-// func (c *Client) RetrieveCustomerInvoices(ctx context.Context, customerID string, invoiceDate string, organizationID uuid.UUID, systemID string) (interface{}, error) {
-// 	var result interface{}
-// 	endpoint := fmt.Sprintf("/AR/CustomerARInquiry?CustomerId=%s&InvoiceDate=%s", customerID, invoiceDate)
-// 	err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to retrieve customer invoices: %w", err)
-// 	}
-// 	return result, nil
-// }
+func (c *Client) RetrieveCustomerInvoices(ctx context.Context, customerID string, invoiceDate string, organizationID uuid.UUID, systemID string) ([]CustomerInvoiceInquiry, error) {
+	var result []CustomerInvoiceInquiry
+	endpoint := fmt.Sprintf("/AR/CustomerARInquiry?CustomerId=%s&InvoiceDate=%s", customerID, invoiceDate)
+	err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customer invoices: %w", err)
+	}
+	return result, nil
+}
 
 // RetrieveWorkOrdersList retrieves a list of work orders
 // func (c *Client) RetrieveWorkOrdersList(ctx context.Context, req *WorkOrdersListRequest, organizationID uuid.UUID, systemID string) (interface{}, error) {
@@ -769,4 +813,517 @@ func (c *Client) DeleteWorkOrderOperation(ctx context.Context, workOrderId strin
 	}
 
 	return &result, nil
+}
+
+// ListWorkOrderSublets retrieves sublet purchase orders for work orders
+func (c *Client) ListWorkOrderSublets(ctx context.Context, organizationID uuid.UUID, systemID string) ([]interface{}, error) {
+	var result []interface{}
+	endpoint := "/Service/WorkOrders/Sublets/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list work order sublets: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveWorkOrderGroupDescriptions retrieves a list of work order group descriptions
+func (c *Client) RetrieveWorkOrderGroupDescriptions(ctx context.Context, organizationID uuid.UUID, systemID string) ([]interface{}, error) {
+	var result []interface{}
+	endpoint := "/Service/WorkOrders/RetrieveGroupDescription"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order group descriptions: %w", err)
+	}
+
+	return result, nil
+}
+
+// SubmitWorkOrderPartEntry submits a part entry
+func (c *Client) SubmitWorkOrderPartEntry(ctx context.Context, partEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/WorkOrders/SubmitPartEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		partEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit work order part entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitWorkOrderTimeEntry submits a labor time entry for a technician
+func (c *Client) SubmitWorkOrderTimeEntry(ctx context.Context, timeEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/WorkOrders/SubmitTimeEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		timeEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit work order time entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListWorkOrderTimeEntries lists time entries for work orders
+func (c *Client) ListWorkOrderTimeEntries(ctx context.Context, asOfDate string, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := fmt.Sprintf("/Service/WorkOrders/ListTimeEntry?AsOfDate=%s&Page=%d&PageSize=%d", asOfDate, page, pageSize)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list work order time entries: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListNewOrChangedWorkOrders searches for work orders created or changed as of a date
+func (c *Client) ListNewOrChangedWorkOrders(ctx context.Context, asOfDate string, page int, pageSize int, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
+	var result WorkOrderList
+	endpoint := fmt.Sprintf("/Service/WorkOrders/ListNewOrChanged?AsOfDate=%s&Page=%d&PageSize=%d", asOfDate, page, pageSize)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list new or changed work orders: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveWorkOrdersList retrieves a list of work orders with detail or summary information
+func (c *Client) RetrieveWorkOrdersList(ctx context.Context, listRequest map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
+	var result WorkOrderList
+	endpoint := "/Service/WorkOrders/RetrieveList"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		listRequest,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work orders list: %w", err)
+	}
+
+	return &result, nil
+}
+
+// -----
+// Estimate API
+// -----
+
+// ListEstimatesForCustomer retrieves a list of basic estimate information for a specific customer
+func (c *Client) ListEstimatesForCustomer(ctx context.Context, customerID string, status string, locationCodeList string, organizationID uuid.UUID, systemID string) ([]WorkOrderShort, error) {
+	var result []WorkOrderShort
+
+	// Build the query parameters
+	var queryParams []string
+
+	// Required parameter
+	queryParams = append(queryParams, fmt.Sprintf("CustId=%s", customerID))
+
+	// Optional parameters
+	if status != "" {
+		queryParams = append(queryParams, fmt.Sprintf("Status=%s", status))
+	}
+
+	if locationCodeList != "" {
+		queryParams = append(queryParams, fmt.Sprintf("LocationCodeList=%s", locationCodeList))
+	}
+
+	// Construct the endpoint with query parameters
+	endpoint := fmt.Sprintf("/Service/Estimates/ListForCustomer?%s", strings.Join(queryParams, "&"))
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list estimates for customer: %w", err)
+	}
+
+	return result, nil
+}
+
+// EstimateRetrieve retrieves estimate information
+func (c *Client) EstimateRetrieve(ctx context.Context, estimateID string, detail bool, organizationID uuid.UUID, systemID string) (*WorkOrder, error) {
+	var result WorkOrder
+
+	credential, err := c.db.Queries().GetDMECredentialsByOrgID(ctx, organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get DME credential: %w", err)
+	}
+
+	var endpoint string
+	if credential.IsOldApi != nil && *credential.IsOldApi {
+		endpoint = fmt.Sprintf("/Service/Estimates/Retrieve/%s", estimateID)
+	} else {
+		endpoint = fmt.Sprintf("/Service/Estimates/Retrieve?Id=%s&Detail=%t", estimateID, detail)
+	}
+
+	err = c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate information: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListEstimateSublets retrieves sublet purchase orders for estimates
+func (c *Client) ListEstimateSublets(ctx context.Context, organizationID uuid.UUID, systemID string) ([]interface{}, error) {
+	var result []interface{}
+	endpoint := "/Service/Estimates/Sublets/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list estimate sublets: %w", err)
+	}
+
+	return result, nil
+}
+
+// EstimateSearch searches for estimates
+func (c *Client) EstimateSearch(ctx context.Context, searchTerm string, directHit string, organizationID uuid.UUID, systemID string) (*[]WorkOrderSearch, error) {
+	var result []WorkOrderSearch
+	credential, err := c.db.Queries().GetDMECredentialsByOrgID(ctx, organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get DME credential: %w", err)
+	}
+
+	if credential.IsOldApi != nil && *credential.IsOldApi {
+		payload := map[string]interface{}{
+			"SearchString": searchTerm,
+			"DirectHit":    directHit,
+		}
+		endpoint := "/Service/Estimates/Search"
+		err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, payload, &result, organizationID, systemID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to search estimates: %w", err)
+		}
+	} else {
+		endpoint := fmt.Sprintf("/Service/Estimates/Search?SearchString=%s&DirectHit=%s", searchTerm, directHit)
+		err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to search estimates: %w", err)
+		}
+	}
+
+	return &result, nil
+}
+
+// DeleteEstimateOperation deletes an operation from an estimate
+func (c *Client) DeleteEstimateOperation(ctx context.Context, estimateId string, operationCode string, organizationID uuid.UUID, systemID string) (*DeleteOperationResponse, error) {
+	var result DeleteOperationResponse
+
+	// Build the endpoint with query parameters directly
+	endpoint := fmt.Sprintf("/Service/Estimates/DeleteOperation?WorkOrder=%s&Operation=%s",
+		estimateId, operationCode)
+
+	// Make the request with POST method and query params in URL
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		nil, // No body payload
+		&result,
+		organizationID,
+		systemID,
+		nil, // No additional params needed since they're in the URL
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete estimate operation: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveEstimatesList retrieves a list of estimates with detail or summary information
+func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[string]interface{}, organizationID uuid.UUID, systemID string) ([]WorkOrder, error) {
+	var result []WorkOrder
+	endpoint := "/Service/Estimates/RetrieveList"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		listRequest,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimates list: %w", err)
+	}
+
+	return result, nil
+}
+
+// UpdateEstimate updates an estimate
+func (c *Client) UpdateEstimate(ctx context.Context, estimateData map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrder, error) {
+	var result WorkOrderCreateResponse
+	endpoint := "/Service/Estimates/Update"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		estimateData,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update estimate: %w", err)
+	}
+
+	// Extract the estimate ID from the response
+	estimateID := result.WoId
+	if estimateID == "" {
+		return nil, fmt.Errorf("failed to get estimate ID from response")
+	}
+
+	// Retrieve the updated estimate
+	updatedEstimate, err := c.EstimateRetrieve(ctx, estimateID, false, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve updated estimate: %w", err)
+	}
+
+	return updatedEstimate, nil
+}
+
+// -----
+// General Service API
+// -----
+
+// ListNewOrChangedOpCodes searches for operation codes created or changed as of a date
+func (c *Client) ListNewOrChangedOpCodes(ctx context.Context, asOfDate string, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := fmt.Sprintf("/Service/ListNewOrChangedOpCodes?AsOfDate=%s&Page=%d&PageSize=%d", asOfDate, page, pageSize)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list new or changed operation codes: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListWOCategoryCodes returns a list of work order category codes
+func (c *Client) ListWOCategoryCodes(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := fmt.Sprintf("/Service/ListWOCategoryCodes?Page=%d&PageSize=%d", page, pageSize)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list work order category codes: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListOPCategoryCodes returns a list of operation category codes
+func (c *Client) ListOPCategoryCodes(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := fmt.Sprintf("/Service/ListOPCategoryCodes?Page=%d&PageSize=%d", page, pageSize)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list operation category codes: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveOperationDescriptions retrieves operation descriptions from the opcode template
+func (c *Client) RetrieveOperationDescriptions(ctx context.Context, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/OperationDesc"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve operation descriptions: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListTechnicians retrieves a list of technician records
+func (c *Client) ListTechnicians(ctx context.Context, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Technicians"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list technicians: %w", err)
+	}
+
+	return &result, nil
+}
+
+// -----
+// Payment API
+// -----
+
+// InitiatePayment initiates a payment through the DMPay system
+// This function creates a payment request that can be processed by DMPay
+func (c *Client) InitiatePayment(ctx context.Context, customerID string, invoiceID string, amount float64, organizationID uuid.UUID, systemID string) (*PaymentInitiationResponse, error) {
+	// Get location information to retrieve DMPay client ID
+	locations, err := c.ListLocations(ctx, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get locations: %w", err)
+	}
+
+	if len(locations) == 0 {
+		return nil, fmt.Errorf("no locations found for payment processing")
+	}
+
+	// Use the first location's DMPay client ID
+	// In a real implementation, you might need logic to select the correct location
+	dmPayClientID := locations[0].DMPayClientID
+	if dmPayClientID == "" {
+		return nil, fmt.Errorf("DMPay client ID not configured for this location")
+	}
+
+	// Create payment initiation response
+	// This would typically create a payment session with DMPay
+	result := &PaymentInitiationResponse{
+		PaymentSessionID: generatePaymentSessionID(),
+		DMPayClientID:    dmPayClientID,
+		CustomerID:       customerID,
+		InvoiceID:        invoiceID,
+		Amount:           amount,
+		Status:           "pending",
+		PaymentURL:       fmt.Sprintf("https://pay.dockmaster.com/payment/%s", generatePaymentSessionID()),
+	}
+
+	return result, nil
+}
+
+// generatePaymentSessionID generates a unique payment session ID
+func generatePaymentSessionID() string {
+	return uuid.New().String()
 }

@@ -198,7 +198,7 @@ func (g *RoleHandler) CreateRoleHandler(c echo.Context) error {
 		IsActive:       &isActive,
 		IsCustomerRole: req.IsCustomerRole,
 		Type:           req.Type,
-		MarinaID:       marinaID,
+		Column7:        marinaID,
 	}
 
 	role, err := queries.CreateRole(c.Request().Context(), params)

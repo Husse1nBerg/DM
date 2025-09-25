@@ -503,3 +503,32 @@ func (c *Client) SendESignSubmissionEmail(to []string, subject string, data ESig
 	taskID, resultChan := c.SendTemplateEmail(email)
 	return taskID, resultChan, nil
 }
+
+func (c *Client) SendNotificationEmail(to []string, subject string, data NotificationTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["notification"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("notification template not found in configuration")
+	}
+
+	templateData := map[string]interface{}{
+		"recipient":     data.Recipient,
+		"type":          data.Type,
+		"customer_name": data.CustomerName,
+		"home_url":      data.HomeURL,
+	}
+
+	email := &TemplateEmail{
+		Subject: subject,
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}

@@ -40,4 +40,10 @@ func RegisterEsignRoutes(server *s.Server, base *echo.Group, permissionProtected
 	esign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmission)
 	esign.DELETE("/submissions/:id", esignHandler.DeleteEsignSubmission)
 	esign.GET("/submissions/status", esignHandler.ListEsignSubmissionsByStatus)
+
+	// Multiple signature submission management
+	esign.POST("/submissions/multiple", esignHandler.CreateMultipleEsignSubmission)
+	esign.GET("/submissions/:id/signers", esignHandler.GetEsignSubmissionSigners)
+	esign.GET("/submissions/:id/with-signers", esignHandler.GetEsignSubmissionWithSigners)
+	esign.PUT("/submissions/signers/:id", esignHandler.UpdateEsignSubmissionSigner)
 }

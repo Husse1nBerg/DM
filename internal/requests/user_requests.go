@@ -129,3 +129,9 @@ func (r *AssignUserToMarinaRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)
 }
+
+// Validate performs custom validation on the request
+func (r *ListUsersMarinasRequest) Validate() error {
+	validate := validator.New()
+	return validate.Struct(r)
+}

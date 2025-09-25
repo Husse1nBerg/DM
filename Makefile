@@ -207,3 +207,6 @@ onboarding:
 
 update-roles-permissions:
 	@go run scripts/update_roles_permissions/main.go
+
+boat-insurance-notifications:
+	@go run scripts/boat_insurance_notifications/main.go

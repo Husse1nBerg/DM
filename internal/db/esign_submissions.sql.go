@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countEsignSubmissionsByDocument = `-- name: CountEsignSubmissionsByDocument :one
@@ -216,25 +217,27 @@ INSERT INTO esign_submissions (
     name,
     attachment_required,
     reply_to,
-    custom_message
+    custom_message,
+    is_multiple_signature
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
-) RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+) RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 `
 
 type CreateEsignSubmissionParams struct {
-	OrganizationID     uuid.UUID
-	MarinaID           uuid.UUID
-	DocumentID         uuid.UUID
-	Status             string
-	BlobUrl            string
-	BlobMetadata       []byte
-	CustomerID         *string
-	Email              string
-	Name               *string
-	AttachmentRequired *bool
-	ReplyTo            *string
-	CustomMessage      *string
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	DocumentID          uuid.UUID
+	Status              string
+	BlobUrl             string
+	BlobMetadata        []byte
+	CustomerID          *string
+	Email               string
+	Name                *string
+	AttachmentRequired  *bool
+	ReplyTo             *string
+	CustomMessage       *string
+	IsMultipleSignature bool
 }
 
 func (q *Queries) CreateEsignSubmission(ctx context.Context, arg CreateEsignSubmissionParams) (EsignSubmission, error) {
@@ -251,6 +254,7 @@ func (q *Queries) CreateEsignSubmission(ctx context.Context, arg CreateEsignSubm
 		arg.AttachmentRequired,
 		arg.ReplyTo,
 		arg.CustomMessage,
+		arg.IsMultipleSignature,
 	)
 	var i EsignSubmission
 	err := row.Scan(
@@ -270,12 +274,13 @@ func (q *Queries) CreateEsignSubmission(ctx context.Context, arg CreateEsignSubm
 		&i.AttachmentRequired,
 		&i.ReplyTo,
 		&i.CustomMessage,
+		&i.IsMultipleSignature,
 	)
 	return i, err
 }
 
 const getEsignSubmissionByID = `-- name: GetEsignSubmissionByID :one
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE id = $1
     AND deleted_at IS NULL
@@ -301,8 +306,107 @@ func (q *Queries) GetEsignSubmissionByID(ctx context.Context, id uuid.UUID) (Esi
 		&i.AttachmentRequired,
 		&i.ReplyTo,
 		&i.CustomMessage,
+		&i.IsMultipleSignature,
 	)
 	return i, err
+}
+
+const getEsignSubmissionWithSigners = `-- name: GetEsignSubmissionWithSigners :many
+SELECT 
+    es.id, es.organization_id, es.marina_id, es.document_id, es.status, es.blob_url, es.blob_metadata, es.customer_id, es.email, es.created_at, es.updated_at, es.deleted_at, es.name, es.attachment_required, es.reply_to, es.custom_message, es.is_multiple_signature,
+    ess.id as signer_id,
+    ess.email as signer_email,
+    ess.name as signer_name,
+    ess.sign_order,
+    ess.status as signer_status,
+    ess.signed_at,
+    ess.declined_at,
+    ess.declined_reason,
+    ess.created_at as signer_created_at,
+    ess.updated_at as signer_updated_at
+FROM esign_submissions es
+LEFT JOIN esign_submission_signers ess ON es.id = ess.submission_id AND ess.deleted_at IS NULL
+WHERE es.id = $1
+    AND es.deleted_at IS NULL
+ORDER BY ess.sign_order ASC
+`
+
+type GetEsignSubmissionWithSignersRow struct {
+	ID                  uuid.UUID
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	DocumentID          uuid.UUID
+	Status              string
+	BlobUrl             string
+	BlobMetadata        []byte
+	CustomerID          *string
+	Email               string
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	Name                *string
+	AttachmentRequired  *bool
+	ReplyTo             *string
+	CustomMessage       *string
+	IsMultipleSignature bool
+	SignerID            uuid.UUID
+	SignerEmail         *string
+	SignerName          *string
+	SignOrder           *int32
+	SignerStatus        *string
+	SignedAt            pgtype.Timestamp
+	DeclinedAt          pgtype.Timestamp
+	DeclinedReason      *string
+	SignerCreatedAt     pgtype.Timestamp
+	SignerUpdatedAt     pgtype.Timestamp
+}
+
+func (q *Queries) GetEsignSubmissionWithSigners(ctx context.Context, id uuid.UUID) ([]GetEsignSubmissionWithSignersRow, error) {
+	rows, err := q.db.Query(ctx, getEsignSubmissionWithSigners, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetEsignSubmissionWithSignersRow
+	for rows.Next() {
+		var i GetEsignSubmissionWithSignersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.DocumentID,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CustomerID,
+			&i.Email,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Name,
+			&i.AttachmentRequired,
+			&i.ReplyTo,
+			&i.CustomMessage,
+			&i.IsMultipleSignature,
+			&i.SignerID,
+			&i.SignerEmail,
+			&i.SignerName,
+			&i.SignOrder,
+			&i.SignerStatus,
+			&i.SignedAt,
+			&i.DeclinedAt,
+			&i.DeclinedReason,
+			&i.SignerCreatedAt,
+			&i.SignerUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const hardDeleteEsignSubmission = `-- name: HardDeleteEsignSubmission :exec
@@ -316,7 +420,7 @@ func (q *Queries) HardDeleteEsignSubmission(ctx context.Context, id uuid.UUID) e
 }
 
 const listEsignSubmissionsByCustomerID = `-- name: ListEsignSubmissionsByCustomerID :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE customer_id = $1
     AND deleted_at IS NULL
@@ -356,6 +460,7 @@ func (q *Queries) ListEsignSubmissionsByCustomerID(ctx context.Context, arg List
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -368,7 +473,7 @@ func (q *Queries) ListEsignSubmissionsByCustomerID(ctx context.Context, arg List
 }
 
 const listEsignSubmissionsByDocument = `-- name: ListEsignSubmissionsByDocument :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE document_id = $1
     AND deleted_at IS NULL
@@ -408,6 +513,7 @@ func (q *Queries) ListEsignSubmissionsByDocument(ctx context.Context, arg ListEs
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -420,7 +526,7 @@ func (q *Queries) ListEsignSubmissionsByDocument(ctx context.Context, arg ListEs
 }
 
 const listEsignSubmissionsByMarina = `-- name: ListEsignSubmissionsByMarina :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE organization_id = $1
     AND marina_id = $2
@@ -467,6 +573,7 @@ func (q *Queries) ListEsignSubmissionsByMarina(ctx context.Context, arg ListEsig
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -479,7 +586,7 @@ func (q *Queries) ListEsignSubmissionsByMarina(ctx context.Context, arg ListEsig
 }
 
 const listEsignSubmissionsByMarinaFiltered = `-- name: ListEsignSubmissionsByMarinaFiltered :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
@@ -532,6 +639,7 @@ func (q *Queries) ListEsignSubmissionsByMarinaFiltered(ctx context.Context, arg 
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -544,7 +652,7 @@ func (q *Queries) ListEsignSubmissionsByMarinaFiltered(ctx context.Context, arg 
 }
 
 const listEsignSubmissionsByStatus = `-- name: ListEsignSubmissionsByStatus :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE organization_id = $1
     AND marina_id = $2
@@ -594,6 +702,7 @@ func (q *Queries) ListEsignSubmissionsByStatus(ctx context.Context, arg ListEsig
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -606,7 +715,7 @@ func (q *Queries) ListEsignSubmissionsByStatus(ctx context.Context, arg ListEsig
 }
 
 const listEsignSubmissionsFilteredByDocument = `-- name: ListEsignSubmissionsFilteredByDocument :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE document_id = $1
   AND deleted_at IS NULL
@@ -687,6 +796,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByDocument(ctx context.Context, ar
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -699,7 +809,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByDocument(ctx context.Context, ar
 }
 
 const listEsignSubmissionsFilteredByStatus = `-- name: ListEsignSubmissionsFilteredByStatus :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
@@ -784,6 +894,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg 
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -796,7 +907,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg 
 }
 
 const listEsignSubmissionsWithFilters = `-- name: ListEsignSubmissionsWithFilters :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
@@ -882,6 +993,7 @@ func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListE
 			&i.AttachmentRequired,
 			&i.ReplyTo,
 			&i.CustomMessage,
+			&i.IsMultipleSignature,
 		); err != nil {
 			return nil, err
 		}
@@ -919,7 +1031,7 @@ SET
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 `
 
 type UpdateEsignSubmissionParams struct {
@@ -966,6 +1078,7 @@ func (q *Queries) UpdateEsignSubmission(ctx context.Context, arg UpdateEsignSubm
 		&i.AttachmentRequired,
 		&i.ReplyTo,
 		&i.CustomMessage,
+		&i.IsMultipleSignature,
 	)
 	return i, err
 }
@@ -977,7 +1090,7 @@ SET
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message
+RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
 `
 
 type UpdateEsignSubmissionStatusParams struct {
@@ -1005,6 +1118,7 @@ func (q *Queries) UpdateEsignSubmissionStatus(ctx context.Context, arg UpdateEsi
 		&i.AttachmentRequired,
 		&i.ReplyTo,
 		&i.CustomMessage,
+		&i.IsMultipleSignature,
 	)
 	return i, err
 }

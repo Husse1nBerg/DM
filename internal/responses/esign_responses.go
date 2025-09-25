@@ -223,6 +223,79 @@ func NewEsignSubmissionsPaginatedResponse(submissions []db.EsignSubmission, tota
 	return NewPaginatedResponse(submissionResponses, total, perPage, currentPage)
 }
 
+// Convert a database EsignSubmissionSigner to a response model
+func ConvertEsignSubmissionSignerToResponse(signer db.EsignSubmissionSigner) EsignSubmissionSignerResponse {
+	return EsignSubmissionSignerResponse{
+		ID:             signer.ID,
+		SubmissionID:   signer.SubmissionID,
+		Email:          signer.Email,
+		Name:           signer.Name,
+		SignOrder:      signer.SignOrder,
+		Status:         signer.Status,
+		SignedAt:       utils.PgTimeToTimePtr(signer.SignedAt),
+		DeclinedAt:     utils.PgTimeToTimePtr(signer.DeclinedAt),
+		DeclinedReason: signer.DeclinedReason,
+		CreatedAt:      utils.PgTimeToTimePtr(signer.CreatedAt),
+		UpdatedAt:      utils.PgTimeToTimePtr(signer.UpdatedAt),
+	}
+}
+
+// Convert a database EsignSubmission to a response model with signers
+func ConvertEsignSubmissionWithSignersToResponse(submission db.EsignSubmission, signers []db.EsignSubmissionSigner) EsignSubmissionWithSignersResponse {
+	blobURL := utils.GetFullESignURL(&submission.BlobUrl)
+	var blobMetadata *json.RawMessage
+	if len(submission.BlobMetadata) > 0 {
+		raw := json.RawMessage(submission.BlobMetadata)
+		blobMetadata = &raw
+	}
+
+	// Convert signers to response format
+	signerResponses := make([]EsignSubmissionSignerResponse, len(signers))
+	for i, signer := range signers {
+		signerResponses[i] = ConvertEsignSubmissionSignerToResponse(signer)
+	}
+
+	return EsignSubmissionWithSignersResponse{
+		ID:                  submission.ID,
+		OrganizationID:      submission.OrganizationID,
+		MarinaID:            submission.MarinaID,
+		DocumentID:          submission.DocumentID,
+		Status:              submission.Status,
+		BlobURL:             *blobURL,
+		BlobMetadata:        blobMetadata,
+		CustomerID:          submission.CustomerID,
+		Email:               submission.Email,
+		Name:                submission.Name,
+		AttachmentRequired:  submission.AttachmentRequired,
+		ReplyTo:             submission.ReplyTo,
+		CustomMessage:       submission.CustomMessage,
+		Logo:                nil,
+		IsMultipleSignature: submission.IsMultipleSignature,
+		Signers:             signerResponses,
+		CreatedAt:           utils.PgTimeToTimePtr(submission.CreatedAt),
+		UpdatedAt:           utils.PgTimeToTimePtr(submission.UpdatedAt),
+	}
+}
+
+// NewEsignSubmissionSignerResponseSuccess creates a successful response with an e-signature submission signer
+func NewEsignSubmissionSignerResponseSuccess(signer db.EsignSubmissionSigner) BaseResponse {
+	return NewSuccessResponse(ConvertEsignSubmissionSignerToResponse(signer))
+}
+
+// NewEsignSubmissionSignersResponseSuccess creates a successful response with a list of e-signature submission signers
+func NewEsignSubmissionSignersResponseSuccess(signers []db.EsignSubmissionSigner) BaseResponse {
+	signerResponses := make([]EsignSubmissionSignerResponse, len(signers))
+	for i, signer := range signers {
+		signerResponses[i] = ConvertEsignSubmissionSignerToResponse(signer)
+	}
+	return NewSuccessResponse(signerResponses)
+}
+
+// NewEsignSubmissionWithSignersResponseSuccess creates a successful response with an e-signature submission and its signers
+func NewEsignSubmissionWithSignersResponseSuccess(submission db.EsignSubmission, signers []db.EsignSubmissionSigner) BaseResponse {
+	return NewSuccessResponse(ConvertEsignSubmissionWithSignersToResponse(submission, signers))
+}
+
 // EsignTemplateListResponse is purely for Swagger documentation
 type EsignTemplateListResponse struct {
 	Data        []EsignTemplateResponse `json:"data"`
@@ -248,4 +321,43 @@ type EsignSubmissionListResponse struct {
 	PerPage     int32                     `json:"perPage" example:"10"`
 	CurrentPage int32                     `json:"currentPage" example:"1"`
 	LastPage    int32                     `json:"lastPage" example:"5"`
+}
+
+// EsignSubmissionSignerResponse represents a signer in an e-signature submission
+// @Description E-signature submission signer data including status and signing order
+type EsignSubmissionSignerResponse struct {
+	ID             uuid.UUID  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	SubmissionID   uuid.UUID  `json:"submissionId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Email          string     `json:"email" example:"signer@example.com"`
+	Name           *string    `json:"name,omitempty" example:"John Doe"`
+	SignOrder      int32      `json:"signOrder" example:"1"`
+	Status         string     `json:"status" example:"pending"`
+	SignedAt       *time.Time `json:"signedAt,omitempty"`
+	DeclinedAt     *time.Time `json:"declinedAt,omitempty"`
+	DeclinedReason *string    `json:"declinedReason,omitempty" example:"Document needs revision"`
+	CreatedAt      *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time `json:"updatedAt,omitempty"`
+}
+
+// EsignSubmissionWithSignersResponse represents an e-signature submission with its signers
+// @Description E-signature submission data including signers for multiple signature submissions
+type EsignSubmissionWithSignersResponse struct {
+	ID                  uuid.UUID                       `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	OrganizationID      uuid.UUID                       `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
+	MarinaID            uuid.UUID                       `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440002"`
+	DocumentID          uuid.UUID                       `json:"documentId" example:"550e8400-e29b-41d4-a716-446655440003"`
+	Status              string                          `json:"status" example:"pending"`
+	BlobURL             string                          `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
+	BlobMetadata        *json.RawMessage                `json:"blobMetadata,omitempty" swaggertype:"object"`
+	CustomerID          *string                         `json:"customerId,omitempty" example:"CUST123"`
+	Email               string                          `json:"email" example:"customer@example.com"`
+	Name                *string                         `json:"name,omitempty" example:"Multi-Signature Agreement"`
+	AttachmentRequired  *bool                           `json:"attachmentRequired,omitempty" example:"false"`
+	ReplyTo             *string                         `json:"replyTo,omitempty" example:"support@example.com"`
+	CustomMessage       *string                         `json:"customMessage,omitempty" example:"Please sign the document as soon as possible."`
+	Logo                *string                         `json:"logo,omitempty" example:"https://s3.amazonaws.com/bucket/marina/logo.png"`
+	IsMultipleSignature bool                            `json:"isMultipleSignature" example:"true"`
+	Signers             []EsignSubmissionSignerResponse `json:"signers,omitempty"`
+	CreatedAt           *time.Time                      `json:"createdAt,omitempty"`
+	UpdatedAt           *time.Time                      `json:"updatedAt,omitempty"`
 }

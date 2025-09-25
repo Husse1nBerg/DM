@@ -36,6 +36,8 @@ func NewEsignHandler(server *s.Server) *EsignHandler {
 		server.DB.Queries(),
 		server.Redis,
 		server.Logger,
+		server.SendGrid,
+		server.Config,
 	)
 	return &EsignHandler{server: server, esignService: server.ESignService, notificationService: notificationService}
 }
@@ -1084,18 +1086,19 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 
 	// Create submission with duplicated file
 	submission, err := h.server.DB.Queries().CreateEsignSubmission(c.Request().Context(), db.CreateEsignSubmissionParams{
-		OrganizationID:     organizationID,
-		MarinaID:           marinaID,
-		DocumentID:         req.DocumentID,
-		Status:             "pending", // Default status
-		BlobUrl:            duplicatedFilePath,
-		BlobMetadata:       nil, // Ignoring blob metadata for now as requested
-		CustomerID:         req.CustomerID,
-		Email:              req.Email,
-		Name:               req.Name,
-		AttachmentRequired: req.AttachmentRequired,
-		ReplyTo:            req.ReplyTo,
-		CustomMessage:      req.CustomMessage,
+		OrganizationID:      organizationID,
+		MarinaID:            marinaID,
+		DocumentID:          req.DocumentID,
+		Status:              "pending", // Default status
+		BlobUrl:             duplicatedFilePath,
+		BlobMetadata:        nil, // Ignoring blob metadata for now as requested
+		CustomerID:          req.CustomerID,
+		Email:               req.Email,
+		Name:                req.Name,
+		AttachmentRequired:  req.AttachmentRequired,
+		ReplyTo:             req.ReplyTo,
+		CustomMessage:       req.CustomMessage,
+		IsMultipleSignature: false, // Single signature submission
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature submission", err)
@@ -1913,7 +1916,7 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 		for _, userRow := range marinaUsers {
 			// Only notify active users
 			if userRow.IsActive != nil && *userRow.IsActive {
-				notificationErr := h.notificationService.CreateESignNotification(
+				notificationErr := h.notificationService.CreateESignSmartNotification(
 					c.Request().Context(),
 					userRow.ID,
 					userRow.OrganizationID,

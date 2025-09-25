@@ -202,64 +202,60 @@ func (h *OrganizationHandler) GetOrganizationByEmail(c echo.Context) error {
 // GetOrganizationsPaginated retrieves organizations with filtering, sorting, and pagination
 //
 //	@Summary		Get paginated organizations
-//	@Description	Retrieves organizations with filtering, sorting, and pagination support
+//	@Description	Returns a paginated list of organizations. Supports filtering by active status, test status, searching by name/email, and sorting.
 //	@Tags			Organizations
 //	@Accept			json
 //	@Produce		json
-//	@Param			page		query		int		false	"Page number" default(1)
-//	@Param			pageSize	query		int		false	"Page size" default(10)
-//	@Param			sortBy		query		string	false	"Sort by field (name, email, website, country, phone, is_active, is_test, created_at, updated_at)"
-//	@Param			sortOrder	query		string	false	"Sort order (asc, desc)" default(asc)
-//	@Param			search		query		string	false	"Global search across multiple fields"
-//	@Param			isActive	query		bool	false	"Filter by active status"
-//	@Param			isTest		query		bool	false	"Filter by test status"
-//	@Success		200		{array}		responses.OrganizationsPaginatedResponse
-//	@Failure		400		{object}	responses.BaseResponse
-//	@Failure		500		{object}	responses.BaseResponse
+//	@Param			page		query		int		false	"Page number"	default(1) minimum(1)
+//	@Param			pageSize	query		int		false	"Page size"		default(10) minimum(1) maximum(100)
+//	@Param			search		query		string	false	"Search term (matches name, email, website, country, or phone)"
+//	@Param			filters		query		object	false	"Filters (e.g. filters[is_active]=true&filters[is_test]=false)"
+//	@Param			sortBy		query		string	false	"Sort by field (e.g. name, email, created_at)"	default(created_at)
+//	@Param			sortOrder	query		string	false	"Sort order (asc or desc)"	default(asc)
+//	@Success		200			{array}		responses.OrganizationsPaginatedResponse
+//	@Failure		400			{object}	responses.BaseResponse
+//	@Failure		500			{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/organizations [get]
 func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 	var req requests.ListOrganizationsRequest
-
 	if err := c.Bind(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-	}
-
-	// Set defaults
-	if req.PageSize <= 0 {
+		req.Page = 1
 		req.PageSize = 10
 	}
 	if req.Page <= 0 {
 		req.Page = 1
 	}
-	if req.SortOrder == "" {
-		req.SortOrder = "asc"
-	}
-	if req.SortBy == "" {
-		req.SortBy = "created_at"
+	if req.PageSize <= 0 {
+		req.PageSize = 10
 	}
 
-	// Prepare filter params
-	search := req.Search
-	isActive := ""
-	if v, ok := req.Filters["isActive"]; ok {
-		isActive = v
+	sortBy := req.SortBy
+	sortOrder := req.SortOrder
+	if sortBy == "" {
+		sortBy = "created_at"
 	}
-	isTest := ""
-	if v, ok := req.Filters["isTest"]; ok {
-		isTest = v
+	if sortOrder == "" {
+		sortOrder = "asc"
+	}
+
+	// Parse filters from query parameters (same pattern as ListUsersHandler)
+	isActive := c.QueryParam("filters[is_active]")
+	if isActive == "" && req.Filters != nil {
+		isActive = req.Filters["is_active"]
+	}
+
+	isTest := c.QueryParam("filters[is_test]")
+	if isTest == "" && req.Filters != nil {
+		isTest = req.Filters["is_test"]
 	}
 
 	// Count total (for pagination)
 	allOrgsAsc, err := h.server.DB.Queries().GetOrganizationsWithFiltersAsc(c.Request().Context(), db.GetOrganizationsWithFiltersAscParams{
-		Column1: search,
+		Column1: req.Search,
 		Column2: isActive,
 		Column3: isTest,
-		Column4: req.SortBy,
+		Column4: sortBy,
 		Limit:   int32(math.MaxInt32),
 		Offset:  0,
 	})
@@ -270,21 +266,21 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 
 	// Choose ASC or DESC query
 	var orgs []db.Organization
-	if req.SortOrder == "desc" {
+	if sortOrder == "desc" {
 		orgs, err = h.server.DB.Queries().GetOrganizationsWithFiltersDesc(c.Request().Context(), db.GetOrganizationsWithFiltersDescParams{
-			Column1: search,
+			Column1: req.Search,
 			Column2: isActive,
 			Column3: isTest,
-			Column4: req.SortBy,
+			Column4: sortBy,
 			Limit:   req.PageSize,
 			Offset:  (req.Page - 1) * req.PageSize,
 		})
 	} else {
 		orgs, err = h.server.DB.Queries().GetOrganizationsWithFiltersAsc(c.Request().Context(), db.GetOrganizationsWithFiltersAscParams{
-			Column1: search,
+			Column1: req.Search,
 			Column2: isActive,
 			Column3: isTest,
-			Column4: req.SortBy,
+			Column4: sortBy,
 			Limit:   req.PageSize,
 			Offset:  (req.Page - 1) * req.PageSize,
 		})
@@ -293,8 +289,7 @@ func (h *OrganizationHandler) GetOrganizationsPaginated(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	currentPage := req.Page
-	return responses.NewOrganizationsPaginatedResponse(orgs, total, req.PageSize, currentPage).JSON(c)
+	return responses.NewOrganizationsPaginatedResponse(orgs, total, req.PageSize, req.Page).JSON(c)
 }
 
 // UpdateOrganization updates an existing organization

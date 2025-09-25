@@ -1,5 +1,7 @@
 package requests
 
+import "github.com/go-playground/validator/v10"
+
 // CreateOrganizationRequest defines the parameters for creating a new organization
 type CreateOrganizationRequest struct {
 	Email    string                `json:"email" validate:"required,email" example:"org@example.com"`
@@ -29,4 +31,10 @@ type UpdateOrganizationRequest struct {
 // swagger:parameters ListOrganizations
 type ListOrganizationsRequest struct {
 	FilterSortParams
+}
+
+// Validate performs custom validation on the request
+func (r *ListOrganizationsRequest) Validate() error {
+	validate := validator.New()
+	return validate.Struct(r)
 }

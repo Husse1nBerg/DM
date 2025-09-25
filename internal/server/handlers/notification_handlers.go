@@ -31,6 +31,8 @@ func NewNotificationHandler(server *s.Server) *NotificationHandler {
 		server.DB.Queries(),
 		server.Redis,
 		server.Logger,
+		server.SendGrid,
+		server.Config,
 	)
 
 	return &NotificationHandler{
@@ -65,7 +67,7 @@ func (h *NotificationHandler) CreateNotificationHandler(c echo.Context) error {
 	}
 
 	// Create the notification with real-time sending enabled
-	notification, err := h.notificationService.CreateNotification(c.Request().Context(), *req, true)
+	notification, err := h.notificationService.CreateNotificationService(c.Request().Context(), *req, true)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
