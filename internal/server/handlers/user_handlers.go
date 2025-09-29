@@ -21,6 +21,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 type UserHandler struct {
@@ -284,6 +285,16 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
+
+	// Create default notification preferences for the new user
+	err = notifications.CreateDefaultNotificationPreferences(c.Request().Context(), queries, user.ID, g.server.Logger.DesugarZap)
+	if err != nil {
+		// Log the error but don't fail user creation - notification preferences can be set later
+		g.server.Logger.DesugarZap.Warn("Failed to create default notification preferences for new user",
+			zap.String("userID", user.ID.String()),
+			zap.Error(err))
+	}
+
 	response := responses.NewUserResponseSuccess(user)
 	return c.JSON(http.StatusCreated, response)
 }
@@ -1925,6 +1936,15 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		}()
 	}
 
+	// Create default notification preferences for the new customer user
+	err = notifications.CreateDefaultNotificationPreferencesForCustomer(c.Request().Context(), queries, user.ID, g.server.Logger.DesugarZap)
+	if err != nil {
+		// Log the error but don't fail user creation - notification preferences can be set later
+		g.server.Logger.DesugarZap.Warn("Failed to create default notification preferences for new customer user",
+			zap.String("userID", user.ID.String()),
+			zap.Error(err))
+	}
+
 	response := responses.NewUserResponseSuccess(user)
 	return c.JSON(http.StatusCreated, response)
 }
@@ -2179,6 +2199,15 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 					"error", result.Error)
 			}
 		}()
+	}
+
+	// Create default notification preferences for the new user
+	err = notifications.CreateDefaultNotificationPreferences(c.Request().Context(), queries, user.ID, g.server.Logger.DesugarZap)
+	if err != nil {
+		// Log the error but don't fail user creation - notification preferences can be set later
+		g.server.Logger.DesugarZap.Warn("Failed to create default notification preferences for new invited user",
+			zap.String("userID", user.ID.String()),
+			zap.Error(err))
 	}
 
 	response := responses.NewUserResponseSuccess(user)
