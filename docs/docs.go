@@ -16309,8 +16309,8 @@ const docTemplate = `{
                     "example": "john.doe@example.com"
                 },
                 "password": {
+                    "description": "Password string ` + "`" + `json:\"password\" validate:\"required,min=12,letters,number,specialchar\" example:\"Pa$$w0rd123\"` + "`" + `",
                     "type": "string",
-                    "minLength": 12,
                     "example": "Pa$$w0rd123"
                 }
             }
@@ -18162,6 +18162,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMultipleSignature": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "logo": {
                     "type": "string",
