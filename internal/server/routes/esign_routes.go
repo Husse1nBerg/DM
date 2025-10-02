@@ -14,6 +14,9 @@ func RegisterEsignRoutes(server *s.Server, base *echo.Group, permissionProtected
 	publicEsign := base.Group("/public/esign")
 	publicEsign.GET("/submissions/:id", esignHandler.GetEsignSubmissionPublic)
 	publicEsign.PUT("/submissions/:id", esignHandler.UpdateEsignSubmissionPublic)
+	publicEsign.GET("/submissions/:id/signers", esignHandler.GetEsignSubmissionSignersPublic)
+	publicEsign.PUT("/submissions/signers/:id", esignHandler.UpdateEsignSubmissionSignerPublic)
+	publicEsign.GET("/submissions/:id/with-signers", esignHandler.GetEsignSubmissionWithSignersPublic)
 
 	// Protected E-signature routes
 	esign := permissionProtected.Group("/esign")
@@ -43,7 +46,4 @@ func RegisterEsignRoutes(server *s.Server, base *echo.Group, permissionProtected
 
 	// Multiple signature submission management
 	esign.POST("/submissions/multiple", esignHandler.CreateMultipleEsignSubmission)
-	esign.GET("/submissions/:id/signers", esignHandler.GetEsignSubmissionSigners)
-	esign.GET("/submissions/:id/with-signers", esignHandler.GetEsignSubmissionWithSigners)
-	esign.PUT("/submissions/signers/:id", esignHandler.UpdateEsignSubmissionSigner)
 }
