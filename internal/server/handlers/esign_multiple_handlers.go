@@ -15,7 +15,7 @@ import (
 )
 
 // sendEmailsToSignersSequentially sends emails to signers in order, only sending to the first signer initially
-func (h *EsignHandler) sendEmailsToSignersSequentially(ctx context.Context, submission db.EsignSubmission, signers []db.EsignSubmissionSigner, marina db.Marina, req requests.CreateMultipleEsignSubmissionRequest) error {
+func (h *EsignHandler) sendEmailsToSignersSequentially(submission db.EsignSubmission, signers []db.EsignSubmissionSigner, marina db.Marina, req requests.CreateMultipleEsignSubmissionRequest) error {
 	if len(signers) == 0 {
 		return fmt.Errorf("no signers to send emails to")
 	}
@@ -337,7 +337,7 @@ func (h *EsignHandler) CreateMultipleEsignSubmission(c echo.Context) error {
 	}
 
 	// Send emails to signers sequentially
-	err = h.sendEmailsToSignersSequentially(c.Request().Context(), submission, signers, marina, req)
+	err = h.sendEmailsToSignersSequentially(submission, signers, marina, req)
 	if err != nil {
 		h.server.Logger.Zap.Error("Error sending emails to signers", err)
 		// Don't fail the request, just log the error
@@ -361,13 +361,8 @@ func (h *EsignHandler) CreateMultipleEsignSubmission(c echo.Context) error {
 //	@Failure		401	{object}	responses.BaseResponse
 //	@Failure		404	{object}	responses.BaseResponse
 //	@Failure		500	{object}	responses.BaseResponse
-//	@Security		ApiKeyAuth
-//	@Router			/esign/submissions/{id}/signers [get]
-func (h *EsignHandler) GetEsignSubmissionSigners(c echo.Context) error {
-	_, _, _, err := h.getUserInfoFromContext(c)
-	if err != nil {
-		return err
-	}
+//	@Router			/public/esign/submissions/{id}/signers [get]
+func (h *EsignHandler) GetEsignSubmissionSignersPublic(c echo.Context) error {
 
 	// Parse submission ID
 	submissionIDStr := c.Param("id")
@@ -400,13 +395,8 @@ func (h *EsignHandler) GetEsignSubmissionSigners(c echo.Context) error {
 //	@Failure		401		{object}	responses.BaseResponse
 //	@Failure		404		{object}	responses.BaseResponse
 //	@Failure		500		{object}	responses.BaseResponse
-//	@Security		ApiKeyAuth
-//	@Router			/esign/submissions/signers/{id} [put]
-func (h *EsignHandler) UpdateEsignSubmissionSigner(c echo.Context) error {
-	_, _, _, err := h.getUserInfoFromContext(c)
-	if err != nil {
-		return err
-	}
+//	@Router			/public/esign/submissions/signers/{id} [put]
+func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 
 	// Parse signer ID
 	signerIDStr := c.Param("id")
@@ -473,13 +463,8 @@ func (h *EsignHandler) UpdateEsignSubmissionSigner(c echo.Context) error {
 //	@Failure		401	{object}	responses.BaseResponse
 //	@Failure		404	{object}	responses.BaseResponse
 //	@Failure		500	{object}	responses.BaseResponse
-//	@Security		ApiKeyAuth
-//	@Router			/esign/submissions/{id}/with-signers [get]
-func (h *EsignHandler) GetEsignSubmissionWithSigners(c echo.Context) error {
-	_, _, _, err := h.getUserInfoFromContext(c)
-	if err != nil {
-		return err
-	}
+//	@Router			/public/esign/submissions/{id}/with-signers [get]
+func (h *EsignHandler) GetEsignSubmissionWithSignersPublic(c echo.Context) error {
 
 	// Parse submission ID
 	submissionIDStr := c.Param("id")
