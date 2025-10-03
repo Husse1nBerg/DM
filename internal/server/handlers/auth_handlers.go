@@ -62,14 +62,16 @@ func (authHandler *AuthHandler) Login(c echo.Context) error {
 	email := utils.LowerCase(loginRequest.Email)
 
 	user, err := queries.GetUserByEmail(ctx, email)
-	if user.PasswordHash == nil {
-		logger.Zap.Info("login failed: user didn't create a password yet", err, email, c.Response().Header().Get(echo.HeaderXRequestID))
-		return responses.NewErrorResponse(http.StatusUnauthorized, "User didn't create a password yet").JSON(c)
-	}
-
+	// Primero verificar si el usuario existe
 	if err != nil {
 		logger.Zap.Info("login failed: user not found ", err, email, c.Response().Header().Get(echo.HeaderXRequestID))
 		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid credentials").JSON(c)
+	}
+
+	// Luego verificar si el usuario tiene contraseña creada
+	if user.PasswordHash == nil {
+		logger.Zap.Info("login failed: user didn't create a password yet", email, c.Response().Header().Get(echo.HeaderXRequestID))
+		return responses.NewErrorResponse(http.StatusUnauthorized, "User didn't create a password yet").JSON(c)
 	}
 
 	if user.IsActive == nil || !*user.IsActive {

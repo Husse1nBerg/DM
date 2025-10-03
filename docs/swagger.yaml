@@ -1991,8 +1991,9 @@ definitions:
         example: john.doe@example.com
         type: string
       password:
+        description: Password string `json:"password" validate:"required,min=12,letters,number,specialchar"
+          example:"Pa$$w0rd123"`
         example: Pa$$w0rd123
-        minLength: 12
         type: string
     required:
     - email
@@ -3302,6 +3303,9 @@ definitions:
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
+      isMultipleSignature:
+        example: true
+        type: boolean
       logo:
         example: https://s3.amazonaws.com/bucket/marina/logo.png
         type: string
@@ -7744,98 +7748,6 @@ paths:
       summary: Update e-signature submission
       tags:
       - E-signature Submissions
-  /esign/submissions/{id}/signers:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves all signers for an e-signature submission
-      parameters:
-      - description: Submission ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/responses.EsignSubmissionSignerResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get e-signature submission signers
-      tags:
-      - E-signature Submissions
-  /esign/submissions/{id}/with-signers:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves an e-signature submission with all its signers
-      parameters:
-      - description: Submission ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/responses.EsignSubmissionWithSignersResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get e-signature submission with signers
-      tags:
-      - E-signature Submissions
   /esign/submissions/multiple:
     post:
       consumes:
@@ -7875,57 +7787,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create multiple e-signature submission
-      tags:
-      - E-signature Submissions
-  /esign/submissions/signers/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Updates a signer's status in an e-signature submission
-      parameters:
-      - description: Signer ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Signer update data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateEsignSubmissionSignerRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/responses.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/responses.EsignSubmissionSignerResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.BaseResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Update e-signature submission signer
       tags:
       - E-signature Submissions
   /esign/submissions/status:
@@ -11549,6 +11410,143 @@ paths:
           schema:
             $ref: '#/definitions/responses.BaseResponse'
       summary: Update e-signature submission (public)
+      tags:
+      - E-signature Submissions
+  /public/esign/submissions/{id}/signers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all signers for an e-signature submission
+      parameters:
+      - description: Submission ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/responses.EsignSubmissionSignerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get e-signature submission signers
+      tags:
+      - E-signature Submissions
+  /public/esign/submissions/{id}/with-signers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an e-signature submission with all its signers
+      parameters:
+      - description: Submission ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignSubmissionWithSignersResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Get e-signature submission with signers
+      tags:
+      - E-signature Submissions
+  /public/esign/submissions/signers/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates a signer's status in an e-signature submission
+      parameters:
+      - description: Signer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Signer update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateEsignSubmissionSignerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.EsignSubmissionSignerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      summary: Update e-signature submission signer
       tags:
       - E-signature Submissions
   /role:

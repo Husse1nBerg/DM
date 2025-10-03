@@ -14,6 +14,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/redis"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/google/uuid"
 )
 
@@ -57,14 +58,17 @@ func main() {
 	// Set up Redis client for notifications
 	redisClient := redis.NewClient(cfg.Redis, logger)
 
+	// Set up SendGrid client
+	sendgridClient := sendgrid.NewClient(cfg)
+
 	// Set up notification service
-	notificationService := notifications.NewNotificationService(q, redisClient, logger, nil, cfg)
+	notificationService := notifications.NewNotificationService(q, redisClient, logger, sendgridClient, cfg)
 
 	// Set up DME client
 	dmeClient := dme.NewClientFromConfig(cfg, logger, db)
 
 	// Run the insurance check
-	summary, err := checkInsuranceExpirations(ctx, q, dmeClient, notificationService, logger)
+	summary, err := checkInsuranceExpirations(ctx, q, dmeClient, notificationService)
 	if err != nil {
 		log.Fatalf("Failed to check insurance expirations: %v", err)
 	}
@@ -81,7 +85,6 @@ func checkInsuranceExpirations(
 	q *sqlc.Queries,
 	dmeClient *dme.Client,
 	notificationService *notifications.NotificationService,
-	logger *logger.Logger,
 ) (*NotificationSummary, error) {
 	summary := &NotificationSummary{}
 
@@ -108,7 +111,7 @@ func checkInsuranceExpirations(
 
 		log.Printf("Checking marina: %s (ID: %s)", marina.Name, marina.ID)
 
-		marinaSummary, err := checkMarinaInsurance(ctx, q, dmeClient, notificationService, marina, logger)
+		marinaSummary, err := checkMarinaInsurance(ctx, q, dmeClient, notificationService, marina)
 		if err != nil {
 			errorMsg := fmt.Sprintf("Error checking marina %s: %v", marina.Name, err)
 			log.Printf(errorMsg)
@@ -137,97 +140,71 @@ func checkMarinaInsurance(
 	dmeClient *dme.Client,
 	notificationService *notifications.NotificationService,
 	marina sqlc.Marina,
-	logger *logger.Logger,
 ) (*NotificationSummary, error) {
 	summary := &NotificationSummary{}
 
-	// Get all boats for this marina (paginated approach)
-	page := 1
-	pageSize := 100
+	// Get boats with insurance for this marina using the new optimized API
+	boatsWithInsurance, err := dmeClient.RetrieveBoatsWithInsurance(ctx, marina.OrganizationID, *marina.SystemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get boats with insurance for marina %s: %w", marina.Name, err)
+	}
 
-	for {
-		boatList, err := dmeClient.BoatsList(ctx, page, pageSize, marina.OrganizationID, *marina.SystemID)
+	log.Printf("Found %d boats with insurance for marina %s", len(boatsWithInsurance), marina.Name)
+
+	// Check each boat for insurance expiration
+	for _, boat := range boatsWithInsurance {
+		summary.TotalBoatsChecked++
+
+		// Check if insurance is expiring
+		insuranceCheck, err := checkBoatInsurance(&boat, marina.ID, marina.OrganizationID, *marina.SystemID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get boats list for marina %s: %w", marina.Name, err)
+			errorMsg := fmt.Sprintf("Error checking insurance for boat %s: %v", boat.Name, err)
+			log.Printf(errorMsg)
+			summary.Errors = append(summary.Errors, errorMsg)
+			continue
 		}
 
-		if len(boatList.Content) == 0 {
-			break // No more boats
+		// If no insurance check needed, continue
+		if insuranceCheck == nil {
+			continue
 		}
 
-		log.Printf("Processing page %d with %d boats for marina %s", page, len(boatList.Content), marina.Name)
-
-		// Check each boat for insurance expiration
-		for _, boat := range boatList.Content {
-			summary.TotalBoatsChecked++
-
-			// Get full boat details to access insurance information
-			fullBoat, err := dmeClient.RetrieveBoatByID(ctx, boat.ID, marina.OrganizationID, *marina.SystemID)
-			if err != nil {
-				errorMsg := fmt.Sprintf("Failed to get boat details for %s (%s): %v", boat.Name, boat.ID, err)
-				log.Printf(errorMsg)
-				summary.Errors = append(summary.Errors, errorMsg)
-				continue
-			}
-
-			// Check if insurance is expiring
-			insuranceCheck, err := checkBoatInsurance(fullBoat, marina.ID, marina.OrganizationID, *marina.SystemID)
-			if err != nil {
-				errorMsg := fmt.Sprintf("Error checking insurance for boat %s: %v", fullBoat.Name, err)
-				log.Printf(errorMsg)
-				summary.Errors = append(summary.Errors, errorMsg)
-				continue
-			}
-
-			// If no insurance check needed, continue
-			if insuranceCheck == nil {
-				continue
-			}
-
-			// Update summary based on expiry days
-			switch insuranceCheck.DaysToExpiry {
-			case 10:
-				summary.Boats10DaysToExpiry++
-			case 5:
-				summary.Boats5DaysToExpiry++
-			case 1:
-				summary.Boats1DayToExpiry++
-			default:
-				if insuranceCheck.DaysToExpiry <= 0 {
-					summary.BoatsWithExpiredInsurance++
-				}
-			}
-
-			// Get customer information
-			customer, err := dmeClient.CustomerRetrieve(ctx, fullBoat.OwnerID, marina.OrganizationID, *marina.SystemID)
-			if err != nil {
-				errorMsg := fmt.Sprintf("Failed to get customer info for boat %s owner %s: %v", fullBoat.Name, fullBoat.OwnerID, err)
-				log.Printf(errorMsg)
-				summary.Errors = append(summary.Errors, errorMsg)
-				continue
-			}
-
-			insuranceCheck.Customer = customer
-
-			// Send notification
-			err = sendInsuranceNotification(ctx, q, notificationService, insuranceCheck, marina, logger)
-			if err != nil {
-				errorMsg := fmt.Sprintf("Failed to send notification for boat %s: %v", fullBoat.Name, err)
-				log.Printf(errorMsg)
-				summary.Errors = append(summary.Errors, errorMsg)
-				summary.NotificationsFailed++
-			} else {
-				summary.NotificationsSent++
-				log.Printf("Sent insurance notification for boat %s (expires in %d days)", fullBoat.Name, insuranceCheck.DaysToExpiry)
+		// Update summary based on expiry days
+		switch insuranceCheck.DaysToExpiry {
+		case 10:
+			summary.Boats10DaysToExpiry++
+		case 5:
+			summary.Boats5DaysToExpiry++
+		case 1:
+			summary.Boats1DayToExpiry++
+		default:
+			if insuranceCheck.DaysToExpiry <= 0 {
+				summary.BoatsWithExpiredInsurance++
 			}
 		}
 
-		// Check if we've reached the last page
-		if page >= boatList.MaxPages {
-			break
+		// Get customer information
+		customer, err := dmeClient.CustomerRetrieve(ctx, boat.OwnerID, marina.OrganizationID, *marina.SystemID)
+		if err != nil {
+			errorMsg := fmt.Sprintf("Failed to get customer info for boat %s owner %s: %v", boat.Name, boat.OwnerID, err)
+			log.Printf(errorMsg)
+			summary.Errors = append(summary.Errors, errorMsg)
+			continue
 		}
 
-		page++
+		insuranceCheck.Customer = customer
+
+		// Send notification
+		err = sendInsuranceNotification(ctx, q, notificationService, insuranceCheck)
+		if err != nil {
+			errorMsg := fmt.Sprintf("Failed to send notification for boat %s: %v", boat.Name, err)
+			log.Printf(errorMsg)
+			summary.Errors = append(summary.Errors, errorMsg)
+			summary.NotificationsFailed++
+		} else {
+			summary.NotificationsSent++
+			log.Printf("Sent insurance notification for boat %s (expires in %d days)", boat.Name, insuranceCheck.DaysToExpiry)
+		}
 	}
 
 	return summary, nil
@@ -291,8 +268,6 @@ func sendInsuranceNotification(
 	q *sqlc.Queries,
 	notificationService *notifications.NotificationService,
 	insuranceCheck *BoatInsuranceCheck,
-	marina sqlc.Marina,
-	logger *logger.Logger,
 ) error {
 	// Find users associated with this customer
 	users, err := findUsersForCustomer(ctx, q, insuranceCheck.Customer.ID, insuranceCheck.MarinaID)
