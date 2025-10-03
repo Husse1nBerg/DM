@@ -143,6 +143,60 @@ func (q *Queries) ListDocumentsByEntity(ctx context.Context, arg ListDocumentsBy
 	return items, nil
 }
 
+const listDocumentsByEntityWithVisibility = `-- name: ListDocumentsByEntityWithVisibility :many
+SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public
+FROM documents
+WHERE marina_id = $1
+AND entity_type = $2
+AND entity_id = $3
+AND ($4 = true OR public = true)
+ORDER BY created_at DESC
+`
+
+type ListDocumentsByEntityWithVisibilityParams struct {
+	MarinaID   uuid.UUID
+	EntityType string
+	EntityID   string
+	Column4    interface{}
+}
+
+func (q *Queries) ListDocumentsByEntityWithVisibility(ctx context.Context, arg ListDocumentsByEntityWithVisibilityParams) ([]Document, error) {
+	rows, err := q.db.Query(ctx, listDocumentsByEntityWithVisibility,
+		arg.MarinaID,
+		arg.EntityType,
+		arg.EntityID,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Document
+	for rows.Next() {
+		var i Document
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.EntityType,
+			&i.EntityID,
+			&i.FileName,
+			&i.FileType,
+			&i.FilePath,
+			&i.FileSize,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Public,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listDocumentsByMarina = `-- name: ListDocumentsByMarina :many
 SELECT id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public
 FROM documents

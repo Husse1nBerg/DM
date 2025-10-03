@@ -10,7 +10,9 @@ import (
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/s3"
+	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -605,7 +607,7 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 // GetVesselGallery retrieves all gallery items for a vessel
 //
 //	@Summary		Get vessel gallery
-//	@Description	Retrieves all gallery items for a vessel
+//	@Description	Retrieves all gallery items for a vessel. External users (customers) only see public images, internal users (marina staff) see all images.
 //	@Tags			Vessel Gallery
 //	@Accept			json
 //	@Produce		json
@@ -646,13 +648,18 @@ func (h *GalleryHandler) GetVesselGallery(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Boat ID is required").JSON(c)
 	}
 
-	// Get gallery items from database
-	params := db.GetVesselGalleryParams{
-		MarinaID:   marinaID,
-		CustomerID: customerID,
+	// Get current user to determine if they are external (customer) or internal (marina staff)
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	isInternalUser := claims.IsCustomer == nil || !*claims.IsCustomer
+
+	// Use single query with visibility filtering based on user type
+	galleryItems, err := h.server.DB.Queries().GetVesselGalleryWithVisibility(c.Request().Context(), db.GetVesselGalleryWithVisibilityParams{
 		VesselID:   boatID,
-	}
-	galleryItems, err := h.server.DB.Queries().GetVesselGallery(c.Request().Context(), params)
+		CustomerID: customerID,
+		MarinaID:   marinaID,
+		Column4:    isInternalUser, // true (internal) = show all, false (external) = show only public
+	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching vessel gallery items", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching gallery items").JSON(c)
