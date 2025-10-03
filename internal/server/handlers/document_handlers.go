@@ -848,7 +848,7 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 // GetDocumentsByEntity retrieves all documents for a boat entity
 //
 //	@Summary		Get boat documents
-//	@Description	Retrieves all documents for a boat entity
+//	@Description	Retrieves all documents for a boat entity. External users (customers) only see public documents, internal users (marina staff) see all documents.
 //	@Tags			Documents
 //	@Accept			json
 //	@Produce		json
@@ -876,11 +876,17 @@ func (h *DocumentHandler) BoatGetDocumentsByEntity(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Entity ID is required").JSON(c)
 	}
 
-	// Get documents from database
-	documents, err := h.server.DB.Queries().ListDocumentsByEntity(c.Request().Context(), db.ListDocumentsByEntityParams{
+	// Get current user to determine if they are external (customer) or internal (marina staff)
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	isInternalUser := claims.IsCustomer == nil || !*claims.IsCustomer
+
+	// Use single query with visibility filtering based on user type
+	documents, err := h.server.DB.Queries().ListDocumentsByEntityWithVisibility(c.Request().Context(), db.ListDocumentsByEntityWithVisibilityParams{
 		MarinaID:   marinaID,
 		EntityType: entityType,
 		EntityID:   entityID,
+		Column4:    isInternalUser, // true (internal) = show all, false (external) = show only public
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching documents", err)
