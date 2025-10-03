@@ -240,6 +240,61 @@ func (q *Queries) GetVesselGalleryItemByID(ctx context.Context, id uuid.UUID) (V
 	return i, err
 }
 
+const getVesselGalleryWithVisibility = `-- name: GetVesselGalleryWithVisibility :many
+SELECT id, marina_id, customer_id, vessel_id, image_url, description, main, created_at, updated_at, deleted_at, public
+FROM vessel_gallery
+WHERE vessel_id = $1
+    AND customer_id = $2
+    AND marina_id = $3
+    AND deleted_at IS NULL
+    AND ($4 = true OR public = true)
+ORDER BY created_at DESC
+`
+
+type GetVesselGalleryWithVisibilityParams struct {
+	VesselID   string
+	CustomerID string
+	MarinaID   uuid.UUID
+	Column4    interface{}
+}
+
+func (q *Queries) GetVesselGalleryWithVisibility(ctx context.Context, arg GetVesselGalleryWithVisibilityParams) ([]VesselGallery, error) {
+	rows, err := q.db.Query(ctx, getVesselGalleryWithVisibility,
+		arg.VesselID,
+		arg.CustomerID,
+		arg.MarinaID,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []VesselGallery
+	for rows.Next() {
+		var i VesselGallery
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.CustomerID,
+			&i.VesselID,
+			&i.ImageUrl,
+			&i.Description,
+			&i.Main,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Public,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const hardDeleteMarinaGalleryItem = `-- name: HardDeleteMarinaGalleryItem :exec
 DELETE FROM marina_gallery
 WHERE id = $1
