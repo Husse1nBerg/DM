@@ -300,6 +300,28 @@ func (c *Client) RetrieveBoatsForCustomer(ctx context.Context, customerID string
 	return result, nil
 }
 
+// RetrieveBoatsWithInsurance retrieves boats associated with insurance
+func (c *Client) RetrieveBoatsWithInsurance(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Boat, error) {
+	var result []Boat
+	endpoint := fmt.Sprintf("/Boats/RetrieveBoats?HasInsurance=true")
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve boats with insurance: %w", err)
+	}
+
+	return result, nil
+}
+
 // SearchBoats searches for boats
 func (c *Client) SearchBoats(ctx context.Context, searchTerm string, directHit bool, organizationID uuid.UUID, systemID string) ([]BoatSearch, error) {
 	var result []BoatSearch
@@ -331,9 +353,7 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	if boat.Motors == nil {
 		boat.Motors = []Motor{}
 	}
-	if boat.BillingCodes == nil {
-		boat.BillingCodes = []BillingCode{}
-	}
+
 	if boat.BoatDescriptionCodes == nil {
 		boat.BoatDescriptionCodes = []BoatDescriptionCode{}
 	}

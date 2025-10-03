@@ -18,6 +18,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
+	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 )
@@ -994,6 +995,15 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 			zap.Error(err),
 		)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update user password").JSON(c)
+	}
+
+	// Create default notification preferences for the new customer user
+	err = notifications.CreateDefaultNotificationPreferencesForCustomer(ctx, queries, user.ID, h.server.Logger.DesugarZap)
+	if err != nil {
+		// Log the error but don't fail user creation - notification preferences can be set later
+		h.server.Logger.DesugarZap.Warn("Failed to create default notification preferences for new customer user",
+			zap.String("userID", user.ID.String()),
+			zap.Error(err))
 	}
 
 	response := responses.NewUserResponseSuccess(user)
