@@ -34,6 +34,16 @@ WHERE vessel_id = $1
     AND deleted_at IS NULL
 ORDER BY created_at DESC;
 
+-- name: GetVesselGalleryWithVisibility :many
+SELECT *
+FROM vessel_gallery
+WHERE vessel_id = $1
+    AND customer_id = $2
+    AND marina_id = $3
+    AND deleted_at IS NULL
+    AND ($4 = true OR public = true)
+ORDER BY created_at DESC;
+
 -- name: UpdateVesselGalleryItem :one
 UPDATE vessel_gallery
 SET image_url = $2,

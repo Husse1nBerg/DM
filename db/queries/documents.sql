@@ -23,6 +23,15 @@ AND entity_type = $2
 AND entity_id = $3
 ORDER BY created_at DESC;
 
+-- name: ListDocumentsByEntityWithVisibility :many
+SELECT *
+FROM documents
+WHERE marina_id = $1
+AND entity_type = $2
+AND entity_id = $3
+AND ($4 = true OR public = true)
+ORDER BY created_at DESC;
+
 -- name: ListDocumentsByMarina :many
 SELECT *
 FROM documents
