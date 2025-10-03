@@ -3223,7 +3223,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all documents for a boat entity",
+                "description": "Retrieves all documents for a boat entity. External users (customers) only see public documents, internal users (marina staff) see all documents.",
                 "consumes": [
                     "application/json"
                 ],
