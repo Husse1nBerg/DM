@@ -408,9 +408,7 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	if boat.Motors == nil {
 		boat.Motors = []Motor{}
 	}
-	if boat.BillingCodes == nil {
-		boat.BillingCodes = []BillingCode{}
-	}
+
 	if boat.BoatDescriptionCodes == nil {
 		boat.BoatDescriptionCodes = []BoatDescriptionCode{}
 	}
