@@ -348,6 +348,7 @@ func (c *Client) SearchBoats(ctx context.Context, searchTerm string, directHit b
 func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationID uuid.UUID, systemID string) (*Boat, error) {
 	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
+	//endpoint := "v1/Boats/UpdateBoat"
 
 	// Initialize all array fields if they are null
 	if boat.Motors == nil {
@@ -366,6 +367,8 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	if boat.Attachments == nil {
 		boat.Attachments = []Attachment{}
 	}
+
+	boat.BillingCodes = nil
 
 	// Initialize Slip if it's nil
 	if boat.Slip == (Slip{}) {
