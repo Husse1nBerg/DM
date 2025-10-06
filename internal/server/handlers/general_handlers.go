@@ -48,19 +48,14 @@ func (h *GeneralHandler) ListClerksHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	// Use organization ID from claims if not provided in request
-	if req.OrganizationID.String() == "00000000-0000-0000-0000-000000000000" {
-		req.OrganizationID = claims.OrgId
-	}
-
 	// Default includeInactive to false if not provided
 	includeInactive := false
 	if req.IncludeInactive != nil {
 		includeInactive = *req.IncludeInactive
 	}
 
-	// Call DME API to list clerks
-	clerks, err := h.server.DME.ListClerks(c.Request().Context(), req.OrganizationID, req.SystemID, includeInactive)
+	// Call DME API to list clerks (use organization ID from JWT claims)
+	clerks, err := h.server.DME.ListClerks(c.Request().Context(), claims.OrgId, req.SystemID, includeInactive)
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to list clerks from DME API", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve clerks").JSON(c)
@@ -100,13 +95,8 @@ func (h *GeneralHandler) RetrieveClerkHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	// Use organization ID from claims if not provided in request
-	if req.OrganizationID.String() == "00000000-0000-0000-0000-000000000000" {
-		req.OrganizationID = claims.OrgId
-	}
-
-	// Call DME API to retrieve clerk
-	clerk, err := h.server.DME.RetrieveClerk(c.Request().Context(), req.ClerkID, req.OrganizationID, req.SystemID)
+	// Call DME API to retrieve clerk (use organization ID from JWT claims)
+	clerk, err := h.server.DME.RetrieveClerk(c.Request().Context(), req.ClerkID, claims.OrgId, req.SystemID)
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to retrieve clerk from DME API", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve clerk").JSON(c)
@@ -144,13 +134,8 @@ func (h *GeneralHandler) ListLocationsHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	// Use organization ID from claims if not provided in request
-	if req.OrganizationID.String() == "00000000-0000-0000-0000-000000000000" {
-		req.OrganizationID = claims.OrgId
-	}
-
-	// Call DME API to list locations
-	locations, err := h.server.DME.ListLocations(c.Request().Context(), req.OrganizationID, req.SystemID)
+	// Call DME API to list locations (use organization ID from JWT claims)
+	locations, err := h.server.DME.ListLocations(c.Request().Context(), claims.OrgId, req.SystemID)
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to list locations from DME API", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve locations").JSON(c)
