@@ -17,7 +17,7 @@ import (
 // ListLocations lists all locations
 func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Location, error) {
 	var result []Location
-	endpoint := "/General/Locations/"
+	endpoint := "/General/Locations"
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -37,9 +37,14 @@ func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, sy
 }
 
 // ListClerks retrieves a list of system clerks (users)
-func (c *Client) ListClerks(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Clerk, error) {
+func (c *Client) ListClerks(ctx context.Context, organizationID uuid.UUID, systemID string, includeInactive bool) ([]Clerk, error) {
 	var result []Clerk
 	endpoint := "/General/Clerks/List"
+
+	// Add query parameter for includeInactive
+	params := map[string]string{
+		"includeInactive": fmt.Sprintf("%t", includeInactive),
+	}
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -49,7 +54,7 @@ func (c *Client) ListClerks(ctx context.Context, organizationID uuid.UUID, syste
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list clerks: %w", err)

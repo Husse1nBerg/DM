@@ -412,13 +412,18 @@ const docTemplate = `{
                 "summary": "Retrieve a specific clerk (user) record",
                 "parameters": [
                     {
-                        "description": "Retrieve clerk request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.ClerkRequest"
-                        }
+                        "type": "string",
+                        "description": "Clerk ID",
+                        "name": "clerkId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -470,13 +475,17 @@ const docTemplate = `{
                 "summary": "List system clerks (users)",
                 "parameters": [
                     {
-                        "description": "List clerks request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.ClerkListRequest"
-                        }
+                        "type": "boolean",
+                        "description": "Include inactive clerks",
+                        "name": "includeInactive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -522,13 +531,11 @@ const docTemplate = `{
                 "summary": "List business locations",
                 "parameters": [
                     {
-                        "description": "List locations request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.LocationListRequest"
-                        }
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -14903,45 +14910,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ClerkListRequest": {
-            "type": "object",
-            "required": [
-                "organizationId",
-                "systemId"
-            ],
-            "properties": {
-                "organizationId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "systemId": {
-                    "type": "string",
-                    "example": "SYS001"
-                }
-            }
-        },
-        "requests.ClerkRequest": {
-            "type": "object",
-            "required": [
-                "clerkId",
-                "organizationId",
-                "systemId"
-            ],
-            "properties": {
-                "clerkId": {
-                    "type": "string",
-                    "example": "CLERK001"
-                },
-                "organizationId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "systemId": {
-                    "type": "string",
-                    "example": "SYS001"
-                }
-            }
-        },
         "requests.CompletePasswordRecoveryRequest": {
             "description": "Complete password recovery request payload",
             "type": "object",
@@ -15908,23 +15876,6 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
-                }
-            }
-        },
-        "requests.LocationListRequest": {
-            "type": "object",
-            "required": [
-                "organizationId",
-                "systemId"
-            ],
-            "properties": {
-                "organizationId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "systemId": {
-                    "type": "string",
-                    "example": "SYS001"
                 }
             }
         },
