@@ -27,7 +27,8 @@ func NewGeneralHandler(server *s.Server) *GeneralHandler {
 // @Tags General
 // @Accept json
 // @Produce json
-// @Param request body requests.ClerkListRequest true "List clerks request"
+// @Param includeInactive query bool false "Include inactive clerks"
+// @Param systemId query string true "System ID"
 // @Success 200 {object} responses.ClerkListResponse
 // @Failure 400 {object} responses.Error
 // @Failure 401 {object} responses.Error
@@ -52,8 +53,14 @@ func (h *GeneralHandler) ListClerksHandler(c echo.Context) error {
 		req.OrganizationID = claims.OrgId
 	}
 
+	// Default includeInactive to false if not provided
+	includeInactive := false
+	if req.IncludeInactive != nil {
+		includeInactive = *req.IncludeInactive
+	}
+
 	// Call DME API to list clerks
-	clerks, err := h.server.DME.ListClerks(c.Request().Context(), req.OrganizationID, req.SystemID)
+	clerks, err := h.server.DME.ListClerks(c.Request().Context(), req.OrganizationID, req.SystemID, includeInactive)
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to list clerks from DME API", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve clerks").JSON(c)
@@ -71,7 +78,8 @@ func (h *GeneralHandler) ListClerksHandler(c echo.Context) error {
 // @Tags General
 // @Accept json
 // @Produce json
-// @Param request body requests.ClerkRequest true "Retrieve clerk request"
+// @Param clerkId query string true "Clerk ID"
+// @Param systemId query string true "System ID"
 // @Success 200 {object} responses.ClerkResponse
 // @Failure 400 {object} responses.Error
 // @Failure 401 {object} responses.Error
@@ -116,7 +124,7 @@ func (h *GeneralHandler) RetrieveClerkHandler(c echo.Context) error {
 // @Tags General
 // @Accept json
 // @Produce json
-// @Param request body requests.LocationListRequest true "List locations request"
+// @Param systemId query string true "System ID"
 // @Success 200 {object} responses.LocationListResponse
 // @Failure 400 {object} responses.Error
 // @Failure 401 {object} responses.Error

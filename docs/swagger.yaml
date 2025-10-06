@@ -1206,34 +1206,6 @@ definitions:
     - name
     - ownerId
     type: object
-  requests.ClerkListRequest:
-    properties:
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      systemId:
-        example: SYS001
-        type: string
-    required:
-    - organizationId
-    - systemId
-    type: object
-  requests.ClerkRequest:
-    properties:
-      clerkId:
-        example: CLERK001
-        type: string
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      systemId:
-        example: SYS001
-        type: string
-    required:
-    - clerkId
-    - organizationId
-    - systemId
-    type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
     properties:
@@ -1972,18 +1944,6 @@ definitions:
         type: string
     required:
     - marinaId
-    type: object
-  requests.LocationListRequest:
-    properties:
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      systemId:
-        example: SYS001
-        type: string
-    required:
-    - organizationId
-    - systemId
     type: object
   requests.LoginRequest:
     properties:
@@ -4872,12 +4832,16 @@ paths:
       - application/json
       description: Retrieves a specific clerk (user) record from the DME API
       parameters:
-      - description: Retrieve clerk request
-        in: body
-        name: request
+      - description: Clerk ID
+        in: query
+        name: clerkId
         required: true
-        schema:
-          $ref: '#/definitions/requests.ClerkRequest'
+        type: string
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -4910,12 +4874,15 @@ paths:
       - application/json
       description: Retrieves a list of system clerks (users) from the DME API
       parameters:
-      - description: List clerks request
-        in: body
-        name: request
+      - description: Include inactive clerks
+        in: query
+        name: includeInactive
+        type: boolean
+      - description: System ID
+        in: query
+        name: systemId
         required: true
-        schema:
-          $ref: '#/definitions/requests.ClerkListRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -4944,12 +4911,11 @@ paths:
       - application/json
       description: Retrieves a list of business locations from the DME API
       parameters:
-      - description: List locations request
-        in: body
-        name: request
+      - description: System ID
+        in: query
+        name: systemId
         required: true
-        schema:
-          $ref: '#/definitions/requests.LocationListRequest'
+        type: string
       produces:
       - application/json
       responses:
