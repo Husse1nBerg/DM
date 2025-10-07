@@ -756,7 +756,7 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 		}
 	} else {
 		h.server.Logger.Zap.Infow("Skipping notifications - document uploaded by customer user",
-			"user_id", userID,
+			"user_id", claims.ID,
 			"is_customer", *claims.IsCustomer,
 			"document_id", doc.ID)
 	}
