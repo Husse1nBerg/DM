@@ -184,4 +184,7 @@ func RegisterRoutes(s *s.Server) {
 
 	// General DME API routes
 	RegisterGeneralRoutes(s, permissionProtected)
+
+	// Inventory routes
+	RegisterInventoryRoutes(s, base, permissionProtected)
 }

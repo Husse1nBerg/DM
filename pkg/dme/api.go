@@ -1353,3 +1353,335 @@ func (c *Client) InitiatePayment(ctx context.Context, customerID string, invoice
 func generatePaymentSessionID() string {
 	return uuid.New().String()
 }
+
+// -----
+// Inventory API
+// -----
+
+// RetrieveFuel retrieves one or all fuel inventory records
+func (c *Client) RetrieveFuel(ctx context.Context, fuelID string, organizationID uuid.UUID, systemID string) ([]FuelInventory, error) {
+	var result []FuelInventory
+	
+	var endpoint string
+	if fuelID != "" {
+		endpoint = fmt.Sprintf("/Inventory/RetrieveFuel?Id=%s", fuelID)
+	} else {
+		endpoint = "/Inventory/RetrieveFuel"
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve fuel inventory: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveOnlineBillcodeList retrieves a list of billing codes selected for use online
+func (c *Client) RetrieveOnlineBillcodeList(ctx context.Context, organizationID uuid.UUID, systemID string) ([]OnlineBillcode, error) {
+	var result []OnlineBillcode
+	endpoint := "/Inventory/RetrieveOnlineBillcodeList"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve online billcode list: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveOnlinePartsList retrieves a list of inventory records selected for use online
+func (c *Client) RetrieveOnlinePartsList(ctx context.Context, organizationID uuid.UUID, systemID string) ([]OnlinePart, error) {
+	var result []OnlinePart
+	endpoint := "/Inventory/RetrieveOnlinePartsList"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve online parts list: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveQtyInfo retrieves quantity information for a specific part at a specific location
+func (c *Client) RetrieveQtyInfo(ctx context.Context, partNumber string, locationCode string, organizationID uuid.UUID, systemID string) (*PartQtyInfo, error) {
+	var result PartQtyInfo
+	endpoint := fmt.Sprintf("/Inventory/RetrieveQtyInfo?PartNumber=%s&LocationCode=%s", partNumber, locationCode)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve quantity info: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrievePartsKit retrieves a parts kit record
+func (c *Client) RetrievePartsKit(ctx context.Context, kitID string, organizationID uuid.UUID, systemID string) (*PartsKit, error) {
+	var result PartsKit
+	endpoint := fmt.Sprintf("/Inventory/PartsKits?Id=%s", kitID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve parts kit: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListPartsKits retrieves a list of all parts kits
+func (c *Client) ListPartsKits(ctx context.Context, organizationID uuid.UUID, systemID string) ([]PartsKit, error) {
+	var result []PartsKit
+	endpoint := "/Inventory/PartsKits/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list parts kits: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrievePurchaseOrder retrieves a purchase order by its ID
+func (c *Client) RetrievePurchaseOrder(ctx context.Context, poID string, organizationID uuid.UUID, systemID string) (*PurchaseOrder, error) {
+	var result PurchaseOrder
+	endpoint := fmt.Sprintf("/Inventory/PurchaseOrders?Id=%s", poID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve purchase order: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListPurchaseOrders retrieves a list of purchase orders by single date or date range
+func (c *Client) ListPurchaseOrders(ctx context.Context, startDate string, endDate string, organizationID uuid.UUID, systemID string) ([]PurchaseOrder, error) {
+	var result []PurchaseOrder
+	
+	var endpoint string
+	if endDate != "" {
+		endpoint = fmt.Sprintf("/Inventory/PurchaseOrders/PurchaseOrdersList?StartDate=%s&EndDate=%s", startDate, endDate)
+	} else {
+		endpoint = fmt.Sprintf("/Inventory/PurchaseOrders/PurchaseOrdersList?Date=%s", startDate)
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list purchase orders: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveSpecialOrder retrieves a special order
+func (c *Client) RetrieveSpecialOrder(ctx context.Context, orderID string, organizationID uuid.UUID, systemID string) (*SpecialOrder, error) {
+	var result SpecialOrder
+	endpoint := fmt.Sprintf("/Inventory/SpecialOrders?Id=%s", orderID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve special order: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ListCustomerSpecialOrders retrieves a list of special orders for a specific customer
+func (c *Client) ListCustomerSpecialOrders(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]SpecialOrder, error) {
+	var result []SpecialOrder
+	endpoint := fmt.Sprintf("/Inventory/SpecialOrders/CustomerSpecialOrders?CustomerId=%s", customerID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list customer special orders: %w", err)
+	}
+
+	return result, nil
+}
+
+// ListReceivedSpecialOrders retrieves a list of received special orders
+func (c *Client) ListReceivedSpecialOrders(ctx context.Context, organizationID uuid.UUID, systemID string) ([]SpecialOrder, error) {
+	var result []SpecialOrder
+	endpoint := "/Inventory/SpecialOrders/ReceivedOrders"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list received special orders: %w", err)
+	}
+
+	return result, nil
+}
+
+// SearchInventory searches the full inventory for an item
+func (c *Client) SearchInventory(ctx context.Context, searchTerm string, organizationID uuid.UUID, systemID string) ([]InventorySearchResult, error) {
+	var result []InventorySearchResult
+	endpoint := fmt.Sprintf("/Inventory/Search?SearchTerm=%s", searchTerm)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search inventory: %w", err)
+	}
+
+	return result, nil
+}
+
+// FindParts attempts to find parts using various part numbers
+func (c *Client) FindParts(ctx context.Context, partNumbers []string, organizationID uuid.UUID, systemID string) ([]InventoryPart, error) {
+	var result []InventoryPart
+	endpoint := "/Inventory/FindParts"
+
+	payload := FindPartsRequest{
+		PartNumbers: partNumbers,
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		payload,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find parts: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveInventory retrieves inventory records from full inventory
+func (c *Client) RetrieveInventory(ctx context.Context, partNumbers []string, organizationID uuid.UUID, systemID string) ([]InventoryPart, error) {
+	var result []InventoryPart
+	endpoint := "/Inventory/Retrieve"
+
+	payload := FindPartsRequest{
+		PartNumbers: partNumbers,
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		payload,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve inventory: %w", err)
+	}
+
+	return result, nil
+}

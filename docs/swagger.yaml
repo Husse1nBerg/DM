@@ -1915,6 +1915,19 @@ definitions:
     required:
     - estId
     type: object
+  requests.FindPartsRequest:
+    properties:
+      partNumbers:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      systemId:
+        type: string
+    required:
+    - partNumbers
+    - systemId
+    type: object
   requests.ForgotPasswordRequest:
     description: Forgot password request payload
     properties:
@@ -2090,6 +2103,19 @@ definitions:
     - newPassword
     - oldPassword
     - userId
+    type: object
+  requests.RetrieveInventoryRequest:
+    properties:
+      partNumbers:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      systemId:
+        type: string
+    required:
+    - partNumbers
+    - systemId
     type: object
   requests.SendHTMLEmailRequest:
     description: Send HTML email request payload
@@ -3489,6 +3515,129 @@ definitions:
       data:
         $ref: '#/definitions/dme.WorkOrder'
     type: object
+  responses.FuelInventoryResponse:
+    properties:
+      costPerUnit:
+        type: number
+      currentQuantity:
+        type: number
+      description:
+        type: string
+      id:
+        type: string
+      lastDeliveryDate:
+        type: string
+      lastDeliveryQty:
+        type: number
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      pricePerUnit:
+        type: number
+      reorderLevel:
+        type: number
+      tankCapacity:
+        type: number
+      tankNumber:
+        type: string
+      unitOfMeasure:
+        type: string
+    type: object
+  responses.InventoryPartResponse:
+    properties:
+      active:
+        type: boolean
+      averageCost:
+        type: number
+      binLocation:
+        type: string
+      cost:
+        type: number
+      department:
+        type: string
+      description:
+        type: string
+      lastCost:
+        type: number
+      lastModified:
+        type: string
+      lastReceiptDate:
+        type: string
+      lastSaleDate:
+        type: string
+      leadTimeDays:
+        type: integer
+      locationCode:
+        type: string
+      lotTrackedInventory:
+        type: boolean
+      manufacturerPartNum:
+        type: string
+      maxOrderQty:
+        type: number
+      minOrderQty:
+        type: number
+      notes:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      price2:
+        type: number
+      price3:
+        type: number
+      quantityAvailable:
+        type: number
+      quantityCommitted:
+        type: number
+      quantityOnHand:
+        type: number
+      quantityOnOrder:
+        type: number
+      reorderLevel:
+        type: number
+      reorderQty:
+        type: number
+      serializedInventory:
+        type: boolean
+      taxFlag:
+        type: boolean
+      unitOfMeasure:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+      vendorPartNumber:
+        type: string
+    type: object
+  responses.InventorySearchResultResponse:
+    properties:
+      cost:
+        type: number
+      department:
+        type: string
+      description:
+        type: string
+      locationCode:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      quantityAvailable:
+        type: number
+      quantityOnHand:
+        type: number
+      unitOfMeasure:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
   responses.InviteResponse:
     properties:
       email:
@@ -4047,6 +4196,54 @@ definitions:
       data:
         $ref: '#/definitions/responses.NotificationResponse'
     type: object
+  responses.OnlineBillcodeResponse:
+    properties:
+      active:
+        type: boolean
+      department:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      price:
+        type: number
+      taxFlag:
+        type: boolean
+    type: object
+  responses.OnlinePartResponse:
+    properties:
+      active:
+        type: boolean
+      cost:
+        type: number
+      department:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      quantityAvailable:
+        type: number
+      quantityOnHand:
+        type: number
+      taxFlag:
+        type: boolean
+      unitOfMeasure:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
   responses.OrganizationResponse:
     properties:
       address_id:
@@ -4175,10 +4372,131 @@ definitions:
       textUsage:
         type: integer
     type: object
+  responses.PartQtyInfoResponse:
+    properties:
+      averageCost:
+        type: number
+      cost:
+        type: number
+      lastCost:
+        type: number
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      maxOrderQty:
+        type: number
+      minOrderQty:
+        type: number
+      partNumber:
+        type: string
+      quantityAvailable:
+        type: number
+      quantityCommitted:
+        type: number
+      quantityOnHand:
+        type: number
+      quantityOnOrder:
+        type: number
+      reorderLevel:
+        type: number
+      reorderQty:
+        type: number
+    type: object
+  responses.PartsKitItemResponse:
+    properties:
+      cost:
+        type: number
+      description:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: number
+    type: object
+  responses.PartsKitResponse:
+    properties:
+      active:
+        type: boolean
+      description:
+        type: string
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/responses.PartsKitItemResponse'
+        type: array
+      lastModified:
+        type: string
+      totalCost:
+        type: number
+      totalPrice:
+        type: number
+    type: object
   responses.PaymentInitiationResponse:
     properties:
       data:
         $ref: '#/definitions/dme.PaymentInitiationResponse'
+    type: object
+  responses.PurchaseOrderLineResponse:
+    properties:
+      description:
+        type: string
+      discount:
+        type: number
+      extendedCost:
+        type: number
+      lineNumber:
+        type: integer
+      partNumber:
+        type: string
+      quantityOrder:
+        type: number
+      quantityRecvd:
+        type: number
+      taxFlag:
+        type: boolean
+      unitCost:
+        type: number
+    type: object
+  responses.PurchaseOrderResponse:
+    properties:
+      comments:
+        type: string
+      createdBy:
+        type: string
+      expectedDate:
+        type: string
+      id:
+        type: string
+      lastModified:
+        type: string
+      lastModifiedBy:
+        type: string
+      lines:
+        items:
+          $ref: '#/definitions/responses.PurchaseOrderLineResponse'
+        type: array
+      locationCode:
+        type: string
+      orderDate:
+        type: string
+      poNumber:
+        type: string
+      receivedDate:
+        type: string
+      status:
+        type: string
+      totalAmount:
+        type: number
+      totalReceived:
+        type: number
+      vendorId:
+        type: string
+      vendorName:
+        type: string
     type: object
   responses.RedisGetResponse:
     properties:
@@ -4294,6 +4612,49 @@ definitions:
   responses.ServiceWOCategoryCodesResponse:
     properties:
       data: {}
+    type: object
+  responses.SpecialOrderResponse:
+    properties:
+      comments:
+        type: string
+      customerId:
+        type: string
+      customerName:
+        type: string
+      description:
+        type: string
+      expectedDate:
+        type: string
+      id:
+        type: string
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      orderDate:
+        type: string
+      orderNumber:
+        type: string
+      partNumber:
+        type: string
+      poNumber:
+        type: string
+      quantityOrdered:
+        type: number
+      quantityRecvd:
+        type: number
+      receivedDate:
+        type: string
+      status:
+        type: string
+      unitCost:
+        type: number
+      unitPrice:
+        type: number
+      vendorId:
+        type: string
+      vendorName:
+        type: string
     type: object
   responses.UnreadCountResponse:
     description: Unread notification count
@@ -8888,6 +9249,485 @@ paths:
       summary: Health check
       tags:
       - Generic
+  /inventory/find-parts:
+    post:
+      consumes:
+      - application/json
+      description: Attempts to find parts using various part numbers
+      parameters:
+      - description: Find Parts Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.FindPartsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.InventoryPartResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Find parts by part numbers
+      tags:
+      - Inventory
+  /inventory/fuel:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves one or all fuel inventory records from DockMaster
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Fuel ID (optional - if empty, retrieves all)
+        in: query
+        name: fuelId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.FuelInventoryResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve fuel inventory
+      tags:
+      - Inventory
+  /inventory/online-billcodes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of billing codes that have been selected for use
+        online
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.OnlineBillcodeResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve online billing codes
+      tags:
+      - Inventory
+  /inventory/online-parts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of inventory records that have been selected for
+        use online
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.OnlinePartResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve online parts list
+      tags:
+      - Inventory
+  /inventory/parts-kits:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a parts kit record by ID
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Kit ID
+        in: query
+        name: kitId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PartsKitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a parts kit
+      tags:
+      - Inventory
+  /inventory/parts-kits/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all parts kits
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.PartsKitResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List all parts kits
+      tags:
+      - Inventory
+  /inventory/purchase-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a purchase order by its ID
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Purchase Order ID
+        in: query
+        name: poId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PurchaseOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a purchase order
+      tags:
+      - Inventory
+  /inventory/purchase-orders/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of purchase orders by single date or date range
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: End Date (YYYY-MM-DD) - optional for date range
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.PurchaseOrderResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List purchase orders
+      tags:
+      - Inventory
+  /inventory/qty-info:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves quantity information for a specific part at a specific
+        location
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Part Number
+        in: query
+        name: partNumber
+        required: true
+        type: string
+      - description: Location Code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PartQtyInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve quantity information for a part
+      tags:
+      - Inventory
+  /inventory/retrieve:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves inventory records from full inventory
+      parameters:
+      - description: Retrieve Inventory Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RetrieveInventoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.InventoryPartResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve inventory records
+      tags:
+      - Inventory
+  /inventory/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches the full inventory for an item
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Search Term
+        in: query
+        name: searchTerm
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.InventorySearchResultResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search inventory
+      tags:
+      - Inventory
+  /inventory/special-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a special order by ID
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Special Order ID
+        in: query
+        name: orderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SpecialOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a special order
+      tags:
+      - Inventory
+  /inventory/special-orders/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of special orders for a specific customer
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.SpecialOrderResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List customer special orders
+      tags:
+      - Inventory
+  /inventory/special-orders/received:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of received special orders
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.SpecialOrderResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List received special orders
+      tags:
+      - Inventory
   /invoices/customer:
     get:
       consumes:
