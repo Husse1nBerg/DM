@@ -6640,6 +6640,724 @@ const docTemplate = `{
                 }
             }
         },
+        "/inventory/find-parts": {
+            "post": {
+                "description": "Attempts to find parts using various part numbers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Find parts by part numbers",
+                "parameters": [
+                    {
+                        "description": "Find Parts Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.FindPartsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.InventoryPartResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/fuel": {
+            "get": {
+                "description": "Retrieves one or all fuel inventory records from DockMaster",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve fuel inventory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fuel ID (optional - if empty, retrieves all)",
+                        "name": "fuelId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.FuelInventoryResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/online-billcodes": {
+            "get": {
+                "description": "Retrieves a list of billing codes that have been selected for use online",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve online billing codes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.OnlineBillcodeResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/online-parts": {
+            "get": {
+                "description": "Retrieves a list of inventory records that have been selected for use online",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve online parts list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.OnlinePartResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/parts-kits": {
+            "get": {
+                "description": "Retrieves a parts kit record by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve a parts kit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Kit ID",
+                        "name": "kitId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PartsKitResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/parts-kits/list": {
+            "get": {
+                "description": "Retrieves a list of all parts kits",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List all parts kits",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.PartsKitResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/purchase-orders": {
+            "get": {
+                "description": "Retrieves a purchase order by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve a purchase order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Purchase Order ID",
+                        "name": "poId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PurchaseOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/purchase-orders/list": {
+            "get": {
+                "description": "Retrieves a list of purchase orders by single date or date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List purchase orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY-MM-DD) - optional for date range",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.PurchaseOrderResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/qty-info": {
+            "get": {
+                "description": "Retrieves quantity information for a specific part at a specific location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve quantity information for a part",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Part Number",
+                        "name": "partNumber",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location Code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PartQtyInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/retrieve": {
+            "post": {
+                "description": "Retrieves inventory records from full inventory",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve inventory records",
+                "parameters": [
+                    {
+                        "description": "Retrieve Inventory Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RetrieveInventoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.InventoryPartResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/search": {
+            "get": {
+                "description": "Searches the full inventory for an item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Search inventory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search Term",
+                        "name": "searchTerm",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.InventorySearchResultResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/special-orders": {
+            "get": {
+                "description": "Retrieves a special order by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve a special order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Special Order ID",
+                        "name": "orderId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SpecialOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/special-orders/customer": {
+            "get": {
+                "description": "Retrieves a list of special orders for a specific customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List customer special orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SpecialOrderResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/special-orders/received": {
+            "get": {
+                "description": "Retrieves a list of received special orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List received special orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SpecialOrderResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/invoices/customer": {
             "get": {
                 "description": "Retrieves invoices for a specific customer",
@@ -16189,6 +16907,25 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.FindPartsRequest": {
+            "type": "object",
+            "required": [
+                "partNumbers",
+                "systemId"
+            ],
+            "properties": {
+                "partNumbers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "systemId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
@@ -16436,6 +17173,25 @@ const docTemplate = `{
                 "userId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "requests.RetrieveInventoryRequest": {
+            "type": "object",
+            "required": [
+                "partNumbers",
+                "systemId"
+            ],
+            "properties": {
+                "partNumbers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "systemId": {
+                    "type": "string"
                 }
             }
         },
@@ -18418,6 +19174,192 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.FuelInventoryResponse": {
+            "type": "object",
+            "properties": {
+                "costPerUnit": {
+                    "type": "number"
+                },
+                "currentQuantity": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastDeliveryDate": {
+                    "type": "string"
+                },
+                "lastDeliveryQty": {
+                    "type": "number"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "pricePerUnit": {
+                    "type": "number"
+                },
+                "reorderLevel": {
+                    "type": "number"
+                },
+                "tankCapacity": {
+                    "type": "number"
+                },
+                "tankNumber": {
+                    "type": "string"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.InventoryPartResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "averageCost": {
+                    "type": "number"
+                },
+                "binLocation": {
+                    "type": "string"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "lastCost": {
+                    "type": "number"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastReceiptDate": {
+                    "type": "string"
+                },
+                "lastSaleDate": {
+                    "type": "string"
+                },
+                "leadTimeDays": {
+                    "type": "integer"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "lotTrackedInventory": {
+                    "type": "boolean"
+                },
+                "manufacturerPartNum": {
+                    "type": "string"
+                },
+                "maxOrderQty": {
+                    "type": "number"
+                },
+                "minOrderQty": {
+                    "type": "number"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "price2": {
+                    "type": "number"
+                },
+                "price3": {
+                    "type": "number"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityCommitted": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "quantityOnOrder": {
+                    "type": "number"
+                },
+                "reorderLevel": {
+                    "type": "number"
+                },
+                "reorderQty": {
+                    "type": "number"
+                },
+                "serializedInventory": {
+                    "type": "boolean"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                },
+                "vendorPartNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.InventorySearchResultResponse": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "number"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.InviteResponse": {
             "type": "object",
             "properties": {
@@ -19189,6 +20131,79 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.OnlineBillcodeResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.OnlinePartResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.OrganizationResponse": {
             "type": "object",
             "properties": {
@@ -19366,11 +20381,195 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.PartQtyInfoResponse": {
+            "type": "object",
+            "properties": {
+                "averageCost": {
+                    "type": "number"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "lastCost": {
+                    "type": "number"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "maxOrderQty": {
+                    "type": "number"
+                },
+                "minOrderQty": {
+                    "type": "number"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityCommitted": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "quantityOnOrder": {
+                    "type": "number"
+                },
+                "reorderLevel": {
+                    "type": "number"
+                },
+                "reorderQty": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.PartsKitItemResponse": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.PartsKitResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PartsKitItemResponse"
+                    }
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "totalPrice": {
+                    "type": "number"
+                }
+            }
+        },
         "responses.PaymentInitiationResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/dme.PaymentInitiationResponse"
+                }
+            }
+        },
+        "responses.PurchaseOrderLineResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "extendedCost": {
+                    "type": "number"
+                },
+                "lineNumber": {
+                    "type": "integer"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "quantityOrder": {
+                    "type": "number"
+                },
+                "quantityRecvd": {
+                    "type": "number"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "unitCost": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.PurchaseOrderResponse": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "expectedDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastModifiedBy": {
+                    "type": "string"
+                },
+                "lines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PurchaseOrderLineResponse"
+                    }
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "orderDate": {
+                    "type": "string"
+                },
+                "poNumber": {
+                    "type": "string"
+                },
+                "receivedDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "totalAmount": {
+                    "type": "number"
+                },
+                "totalReceived": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
                 }
             }
         },
@@ -19540,6 +20739,71 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {}
+            }
+        },
+        "responses.SpecialOrderResponse": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "expectedDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "orderDate": {
+                    "type": "string"
+                },
+                "orderNumber": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "poNumber": {
+                    "type": "string"
+                },
+                "quantityOrdered": {
+                    "type": "number"
+                },
+                "quantityRecvd": {
+                    "type": "number"
+                },
+                "receivedDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "unitCost": {
+                    "type": "number"
+                },
+                "unitPrice": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
             }
         },
         "responses.UnreadCountResponse": {
