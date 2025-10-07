@@ -20,6 +20,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
@@ -991,8 +992,8 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	// Use the comprehensive filtered query with specific status filter
-	submissions, err := h.server.DB.Queries().ListEsignSubmissionsWithFilters(ctx, db.ListEsignSubmissionsWithFiltersParams{
+	// Use the comprehensive filtered query with signers
+	submissionsWithSigners, err := h.server.DB.Queries().ListEsignSubmissionsWithSignersAndFilters(ctx, db.ListEsignSubmissionsWithSignersAndFiltersParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
 		Column3:        status,
@@ -1004,7 +1005,7 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		Column9:        customerID,
 	})
 	if err != nil {
-		h.server.Logger.Zap.Error("Error fetching filtered submissions", err)
+		h.server.Logger.Zap.Error("Error fetching filtered submissions with signers", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
 	}
 
@@ -1020,7 +1021,61 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
 	}
 
-	return responses.NewEsignSubmissionsPaginatedResponse(submissions, total, req.PageSize, req.Page).JSON(c)
+	// Process the results to separate submissions and signers
+	submissionsMap := make(map[uuid.UUID]db.EsignSubmission)
+	signersMap := make(map[uuid.UUID][]db.EsignSubmissionSigner)
+
+	for _, row := range submissionsWithSigners {
+		// Add submission to map if not already present
+		if _, exists := submissionsMap[row.ID]; !exists {
+			submissionsMap[row.ID] = db.EsignSubmission{
+				ID:                  row.ID,
+				OrganizationID:      row.OrganizationID,
+				MarinaID:            row.MarinaID,
+				DocumentID:          row.DocumentID,
+				Status:              row.Status,
+				BlobUrl:             row.BlobUrl,
+				BlobMetadata:        row.BlobMetadata,
+				CustomerID:          row.CustomerID,
+				Email:               row.Email,
+				Name:                row.Name,
+				AttachmentRequired:  row.AttachmentRequired,
+				ReplyTo:             row.ReplyTo,
+				CustomMessage:       row.CustomMessage,
+				IsMultipleSignature: row.IsMultipleSignature,
+				CreatedAt:           row.CreatedAt,
+				UpdatedAt:           row.UpdatedAt,
+				DeletedAt:           row.DeletedAt,
+			}
+		}
+
+		// Add signer if present (signer_id will be non-zero UUID if signers exist)
+		if row.SignerID != uuid.Nil {
+			signer := db.EsignSubmissionSigner{
+				ID:             row.SignerID,
+				SubmissionID:   row.ID,
+				Email:          *row.SignerEmail,
+				Name:           row.SignerName,
+				SignOrder:      *row.SignOrder,
+				Status:         *row.SignerStatus,
+				SignedAt:       row.SignedAt,
+				DeclinedAt:     row.DeclinedAt,
+				DeclinedReason: row.DeclinedReason,
+				CreatedAt:      row.SignerCreatedAt,
+				UpdatedAt:      row.SignerUpdatedAt,
+				DeletedAt:      pgtype.Timestamp{}, // Not available in the query result
+			}
+			signersMap[row.ID] = append(signersMap[row.ID], signer)
+		}
+	}
+
+	// Convert map to slice maintaining order
+	submissions := make([]db.EsignSubmission, 0, len(submissionsMap))
+	for _, submission := range submissionsMap {
+		submissions = append(submissions, submission)
+	}
+
+	return responses.NewEsignSubmissionsWithSignersPaginatedResponse(submissions, signersMap, total, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateEsignSubmission creates a new e-signature submission

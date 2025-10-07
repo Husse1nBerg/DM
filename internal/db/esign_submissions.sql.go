@@ -1005,6 +1005,158 @@ func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListE
 	return items, nil
 }
 
+const listEsignSubmissionsWithSignersAndFilters = `-- name: ListEsignSubmissionsWithSignersAndFilters :many
+SELECT 
+    es.id, es.organization_id, es.marina_id, es.document_id, es.status, es.blob_url, es.blob_metadata, es.customer_id, es.email, es.created_at, es.updated_at, es.deleted_at, es.name, es.attachment_required, es.reply_to, es.custom_message, es.is_multiple_signature,
+    ess.id as signer_id,
+    ess.email as signer_email,
+    ess.name as signer_name,
+    ess.sign_order,
+    ess.status as signer_status,
+    ess.signed_at,
+    ess.declined_at,
+    ess.declined_reason,
+    ess.created_at as signer_created_at,
+    ess.updated_at as signer_updated_at
+FROM esign_submissions es
+LEFT JOIN esign_submission_signers ess ON es.id = ess.submission_id AND ess.deleted_at IS NULL
+WHERE es.organization_id = $1
+  AND es.marina_id = $2
+  AND es.deleted_at IS NULL
+  AND ($3 = '' OR es.status = $3)
+  AND ($4 = '' OR (
+    LOWER(es.email) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.name) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.status) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.customer_id) LIKE LOWER('%' || $4 || '%')
+  ))
+  AND ($9 = '' OR es.customer_id = $9)
+ORDER BY 
+  CASE 
+    WHEN $5 = 'email' AND $6 = 'asc' THEN es.email
+    WHEN $5 = 'name' AND $6 = 'asc' THEN es.name
+    WHEN $5 = 'status' AND $6 = 'asc' THEN es.status
+    WHEN $5 = 'customer_id' AND $6 = 'asc' THEN es.customer_id
+  END ASC,
+  CASE 
+    WHEN $5 = 'email' AND $6 = 'desc' THEN es.email
+    WHEN $5 = 'name' AND $6 = 'desc' THEN es.name
+    WHEN $5 = 'status' AND $6 = 'desc' THEN es.status
+    WHEN $5 = 'customer_id' AND $6 = 'desc' THEN es.customer_id
+  END DESC,
+  CASE 
+    WHEN $5 = 'created_at' AND $6 = 'asc' THEN es.created_at
+    WHEN $5 = 'updated_at' AND $6 = 'asc' THEN es.updated_at
+  END ASC,
+  CASE 
+    WHEN $5 = 'created_at' AND $6 = 'desc' THEN es.created_at
+    WHEN $5 = 'updated_at' AND $6 = 'desc' THEN es.updated_at
+    ELSE es.created_at
+  END DESC,
+  ess.sign_order ASC
+LIMIT $7 OFFSET $8
+`
+
+type ListEsignSubmissionsWithSignersAndFiltersParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	Column3        interface{}
+	Column4        interface{}
+	Column5        interface{}
+	Column6        interface{}
+	Limit          int32
+	Offset         int32
+	Column9        interface{}
+}
+
+type ListEsignSubmissionsWithSignersAndFiltersRow struct {
+	ID                  uuid.UUID
+	OrganizationID      uuid.UUID
+	MarinaID            uuid.UUID
+	DocumentID          uuid.UUID
+	Status              string
+	BlobUrl             string
+	BlobMetadata        []byte
+	CustomerID          *string
+	Email               string
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
+	DeletedAt           pgtype.Timestamp
+	Name                *string
+	AttachmentRequired  *bool
+	ReplyTo             *string
+	CustomMessage       *string
+	IsMultipleSignature bool
+	SignerID            uuid.UUID
+	SignerEmail         *string
+	SignerName          *string
+	SignOrder           *int32
+	SignerStatus        *string
+	SignedAt            pgtype.Timestamp
+	DeclinedAt          pgtype.Timestamp
+	DeclinedReason      *string
+	SignerCreatedAt     pgtype.Timestamp
+	SignerUpdatedAt     pgtype.Timestamp
+}
+
+func (q *Queries) ListEsignSubmissionsWithSignersAndFilters(ctx context.Context, arg ListEsignSubmissionsWithSignersAndFiltersParams) ([]ListEsignSubmissionsWithSignersAndFiltersRow, error) {
+	rows, err := q.db.Query(ctx, listEsignSubmissionsWithSignersAndFilters,
+		arg.OrganizationID,
+		arg.MarinaID,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Limit,
+		arg.Offset,
+		arg.Column9,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListEsignSubmissionsWithSignersAndFiltersRow
+	for rows.Next() {
+		var i ListEsignSubmissionsWithSignersAndFiltersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganizationID,
+			&i.MarinaID,
+			&i.DocumentID,
+			&i.Status,
+			&i.BlobUrl,
+			&i.BlobMetadata,
+			&i.CustomerID,
+			&i.Email,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.Name,
+			&i.AttachmentRequired,
+			&i.ReplyTo,
+			&i.CustomMessage,
+			&i.IsMultipleSignature,
+			&i.SignerID,
+			&i.SignerEmail,
+			&i.SignerName,
+			&i.SignOrder,
+			&i.SignerStatus,
+			&i.SignedAt,
+			&i.DeclinedAt,
+			&i.DeclinedReason,
+			&i.SignerCreatedAt,
+			&i.SignerUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const softDeleteEsignSubmission = `-- name: SoftDeleteEsignSubmission :exec
 UPDATE esign_submissions
 SET deleted_at = CURRENT_TIMESTAMP

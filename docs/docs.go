@@ -18879,6 +18879,12 @@ const docTemplate = `{
                     "type": "string",
                     "example": "support@example.com"
                 },
+                "signers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                    }
+                },
                 "status": {
                     "type": "string",
                     "example": "pending"

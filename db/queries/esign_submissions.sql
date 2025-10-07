@@ -293,3 +293,54 @@ LEFT JOIN esign_submission_signers ess ON es.id = ess.submission_id AND ess.dele
 WHERE es.id = $1
     AND es.deleted_at IS NULL
 ORDER BY ess.sign_order ASC;
+
+-- name: ListEsignSubmissionsWithSignersAndFilters :many
+SELECT 
+    es.*,
+    ess.id as signer_id,
+    ess.email as signer_email,
+    ess.name as signer_name,
+    ess.sign_order,
+    ess.status as signer_status,
+    ess.signed_at,
+    ess.declined_at,
+    ess.declined_reason,
+    ess.created_at as signer_created_at,
+    ess.updated_at as signer_updated_at
+FROM esign_submissions es
+LEFT JOIN esign_submission_signers ess ON es.id = ess.submission_id AND ess.deleted_at IS NULL
+WHERE es.organization_id = $1
+  AND es.marina_id = $2
+  AND es.deleted_at IS NULL
+  AND ($3 = '' OR es.status = $3)
+  AND ($4 = '' OR (
+    LOWER(es.email) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.name) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.status) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.customer_id) LIKE LOWER('%' || $4 || '%')
+  ))
+  AND ($9 = '' OR es.customer_id = $9)
+ORDER BY 
+  CASE 
+    WHEN $5 = 'email' AND $6 = 'asc' THEN es.email
+    WHEN $5 = 'name' AND $6 = 'asc' THEN es.name
+    WHEN $5 = 'status' AND $6 = 'asc' THEN es.status
+    WHEN $5 = 'customer_id' AND $6 = 'asc' THEN es.customer_id
+  END ASC,
+  CASE 
+    WHEN $5 = 'email' AND $6 = 'desc' THEN es.email
+    WHEN $5 = 'name' AND $6 = 'desc' THEN es.name
+    WHEN $5 = 'status' AND $6 = 'desc' THEN es.status
+    WHEN $5 = 'customer_id' AND $6 = 'desc' THEN es.customer_id
+  END DESC,
+  CASE 
+    WHEN $5 = 'created_at' AND $6 = 'asc' THEN es.created_at
+    WHEN $5 = 'updated_at' AND $6 = 'asc' THEN es.updated_at
+  END ASC,
+  CASE 
+    WHEN $5 = 'created_at' AND $6 = 'desc' THEN es.created_at
+    WHEN $5 = 'updated_at' AND $6 = 'desc' THEN es.updated_at
+    ELSE es.created_at
+  END DESC,
+  ess.sign_order ASC
+LIMIT $7 OFFSET $8;

@@ -3307,6 +3307,10 @@ definitions:
       replyTo:
         example: support@example.com
         type: string
+      signers:
+        items:
+          $ref: '#/definitions/responses.EsignSubmissionSignerResponse'
+        type: array
       status:
         example: pending
         type: string
