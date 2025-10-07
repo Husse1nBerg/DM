@@ -662,6 +662,10 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading file: "+err.Error()).JSON(c)
 	}
 
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	isInternalUser := claims.IsCustomer == nil || !*claims.IsCustomer
+	isPublic := isInternalUser
 	// Create document record
 	doc, err := h.server.DB.Queries().CreateDocument(c.Request().Context(), db.CreateDocumentParams{
 		MarinaID:   marinaID,
@@ -671,6 +675,7 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 		FileType:   header.Header.Get("Content-Type"),
 		FilePath:   filePath,
 		FileSize:   header.Size,
+		Public:     isPublic,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating document in database", err)
@@ -689,11 +694,6 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	response := responses.NewDocumentResponseSuccess(doc)
 	response.Code = http.StatusCreated
 
-	// Get current user to check if they are a customer
-	userToken := c.Get("user").(*jwt.Token)
-	claims := userToken.Claims.(*token.JwtCustomClaims)
-	userID := claims.ID
-
 	// Get marina information for both notification and DME operations
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 	defer cancel()
@@ -705,7 +705,7 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 	}
 
 	// Only send notifications if the current user is a customer
-	if claims.IsCustomer == nil || *claims.IsCustomer {
+	if isInternalUser {
 		// Create notification for marina staff about new customer document
 		marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
 			MarinaID:   marinaID,
