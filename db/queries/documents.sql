@@ -10,9 +10,10 @@ INSERT INTO documents (
     file_name,
     file_type,
     file_path,
-    file_size
+    file_size,
+    public
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 ) RETURNING *;
 
 -- name: ListDocumentsByEntity :many

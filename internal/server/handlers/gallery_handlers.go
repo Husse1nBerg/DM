@@ -408,6 +408,10 @@ func (h *GalleryHandler) DeleteMarinaGalleryItem(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/gallery/boat [post]
 func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	isInternalUser := claims.IsCustomer == nil || !*claims.IsCustomer
+
 	// Parse marina ID from form
 	marinaIDStr := c.FormValue("marinaId")
 	marinaID, err := uuid.Parse(marinaIDStr)
@@ -485,6 +489,8 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
 	}
 
+	isPublic := isInternalUser
+
 	// Create gallery item in database
 	createParams := db.CreateVesselGalleryItemParams{
 		MarinaID:    marinaID,
@@ -493,6 +499,7 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 		ImageUrl:    imagePath,
 		Description: descriptionPtr,
 		Main:        mainPtr,
+		Public:      isPublic,
 	}
 
 	galleryItem, err := h.server.DB.Queries().CreateVesselGalleryItem(c.Request().Context(), createParams)
