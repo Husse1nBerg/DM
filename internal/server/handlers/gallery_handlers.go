@@ -410,7 +410,6 @@ func (h *GalleryHandler) DeleteMarinaGalleryItem(c echo.Context) error {
 func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	isInternalUser := claims.IsCustomer == nil || !*claims.IsCustomer
 
 	// Parse marina ID from form
 	marinaIDStr := c.FormValue("marinaId")
@@ -489,7 +488,13 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
 	}
 
-	isPublic := isInternalUser
+	// Determine public flag: External users (IsCustomer=true) should have Public=true, Internal users (IsCustomer=false or nil) should have Public=false
+	var public bool
+	if claims.IsCustomer != nil {
+		public = *claims.IsCustomer
+	} else {
+		public = false // nil IsCustomer is treated as internal user
+	}
 
 	// Create gallery item in database
 	createParams := db.CreateVesselGalleryItemParams{
@@ -499,7 +504,7 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 		ImageUrl:    imagePath,
 		Description: descriptionPtr,
 		Main:        mainPtr,
-		Public:      isPublic,
+		Public:      public,
 	}
 
 	galleryItem, err := h.server.DB.Queries().CreateVesselGalleryItem(c.Request().Context(), createParams)
