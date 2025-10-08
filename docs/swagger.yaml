@@ -2216,6 +2216,12 @@ definitions:
         example: 123 Main St
         type: string
     type: object
+  requests.UpdateBoatDocumentPublicRequest:
+    properties:
+      public:
+        example: true
+        type: boolean
+    type: object
   requests.UpdateContactRequest:
     properties:
       description:
@@ -2512,6 +2518,12 @@ definitions:
         example: Manager
         type: string
       userAnalytics:
+        example: true
+        type: boolean
+    type: object
+  requests.UpdateVesselGalleryItemPublicRequest:
+    properties:
+      public:
         example: true
         type: boolean
     type: object
@@ -7235,6 +7247,53 @@ paths:
       summary: Upload document
       tags:
       - Documents
+  /documents/boat/{id}/public:
+    put:
+      consumes:
+      - application/json
+      description: Updates the public field of a boat document and syncs with DME
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateBoatDocumentPublicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update boat document public field
+      tags:
+      - Documents
   /documents/customer:
     post:
       consumes:
@@ -9017,6 +9076,54 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update vessel gallery item
+      tags:
+      - Vessel Gallery
+  /gallery/boat/item/{id}/public:
+    put:
+      consumes:
+      - application/json
+      description: Updates the public field of a vessel gallery item and syncs with
+        DME
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateVesselGalleryItemPublicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update vessel gallery item public field
       tags:
       - Vessel Gallery
   /gallery/marina:
