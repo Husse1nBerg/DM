@@ -25,5 +25,6 @@ func RegisterGalleryRoutes(server *s.Server, permissionProtected *echo.Group) {
 	gallery.GET("/boat/:boatId", galleryHandler.GetVesselGallery)
 	gallery.GET("/boat/item/:id", galleryHandler.GetVesselGalleryItem)
 	gallery.PUT("/boat/item/:id", galleryHandler.UpdateVesselGalleryItem)
+	gallery.PUT("/boat/item/:id/public", galleryHandler.UpdateVesselGalleryItemPublic)
 	gallery.DELETE("/boat/item/:id", galleryHandler.DeleteVesselGalleryItem)
 }

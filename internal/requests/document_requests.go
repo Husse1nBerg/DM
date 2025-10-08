@@ -29,3 +29,8 @@ type UpdateDocumentRequest struct {
 	FileSize int64  `json:"fileSize" validate:"required" example:"2048"`
 	Public   *bool  `json:"public,omitempty" example:"true"`
 }
+
+// UpdateBoatDocumentPublicRequest represents the request to update only the public field of a boat document
+type UpdateBoatDocumentPublicRequest struct {
+	Public bool `json:"public" example:"true"`
+}

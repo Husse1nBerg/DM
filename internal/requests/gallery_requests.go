@@ -31,3 +31,8 @@ type UpdateVesselGalleryItemRequest struct {
 	Main        *bool   `json:"main,omitempty" example:"true"`
 	Public      *bool   `json:"public,omitempty" example:"true"`
 }
+
+// UpdateVesselGalleryItemPublicRequest represents the request to update only the public field of a vessel gallery item
+type UpdateVesselGalleryItemPublicRequest struct {
+	Public bool `json:"public" example:"true"`
+}
