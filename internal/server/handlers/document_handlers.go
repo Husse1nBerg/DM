@@ -664,8 +664,15 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	isInternalUser := claims.IsCustomer == nil || !*claims.IsCustomer
-	isPublic := isInternalUser
+	isInternalUser := !*claims.IsCustomer || false
+
+	var isPublic bool
+	if claims.IsCustomer != nil {
+		isPublic = *claims.IsCustomer
+	} else {
+		isPublic = false // nil IsCustomer is treated as internal user
+	}
+
 	// Create document record
 	doc, err := h.server.DB.Queries().CreateDocument(c.Request().Context(), db.CreateDocumentParams{
 		MarinaID:   marinaID,
