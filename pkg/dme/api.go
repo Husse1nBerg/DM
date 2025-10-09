@@ -1828,6 +1828,36 @@ func (c *Client) RetrieveOnlinePartsList(ctx context.Context, organizationID uui
 		nil,
 		&result,
 		organizationID,
+// getStringFromMap safely extracts a string value from a map
+func getStringFromMap(m map[string]interface{}, key string) string {
+	if val, ok := m[key]; ok {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return ""
+}
+
+// SubmitBatch submits a batch of cash receipts to DME
+func (c *Client) SubmitBatch(ctx context.Context, locationCode string, cashReceipts []CashReceipt, postBatch bool, orgID uuid.UUID, systemID string) (*BatchSubmissionResponse, error) {
+	// Prepare batch data
+	batchData := map[string]interface{}{
+		"locationCode": locationCode,
+		"postBatch":    postBatch,
+		"cashReceipts": cashReceipts,
+	}
+
+	// Make the API call to DME
+	var dmeResponse map[string]interface{}
+	endpoint := "/AR/SubmitBatch"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		batchData,
+		&dmeResponse,
+		orgID,
 		systemID,
 		nil,
 	)
@@ -1994,6 +2024,36 @@ func (c *Client) ListCustomerSpecialOrders(ctx context.Context, customerID strin
 	if err != nil {
 		return nil, fmt.Errorf("failed to list customer special orders: %w", err)
 	}
+		return nil, fmt.Errorf("failed to submit batch: %w", err)
+	}
+
+	// Convert DME response to our response format
+	result := &BatchSubmissionResponse{
+		BatchID:      getStringFromMap(dmeResponse, "batchId"),
+		LocationCode: locationCode,
+		PostBatch:    postBatch,
+		PostResult:   getStringFromMap(dmeResponse, "postResult"),
+		SubmittedAt:  time.Now(),
+	}
+
+	// Extract reference IDs if available
+	if refIDs, ok := dmeResponse["referenceIds"].([]interface{}); ok {
+		for _, refID := range refIDs {
+			if refIDStr, ok := refID.(string); ok {
+				result.ReferenceIDs = append(result.ReferenceIDs, refIDStr)
+			}
+		}
+	}
+
+	// Calculate total amount and receipt count
+	totalAmount := 0.0
+	for _, receipt := range cashReceipts {
+		totalAmount += receipt.TotalPayment
+	}
+	result.TotalAmount = totalAmount
+	result.ReceiptCount = len(cashReceipts)
+
+	println("\n\nBatch data", result, "\n\n")
 
 	return result, nil
 }
@@ -2092,4 +2152,42 @@ func (c *Client) RetrieveInventory(ctx context.Context, partNumbers []string, or
 	}
 
 	return result, nil
+}
+// InvPayment represents an invoice payment within a cash receipt
+type InvPayment struct {
+	InvoiceID    string  `json:"invoiceId"`
+	LocationCode string  `json:"locationCode"`
+	DepositType  string  `json:"depositType"`
+	PaymentAmt   float64 `json:"paymentAmt"`
+	Description  string  `json:"description"`
+	CustomerID   string  `json:"customerId"`
+}
+
+// CashReceipt represents a cash receipt for batch submission
+type CashReceipt struct {
+	CustomerID             string       `json:"customerId"`
+	ReferenceNum           string       `json:"referenceNum"`
+	PayType                string       `json:"payType"`
+	TotalPayment           float64      `json:"totalPayment"`
+	StatementDesc          string       `json:"statementDesc"`
+	CCAuthCode             string       `json:"ccAuthCode"`
+	CCTransactionID        string       `json:"ccTransactionID"`
+	CCTransactionTimeStamp string       `json:"ccTransactionTimeStamp"`
+	CCSurcharge            float64      `json:"ccSurcharge"`
+	CCSurchargeTax         float64      `json:"ccSurchargeTax"`
+	CCSurchargeTaxSchema   string       `json:"ccSurchargeTaxSchema"`
+	CCSurchargeTaxIds      []string     `json:"ccSurchargeTaxIds"`
+	InvPayments            []InvPayment `json:"invPayments"`
+}
+
+// BatchSubmissionResponse represents the response from DME batch submission
+type BatchSubmissionResponse struct {
+	BatchID      string    `json:"batchId"`
+	LocationCode string    `json:"locationCode"`
+	PostBatch    bool      `json:"postBatch"`
+	ReferenceIDs []string  `json:"referenceIds"`
+	PostResult   string    `json:"postResult"`
+	SubmittedAt  time.Time `json:"submittedAt"`
+	TotalAmount  float64   `json:"totalAmount"`
+	ReceiptCount int       `json:"receiptCount"`
 }

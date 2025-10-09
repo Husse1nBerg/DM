@@ -1,43 +1,35 @@
 package requests
 
-import "github.com/google/uuid"
-
-type CreatePaymentSessionRequest struct {
-	OrganizationID uuid.UUID `json:"organization_id" validate:"required"`
-	MarinaID       uuid.UUID `json:"marina_id" validate:"required"`
-	Amount         float64   `json:"amount" validate:"required,gt=0"`
-	Currency       string    `json:"currency" validate:"required,len=3"`
-	ReturnURL      string    `json:"return_url" validate:"required,url"`
-	CustomerID     uuid.UUID `json:"customer_id" validate:"required"`
-	CountryCode    string    `json:"country_code" validate:"required,len=2"`
-	ShopperLocale  string    `json:"shopper_locale" validate:"required"`
-	PaymentMethods []string  `json:"payment_methods" validate:"required,dive,oneof=visa mc amex discover ach"`
-	Description    string    `json:"description" validate:"omitempty"`
-	PaymentType    string    `json:"payment_type" validate:"required"`
+// InvPayment represents an invoice payment within a cash receipt
+type InvPayment struct {
+	InvoiceID    string  `json:"invoiceId" validate:"required"`
+	LocationCode string  `json:"locationCode" validate:"required"`
+	DepositType  string  `json:"depositType" validate:"omitempty"`
+	PaymentAmt   float64 `json:"paymentAmt" validate:"required,gt=0"`
+	Description  string  `json:"description" validate:"required"`
+	CustomerID   string  `json:"customerId" validate:"required"`
 }
 
-type PaymentWebhookRequest struct {
-	Live              bool               `json:"live"`
-	NotificationItems []NotificationItem `json:"notificationItems"`
+// CashReceipt represents a single cash receipt in a batch
+type CashReceipt struct {
+	CustomerID             string       `json:"customerId" validate:"required"`
+	ReferenceNum           string       `json:"referenceNum" validate:"required"`
+	PayType                string       `json:"payType" validate:"required"`
+	TotalPayment           float64      `json:"totalPayment" validate:"required,gt=0"`
+	StatementDesc          string       `json:"statementDesc" validate:"required"`
+	CCAuthCode             string       `json:"ccAuthCode" validate:"omitempty"`
+	CCTransactionID        string       `json:"ccTransactionID" validate:"omitempty"`
+	CCTransactionTimeStamp string       `json:"ccTransactionTimeStamp" validate:"omitempty"`
+	CCSurcharge            float64      `json:"ccSurcharge" validate:"omitempty"`
+	CCSurchargeTax         float64      `json:"ccSurchargeTax" validate:"omitempty"`
+	CCSurchargeTaxSchema   string       `json:"ccSurchargeTaxSchema" validate:"omitempty"`
+	CCSurchargeTaxIds      []string     `json:"ccSurchargeTaxIds" validate:"omitempty"`
+	InvPayments            []InvPayment `json:"invPayments" validate:"required,dive"`
 }
 
-type NotificationItem struct {
-	NotificationRequestItem NotificationRequestItem `json:"NotificationRequestItem"`
-}
-
-type NotificationRequestItem struct {
-	Amount struct {
-		Value    int64  `json:"value"`
-		Currency string `json:"currency"`
-	} `json:"amount"`
-	EventCode           string            `json:"eventCode"`
-	EventDate           string            `json:"eventDate"`
-	MerchantAccountCode string            `json:"merchantAccountCode"`
-	MerchantReference   string            `json:"merchantReference"`
-	OriginalReference   string            `json:"originalReference"`
-	PaymentMethod       string            `json:"paymentMethod"`
-	PSPReference        string            `json:"pspReference"`
-	Reason              string            `json:"reason"`
-	Success             bool              `json:"success"`
-	AdditionalData      map[string]string `json:"additionalData"`
+// SubmitBatchRequest represents a request to submit a batch of payments
+type SubmitBatchRequest struct {
+	LocationCode string        `json:"locationCode" validate:"required"`
+	PostBatch    bool          `json:"postBatch" validate:"required"`
+	CashReceipts []CashReceipt `json:"cashReceipts" validate:"required,dive"`
 }

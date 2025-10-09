@@ -6797,6 +6797,60 @@ const docTemplate = `{
         "/inventory/find-parts": {
             "post": {
                 "description": "Attempts to find parts using various part numbers",
+        "/invoices/batch/submit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Submits a batch of cash receipts to DME for processing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Submit a batch of payments",
+                "parameters": [
+                    {
+                        "description": "Batch submission request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitBatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BatchSubmissionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoices/customer": {
+            "get": {
+                "description": "Retrieves invoices for a specific customer",
                 "consumes": [
                     "application/json"
                 ],
@@ -16595,6 +16649,103 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CashReceipt": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "invPayments",
+                "payType",
+                "referenceNum",
+                "statementDesc",
+                "totalPayment"
+            ],
+            "properties": {
+                "ccAuthCode": {
+                    "type": "string"
+                },
+                "ccSurcharge": {
+                    "type": "number"
+                },
+                "ccSurchargeTax": {
+                    "type": "number"
+                },
+                "ccSurchargeTaxIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ccSurchargeTaxSchema": {
+                    "type": "string"
+                },
+                "ccTransactionID": {
+                    "type": "string"
+                },
+                "ccTransactionTimeStamp": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "invPayments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.InvPayment"
+                    }
+                },
+                "payType": {
+                    "type": "string"
+                },
+                "referenceNum": {
+                    "type": "string"
+                },
+                "statementDesc": {
+                    "type": "string"
+                },
+                "totalPayment": {
+                    "type": "number"
+                }
+            }
+        },
+        "requests.ClerkListRequest": {
+            "type": "object",
+            "required": [
+                "organizationId",
+                "systemId"
+            ],
+            "properties": {
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS001"
+                }
+            }
+        },
+        "requests.ClerkRequest": {
+            "type": "object",
+            "required": [
+                "clerkId",
+                "organizationId",
+                "systemId"
+            ],
+            "properties": {
+                "clerkId": {
+                    "type": "string",
+                    "example": "CLERK001"
+                },
+                "organizationId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "systemId": {
+                    "type": "string",
+                    "example": "SYS001"
+                }
+            }
+        },
         "requests.CompletePasswordRecoveryRequest": {
             "description": "Complete password recovery request payload",
             "type": "object",
@@ -17661,6 +17812,36 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.InvPayment": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "description",
+                "invoiceId",
+                "locationCode",
+                "paymentAmt"
+            ],
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "depositType": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "invoiceId": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "paymentAmt": {
+                    "type": "number"
+                }
+            }
+        },
         "requests.LinkDMESysIDRequest": {
             "type": "object",
             "required": [
@@ -18129,6 +18310,28 @@ const docTemplate = `{
                     "example": [
                         "user@example.com"
                     ]
+                }
+            }
+        },
+        "requests.SubmitBatchRequest": {
+            "type": "object",
+            "required": [
+                "cashReceipts",
+                "locationCode",
+                "postBatch"
+            ],
+            "properties": {
+                "cashReceipts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.CashReceipt"
+                    }
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "postBatch": {
+                    "type": "boolean"
                 }
             }
         },
@@ -18911,6 +19114,38 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.BatchSubmissionResponse": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "string"
+                },
+                "location_code": {
+                    "type": "string"
+                },
+                "post_batch": {
+                    "type": "boolean"
+                },
+                "post_result": {
+                    "type": "string"
+                },
+                "receipt_count": {
+                    "type": "integer"
+                },
+                "reference_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "submitted_at": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
                 }
             }
         },

@@ -12,83 +12,64 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createPayment = `-- name: CreatePayment :one
-INSERT INTO payments (
+const createBatchPayment = `-- name: CreateBatchPayment :one
+INSERT INTO batch_payments (
     organization_id,
     marina_id,
-    customer_id,
-    amount,
-    currency,
+    location_code,
+    batch_id,
+    post_batch,
+    total_amount,
+    receipt_count,
     status,
-    payment_method,
-    payment_type,
-    reference,
-    description,
-    metadata,
-    adyen_payment_id,
-    adyen_merchant_reference,
-    adyen_psp_reference,
-    adyen_payment_method_details
+    submitted_by,
+    submitted_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
-) RETURNING id, organization_id, marina_id, customer_id, amount, currency, status, payment_method, payment_type, reference, description, metadata, adyen_payment_id, adyen_merchant_reference, adyen_psp_reference, adyen_payment_method_details, error_message, created_at, updated_at, deleted_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING id, organization_id, marina_id, location_code, batch_id, post_batch, total_amount, receipt_count, status, post_result, reference_ids, submitted_by, submitted_at, created_at, updated_at, deleted_at
 `
 
-type CreatePaymentParams struct {
-	OrganizationID            uuid.UUID
-	MarinaID                  uuid.UUID
-	CustomerID                uuid.UUID
-	Amount                    pgtype.Numeric
-	Currency                  string
-	Status                    string
-	PaymentMethod             *string
-	PaymentType               string
-	Reference                 string
-	Description               *string
-	Metadata                  []byte
-	AdyenPaymentID            *string
-	AdyenMerchantReference    *string
-	AdyenPspReference         *string
-	AdyenPaymentMethodDetails []byte
+type CreateBatchPaymentParams struct {
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	LocationCode   string
+	BatchID        string
+	PostBatch      bool
+	TotalAmount    pgtype.Numeric
+	ReceiptCount   int32
+	Status         string
+	SubmittedBy    string
+	SubmittedAt    pgtype.Timestamptz
 }
 
-func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {
-	row := q.db.QueryRow(ctx, createPayment,
+func (q *Queries) CreateBatchPayment(ctx context.Context, arg CreateBatchPaymentParams) (BatchPayment, error) {
+	row := q.db.QueryRow(ctx, createBatchPayment,
 		arg.OrganizationID,
 		arg.MarinaID,
-		arg.CustomerID,
-		arg.Amount,
-		arg.Currency,
+		arg.LocationCode,
+		arg.BatchID,
+		arg.PostBatch,
+		arg.TotalAmount,
+		arg.ReceiptCount,
 		arg.Status,
-		arg.PaymentMethod,
-		arg.PaymentType,
-		arg.Reference,
-		arg.Description,
-		arg.Metadata,
-		arg.AdyenPaymentID,
-		arg.AdyenMerchantReference,
-		arg.AdyenPspReference,
-		arg.AdyenPaymentMethodDetails,
+		arg.SubmittedBy,
+		arg.SubmittedAt,
 	)
-	var i Payment
+	var i BatchPayment
 	err := row.Scan(
 		&i.ID,
 		&i.OrganizationID,
 		&i.MarinaID,
-		&i.CustomerID,
-		&i.Amount,
-		&i.Currency,
+		&i.LocationCode,
+		&i.BatchID,
+		&i.PostBatch,
+		&i.TotalAmount,
+		&i.ReceiptCount,
 		&i.Status,
-		&i.PaymentMethod,
-		&i.PaymentType,
-		&i.Reference,
-		&i.Description,
-		&i.Metadata,
-		&i.AdyenPaymentID,
-		&i.AdyenMerchantReference,
-		&i.AdyenPspReference,
-		&i.AdyenPaymentMethodDetails,
-		&i.ErrorMessage,
+		&i.PostResult,
+		&i.ReferenceIds,
+		&i.SubmittedBy,
+		&i.SubmittedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -96,61 +77,82 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 	return i, err
 }
 
-const createPaymentEvent = `-- name: CreatePaymentEvent :one
-INSERT INTO payment_events (
-    payment_id,
-    event_type,
-    event_data
+const createBatchPaymentReceipt = `-- name: CreateBatchPaymentReceipt :one
+INSERT INTO batch_payment_receipts (
+    batch_payment_id,
+    customer_id,
+    invoice_id,
+    amount,
+    payment_method,
+    reference,
+    description,
+    payment_date
 ) VALUES (
-    $1, $2, $3
-) RETURNING id, payment_id, event_type, event_data, created_at
+    $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING id, batch_payment_id, customer_id, invoice_id, amount, payment_method, reference, description, payment_date, created_at, updated_at
 `
 
-type CreatePaymentEventParams struct {
-	PaymentID uuid.UUID
-	EventType string
-	EventData []byte
+type CreateBatchPaymentReceiptParams struct {
+	BatchPaymentID uuid.UUID
+	CustomerID     string
+	InvoiceID      string
+	Amount         pgtype.Numeric
+	PaymentMethod  string
+	Reference      string
+	Description    *string
+	PaymentDate    pgtype.Timestamptz
 }
 
-func (q *Queries) CreatePaymentEvent(ctx context.Context, arg CreatePaymentEventParams) (PaymentEvent, error) {
-	row := q.db.QueryRow(ctx, createPaymentEvent, arg.PaymentID, arg.EventType, arg.EventData)
-	var i PaymentEvent
+func (q *Queries) CreateBatchPaymentReceipt(ctx context.Context, arg CreateBatchPaymentReceiptParams) (BatchPaymentReceipt, error) {
+	row := q.db.QueryRow(ctx, createBatchPaymentReceipt,
+		arg.BatchPaymentID,
+		arg.CustomerID,
+		arg.InvoiceID,
+		arg.Amount,
+		arg.PaymentMethod,
+		arg.Reference,
+		arg.Description,
+		arg.PaymentDate,
+	)
+	var i BatchPaymentReceipt
 	err := row.Scan(
 		&i.ID,
-		&i.PaymentID,
-		&i.EventType,
-		&i.EventData,
+		&i.BatchPaymentID,
+		&i.CustomerID,
+		&i.InvoiceID,
+		&i.Amount,
+		&i.PaymentMethod,
+		&i.Reference,
+		&i.Description,
+		&i.PaymentDate,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const getPayment = `-- name: GetPayment :one
-SELECT id, organization_id, marina_id, customer_id, amount, currency, status, payment_method, payment_type, reference, description, metadata, adyen_payment_id, adyen_merchant_reference, adyen_psp_reference, adyen_payment_method_details, error_message, created_at, updated_at, deleted_at FROM payments
+const getBatchPayment = `-- name: GetBatchPayment :one
+SELECT id, organization_id, marina_id, location_code, batch_id, post_batch, total_amount, receipt_count, status, post_result, reference_ids, submitted_by, submitted_at, created_at, updated_at, deleted_at FROM batch_payments
 WHERE id = $1 AND deleted_at IS NULL
 `
 
-func (q *Queries) GetPayment(ctx context.Context, id uuid.UUID) (Payment, error) {
-	row := q.db.QueryRow(ctx, getPayment, id)
-	var i Payment
+func (q *Queries) GetBatchPayment(ctx context.Context, id uuid.UUID) (BatchPayment, error) {
+	row := q.db.QueryRow(ctx, getBatchPayment, id)
+	var i BatchPayment
 	err := row.Scan(
 		&i.ID,
 		&i.OrganizationID,
 		&i.MarinaID,
-		&i.CustomerID,
-		&i.Amount,
-		&i.Currency,
+		&i.LocationCode,
+		&i.BatchID,
+		&i.PostBatch,
+		&i.TotalAmount,
+		&i.ReceiptCount,
 		&i.Status,
-		&i.PaymentMethod,
-		&i.PaymentType,
-		&i.Reference,
-		&i.Description,
-		&i.Metadata,
-		&i.AdyenPaymentID,
-		&i.AdyenMerchantReference,
-		&i.AdyenPspReference,
-		&i.AdyenPaymentMethodDetails,
-		&i.ErrorMessage,
+		&i.PostResult,
+		&i.ReferenceIds,
+		&i.SubmittedBy,
+		&i.SubmittedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -158,32 +160,28 @@ func (q *Queries) GetPayment(ctx context.Context, id uuid.UUID) (Payment, error)
 	return i, err
 }
 
-const getPaymentByReference = `-- name: GetPaymentByReference :one
-SELECT id, organization_id, marina_id, customer_id, amount, currency, status, payment_method, payment_type, reference, description, metadata, adyen_payment_id, adyen_merchant_reference, adyen_psp_reference, adyen_payment_method_details, error_message, created_at, updated_at, deleted_at FROM payments
-WHERE reference = $1 AND deleted_at IS NULL
+const getBatchPaymentByBatchID = `-- name: GetBatchPaymentByBatchID :one
+SELECT id, organization_id, marina_id, location_code, batch_id, post_batch, total_amount, receipt_count, status, post_result, reference_ids, submitted_by, submitted_at, created_at, updated_at, deleted_at FROM batch_payments
+WHERE batch_id = $1 AND deleted_at IS NULL
 `
 
-func (q *Queries) GetPaymentByReference(ctx context.Context, reference string) (Payment, error) {
-	row := q.db.QueryRow(ctx, getPaymentByReference, reference)
-	var i Payment
+func (q *Queries) GetBatchPaymentByBatchID(ctx context.Context, batchID string) (BatchPayment, error) {
+	row := q.db.QueryRow(ctx, getBatchPaymentByBatchID, batchID)
+	var i BatchPayment
 	err := row.Scan(
 		&i.ID,
 		&i.OrganizationID,
 		&i.MarinaID,
-		&i.CustomerID,
-		&i.Amount,
-		&i.Currency,
+		&i.LocationCode,
+		&i.BatchID,
+		&i.PostBatch,
+		&i.TotalAmount,
+		&i.ReceiptCount,
 		&i.Status,
-		&i.PaymentMethod,
-		&i.PaymentType,
-		&i.Reference,
-		&i.Description,
-		&i.Metadata,
-		&i.AdyenPaymentID,
-		&i.AdyenMerchantReference,
-		&i.AdyenPspReference,
-		&i.AdyenPaymentMethodDetails,
-		&i.ErrorMessage,
+		&i.PostResult,
+		&i.ReferenceIds,
+		&i.SubmittedBy,
+		&i.SubmittedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -191,56 +189,33 @@ func (q *Queries) GetPaymentByReference(ctx context.Context, reference string) (
 	return i, err
 }
 
-const getPaymentCredentials = `-- name: GetPaymentCredentials :one
-SELECT id, organization_id, marina_id, api_key, merchant_account, store_id, is_test, created_at, updated_at, deleted_at FROM payment_credentials
-WHERE organization_id = $1 AND marina_id = $2 AND deleted_at IS NULL
-LIMIT 1
+const getBatchPaymentReceipts = `-- name: GetBatchPaymentReceipts :many
+SELECT id, batch_payment_id, customer_id, invoice_id, amount, payment_method, reference, description, payment_date, created_at, updated_at FROM batch_payment_receipts
+WHERE batch_payment_id = $1
+ORDER BY created_at ASC
 `
 
-type GetPaymentCredentialsParams struct {
-	OrganizationID uuid.UUID
-	MarinaID       uuid.UUID
-}
-
-func (q *Queries) GetPaymentCredentials(ctx context.Context, arg GetPaymentCredentialsParams) (PaymentCredential, error) {
-	row := q.db.QueryRow(ctx, getPaymentCredentials, arg.OrganizationID, arg.MarinaID)
-	var i PaymentCredential
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.MarinaID,
-		&i.ApiKey,
-		&i.MerchantAccount,
-		&i.StoreID,
-		&i.IsTest,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
-}
-
-const getPaymentEvents = `-- name: GetPaymentEvents :many
-SELECT id, payment_id, event_type, event_data, created_at FROM payment_events
-WHERE payment_id = $1
-ORDER BY created_at DESC
-`
-
-func (q *Queries) GetPaymentEvents(ctx context.Context, paymentID uuid.UUID) ([]PaymentEvent, error) {
-	rows, err := q.db.Query(ctx, getPaymentEvents, paymentID)
+func (q *Queries) GetBatchPaymentReceipts(ctx context.Context, batchPaymentID uuid.UUID) ([]BatchPaymentReceipt, error) {
+	rows, err := q.db.Query(ctx, getBatchPaymentReceipts, batchPaymentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []PaymentEvent
+	var items []BatchPaymentReceipt
 	for rows.Next() {
-		var i PaymentEvent
+		var i BatchPaymentReceipt
 		if err := rows.Scan(
 			&i.ID,
-			&i.PaymentID,
-			&i.EventType,
-			&i.EventData,
+			&i.BatchPaymentID,
+			&i.CustomerID,
+			&i.InvoiceID,
+			&i.Amount,
+			&i.PaymentMethod,
+			&i.Reference,
+			&i.Description,
+			&i.PaymentDate,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -252,24 +227,24 @@ func (q *Queries) GetPaymentEvents(ctx context.Context, paymentID uuid.UUID) ([]
 	return items, nil
 }
 
-const listPayments = `-- name: ListPayments :many
-SELECT id, organization_id, marina_id, customer_id, amount, currency, status, payment_method, payment_type, reference, description, metadata, adyen_payment_id, adyen_merchant_reference, adyen_psp_reference, adyen_payment_method_details, error_message, created_at, updated_at, deleted_at FROM payments
+const listBatchPayments = `-- name: ListBatchPayments :many
+SELECT id, organization_id, marina_id, location_code, batch_id, post_batch, total_amount, receipt_count, status, post_result, reference_ids, submitted_by, submitted_at, created_at, updated_at, deleted_at FROM batch_payments
 WHERE organization_id = $1
     AND marina_id = $2
     AND deleted_at IS NULL
-ORDER BY created_at DESC
+ORDER BY submitted_at DESC
 LIMIT $3 OFFSET $4
 `
 
-type ListPaymentsParams struct {
+type ListBatchPaymentsParams struct {
 	OrganizationID uuid.UUID
 	MarinaID       uuid.UUID
 	Limit          int32
 	Offset         int32
 }
 
-func (q *Queries) ListPayments(ctx context.Context, arg ListPaymentsParams) ([]Payment, error) {
-	rows, err := q.db.Query(ctx, listPayments,
+func (q *Queries) ListBatchPayments(ctx context.Context, arg ListBatchPaymentsParams) ([]BatchPayment, error) {
+	rows, err := q.db.Query(ctx, listBatchPayments,
 		arg.OrganizationID,
 		arg.MarinaID,
 		arg.Limit,
@@ -279,27 +254,23 @@ func (q *Queries) ListPayments(ctx context.Context, arg ListPaymentsParams) ([]P
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Payment
+	var items []BatchPayment
 	for rows.Next() {
-		var i Payment
+		var i BatchPayment
 		if err := rows.Scan(
 			&i.ID,
 			&i.OrganizationID,
 			&i.MarinaID,
-			&i.CustomerID,
-			&i.Amount,
-			&i.Currency,
+			&i.LocationCode,
+			&i.BatchID,
+			&i.PostBatch,
+			&i.TotalAmount,
+			&i.ReceiptCount,
 			&i.Status,
-			&i.PaymentMethod,
-			&i.PaymentType,
-			&i.Reference,
-			&i.Description,
-			&i.Metadata,
-			&i.AdyenPaymentID,
-			&i.AdyenMerchantReference,
-			&i.AdyenPspReference,
-			&i.AdyenPaymentMethodDetails,
-			&i.ErrorMessage,
+			&i.PostResult,
+			&i.ReferenceIds,
+			&i.SubmittedBy,
+			&i.SubmittedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -314,53 +285,46 @@ func (q *Queries) ListPayments(ctx context.Context, arg ListPaymentsParams) ([]P
 	return items, nil
 }
 
-const updatePaymentStatus = `-- name: UpdatePaymentStatus :one
-UPDATE payments
+const updateBatchPaymentStatus = `-- name: UpdateBatchPaymentStatus :one
+UPDATE batch_payments
 SET 
     status = $2,
-    adyen_psp_reference = COALESCE($3, adyen_psp_reference),
-    adyen_payment_method_details = COALESCE($4, adyen_payment_method_details),
-    error_message = COALESCE($5, error_message),
+    post_result = COALESCE($3, post_result),
+    reference_ids = COALESCE($4, reference_ids),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, organization_id, marina_id, customer_id, amount, currency, status, payment_method, payment_type, reference, description, metadata, adyen_payment_id, adyen_merchant_reference, adyen_psp_reference, adyen_payment_method_details, error_message, created_at, updated_at, deleted_at
+RETURNING id, organization_id, marina_id, location_code, batch_id, post_batch, total_amount, receipt_count, status, post_result, reference_ids, submitted_by, submitted_at, created_at, updated_at, deleted_at
 `
 
-type UpdatePaymentStatusParams struct {
-	ID                        uuid.UUID
-	Status                    string
-	AdyenPspReference         *string
-	AdyenPaymentMethodDetails []byte
-	ErrorMessage              *string
+type UpdateBatchPaymentStatusParams struct {
+	ID           uuid.UUID
+	Status       string
+	PostResult   *string
+	ReferenceIds []string
 }
 
-func (q *Queries) UpdatePaymentStatus(ctx context.Context, arg UpdatePaymentStatusParams) (Payment, error) {
-	row := q.db.QueryRow(ctx, updatePaymentStatus,
+func (q *Queries) UpdateBatchPaymentStatus(ctx context.Context, arg UpdateBatchPaymentStatusParams) (BatchPayment, error) {
+	row := q.db.QueryRow(ctx, updateBatchPaymentStatus,
 		arg.ID,
 		arg.Status,
-		arg.AdyenPspReference,
-		arg.AdyenPaymentMethodDetails,
-		arg.ErrorMessage,
+		arg.PostResult,
+		arg.ReferenceIds,
 	)
-	var i Payment
+	var i BatchPayment
 	err := row.Scan(
 		&i.ID,
 		&i.OrganizationID,
 		&i.MarinaID,
-		&i.CustomerID,
-		&i.Amount,
-		&i.Currency,
+		&i.LocationCode,
+		&i.BatchID,
+		&i.PostBatch,
+		&i.TotalAmount,
+		&i.ReceiptCount,
 		&i.Status,
-		&i.PaymentMethod,
-		&i.PaymentType,
-		&i.Reference,
-		&i.Description,
-		&i.Metadata,
-		&i.AdyenPaymentID,
-		&i.AdyenMerchantReference,
-		&i.AdyenPspReference,
-		&i.AdyenPaymentMethodDetails,
-		&i.ErrorMessage,
+		&i.PostResult,
+		&i.ReferenceIds,
+		&i.SubmittedBy,
+		&i.SubmittedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,

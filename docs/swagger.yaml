@@ -1208,6 +1208,74 @@ definitions:
     - name
     - ownerId
     type: object
+  requests.CashReceipt:
+    properties:
+      ccAuthCode:
+        type: string
+      ccSurcharge:
+        type: number
+      ccSurchargeTax:
+        type: number
+      ccSurchargeTaxIds:
+        items:
+          type: string
+        type: array
+      ccSurchargeTaxSchema:
+        type: string
+      ccTransactionID:
+        type: string
+      ccTransactionTimeStamp:
+        type: string
+      customerId:
+        type: string
+      invPayments:
+        items:
+          $ref: '#/definitions/requests.InvPayment'
+        type: array
+      payType:
+        type: string
+      referenceNum:
+        type: string
+      statementDesc:
+        type: string
+      totalPayment:
+        type: number
+    required:
+    - customerId
+    - invPayments
+    - payType
+    - referenceNum
+    - statementDesc
+    - totalPayment
+    type: object
+  requests.ClerkListRequest:
+    properties:
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS001
+        type: string
+    required:
+    - organizationId
+    - systemId
+    type: object
+  requests.ClerkRequest:
+    properties:
+      clerkId:
+        example: CLERK001
+        type: string
+      organizationId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      systemId:
+        example: SYS001
+        type: string
+    required:
+    - clerkId
+    - organizationId
+    - systemId
+    type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
     properties:
@@ -1969,6 +2037,27 @@ definitions:
     - customerId
     - invoiceId
     type: object
+  requests.InvPayment:
+    properties:
+      customerId:
+        type: string
+      depositType:
+        type: string
+      description:
+        type: string
+      invoiceId:
+        type: string
+      locationCode:
+        type: string
+      paymentAmt:
+        type: number
+    required:
+    - customerId
+    - description
+    - invoiceId
+    - locationCode
+    - paymentAmt
+    type: object
   requests.LinkDMESysIDRequest:
     properties:
       marinaId:
@@ -2300,6 +2389,21 @@ definitions:
     - templateData
     - templateName
     - to
+    type: object
+  requests.SubmitBatchRequest:
+    properties:
+      cashReceipts:
+        items:
+          $ref: '#/definitions/requests.CashReceipt'
+        type: array
+      locationCode:
+        type: string
+      postBatch:
+        type: boolean
+    required:
+    - cashReceipts
+    - locationCode
+    - postBatch
     type: object
   requests.UpdateAddressRequest:
     properties:
@@ -2852,6 +2956,27 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  responses.BatchSubmissionResponse:
+    properties:
+      batch_id:
+        type: string
+      location_code:
+        type: string
+      post_batch:
+        type: boolean
+      post_result:
+        type: string
+      receipt_count:
+        type: integer
+      reference_ids:
+        items:
+          type: string
+        type: array
+      submitted_at:
+        type: string
+      total_amount:
+        type: number
     type: object
   responses.BedrockDetectFormFieldsResponse:
     properties:
@@ -10004,6 +10129,39 @@ paths:
       summary: List received special orders
       tags:
       - Inventory
+      - Generic
+  /invoices/batch/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submits a batch of cash receipts to DME for processing
+      parameters:
+      - description: Batch submission request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BatchSubmissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Submit a batch of payments
+      tags:
+      - Invoices
   /invoices/customer:
     get:
       consumes:

@@ -23,6 +23,39 @@ type Address struct {
 	DeletedAt  pgtype.Timestamp
 }
 
+type BatchPayment struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	LocationCode   string
+	BatchID        string
+	PostBatch      bool
+	TotalAmount    pgtype.Numeric
+	ReceiptCount   int32
+	Status         string
+	PostResult     *string
+	ReferenceIds   []string
+	SubmittedBy    string
+	SubmittedAt    pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	DeletedAt      pgtype.Timestamptz
+}
+
+type BatchPaymentReceipt struct {
+	ID             uuid.UUID
+	BatchPaymentID uuid.UUID
+	CustomerID     string
+	InvoiceID      string
+	Amount         pgtype.Numeric
+	PaymentMethod  string
+	Reference      string
+	Description    *string
+	PaymentDate    pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
 type Contact struct {
 	ID          uuid.UUID
 	MarinaID    uuid.UUID

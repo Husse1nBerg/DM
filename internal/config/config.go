@@ -22,7 +22,6 @@ type Config struct {
 	ESign           s3.S3Config
 	SendGrid        SendGridConfig
 	Telgorithm      TelgorithmConfig
-	Adyen           AdyenConfig
 }
 
 func New() *Config {
@@ -55,7 +54,6 @@ func New() *Config {
 		ESign:           LoadESignConfig(),
 		SendGrid:        LoadSendGridConfig(),
 		Telgorithm:      LoadTelgorithmConfig(),
-		Adyen:           LoadAdyenConfig(),
 	}
 }
 
