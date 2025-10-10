@@ -160,7 +160,8 @@ ORDER BY
   (CASE WHEN $6 = 'last_password_reset'  THEN u.last_password_reset END) ASC,
   (CASE WHEN $6 = 'created_at'           THEN u.created_at END) ASC,
   (CASE WHEN $6 = 'updated_at'           THEN u.updated_at END) ASC,
-  (CASE WHEN $6 = 'role_name'            THEN r.name END) ASC
+  (CASE WHEN $6 = 'role_name'            THEN r.name END) ASC,
+  (CASE WHEN $6 = 'is_active'            THEN u.is_active END) ASC
 LIMIT $7 OFFSET $8;
 
 -- name: ListUserMarinasAssignmentsPaginatedDesc :many
@@ -204,7 +205,8 @@ ORDER BY
   (CASE WHEN $6 = 'last_password_reset'  THEN u.last_password_reset END) DESC,
   (CASE WHEN $6 = 'created_at'           THEN u.created_at END) DESC,
   (CASE WHEN $6 = 'updated_at'           THEN u.updated_at END) DESC,
-  (CASE WHEN $6 = 'role_name'            THEN r.name END) DESC
+  (CASE WHEN $6 = 'role_name'            THEN r.name END) DESC,
+  (CASE WHEN $6 = 'is_active'            THEN u.is_active END) DESC
 LIMIT $7 OFFSET $8;
 
 -- name: ListUserMarinasAssignmentsPaginatedAdmin :many
