@@ -155,6 +155,9 @@ func RegisterRoutes(s *s.Server) {
 	// Service routes
 	RegisterServiceRoutes(s, permissionProtected)
 
+	// Schedule routes
+	RegisterScheduleRoutes(s, permissionProtected)
+
 	// Invoice routes
 	RegisterInvoiceRoutes(s, permissionProtected)
 
