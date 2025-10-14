@@ -1310,6 +1310,216 @@ func (c *Client) ListTechnicians(ctx context.Context, organizationID uuid.UUID, 
 	return &result, nil
 }
 
+// RetrieveSchedule retrieves schedule appointments
+func (c *Client) RetrieveSchedule(ctx context.Context, locationCode string, startDate string, sessionID string, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	params := map[string]string{
+		"locationCode": locationCode,
+		"startDate":    startDate,
+		"sessionId":    sessionID,
+	}
+	endpoint := "/Service/Schedule/Retrieve"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve schedule: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveScheduleForManager retrieves schedule appointments for a manager
+func (c *Client) RetrieveScheduleForManager(ctx context.Context, locationCode string, startDate string, managerID string, sessionID string, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	params := map[string]string{
+		"locationCode": locationCode,
+		"startDate":    startDate,
+		"managerId":    managerID,
+		"sessionId":    sessionID,
+	}
+	endpoint := "/Service/Schedule/RetrieveForManager"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve schedule for manager: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveScheduleForTech retrieves schedule appointments for a technician
+func (c *Client) RetrieveScheduleForTech(ctx context.Context, locationCode string, startDate string, techID string, sessionID string, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	params := map[string]string{
+		"locationCode": locationCode,
+		"startDate":    startDate,
+		"techId":       techID,
+		"sessionId":    sessionID,
+	}
+	endpoint := "/Service/Schedule/RetrieveForTech"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve schedule for tech: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveScheduleForWorkOrder retrieves schedule appointments for a work order
+func (c *Client) RetrieveScheduleForWorkOrder(ctx context.Context, locationCode string, startDate string, workOrderID string, sessionID string, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	params := map[string]string{
+		"locationCode": locationCode,
+		"startDate":    startDate,
+		"workOrderId":  workOrderID,
+		"sessionId":    sessionID,
+	}
+	endpoint := "/Service/Schedule/RetrieveForWorkOrder"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve schedule for work order: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveWorkOrderSchedule retrieves work order schedule
+func (c *Client) RetrieveWorkOrderSchedule(ctx context.Context, locationCode string, workOrderID string, sessionID string, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	params := map[string]string{
+		"locationCode": locationCode,
+		"workOrderId":  workOrderID,
+		"sessionId":    sessionID,
+	}
+	endpoint := "/Service/Schedule/WorkOrderSchedule"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order schedule: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveOperationSchedule retrieves operation schedule
+func (c *Client) RetrieveOperationSchedule(ctx context.Context, locationCode string, workOrderID string, opcode string, sessionID string, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	params := map[string]string{
+		"locationCode": locationCode,
+		"workOrderId":  workOrderID,
+		"opcode":       opcode,
+		"sessionId":    sessionID,
+	}
+	endpoint := "/Service/Schedule/OperationSchedule"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve operation schedule: %w", err)
+	}
+
+	return &result, nil
+}
+
+// UpdateSchedule updates schedule appointments
+func (c *Client) UpdateSchedule(ctx context.Context, scheduleUpdate map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Schedule/Update"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		scheduleUpdate,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update schedule: %w", err)
+	}
+
+	return &result, nil
+}
+
+// ResolveMergeConflict resolves merge conflicts in schedule updates
+func (c *Client) ResolveMergeConflict(ctx context.Context, conflictResolution map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Schedule/ResolveMergeConflict"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		conflictResolution,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve merge conflict: %w", err)
+	}
+
+	return &result, nil
+}
+
 // -----
 // Payment API
 // -----

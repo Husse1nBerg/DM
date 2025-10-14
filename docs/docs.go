@@ -12021,6 +12021,474 @@ const docTemplate = `{
                 }
             }
         },
+        "/service/schedule/operation-schedule": {
+            "get": {
+                "description": "Retrieves operation schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve operation schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Work order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code",
+                        "name": "opcode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/resolve-merge-conflict": {
+            "post": {
+                "description": "Resolves merge conflicts in schedule updates",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Resolve merge conflict",
+                "parameters": [
+                    {
+                        "description": "Merge conflict resolution request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ScheduleResolveMergeConflictRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve": {
+            "get": {
+                "description": "Retrieves schedule appointments with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve-for-manager": {
+            "get": {
+                "description": "Retrieves schedule appointments for a specific manager",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule for manager",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Manager ID",
+                        "name": "managerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve-for-tech": {
+            "get": {
+                "description": "Retrieves schedule appointments for a specific technician",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule for technician",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Technician ID",
+                        "name": "techId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve-for-work-order": {
+            "get": {
+                "description": "Retrieves schedule appointments for a specific work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule for work order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Work order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/update": {
+            "post": {
+                "description": "Updates schedule appointments",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Update schedule",
+                "parameters": [
+                    {
+                        "description": "Schedule update request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ScheduleUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/work-order-schedule": {
+            "get": {
+                "description": "Retrieves work order schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve work order schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Work order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/service/technicians": {
             "get": {
                 "description": "Retrieves a list of technician records",
@@ -17349,6 +17817,117 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.ScheduleAppointmentUpdate": {
+            "type": "object",
+            "required": [
+                "endTime",
+                "id",
+                "locationCode",
+                "opcode",
+                "startTime",
+                "techId",
+                "workOrderId"
+            ],
+            "properties": {
+                "apptComplete": {
+                    "type": "boolean"
+                },
+                "apptDescription": {
+                    "type": "string"
+                },
+                "apptSubject": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "estHours": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isDeleted": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "integer"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opLaborFinished": {
+                    "type": "boolean"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "techId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ScheduleResolveMergeConflictRequest": {
+            "type": "object",
+            "required": [
+                "appointments",
+                "clerkId",
+                "locationCode",
+                "sessionId"
+            ],
+            "properties": {
+                "appointments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.ScheduleAppointmentUpdate"
+                    }
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "sessionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ScheduleUpdateRequest": {
+            "type": "object",
+            "required": [
+                "appointments",
+                "clerkId",
+                "locationCode",
+                "sessionId"
+            ],
+            "properties": {
+                "appointments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.ScheduleAppointmentUpdate"
+                    }
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "sessionId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.SendHTMLEmailRequest": {
             "description": "Send HTML email request payload",
             "type": "object",
@@ -20887,6 +21466,18 @@ const docTemplate = `{
                 "task_id": {
                     "type": "string"
                 }
+            }
+        },
+        "responses.ScheduleResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
+            }
+        },
+        "responses.ScheduleUpdateResponse": {
+            "type": "object",
+            "properties": {
+                "data": {}
             }
         },
         "responses.ServiceOPCategoryCodesResponse": {

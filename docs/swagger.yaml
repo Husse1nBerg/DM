@@ -2117,6 +2117,83 @@ definitions:
     - partNumbers
     - systemId
     type: object
+  requests.ScheduleAppointmentUpdate:
+    properties:
+      apptComplete:
+        type: boolean
+      apptDescription:
+        type: string
+      apptSubject:
+        type: string
+      endTime:
+        type: string
+      estHours:
+        type: number
+      id:
+        type: string
+      isDeleted:
+        type: boolean
+      label:
+        type: integer
+      locationCode:
+        type: string
+      opLaborFinished:
+        type: boolean
+      opcode:
+        type: string
+      startTime:
+        type: string
+      status:
+        type: string
+      techId:
+        type: string
+      workOrderId:
+        type: string
+    required:
+    - endTime
+    - id
+    - locationCode
+    - opcode
+    - startTime
+    - techId
+    - workOrderId
+    type: object
+  requests.ScheduleResolveMergeConflictRequest:
+    properties:
+      appointments:
+        items:
+          $ref: '#/definitions/requests.ScheduleAppointmentUpdate'
+        type: array
+      clerkId:
+        type: string
+      locationCode:
+        type: string
+      sessionId:
+        type: string
+    required:
+    - appointments
+    - clerkId
+    - locationCode
+    - sessionId
+    type: object
+  requests.ScheduleUpdateRequest:
+    properties:
+      appointments:
+        items:
+          $ref: '#/definitions/requests.ScheduleAppointmentUpdate'
+        type: array
+      clerkId:
+        type: string
+      locationCode:
+        type: string
+      sessionId:
+        type: string
+    required:
+    - appointments
+    - clerkId
+    - locationCode
+    - sessionId
+    type: object
   requests.SendHTMLEmailRequest:
     description: Send HTML email request payload
     properties:
@@ -4608,6 +4685,14 @@ definitions:
         type: boolean
       task_id:
         type: string
+    type: object
+  responses.ScheduleResponse:
+    properties:
+      data: {}
+    type: object
+  responses.ScheduleUpdateResponse:
+    properties:
+      data: {}
     type: object
   responses.ServiceOPCategoryCodesResponse:
     properties:
@@ -12781,6 +12866,320 @@ paths:
       summary: Retrieve operation descriptions
       tags:
       - Service
+  /service/schedule/operation-schedule:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves operation schedule
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Work order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Operation code
+        in: query
+        name: opcode
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve operation schedule
+      tags:
+      - Schedule
+  /service/schedule/resolve-merge-conflict:
+    post:
+      consumes:
+      - application/json
+      description: Resolves merge conflicts in schedule updates
+      parameters:
+      - description: Merge conflict resolution request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ScheduleResolveMergeConflictRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleUpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Resolve merge conflict
+      tags:
+      - Schedule
+  /service/schedule/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments with optional filters
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule
+      tags:
+      - Schedule
+  /service/schedule/retrieve-for-manager:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments for a specific manager
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Manager ID
+        in: query
+        name: managerId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule for manager
+      tags:
+      - Schedule
+  /service/schedule/retrieve-for-tech:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments for a specific technician
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Technician ID
+        in: query
+        name: techId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule for technician
+      tags:
+      - Schedule
+  /service/schedule/retrieve-for-work-order:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments for a specific work order
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Work order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule for work order
+      tags:
+      - Schedule
+  /service/schedule/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates schedule appointments
+      parameters:
+      - description: Schedule update request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ScheduleUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleUpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update schedule
+      tags:
+      - Schedule
+  /service/schedule/work-order-schedule:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves work order schedule
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Work order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order schedule
+      tags:
+      - Schedule
   /service/technicians:
     get:
       consumes:
