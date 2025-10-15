@@ -2123,6 +2123,19 @@ definitions:
     - oldPassword
     - userId
     type: object
+  requests.RetrieveAllOperationsRequest:
+    properties:
+      page:
+        minimum: 0
+        type: integer
+      pageSize:
+        maximum: 1000
+        minimum: 1
+        type: integer
+    required:
+    - page
+    - pageSize
+    type: object
   requests.RetrieveInventoryRequest:
     properties:
       partNumbers:
@@ -4964,6 +4977,21 @@ definitions:
         type: boolean
       updatedAt:
         type: string
+    type: object
+  responses.WorkOrderAllOperationsResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      pageSize:
+        type: integer
     type: object
   responses.WorkOrderCompletedResponse:
     properties:
@@ -14458,6 +14486,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve work order operations
+      tags:
+      - WorkOrders
+  /work-orders/operations/all:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves a list of all Operation Codes (not filtered by USE.ONLINE)
+      parameters:
+      - description: Pagination parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RetrieveAllOperationsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderAllOperationsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve all work order operations
       tags:
       - WorkOrders
   /work-orders/retrieve:
