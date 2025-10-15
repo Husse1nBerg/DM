@@ -21743,14 +21743,6 @@ const docTemplate = `{
                 }
             }
         },
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> Fix payment conflict
-=======
->>>>>>> DM-449 Fix last payment merge conflict
         "responses.PartQtyInfoResponse": {
             "type": "object",
             "properties": {
@@ -21930,32 +21922,6 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-<<<<<<< HEAD
-<<<<<<< HEAD
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.PartsKitItemResponse"
-                    }
-                },
-                "lastModified": {
-                    "type": "string"
-                },
-                "totalCost": {
-                    "type": "number"
-                },
-                "totalPrice": {
-                    "type": "number"
-                }
-            }
-        },
-        "responses.PaymentInitiationResponse": {
-<<<<<<< HEAD
-=======
-=======
-=======
-=======
->>>>>>> DM-449 Fix last payment merge conflict
                 "internalNotes": {
                     "type": "string"
                 },
@@ -21988,11 +21954,6 @@ const docTemplate = `{
                 }
             }
         },
-<<<<<<< HEAD
->>>>>>> 343e043... DM-449 Refactor payment queries and enhance API endpoints for payment retrieval
->>>>>>> Fix payment conflict
-=======
->>>>>>> DM-449 Fix last payment merge conflict
         "responses.PaymentResultResponse": {
             "type": "object",
             "properties": {
@@ -22649,6 +22610,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.WebhookResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.WorkOrderAllOperationsResponse": {
             "type": "object",
             "properties": {
@@ -22669,14 +22641,6 @@ const docTemplate = `{
                 },
                 "pageSize": {
                     "type": "integer"
-        "responses.WebhookResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
                 }
             }
         },

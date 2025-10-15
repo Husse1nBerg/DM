@@ -5166,6 +5166,13 @@ definitions:
       updatedAt:
         type: string
     type: object
+  responses.WebhookResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   responses.WorkOrderAllOperationsResponse:
     properties:
       content:
@@ -5180,12 +5187,6 @@ definitions:
         type: integer
       pageSize:
         type: integer
-  responses.WebhookResponse:
-    properties:
-      message:
-        type: string
-      status:
-        type: string
     type: object
   responses.WorkOrderCompletedResponse:
     properties:

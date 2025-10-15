@@ -22603,7 +22603,17 @@
                 }
             }
         },
-<<<<<<< HEAD
+        "responses.WebhookResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.WorkOrderAllOperationsResponse": {
             "type": "object",
             "properties": {
@@ -22624,16 +22634,6 @@
                 },
                 "pageSize": {
                     "type": "integer"
-=======
-        "responses.WebhookResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
->>>>>>> Fix payments conflict
                 }
             }
         },
