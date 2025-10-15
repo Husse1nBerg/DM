@@ -296,36 +296,15 @@ func GenerateRequestID() string {
 	return uuid.New().String()
 }
 
-// NumericToString converts pgtype.Numeric to string
+// NumericToString converts a pgtype.Numeric to a string representation
 func NumericToString(n pgtype.Numeric) string {
 	if !n.Valid {
 		return "0.00"
 	}
-	// Convert to int64 for major units and format
-	intVal, _ := n.Int64Value()
-	return fmt.Sprintf("%.2f", float64(intVal.Int64)/100)
-}
-
-// UUIDToPointer converts uuid.NullUUID to *uuid.UUID
-func UUIDToPointer(u uuid.NullUUID) *uuid.UUID {
-	if !u.Valid {
-		return nil
+	// Use the Int value and Exp to calculate the decimal
+	var val float64
+	if n.Int != nil {
+		val = float64(n.Int.Int64()) * float64(n.Exp)
 	}
-	return &u.UUID
-}
-
-// TimestamptzToTimePointer converts pgtype.Timestamptz to *time.Time
-func TimestamptzToTimePointer(t pgtype.Timestamptz) *time.Time {
-	if !t.Valid {
-		return nil
-	}
-	return &t.Time
-}
-
-// TimestamptzToTime converts pgtype.Timestamptz to time.Time
-func TimestamptzToTime(t pgtype.Timestamptz) time.Time {
-	if !t.Valid {
-		return time.Time{}
-	}
-	return t.Time
+	return fmt.Sprintf("%.2f", val)
 }

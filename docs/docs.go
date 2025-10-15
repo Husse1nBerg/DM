@@ -9948,6 +9948,95 @@ const docTemplate = `{
             }
         },
         "/notification/type/{type}": {
+        "/payments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a paginated list of payments with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "List payments",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, authorized, completed, failed)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity type (invoice, boat, customer, etc.)",
+                        "name": "entityType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity ID",
+                        "name": "entityId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments/details": {
             "post": {
                 "description": "Handles payment completion redirects from Adyen",
@@ -9987,6 +10076,65 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/entity": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves all payments for a specific entity (e.g., invoice, boat)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payments by entity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Entity type (invoice, boat, customer, etc.)",
+                        "name": "entityType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.PaymentResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -10040,6 +10188,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves payment statistics for a date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payment statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD, defaults to 30 days ago)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD, defaults to today)",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments/webhooks": {
             "post": {
                 "description": "Processes incoming webhook notifications from Adyen",
@@ -10068,6 +10270,61 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a single payment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payment by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -21576,6 +21833,11 @@ const docTemplate = `{
                 }
             }
         },
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> Fix payment conflict
         "responses.PartQtyInfoResponse": {
             "type": "object",
             "properties": {
@@ -21650,11 +21912,92 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "description": {
+=======
+        "responses.PaymentListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PaymentResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "adyenPspReference": {
+                    "type": "string"
+                },
+                "adyenSessionId": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "string"
+                },
+                "authCode": {
+                    "type": "string"
+                },
+                "authorizationStatus": {
+                    "type": "string"
+                },
+                "authorizedAt": {
+                    "type": "string"
+                },
+                "batchId": {
+                    "type": "string"
+                },
+                "batchPaymentId": {
+                    "type": "string"
+                },
+                "batchStatus": {
+                    "type": "string"
+                },
+                "completedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "entityId": {
+                    "type": "string"
+                },
+                "entityType": {
+                    "type": "string"
+                },
+                "errorCode": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "failedAt": {
+>>>>>>> 343e043... DM-449 Refactor payment queries and enhance API endpoints for payment retrieval
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
+<<<<<<< HEAD
                 "items": {
                     "type": "array",
                     "items": {
@@ -21673,16 +22016,54 @@ const docTemplate = `{
             }
         },
         "responses.PaymentInitiationResponse": {
+<<<<<<< HEAD
+=======
+=======
+=======
+                "internalNotes": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "paymentDate": {
+                    "type": "string"
+                },
+                "paymentMethod": {
+                    "type": "string"
+                },
+                "referenceNumber": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "transactionId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+>>>>>>> 343e043... DM-449 Refactor payment queries and enhance API endpoints for payment retrieval
+>>>>>>> Fix payment conflict
         "responses.PaymentResultResponse": {
             "type": "object",
             "properties": {
-                "psp_reference": {
+                "pspReference": {
                     "type": "string"
                 },
-                "refusal_reason": {
+                "refusalReason": {
                     "type": "string"
                 },
-                "result_code": {
+                "resultCode": {
                     "type": "string"
                 }
             }
@@ -21690,17 +22071,18 @@ const docTemplate = `{
         "responses.PaymentSessionResponse": {
             "type": "object",
             "properties": {
-                "client_key": {
+                "clientKey": {
                     "type": "string"
                 },
-                "session_data": {
+                "sessionData": {
                     "type": "string"
                 },
-                "session_id": {
+                "sessionId": {
                     "type": "string"
                 }
             }
         },
+<<<<<<< HEAD
         "responses.PurchaseOrderLineResponse": {
             "type": "object",
             "properties": {
@@ -21786,6 +22168,34 @@ const docTemplate = `{
                 },
                 "vendorName": {
                     "type": "string"
+=======
+        "responses.PaymentStatsResponse": {
+            "type": "object",
+            "properties": {
+                "authorizedCount": {
+                    "type": "integer"
+                },
+                "completedCount": {
+                    "type": "integer"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "failedCount": {
+                    "type": "integer"
+                },
+                "pendingCount": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "totalCompletedAmount": {
+                    "type": "string"
+                },
+                "totalCount": {
+                    "type": "integer"
+>>>>>>> 343e043... DM-449 Refactor payment queries and enhance API endpoints for payment retrieval
                 }
             }
         },

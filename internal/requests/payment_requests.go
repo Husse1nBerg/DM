@@ -33,20 +33,30 @@ func (r *PaymentDetailsRequest) Validate(validate *validator.Validate) error {
 	return validate.Struct(r)
 }
 
-// ListPaymentsRequest represents the request to list payments with filters
+// ListPaymentsRequest represents the request to list payments with filtering
 type ListPaymentsRequest struct {
-	Page       int    `query:"page" validate:"min=1"`
-	PageSize   int    `query:"pageSize" validate:"min=1,max=100"`
-	Status     string `query:"status"`
-	EntityType string `query:"entity_type"`
-	EntityID   string `query:"entity_id"`
-	CustomerID string `query:"customer_id"`
-	StartDate  string `query:"start_date"` // Format: YYYY-MM-DD
-	EndDate    string `query:"end_date"`   // Format: YYYY-MM-DD
+	Page       int    `query:"page" validate:"required,min=1"`
+	PageSize   int    `query:"pageSize" validate:"required,min=1,max=100"`
+	Status     string `query:"status"`     // Optional: pending, authorized, completed, failed
+	EntityType string `query:"entityType"` // Optional: invoice, boat, customer, etc.
+	EntityID   string `query:"entityId"`   // Optional: ID of the entity
+	StartDate  string `query:"startDate"`  // Optional: YYYY-MM-DD format
+	EndDate    string `query:"endDate"`    // Optional: YYYY-MM-DD format
+}
+
+// GetPaymentRequest represents the request to get a single payment
+type GetPaymentRequest struct {
+	PaymentID string `param:"id" validate:"required,uuid"`
+}
+
+// GetPaymentsByEntityRequest represents the request to get payments for a specific entity
+type GetPaymentsByEntityRequest struct {
+	EntityType string `query:"entityType" validate:"required"`
+	EntityID   string `query:"entityId" validate:"required"`
 }
 
 // GetPaymentStatsRequest represents the request to get payment statistics
 type GetPaymentStatsRequest struct {
-	StartDate string `query:"start_date" validate:"required"` // Format: YYYY-MM-DD
-	EndDate   string `query:"end_date" validate:"required"`   // Format: YYYY-MM-DD
+	StartDate string `query:"startDate"` // Optional: YYYY-MM-DD format
+	EndDate   string `query:"endDate"`   // Optional: YYYY-MM-DD format
 }

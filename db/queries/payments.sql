@@ -124,14 +124,7 @@ AND payment_date <= $3;
 SELECT COUNT(*) FROM payments
 WHERE marina_id = $1;
 
--- name: ListPaymentsWithFilters :many
-SELECT * FROM payments
+-- name: CountPaymentsByStatus :one
+SELECT COUNT(*) FROM payments
 WHERE marina_id = $1
-AND ($2::text IS NULL OR status = $2)
-AND ($3::text IS NULL OR entity_type = $3)
-AND ($4::text IS NULL OR entity_id = $4)
-AND ($5::text IS NULL OR customer_id = $5)
-AND ($6::timestamptz IS NULL OR payment_date >= $6)
-AND ($7::timestamptz IS NULL OR payment_date <= $7)
-ORDER BY created_at DESC
-LIMIT $8 OFFSET $9;
+AND status = $2;

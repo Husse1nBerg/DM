@@ -4606,23 +4606,118 @@ definitions:
         type: integer
     type: object
   responses.PartQtyInfoResponse:
+  responses.PaymentListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.PaymentResponse'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  responses.PaymentResponse:
+    properties:
+      adyenPspReference:
+        type: string
+      adyenSessionId:
+        type: string
+      amount:
+        type: string
+      authCode:
+        type: string
+      authorizationStatus:
+        type: string
+      authorizedAt:
+        type: string
+      batchId:
+        type: string
+      batchPaymentId:
+        type: string
+      batchStatus:
+        type: string
+      completedAt:
+        type: string
+      createdAt:
+        type: string
+      currency:
+        type: string
+      customerId:
+        type: string
+      entityId:
+        type: string
+      entityType:
+        type: string
+      errorCode:
+        type: string
+      errorMessage:
+        type: string
+      failedAt:
+        type: string
+      id:
+        type: string
+      internalNotes:
+        type: string
+      locationCode:
+        type: string
+      marinaId:
+        type: string
+      organizationId:
+        type: string
+      paymentDate:
+        type: string
+      paymentMethod:
+        type: string
+      referenceNumber:
+        type: string
+      status:
+        type: string
+      transactionId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   responses.PaymentResultResponse:
     properties:
-      psp_reference:
+      pspReference:
         type: string
-      refusal_reason:
+      refusalReason:
         type: string
-      result_code:
+      resultCode:
         type: string
     type: object
   responses.PaymentSessionResponse:
     properties:
-      client_key:
+      clientKey:
         type: string
-      session_data:
+      sessionData:
         type: string
-      session_id:
+      sessionId:
         type: string
+    type: object
+  responses.PaymentStatsResponse:
+    properties:
+      authorizedCount:
+        type: integer
+      completedCount:
+        type: integer
+      endDate:
+        type: string
+      failedCount:
+        type: integer
+      pendingCount:
+        type: integer
+      startDate:
+        type: string
+      totalCompletedAmount:
+        type: string
+      totalCount:
+        type: integer
     type: object
   responses.RedisGetResponse:
     properties:
@@ -12245,6 +12340,100 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /payments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of payments with optional filtering
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      - description: Filter by status (pending, authorized, completed, failed)
+        in: query
+        name: status
+        type: string
+      - description: Filter by entity type (invoice, boat, customer, etc.)
+        in: query
+        name: entityType
+        type: string
+      - description: Filter by entity ID
+        in: query
+        name: entityId
+        type: string
+      - description: Filter by start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: Filter by end date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: List payments
+      tags:
+      - Payments
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a single payment by its ID
+      parameters:
+      - description: Payment ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payment by ID
+      tags:
+      - Payments
   /payments/details:
     post:
       consumes:
@@ -12275,6 +12464,44 @@ paths:
       summary: Handle payment redirect
       tags:
       - Payments
+  /payments/entity:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all payments for a specific entity (e.g., invoice, boat)
+      parameters:
+      - description: Entity type (invoice, boat, customer, etc.)
+        in: query
+        name: entityType
+        required: true
+        type: string
+      - description: Entity ID
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.PaymentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payments by entity
+      tags:
+      - Payments
   /payments/sessions:
     post:
       consumes:
@@ -12303,6 +12530,40 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Create payment session
+      tags:
+      - Payments
+  /payments/stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves payment statistics for a date range
+      parameters:
+      - description: Start date (YYYY-MM-DD, defaults to 30 days ago)
+        in: query
+        name: startDate
+        type: string
+      - description: End date (YYYY-MM-DD, defaults to today)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payment statistics
       tags:
       - Payments
   /payments/webhooks:
