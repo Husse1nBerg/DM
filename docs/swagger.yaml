@@ -694,23 +694,6 @@ definitions:
       workOrder:
         type: string
     type: object
-  dme.PaymentInitiationResponse:
-    properties:
-      amount:
-        type: number
-      customerId:
-        type: string
-      dmPayClientId:
-        type: string
-      invoiceId:
-        type: string
-      paymentSessionId:
-        type: string
-      paymentUrl:
-        type: string
-      status:
-        type: string
-    type: object
   dme.Rate:
     properties:
       endDate:
@@ -1658,6 +1641,8 @@ definitions:
     - email
     - name
     type: object
+  requests.CreatePaymentSessionRequest:
+    type: object
   requests.CreateRoleRequest:
     properties:
       description:
@@ -2024,19 +2009,6 @@ definitions:
     required:
     - email
     type: object
-  requests.InitiatePaymentRequest:
-    properties:
-      amount:
-        type: number
-      customerId:
-        type: string
-      invoiceId:
-        type: string
-    required:
-    - amount
-    - customerId
-    - invoiceId
-    type: object
   requests.InvPayment:
     properties:
       customerId:
@@ -2164,6 +2136,17 @@ definitions:
         type: number
       techDesc:
         type: string
+    type: object
+  requests.PaymentDetailsRequest:
+    properties:
+      payload:
+        type: string
+      payment_data:
+        type: string
+      redirect_result:
+        type: string
+    required:
+    - payment_data
     type: object
   requests.RedisSetRequest:
     properties:
@@ -4623,6 +4606,25 @@ definitions:
         type: integer
     type: object
   responses.PartQtyInfoResponse:
+  responses.PaymentResultResponse:
+    properties:
+      psp_reference:
+        type: string
+      refusal_reason:
+        type: string
+      result_code:
+        type: string
+    type: object
+  responses.PaymentSessionResponse:
+    properties:
+      client_key:
+        type: string
+      session_data:
+        type: string
+      session_id:
+        type: string
+    type: object
+  responses.RedisGetResponse:
     properties:
       averageCost:
         type: number
@@ -5117,6 +5119,12 @@ definitions:
         type: integer
       pageSize:
         type: integer
+  responses.WebhookResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
     type: object
   responses.WorkOrderCompletedResponse:
     properties:
@@ -10195,36 +10203,6 @@ paths:
       summary: Get customer invoices
       tags:
       - Invoices
-  /invoices/pay:
-    post:
-      consumes:
-      - application/json
-      description: Initiates a payment process for a specific invoice
-      parameters:
-      - description: Payment information
-        in: body
-        name: payment
-        required: true
-        schema:
-          $ref: '#/definitions/requests.InitiatePaymentRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.PaymentInitiationResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Initiate payment for invoice
-      tags:
-      - Invoices
   /marina-usage-history/{marinaId}/date-range:
     get:
       description: Retrieves marina usage history records within a specified date
@@ -12267,6 +12245,89 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /payments/details:
+    post:
+      consumes:
+      - application/json
+      description: Handles payment completion redirects from Adyen
+      parameters:
+      - description: Payment details request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.PaymentDetailsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment result
+          schema:
+            $ref: '#/definitions/responses.PaymentResultResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Handle payment redirect
+      tags:
+      - Payments
+  /payments/sessions:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new Adyen payment session for processing payments
+      parameters:
+      - description: Payment session request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePaymentSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment session created successfully
+          schema:
+            $ref: '#/definitions/responses.PaymentSessionResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create payment session
+      tags:
+      - Payments
+  /payments/webhooks:
+    post:
+      consumes:
+      - application/json
+      description: Processes incoming webhook notifications from Adyen
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook processed successfully
+          schema:
+            $ref: '#/definitions/responses.WebhookResponse'
+        "401":
+          description: Invalid HMAC signature
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Process webhook
+      tags:
+      - Payments
   /plans/document:
     get:
       consumes:

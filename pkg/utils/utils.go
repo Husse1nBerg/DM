@@ -295,3 +295,37 @@ func DetectFormFields(pages []struct {
 func GenerateRequestID() string {
 	return uuid.New().String()
 }
+
+// NumericToString converts pgtype.Numeric to string
+func NumericToString(n pgtype.Numeric) string {
+	if !n.Valid {
+		return "0.00"
+	}
+	// Convert to int64 for major units and format
+	intVal, _ := n.Int64Value()
+	return fmt.Sprintf("%.2f", float64(intVal.Int64)/100)
+}
+
+// UUIDToPointer converts uuid.NullUUID to *uuid.UUID
+func UUIDToPointer(u uuid.NullUUID) *uuid.UUID {
+	if !u.Valid {
+		return nil
+	}
+	return &u.UUID
+}
+
+// TimestamptzToTimePointer converts pgtype.Timestamptz to *time.Time
+func TimestamptzToTimePointer(t pgtype.Timestamptz) *time.Time {
+	if !t.Valid {
+		return nil
+	}
+	return &t.Time
+}
+
+// TimestamptzToTime converts pgtype.Timestamptz to time.Time
+func TimestamptzToTime(t pgtype.Timestamptz) time.Time {
+	if !t.Valid {
+		return time.Time{}
+	}
+	return t.Time
+}

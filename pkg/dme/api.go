@@ -2053,8 +2053,6 @@ func (c *Client) ListCustomerSpecialOrders(ctx context.Context, customerID strin
 	result.TotalAmount = totalAmount
 	result.ReceiptCount = len(cashReceipts)
 
-	println("\n\nBatch data", result, "\n\n")
-
 	return result, nil
 }
 

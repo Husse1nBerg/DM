@@ -6951,6 +6951,7 @@ const docTemplate = `{
             }
         },
         "/inventory/online-billcodes": {
+        "/marina-usage-history/all": {
             "get": {
                 "description": "Retrieves a list of billing codes that have been selected for use online",
                 "consumes": [
@@ -9947,6 +9948,134 @@ const docTemplate = `{
             }
         },
         "/notification/type/{type}": {
+        "/payments/details": {
+            "post": {
+                "description": "Handles payment completion redirects from Adyen",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Handle payment redirect",
+                "parameters": [
+                    {
+                        "description": "Payment details request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.PaymentDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment result",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/sessions": {
+            "post": {
+                "description": "Creates a new Adyen payment session for processing payments",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create payment session",
+                "parameters": [
+                    {
+                        "description": "Payment session request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePaymentSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment session created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentSessionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/webhooks": {
+            "post": {
+                "description": "Processes incoming webhook notifications from Adyen",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Process webhook",
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WebhookResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid HMAC signature",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/document": {
             "get": {
                 "security": [
                     {
@@ -15885,32 +16014,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dme.PaymentInitiationResponse": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "customerId": {
-                    "type": "string"
-                },
-                "dmPayClientId": {
-                    "type": "string"
-                },
-                "invoiceId": {
-                    "type": "string"
-                },
-                "paymentSessionId": {
-                    "type": "string"
-                },
-                "paymentUrl": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
         "dme.Rate": {
             "type": "object",
             "properties": {
@@ -17271,6 +17374,9 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CreatePaymentSessionRequest": {
+            "type": "object"
+        },
         "requests.CreateRoleRequest": {
             "type": "object",
             "required": [
@@ -17793,25 +17899,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.InitiatePaymentRequest": {
-            "type": "object",
-            "required": [
-                "amount",
-                "customerId",
-                "invoiceId"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "customerId": {
-                    "type": "string"
-                },
-                "invoiceId": {
-                    "type": "string"
-                }
-            }
-        },
         "requests.InvPayment": {
             "type": "object",
             "required": [
@@ -17990,6 +18077,23 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "techDesc": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.PaymentDetailsRequest": {
+            "type": "object",
+            "required": [
+                "payment_data"
+            ],
+            "properties": {
+                "payload": {
+                    "type": "string"
+                },
+                "payment_data": {
+                    "type": "string"
+                },
+                "redirect_result": {
                     "type": "string"
                 }
             }
@@ -21569,10 +21673,31 @@ const docTemplate = `{
             }
         },
         "responses.PaymentInitiationResponse": {
+        "responses.PaymentResultResponse": {
             "type": "object",
             "properties": {
-                "data": {
-                    "$ref": "#/definitions/dme.PaymentInitiationResponse"
+                "psp_reference": {
+                    "type": "string"
+                },
+                "refusal_reason": {
+                    "type": "string"
+                },
+                "result_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentSessionResponse": {
+            "type": "object",
+            "properties": {
+                "client_key": {
+                    "type": "string"
+                },
+                "session_data": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
                 }
             }
         },
@@ -22195,6 +22320,14 @@ const docTemplate = `{
                 },
                 "pageSize": {
                     "type": "integer"
+        "responses.WebhookResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },

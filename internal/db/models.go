@@ -368,47 +368,38 @@ type PasswordRecovery struct {
 }
 
 type Payment struct {
-	ID                        uuid.UUID
-	OrganizationID            uuid.UUID
-	MarinaID                  uuid.UUID
-	CustomerID                uuid.UUID
-	Amount                    pgtype.Numeric
-	Currency                  string
-	Status                    string
-	PaymentMethod             *string
-	PaymentType               string
-	Reference                 string
-	Description               *string
-	Metadata                  []byte
-	AdyenPaymentID            *string
-	AdyenMerchantReference    *string
-	AdyenPspReference         *string
-	AdyenPaymentMethodDetails []byte
-	ErrorMessage              *string
-	CreatedAt                 pgtype.Timestamp
-	UpdatedAt                 pgtype.Timestamp
-	DeletedAt                 pgtype.Timestamp
-}
-
-type PaymentCredential struct {
-	ID              uuid.UUID
-	OrganizationID  uuid.UUID
-	MarinaID        uuid.UUID
-	ApiKey          string
-	MerchantAccount string
-	StoreID         *string
-	IsTest          *bool
-	CreatedAt       pgtype.Timestamp
-	UpdatedAt       pgtype.Timestamp
-	DeletedAt       pgtype.Timestamp
-}
-
-type PaymentEvent struct {
-	ID        uuid.UUID
-	PaymentID uuid.UUID
-	EventType string
-	EventData []byte
-	CreatedAt pgtype.Timestamp
+	ID                  uuid.UUID
+	MarinaID            uuid.UUID
+	OrganizationID      uuid.UUID
+	EntityType          *string
+	EntityID            *string
+	Amount              pgtype.Numeric
+	Currency            string
+	PaymentMethod       *string
+	ReferenceNumber     string
+	Status              string
+	AuthorizationStatus *string
+	BatchStatus         *string
+	AdyenPspReference   *string
+	AdyenSessionID      *string
+	BatchID             *string
+	BatchPaymentID      uuid.UUID
+	PaymentDate         pgtype.Timestamptz
+	AuthorizedAt        pgtype.Timestamptz
+	CompletedAt         pgtype.Timestamptz
+	FailedAt            pgtype.Timestamptz
+	CustomerID          *string
+	LocationCode        *string
+	TransactionID       *string
+	AuthCode            *string
+	AdyenWebhookPayload *string
+	DmeBatchRequest     *string
+	DmeBatchResponse    *string
+	ErrorMessage        *string
+	ErrorCode           *string
+	InternalNotes       *string
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
 }
 
 type Role struct {
