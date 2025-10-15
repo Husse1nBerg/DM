@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -165,28 +166,75 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to read file content").JSON(c)
 	}
 
-	// Get image format from content type
-	format := getImageFormat(contentType)
+	// Llama3 Vision uses a different format: prompt + image array
+	// Format the prompt in Llama3's instruction template with image token
+	userPrompt := `You are looking at a form document image. Your task is to identify every form field and determine its EXACT position by carefully observing where it appears in the image.
+
+CRITICAL: Look at the ACTUAL image and measure where each field is positioned. Do NOT use template/example coordinates.
+
+Step 1: Determine the image dimensions
+- Measure or estimate the image width and height in pixels
+- Common sizes: Letter (850x1100), A4 (595x842)
+
+Step 2: Locate each field by observing the image
+For each form field you see, determine its position:
+- Measure from the TOP-LEFT corner (0,0) to the field
+- If a field appears in the MIDDLE of the page, y should be around 500-600 (for 1100px height)
+- If a field appears NEAR THE BOTTOM, y should be 700-900+ (for 1100px height)
+- If a field appears at the TOP, y should be 50-200
+
+IMPORTANT POSITION GUIDELINES:
+- Top third of page: y = 0 to 366px (normalized: 0 to 0.33)
+- Middle third: y = 367 to 733px (normalized: 0.33 to 0.67)
+- Bottom third: y = 734 to 1100px (normalized: 0.67 to 1.0)
+
+For signatures and dates which typically appear NEAR THE BOTTOM of forms:
+- These should have y values of 700+ pixels (normalized 0.64+)
+
+Step 3: Calculate normalized coordinates
+- bboxNorm.x = bbox.x / pageSize.widthPx
+- bboxNorm.y = bbox.y / pageSize.heightPx
+- bboxNorm.w = bbox.w / pageSize.widthPx
+- bboxNorm.h = bbox.h / pageSize.heightPx
+
+Output format - RESPOND WITH ONLY THE YAML BELOW, NO OTHER TEXT:
+
+pages:
+  - pageNumber: 1
+    pageSize: {widthPx: 850, heightPx: 1100}
+    fields:
+      - id: FIELD_ID
+        type: text|signature|date|etc
+        label: "Actual label from image"
+        required: false
+        confidence: 0.9
+        bbox: {x: <actual_x>, y: <actual_y>, w: <actual_w>, h: <actual_h>}
+        bboxNorm: {x: <calculated>, y: <calculated>, w: <calculated>, h: <calculated>}
+
+CRITICAL:
+- Do NOT add "Answer:" or any prefix
+- Do NOT use markdown code blocks
+- Do NOT add explanations
+- Start your response directly with "pages:"
+- Return ONLY the raw YAML data`
+
+	// Include <|image|> token to indicate where the image should be placed
+	formattedPrompt := fmt.Sprintf(`<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
+<|image|>
+%s
+<|eot_id|>
+<|start_header_id|>assistant<|end_header_id|>
+`, userPrompt)
 
 	bedrockRequest := map[string]interface{}{
-		"messages": []map[string]interface{}{
-			{
-				"role": "user",
-				"content": []map[string]interface{}{
-					{
-						"text": "Detect form fields in image. Return JSON with pages array. Each page has: pageNumber(int), pageSize(widthPx,heightPx), fields array. Each field has: id(str), type(text|textarea|checkbox|radio|signature|date|initials|email|phone|number), label(str|null), required(bool,true if *), confidence(0-1), bbox(x,y,w,h ints), bboxNorm(x,y,w,h 0-1). Rules: double quotes, valid numbers, origin top-left, bboxNorm=bbox/pageSize",
-					},
-					{
-						"image": map[string]interface{}{
-							"format": format,
-							"source": map[string]interface{}{
-								"bytes": base64.StdEncoding.EncodeToString(fileBytes),
-							},
-						},
-					},
-				},
-			},
+		"prompt": formattedPrompt,
+		"images": []string{
+			base64.StdEncoding.EncodeToString(fileBytes),
 		},
+		"max_gen_len": 2048,
+		"temperature": 0.2,
+		"top_p":       0.9,
 	}
 
 	// Prepare HTTP request to Bedrock API
@@ -197,7 +245,7 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to prepare request").JSON(c)
 	}
 
-	bedrockReq, err := http.NewRequest("POST", "https://bedrock-runtime.us-east-1.amazonaws.com/model/amazon.nova-pro-v1:0/invoke", bytes.NewBuffer(reqBody))
+	bedrockReq, err := http.NewRequest("POST", "https://bedrock-runtime.us-east-1.amazonaws.com/model/us.meta.llama3-2-90b-instruct-v1:0/invoke", bytes.NewBuffer(reqBody))
 	if err != nil {
 		logger.Zap.Errorw("Failed to create new HTTP request", "error", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create request").JSON(c)
@@ -215,22 +263,44 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 	}
 	defer resp.Body.Close()
 
-	// Parse response from Bedrock API
-	var apiResponse responses.BedrockDetectFormFieldsResponse
+	// Read response body for debugging
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logger.Zap.Errorw("Failed to read response body", "error", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to read response").JSON(c)
+	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
-		logger.Zap.Errorw("Failed to decode response from Bedrock API", "error", err)
+	// Log the raw response for debugging
+	logger.Zap.Infow("Bedrock API Response", "status", resp.StatusCode, "body", string(bodyBytes))
+
+	// Parse response from Bedrock API - Llama3 format
+	var apiResponse struct {
+		Generation           string `json:"generation"`
+		PromptTokenCount     int    `json:"prompt_token_count"`
+		GenerationTokenCount int    `json:"generation_token_count"`
+		StopReason           string `json:"stop_reason"`
+	}
+
+	if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {
+		logger.Zap.Errorw("Failed to decode response from Bedrock API", "error", err, "body", string(bodyBytes))
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to decode response: "+err.Error()).JSON(c)
 	}
 
-	// Safely extract the message text
-	if len(apiResponse.Output.Message.Content) == 0 {
-		logger.Zap.Errorw("No content in Bedrock response", "response", apiResponse)
+	// Check if we got a generation
+	if apiResponse.Generation == "" {
+		logger.Zap.Errorw("No generation in Bedrock response", "response", string(bodyBytes))
 		return responses.NewErrorResponse(http.StatusInternalServerError, "No content in response").JSON(c)
 	}
 
-	// Return the parsed JSON
-	return c.JSON(http.StatusOK, apiResponse)
+	// Return the response with the generated YAML
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": apiResponse.Generation,
+		"tokens": map[string]int{
+			"input":  apiResponse.PromptTokenCount,
+			"output": apiResponse.GenerationTokenCount,
+		},
+		"stopReason": apiResponse.StopReason,
+	})
 }
 
 // isValidImageType checks if the content type is a supported image format
