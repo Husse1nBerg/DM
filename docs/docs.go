@@ -21518,13 +21518,47 @@ const docTemplate = `{
         "responses.ServiceOPCategoryCodesResponse": {
             "type": "object",
             "properties": {
-                "data": {}
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
             }
         },
         "responses.ServiceOpCodesResponse": {
             "type": "object",
             "properties": {
-                "data": {}
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
             }
         },
         "responses.ServiceOperationDescriptionsResponse": {
@@ -21542,7 +21576,24 @@ const docTemplate = `{
         "responses.ServiceWOCategoryCodesResponse": {
             "type": "object",
             "properties": {
-                "data": {}
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
             }
         },
         "responses.SpecialOrderResponse": {

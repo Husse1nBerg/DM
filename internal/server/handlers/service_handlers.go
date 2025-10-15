@@ -76,9 +76,7 @@ func (h *ServiceHandler) ListNewOrChangedOpCodes(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert typed response to interface for the response converter
-	var genericResponse interface{} = dmeResponse
-	response := responses.ConvertServiceOpCodes(&genericResponse)
+	response := responses.ConvertServiceOpCodes(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -132,9 +130,7 @@ func (h *ServiceHandler) ListWOCategoryCodes(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert typed response to interface for the response converter
-	var genericResponse interface{} = dmeResponse
-	response := responses.ConvertServiceWOCategoryCodes(&genericResponse)
+	response := responses.ConvertServiceWOCategoryCodes(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -188,9 +184,7 @@ func (h *ServiceHandler) ListOPCategoryCodes(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	// Convert typed response to interface for the response converter
-	var genericResponse interface{} = dmeResponse
-	response := responses.ConvertServiceOPCategoryCodes(&genericResponse)
+	response := responses.ConvertServiceOPCategoryCodes(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
