@@ -1231,34 +1231,6 @@ definitions:
     - statementDesc
     - totalPayment
     type: object
-  requests.ClerkListRequest:
-    properties:
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      systemId:
-        example: SYS001
-        type: string
-    required:
-    - organizationId
-    - systemId
-    type: object
-  requests.ClerkRequest:
-    properties:
-      clerkId:
-        example: CLERK001
-        type: string
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      systemId:
-        example: SYS001
-        type: string
-    required:
-    - clerkId
-    - organizationId
-    - systemId
-    type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
     properties:
@@ -4606,6 +4578,68 @@ definitions:
         type: integer
     type: object
   responses.PartQtyInfoResponse:
+    properties:
+      averageCost:
+        type: number
+      cost:
+        type: number
+      lastCost:
+        type: number
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      maxOrderQty:
+        type: number
+      minOrderQty:
+        type: number
+      partNumber:
+        type: string
+      quantityAvailable:
+        type: number
+      quantityCommitted:
+        type: number
+      quantityOnHand:
+        type: number
+      quantityOnOrder:
+        type: number
+      reorderLevel:
+        type: number
+      reorderQty:
+        type: number
+    type: object
+  responses.PartsKitItemResponse:
+    properties:
+      cost:
+        type: number
+      description:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: number
+    type: object
+  responses.PartsKitResponse:
+    properties:
+      active:
+        type: boolean
+      description:
+        type: string
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/responses.PartsKitItemResponse'
+        type: array
+      lastModified:
+        type: string
+      totalCost:
+        type: number
+      totalPrice:
+        type: number
+    type: object
   responses.PaymentListResponse:
     properties:
       data:
@@ -4718,74 +4752,6 @@ definitions:
         type: string
       totalCount:
         type: integer
-    type: object
-  responses.RedisGetResponse:
-    properties:
-      averageCost:
-        type: number
-      cost:
-        type: number
-      lastCost:
-        type: number
-      lastModified:
-        type: string
-      locationCode:
-        type: string
-      maxOrderQty:
-        type: number
-      minOrderQty:
-        type: number
-      partNumber:
-        type: string
-      quantityAvailable:
-        type: number
-      quantityCommitted:
-        type: number
-      quantityOnHand:
-        type: number
-      quantityOnOrder:
-        type: number
-      reorderLevel:
-        type: number
-      reorderQty:
-        type: number
-    type: object
-  responses.PartsKitItemResponse:
-    properties:
-      cost:
-        type: number
-      description:
-        type: string
-      partNumber:
-        type: string
-      price:
-        type: number
-      quantity:
-        type: number
-    type: object
-  responses.PartsKitResponse:
-    properties:
-      active:
-        type: boolean
-      description:
-        type: string
-      id:
-        type: string
-      items:
-        items:
-          $ref: '#/definitions/responses.PartsKitItemResponse'
-        type: array
-      lastModified:
-        type: string
-      totalCost:
-        type: number
-      totalPrice:
-        type: number
-    type: object
-  responses.PaymentInitiationResponse:
-    properties:
-      data:
-        $ref: '#/definitions/dme.PaymentInitiationResponse'
     type: object
   responses.PurchaseOrderLineResponse:
     properties:
@@ -10232,7 +10198,6 @@ paths:
       summary: List received special orders
       tags:
       - Inventory
-      - Generic
   /invoices/batch/submit:
     post:
       consumes:
