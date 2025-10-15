@@ -4715,11 +4715,33 @@ definitions:
     type: object
   responses.ServiceOPCategoryCodesResponse:
     properties:
-      data: {}
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      opCodes:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      pageSize:
+        type: integer
     type: object
   responses.ServiceOpCodesResponse:
     properties:
-      data: {}
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      opCodes:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      pageSize:
+        type: integer
     type: object
   responses.ServiceOperationDescriptionsResponse:
     properties:
@@ -4731,7 +4753,18 @@ definitions:
     type: object
   responses.ServiceWOCategoryCodesResponse:
     properties:
-      data: {}
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      opCodes:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      pageSize:
+        type: integer
     type: object
   responses.SpecialOrderResponse:
     properties:
