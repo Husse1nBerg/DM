@@ -361,7 +361,7 @@ func (h *EstimateHandler) RetrieveEstimatesList(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertEstimateList(dmeResponse.Content)
+	response := responses.ConvertEstimateList(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
