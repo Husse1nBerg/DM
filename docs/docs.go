@@ -17468,13 +17468,37 @@ const docTemplate = `{
         },
         "requests.EstimateRetrieveListRequest": {
             "type": "object",
+            "required": [
+                "page",
+                "pageSize"
+            ],
             "properties": {
+                "detail": {
+                    "type": "boolean"
+                },
+                "lastUpdateDate": {
+                    "type": "string"
+                },
+                "lastUpdateTime": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "pageSize": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
                 "status": {
                     "type": "string"
                 },
-                "withDetail": {
-                    "description": "Add fields as needed based on API requirements",
-                    "type": "boolean"
+                "woIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
