@@ -491,6 +491,58 @@ func (h *WorkOrderHandler) RetrieveWorkOrderOperations(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// @Summary Retrieve all work order operations
+// @Description Retrieves a list of all Operation Codes (not filtered by USE.ONLINE)
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param request body requests.RetrieveAllOperationsRequest true "Pagination parameters"
+// @Success 200 {object} responses.WorkOrderAllOperationsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/operations/all [post]
+func (h *WorkOrderHandler) RetrieveAllWorkOrderOperations(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.RetrieveAllOperationsRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveAllWorkOrderOperations(ctx, req.Page, req.PageSize, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve all work order operations",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderAllOperations(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
 // @Summary Retrieve completed work orders
 // @Description Retrieves work orders completed on a specific date
 // @Tags WorkOrders

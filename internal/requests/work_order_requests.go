@@ -156,3 +156,9 @@ type WorkOrderListTimeEntryRequest struct {
 	Page     int    `query:"page" validate:"required,min=1"`
 	PageSize int    `query:"pageSize" validate:"required,min=1,max=100"`
 }
+
+// RetrieveAllOperationsRequest represents a request to retrieve all operation codes with pagination
+type RetrieveAllOperationsRequest struct {
+	Page     int `json:"page" validate:"required,min=0"`
+	PageSize int `json:"pageSize" validate:"required,min=1,max=1000"`
+}
