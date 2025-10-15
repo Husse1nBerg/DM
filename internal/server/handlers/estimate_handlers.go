@@ -335,8 +335,23 @@ func (h *EstimateHandler) RetrieveEstimatesList(c echo.Context) error {
 
 	// Convert request to map for DME API
 	listRequestData := map[string]interface{}{
-		"withDetail": req.WithDetail,
-		"status":     req.Status,
+		"detail":   req.Detail,
+		"page":     req.Page,
+		"pageSize": req.PageSize,
+	}
+	
+	// Add optional fields if provided
+	if req.Status != "" {
+		listRequestData["status"] = req.Status
+	}
+	if req.LastUpdateDate != "" {
+		listRequestData["lastUpdateDate"] = req.LastUpdateDate
+	}
+	if req.LastUpdateTime != "" {
+		listRequestData["lastUpdateTime"] = req.LastUpdateTime
+	}
+	if len(req.WoIds) > 0 {
+		listRequestData["woIds"] = req.WoIds
 	}
 
 	dmeResponse, err := h.server.DME.RetrieveEstimatesList(ctx, listRequestData, orgID, *systemID)

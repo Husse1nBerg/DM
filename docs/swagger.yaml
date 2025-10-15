@@ -1870,11 +1870,28 @@ definitions:
     type: object
   requests.EstimateRetrieveListRequest:
     properties:
+      detail:
+        type: boolean
+      lastUpdateDate:
+        type: string
+      lastUpdateTime:
+        type: string
+      page:
+        minimum: 0
+        type: integer
+      pageSize:
+        maximum: 100
+        minimum: 1
+        type: integer
       status:
         type: string
-      withDetail:
-        description: Add fields as needed based on API requirements
-        type: boolean
+      woIds:
+        items:
+          type: string
+        type: array
+    required:
+    - page
+    - pageSize
     type: object
   requests.EstimateUpdateRequest:
     properties:
