@@ -166,14 +166,21 @@ func (h *EstimateHandler) ListEstimateSublets(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, orgID, *systemID)
+	// Pass empty strings for optional parameters
+	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, "", "", "", orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list estimate sublets",
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertEstimateSublets(dmeResponse)
+	// Convert the typed response to the expected format
+	var genericResponse []interface{}
+	for _, sublet := range dmeResponse {
+		genericResponse = append(genericResponse, sublet)
+	}
+	
+	response := responses.ConvertEstimateSublets(genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -339,7 +346,7 @@ func (h *EstimateHandler) RetrieveEstimatesList(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertEstimateList(dmeResponse)
+	response := responses.ConvertEstimateList(dmeResponse.Content)
 	return c.JSON(http.StatusOK, response)
 }
 

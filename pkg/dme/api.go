@@ -737,16 +737,21 @@ func (c *Client) UpdateWorkOrder(ctx context.Context, workOrderData map[string]i
 	return updatedWorkOrder, nil
 }
 
-// RetrieveWorkOrderOperations retrieves available operations for work orders
-func (c *Client) RetrieveWorkOrderOperations(ctx context.Context, organizationID uuid.UUID, systemID string) ([]WorkOrderOperation, error) {
-	var result []WorkOrderOperation
+// RetrieveWorkOrderOperations retrieves available operations for work orders (filtered by USE.ONLINE)
+func (c *Client) RetrieveWorkOrderOperations(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*OperationsListResponse, error) {
+	var result OperationsListResponse
 	endpoint := "/Service/WorkOrders/RetrieveOperations"
+
+	payload := PaginationRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
 
 	err := c.DoJSONRequest(
 		ctx,
-		http.MethodGet,
+		http.MethodPost,
 		endpoint,
-		nil,
+		payload,
 		&result,
 		organizationID,
 		systemID,
@@ -756,7 +761,34 @@ func (c *Client) RetrieveWorkOrderOperations(ctx context.Context, organizationID
 		return nil, fmt.Errorf("failed to retrieve work order operations: %w", err)
 	}
 
-	return result, nil
+	return &result, nil
+}
+
+// RetrieveAllWorkOrderOperations retrieves all operation codes (not filtered by USE.ONLINE)
+func (c *Client) RetrieveAllWorkOrderOperations(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*OperationsListResponse, error) {
+	var result OperationsListResponse
+	endpoint := "/Service/WorkOrders/RetrieveAllOperations"
+
+	payload := PaginationRequest{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		payload,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve all work order operations: %w", err)
+	}
+
+	return &result, nil
 }
 
 // RetrieveCompletedWorkOrders retrieves work orders completed on a specific date
@@ -814,6 +846,37 @@ type DeleteOperationResponse struct {
 	Message string `json:"message"`
 }
 
+// RetrieveWorkOrderParts retrieves a list of part entries for a specific Work Order and Operation Code
+func (c *Client) RetrieveWorkOrderParts(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderDetailPartEntry, error) {
+	var result []WorkOrderDetailPartEntry
+	
+	params := map[string]string{
+		"WorkOrderId": workOrderID,
+	}
+	
+	if opcode != "" {
+		params["Opcode"] = opcode
+	}
+	
+	endpoint := "/Service/WorkOrders/RetrieveParts"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order parts: %w", err)
+	}
+
+	return result, nil
+}
+
 // DeleteWorkOrderOperation deletes an operation from a work order
 func (c *Client) DeleteWorkOrderOperation(ctx context.Context, workOrderId string, operationCode string, organizationID uuid.UUID, systemID string) (*DeleteOperationResponse, error) {
 	var result DeleteOperationResponse
@@ -842,8 +905,23 @@ func (c *Client) DeleteWorkOrderOperation(ctx context.Context, workOrderId strin
 }
 
 // ListWorkOrderSublets retrieves sublet purchase orders for work orders
-func (c *Client) ListWorkOrderSublets(ctx context.Context, organizationID uuid.UUID, systemID string) ([]interface{}, error) {
-	var result []interface{}
+func (c *Client) ListWorkOrderSublets(ctx context.Context, workOrderID string, opcode string, vendorID string, organizationID uuid.UUID, systemID string) ([]SubletPurchaseOrder, error) {
+	var result []SubletPurchaseOrder
+	
+	params := make(map[string]string)
+	
+	if workOrderID != "" {
+		params["WorkOrderId"] = workOrderID
+	}
+	
+	if opcode != "" {
+		params["Opcode"] = opcode
+	}
+	
+	if vendorID != "" {
+		params["VendorId"] = vendorID
+	}
+	
 	endpoint := "/Service/WorkOrders/Sublets/List"
 
 	err := c.DoJSONRequest(
@@ -854,7 +932,7 @@ func (c *Client) ListWorkOrderSublets(ctx context.Context, organizationID uuid.U
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list work order sublets: %w", err)
@@ -864,8 +942,14 @@ func (c *Client) ListWorkOrderSublets(ctx context.Context, organizationID uuid.U
 }
 
 // RetrieveWorkOrderGroupDescriptions retrieves a list of work order group descriptions
-func (c *Client) RetrieveWorkOrderGroupDescriptions(ctx context.Context, organizationID uuid.UUID, systemID string) ([]interface{}, error) {
-	var result []interface{}
+func (c *Client) RetrieveWorkOrderGroupDescriptions(ctx context.Context, workOrderID string, organizationID uuid.UUID, systemID string) ([]SubletPurchaseOrder, error) {
+	var result []SubletPurchaseOrder
+	
+	params := make(map[string]string)
+	if workOrderID != "" {
+		params["WorkOrderId"] = workOrderID
+	}
+	
 	endpoint := "/Service/WorkOrders/RetrieveGroupDescription"
 
 	err := c.DoJSONRequest(
@@ -876,7 +960,7 @@ func (c *Client) RetrieveWorkOrderGroupDescriptions(ctx context.Context, organiz
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve work order group descriptions: %w", err)
@@ -930,9 +1014,24 @@ func (c *Client) SubmitWorkOrderTimeEntry(ctx context.Context, timeEntry map[str
 }
 
 // ListWorkOrderTimeEntries lists time entries for work orders
-func (c *Client) ListWorkOrderTimeEntries(ctx context.Context, asOfDate string, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
-	var result interface{}
-	endpoint := fmt.Sprintf("/Service/WorkOrders/ListTimeEntry?AsOfDate=%s&Page=%d&PageSize=%d", asOfDate, page, pageSize)
+func (c *Client) ListWorkOrderTimeEntries(ctx context.Context, startDate string, endDate string, page int, pageSize int, listName string, detail bool, organizationID uuid.UUID, systemID string) (*TimeEntryListResponse, error) {
+	var result TimeEntryListResponse
+	
+	params := make(map[string]string)
+	params["StartDate"] = startDate
+	params["Page"] = fmt.Sprintf("%d", page)
+	params["PageSize"] = fmt.Sprintf("%d", pageSize)
+	params["Detail"] = fmt.Sprintf("%t", detail)
+	
+	if endDate != "" {
+		params["EndDate"] = endDate
+	}
+	
+	if listName != "" {
+		params["ListName"] = listName
+	}
+	
+	endpoint := "/Service/WorkOrders/ListTimeEntry"
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -942,7 +1041,7 @@ func (c *Client) ListWorkOrderTimeEntries(ctx context.Context, asOfDate string, 
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list work order time entries: %w", err)
@@ -952,9 +1051,19 @@ func (c *Client) ListWorkOrderTimeEntries(ctx context.Context, asOfDate string, 
 }
 
 // ListNewOrChangedWorkOrders searches for work orders created or changed as of a date
-func (c *Client) ListNewOrChangedWorkOrders(ctx context.Context, asOfDate string, page int, pageSize int, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
+func (c *Client) ListNewOrChangedWorkOrders(ctx context.Context, lastUpdate string, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
 	var result WorkOrderList
-	endpoint := fmt.Sprintf("/Service/WorkOrders/ListNewOrChanged?AsOfDate=%s&Page=%d&PageSize=%d", asOfDate, page, pageSize)
+	
+	params := make(map[string]string)
+	params["LastUpdate"] = lastUpdate
+	params["Page"] = fmt.Sprintf("%d", page)
+	params["PageSize"] = fmt.Sprintf("%d", pageSize)
+	
+	if listName != "" {
+		params["ListName"] = listName
+	}
+	
+	endpoint := "/Service/WorkOrders/ListNewOrChanged"
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -964,7 +1073,7 @@ func (c *Client) ListNewOrChangedWorkOrders(ctx context.Context, asOfDate string
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list new or changed work orders: %w", err)
@@ -1062,9 +1171,55 @@ func (c *Client) EstimateRetrieve(ctx context.Context, estimateID string, detail
 	return &result, nil
 }
 
+// RetrieveEstimateParts retrieves a list of part entries for a specific Estimate and Operation Code
+func (c *Client) RetrieveEstimateParts(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderDetailPartEntry, error) {
+	var result []WorkOrderDetailPartEntry
+	
+	params := map[string]string{
+		"EstimatesId": estimateID,
+	}
+	
+	if opcode != "" {
+		params["Opcode"] = opcode
+	}
+	
+	endpoint := "/Service/Estimates/RetrieveParts"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate parts: %w", err)
+	}
+
+	return result, nil
+}
+
 // ListEstimateSublets retrieves sublet purchase orders for estimates
-func (c *Client) ListEstimateSublets(ctx context.Context, organizationID uuid.UUID, systemID string) ([]interface{}, error) {
-	var result []interface{}
+func (c *Client) ListEstimateSublets(ctx context.Context, workOrderID string, opcode string, vendorID string, organizationID uuid.UUID, systemID string) ([]SubletPurchaseOrder, error) {
+	var result []SubletPurchaseOrder
+	
+	params := make(map[string]string)
+	
+	if workOrderID != "" {
+		params["WorkOrderId"] = workOrderID
+	}
+	
+	if opcode != "" {
+		params["Opcode"] = opcode
+	}
+	
+	if vendorID != "" {
+		params["VendorId"] = vendorID
+	}
+	
 	endpoint := "/Service/Estimates/Sublets/List"
 
 	err := c.DoJSONRequest(
@@ -1075,7 +1230,7 @@ func (c *Client) ListEstimateSublets(ctx context.Context, organizationID uuid.UU
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list estimate sublets: %w", err)
@@ -1141,8 +1296,8 @@ func (c *Client) DeleteEstimateOperation(ctx context.Context, estimateId string,
 }
 
 // RetrieveEstimatesList retrieves a list of estimates with detail or summary information
-func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[string]interface{}, organizationID uuid.UUID, systemID string) ([]WorkOrder, error) {
-	var result []WorkOrder
+func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
+	var result WorkOrderList
 	endpoint := "/Service/Estimates/RetrieveList"
 
 	err := c.DoJSONRequest(
@@ -1159,7 +1314,7 @@ func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[stri
 		return nil, fmt.Errorf("failed to retrieve estimates list: %w", err)
 	}
 
-	return result, nil
+	return &result, nil
 }
 
 // UpdateEstimate updates an estimate
@@ -1201,9 +1356,19 @@ func (c *Client) UpdateEstimate(ctx context.Context, estimateData map[string]int
 // -----
 
 // ListNewOrChangedOpCodes searches for operation codes created or changed as of a date
-func (c *Client) ListNewOrChangedOpCodes(ctx context.Context, asOfDate string, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
-	var result interface{}
-	endpoint := fmt.Sprintf("/Service/ListNewOrChangedOpCodes?AsOfDate=%s&Page=%d&PageSize=%d", asOfDate, page, pageSize)
+func (c *Client) ListNewOrChangedOpCodes(ctx context.Context, lastUpdate string, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*OpCodeListResponse, error) {
+	var result OpCodeListResponse
+	
+	params := make(map[string]string)
+	params["LastUpdate"] = lastUpdate
+	params["Page"] = fmt.Sprintf("%d", page)
+	params["PageSize"] = fmt.Sprintf("%d", pageSize)
+	
+	if listName != "" {
+		params["ListName"] = listName
+	}
+	
+	endpoint := "/Service/ListNewOrChangedOpCodes"
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -1213,7 +1378,7 @@ func (c *Client) ListNewOrChangedOpCodes(ctx context.Context, asOfDate string, p
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list new or changed operation codes: %w", err)
@@ -1223,9 +1388,18 @@ func (c *Client) ListNewOrChangedOpCodes(ctx context.Context, asOfDate string, p
 }
 
 // ListWOCategoryCodes returns a list of work order category codes
-func (c *Client) ListWOCategoryCodes(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
-	var result interface{}
-	endpoint := fmt.Sprintf("/Service/ListWOCategoryCodes?Page=%d&PageSize=%d", page, pageSize)
+func (c *Client) ListWOCategoryCodes(ctx context.Context, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*OpCodeListResponse, error) {
+	var result OpCodeListResponse
+	
+	params := make(map[string]string)
+	params["Page"] = fmt.Sprintf("%d", page)
+	params["PageSize"] = fmt.Sprintf("%d", pageSize)
+	
+	if listName != "" {
+		params["ListName"] = listName
+	}
+	
+	endpoint := "/Service/ListWOCategoryCodes"
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -1235,7 +1409,7 @@ func (c *Client) ListWOCategoryCodes(ctx context.Context, page int, pageSize int
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list work order category codes: %w", err)
@@ -1245,9 +1419,18 @@ func (c *Client) ListWOCategoryCodes(ctx context.Context, page int, pageSize int
 }
 
 // ListOPCategoryCodes returns a list of operation category codes
-func (c *Client) ListOPCategoryCodes(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*interface{}, error) {
-	var result interface{}
-	endpoint := fmt.Sprintf("/Service/ListOPCategoryCodes?Page=%d&PageSize=%d", page, pageSize)
+func (c *Client) ListOPCategoryCodes(ctx context.Context, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*OpCodeListResponse, error) {
+	var result OpCodeListResponse
+	
+	params := make(map[string]string)
+	params["Page"] = fmt.Sprintf("%d", page)
+	params["PageSize"] = fmt.Sprintf("%d", pageSize)
+	
+	if listName != "" {
+		params["ListName"] = listName
+	}
+	
+	endpoint := "/Service/ListOPCategoryCodes"
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -1257,7 +1440,7 @@ func (c *Client) ListOPCategoryCodes(ctx context.Context, page int, pageSize int
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list operation category codes: %w", err)
@@ -1267,8 +1450,14 @@ func (c *Client) ListOPCategoryCodes(ctx context.Context, page int, pageSize int
 }
 
 // RetrieveOperationDescriptions retrieves operation descriptions from the opcode template
-func (c *Client) RetrieveOperationDescriptions(ctx context.Context, organizationID uuid.UUID, systemID string) (*interface{}, error) {
-	var result interface{}
+func (c *Client) RetrieveOperationDescriptions(ctx context.Context, opcode string, organizationID uuid.UUID, systemID string) (*WorkOrderOperation, error) {
+	var result WorkOrderOperation
+	
+	params := make(map[string]string)
+	if opcode != "" {
+		params["Opcode"] = opcode
+	}
+	
 	endpoint := "/Service/OperationDesc"
 
 	err := c.DoJSONRequest(
@@ -1279,7 +1468,7 @@ func (c *Client) RetrieveOperationDescriptions(ctx context.Context, organization
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve operation descriptions: %w", err)
@@ -1289,8 +1478,17 @@ func (c *Client) RetrieveOperationDescriptions(ctx context.Context, organization
 }
 
 // ListTechnicians retrieves a list of technician records
-func (c *Client) ListTechnicians(ctx context.Context, organizationID uuid.UUID, systemID string) (*interface{}, error) {
-	var result interface{}
+func (c *Client) ListTechnicians(ctx context.Context, techID string, activeOnly bool, organizationID uuid.UUID, systemID string) ([]Technician, error) {
+	var result []Technician
+	
+	params := make(map[string]string)
+	
+	if techID != "" {
+		params["TechId"] = techID
+	}
+	
+	params["ActiveOnly"] = fmt.Sprintf("%t", activeOnly)
+	
 	endpoint := "/Service/Technicians"
 
 	err := c.DoJSONRequest(
@@ -1301,13 +1499,13 @@ func (c *Client) ListTechnicians(ctx context.Context, organizationID uuid.UUID, 
 		&result,
 		organizationID,
 		systemID,
-		nil,
+		params,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list technicians: %w", err)
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 // RetrieveSchedule retrieves schedule appointments

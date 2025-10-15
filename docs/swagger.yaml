@@ -925,6 +925,8 @@ definitions:
         type: boolean
       longDesc:
         type: string
+      managerComments:
+        type: string
       opcode:
         type: string
       standardHours:
@@ -12848,6 +12850,11 @@ paths:
       consumes:
       - application/json
       description: Retrieve the operation descriptions from the opcode template
+      parameters:
+      - description: Opcode to retrieve
+        in: query
+        name: Opcode
+        type: string
       produces:
       - application/json
       responses:
