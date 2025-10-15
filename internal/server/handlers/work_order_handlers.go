@@ -478,7 +478,8 @@ func (h *WorkOrderHandler) RetrieveWorkOrderOperations(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveWorkOrderOperations(ctx, orgID, *systemID)
+	// Use default pagination (page 0, pageSize 100) for backwards compatibility
+	dmeResponse, err := h.server.DME.RetrieveWorkOrderOperations(ctx, 0, 100, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve work order operations",
 			zap.Error(err))
@@ -486,7 +487,7 @@ func (h *WorkOrderHandler) RetrieveWorkOrderOperations(c echo.Context) error {
 	}
 
 	// Convert DME response to API response
-	response := responses.ConvertWorkOrderOperations(dmeResponse)
+	response := responses.ConvertWorkOrderOperations(dmeResponse.Content)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -688,14 +689,21 @@ func (h *WorkOrderHandler) ListWorkOrderSublets(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListWorkOrderSublets(ctx, orgID, *systemID)
+	// Pass empty strings for optional parameters
+	dmeResponse, err := h.server.DME.ListWorkOrderSublets(ctx, "", "", "", orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list work order sublets",
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertWorkOrderSublets(dmeResponse)
+	// Convert the typed response to the expected format
+	var genericResponse []interface{}
+	for _, sublet := range dmeResponse {
+		genericResponse = append(genericResponse, sublet)
+	}
+	
+	response := responses.ConvertWorkOrderSublets(genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -731,14 +739,23 @@ func (h *WorkOrderHandler) RetrieveWorkOrderGroupDescriptions(c echo.Context) er
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveWorkOrderGroupDescriptions(ctx, orgID, *systemID)
+	// Get optional WorkOrderId query parameter
+	workOrderID := c.QueryParam("WorkOrderId")
+
+	dmeResponse, err := h.server.DME.RetrieveWorkOrderGroupDescriptions(ctx, workOrderID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve work order group descriptions",
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertWorkOrderGroupDescriptions(dmeResponse)
+	// Convert the typed response to the expected format
+	var genericResponse []interface{}
+	for _, desc := range dmeResponse {
+		genericResponse = append(genericResponse, desc)
+	}
+	
+	response := responses.ConvertWorkOrderGroupDescriptions(genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -912,14 +929,17 @@ func (h *WorkOrderHandler) ListWorkOrderTimeEntries(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListWorkOrderTimeEntries(ctx, req.AsOfDate, req.Page, req.PageSize, orgID, *systemID)
+	// Call with new signature: startDate, endDate, page, pageSize, listName, detail
+	dmeResponse, err := h.server.DME.ListWorkOrderTimeEntries(ctx, req.AsOfDate, "", req.Page, req.PageSize, "", false, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list work order time entries",
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertWorkOrderTimeEntries(dmeResponse)
+	// Convert typed response to interface for the response converter
+	var genericResponse interface{} = dmeResponse
+	response := responses.ConvertWorkOrderTimeEntries(&genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -966,7 +986,8 @@ func (h *WorkOrderHandler) ListNewOrChangedWorkOrders(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListNewOrChangedWorkOrders(ctx, req.AsOfDate, req.Page, req.PageSize, orgID, *systemID)
+	// Pass empty string for optional listName parameter
+	dmeResponse, err := h.server.DME.ListNewOrChangedWorkOrders(ctx, req.AsOfDate, req.Page, req.PageSize, "", orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list new or changed work orders",
 			zap.Error(err))

@@ -11999,6 +11999,14 @@ const docTemplate = `{
                     "Service"
                 ],
                 "summary": "Retrieve operation descriptions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Opcode to retrieve",
+                        "name": "Opcode",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -16124,6 +16132,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "longDesc": {
+                    "type": "string"
+                },
+                "managerComments": {
                     "type": "string"
                 },
                 "opcode": {

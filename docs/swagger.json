@@ -11992,6 +11992,14 @@
                     "Service"
                 ],
                 "summary": "Retrieve operation descriptions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Opcode to retrieve",
+                        "name": "Opcode",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -16117,6 +16125,9 @@
                     "type": "boolean"
                 },
                 "longDesc": {
+                    "type": "string"
+                },
+                "managerComments": {
                     "type": "string"
                 },
                 "opcode": {
