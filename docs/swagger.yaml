@@ -694,23 +694,6 @@ definitions:
       workOrder:
         type: string
     type: object
-  dme.PaymentInitiationResponse:
-    properties:
-      amount:
-        type: number
-      customerId:
-        type: string
-      dmPayClientId:
-        type: string
-      invoiceId:
-        type: string
-      paymentSessionId:
-        type: string
-      paymentUrl:
-        type: string
-      status:
-        type: string
-    type: object
   dme.Rate:
     properties:
       endDate:
@@ -1208,6 +1191,46 @@ definitions:
     - name
     - ownerId
     type: object
+  requests.CashReceipt:
+    properties:
+      ccAuthCode:
+        type: string
+      ccSurcharge:
+        type: number
+      ccSurchargeTax:
+        type: number
+      ccSurchargeTaxIds:
+        items:
+          type: string
+        type: array
+      ccSurchargeTaxSchema:
+        type: string
+      ccTransactionID:
+        type: string
+      ccTransactionTimeStamp:
+        type: string
+      customerId:
+        type: string
+      invPayments:
+        items:
+          $ref: '#/definitions/requests.InvPayment'
+        type: array
+      payType:
+        type: string
+      referenceNum:
+        type: string
+      statementDesc:
+        type: string
+      totalPayment:
+        type: number
+    required:
+    - customerId
+    - invPayments
+    - payType
+    - referenceNum
+    - statementDesc
+    - totalPayment
+    type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
     properties:
@@ -1590,6 +1613,8 @@ definitions:
     - email
     - name
     type: object
+  requests.CreatePaymentSessionRequest:
+    type: object
   requests.CreateRoleRequest:
     properties:
       description:
@@ -1956,18 +1981,26 @@ definitions:
     required:
     - email
     type: object
-  requests.InitiatePaymentRequest:
+  requests.InvPayment:
     properties:
-      amount:
-        type: number
       customerId:
+        type: string
+      depositType:
+        type: string
+      description:
         type: string
       invoiceId:
         type: string
+      locationCode:
+        type: string
+      paymentAmt:
+        type: number
     required:
-    - amount
     - customerId
+    - description
     - invoiceId
+    - locationCode
+    - paymentAmt
     type: object
   requests.LinkDMESysIDRequest:
     properties:
@@ -2075,6 +2108,17 @@ definitions:
         type: number
       techDesc:
         type: string
+    type: object
+  requests.PaymentDetailsRequest:
+    properties:
+      payload:
+        type: string
+      payment_data:
+        type: string
+      redirect_result:
+        type: string
+    required:
+    - payment_data
     type: object
   requests.RedisSetRequest:
     properties:
@@ -2300,6 +2344,21 @@ definitions:
     - templateData
     - templateName
     - to
+    type: object
+  requests.SubmitBatchRequest:
+    properties:
+      cashReceipts:
+        items:
+          $ref: '#/definitions/requests.CashReceipt'
+        type: array
+      locationCode:
+        type: string
+      postBatch:
+        type: boolean
+    required:
+    - cashReceipts
+    - locationCode
+    - postBatch
     type: object
   requests.UpdateAddressRequest:
     properties:
@@ -2852,6 +2911,27 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  responses.BatchSubmissionResponse:
+    properties:
+      batch_id:
+        type: string
+      location_code:
+        type: string
+      post_batch:
+        type: boolean
+      post_result:
+        type: string
+      receipt_count:
+        type: integer
+      reference_ids:
+        items:
+          type: string
+        type: array
+      submitted_at:
+        type: string
+      total_amount:
+        type: number
     type: object
   responses.BedrockDetectFormFieldsResponse:
     properties:
@@ -4560,10 +4640,118 @@ definitions:
       totalPrice:
         type: number
     type: object
-  responses.PaymentInitiationResponse:
+  responses.PaymentListResponse:
     properties:
       data:
-        $ref: '#/definitions/dme.PaymentInitiationResponse'
+        items:
+          $ref: '#/definitions/responses.PaymentResponse'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  responses.PaymentResponse:
+    properties:
+      adyenPspReference:
+        type: string
+      adyenSessionId:
+        type: string
+      amount:
+        type: string
+      authCode:
+        type: string
+      authorizationStatus:
+        type: string
+      authorizedAt:
+        type: string
+      batchId:
+        type: string
+      batchPaymentId:
+        type: string
+      batchStatus:
+        type: string
+      completedAt:
+        type: string
+      createdAt:
+        type: string
+      currency:
+        type: string
+      customerId:
+        type: string
+      entityId:
+        type: string
+      entityType:
+        type: string
+      errorCode:
+        type: string
+      errorMessage:
+        type: string
+      failedAt:
+        type: string
+      id:
+        type: string
+      internalNotes:
+        type: string
+      locationCode:
+        type: string
+      marinaId:
+        type: string
+      organizationId:
+        type: string
+      paymentDate:
+        type: string
+      paymentMethod:
+        type: string
+      referenceNumber:
+        type: string
+      status:
+        type: string
+      transactionId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.PaymentResultResponse:
+    properties:
+      pspReference:
+        type: string
+      refusalReason:
+        type: string
+      resultCode:
+        type: string
+    type: object
+  responses.PaymentSessionResponse:
+    properties:
+      clientKey:
+        type: string
+      sessionData:
+        type: string
+      sessionId:
+        type: string
+    type: object
+  responses.PaymentStatsResponse:
+    properties:
+      authorizedCount:
+        type: integer
+      completedCount:
+        type: integer
+      endDate:
+        type: string
+      failedCount:
+        type: integer
+      pendingCount:
+        type: integer
+      startDate:
+        type: string
+      totalCompletedAmount:
+        type: string
+      totalCount:
+        type: integer
     type: object
   responses.PurchaseOrderLineResponse:
     properties:
@@ -4976,6 +5164,13 @@ definitions:
         example: true
         type: boolean
       updatedAt:
+        type: string
+    type: object
+  responses.WebhookResponse:
+    properties:
+      message:
+        type: string
+      status:
         type: string
     type: object
   responses.WorkOrderAllOperationsResponse:
@@ -10004,6 +10199,38 @@ paths:
       summary: List received special orders
       tags:
       - Inventory
+  /invoices/batch/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submits a batch of cash receipts to DME for processing
+      parameters:
+      - description: Batch submission request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BatchSubmissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Submit a batch of payments
+      tags:
+      - Invoices
   /invoices/customer:
     get:
       consumes:
@@ -10035,36 +10262,6 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Get customer invoices
-      tags:
-      - Invoices
-  /invoices/pay:
-    post:
-      consumes:
-      - application/json
-      description: Initiates a payment process for a specific invoice
-      parameters:
-      - description: Payment information
-        in: body
-        name: payment
-        required: true
-        schema:
-          $ref: '#/definitions/requests.InitiatePaymentRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.PaymentInitiationResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Initiate payment for invoice
       tags:
       - Invoices
   /marina-usage-history/{marinaId}/date-range:
@@ -12109,6 +12306,255 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /payments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of payments with optional filtering
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      - description: Filter by status (pending, authorized, completed, failed)
+        in: query
+        name: status
+        type: string
+      - description: Filter by entity type (invoice, boat, customer, etc.)
+        in: query
+        name: entityType
+        type: string
+      - description: Filter by entity ID
+        in: query
+        name: entityId
+        type: string
+      - description: Filter by start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: Filter by end date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: List payments
+      tags:
+      - Payments
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a single payment by its ID
+      parameters:
+      - description: Payment ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payment by ID
+      tags:
+      - Payments
+  /payments/details:
+    post:
+      consumes:
+      - application/json
+      description: Handles payment completion redirects from Adyen
+      parameters:
+      - description: Payment details request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.PaymentDetailsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment result
+          schema:
+            $ref: '#/definitions/responses.PaymentResultResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Handle payment redirect
+      tags:
+      - Payments
+  /payments/entity:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all payments for a specific entity (e.g., invoice, boat)
+      parameters:
+      - description: Entity type (invoice, boat, customer, etc.)
+        in: query
+        name: entityType
+        required: true
+        type: string
+      - description: Entity ID
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.PaymentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payments by entity
+      tags:
+      - Payments
+  /payments/sessions:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new Adyen payment session for processing payments
+      parameters:
+      - description: Payment session request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePaymentSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment session created successfully
+          schema:
+            $ref: '#/definitions/responses.PaymentSessionResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create payment session
+      tags:
+      - Payments
+  /payments/stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves payment statistics for a date range
+      parameters:
+      - description: Start date (YYYY-MM-DD, defaults to 30 days ago)
+        in: query
+        name: startDate
+        type: string
+      - description: End date (YYYY-MM-DD, defaults to today)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payment statistics
+      tags:
+      - Payments
+  /payments/webhooks:
+    post:
+      consumes:
+      - application/json
+      description: Processes incoming webhook notifications from Adyen
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook processed successfully
+          schema:
+            $ref: '#/definitions/responses.WebhookResponse'
+        "401":
+          description: Invalid HMAC signature
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Process webhook
+      tags:
+      - Payments
   /plans/document:
     get:
       consumes:

@@ -23,6 +23,39 @@ type Address struct {
 	DeletedAt  pgtype.Timestamp
 }
 
+type BatchPayment struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	LocationCode   string
+	BatchID        string
+	PostBatch      bool
+	TotalAmount    pgtype.Numeric
+	ReceiptCount   int32
+	Status         string
+	PostResult     *string
+	ReferenceIds   []string
+	SubmittedBy    string
+	SubmittedAt    pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	DeletedAt      pgtype.Timestamptz
+}
+
+type BatchPaymentReceipt struct {
+	ID             uuid.UUID
+	BatchPaymentID uuid.UUID
+	CustomerID     string
+	InvoiceID      string
+	Amount         pgtype.Numeric
+	PaymentMethod  string
+	Reference      string
+	Description    *string
+	PaymentDate    pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
 type Contact struct {
 	ID          uuid.UUID
 	MarinaID    uuid.UUID
@@ -332,6 +365,41 @@ type PasswordRecovery struct {
 	ExpiresAt pgtype.Timestamp
 	Used      *bool
 	CreatedAt pgtype.Timestamp
+}
+
+type Payment struct {
+	ID                  uuid.UUID
+	MarinaID            uuid.UUID
+	OrganizationID      uuid.UUID
+	EntityType          *string
+	EntityID            *string
+	Amount              pgtype.Numeric
+	Currency            string
+	PaymentMethod       *string
+	ReferenceNumber     string
+	Status              string
+	AuthorizationStatus *string
+	BatchStatus         *string
+	AdyenPspReference   *string
+	AdyenSessionID      *string
+	BatchID             *string
+	BatchPaymentID      uuid.UUID
+	PaymentDate         pgtype.Timestamptz
+	AuthorizedAt        pgtype.Timestamptz
+	CompletedAt         pgtype.Timestamptz
+	FailedAt            pgtype.Timestamptz
+	CustomerID          *string
+	LocationCode        *string
+	TransactionID       *string
+	AuthCode            *string
+	AdyenWebhookPayload *string
+	DmeBatchRequest     *string
+	DmeBatchResponse    *string
+	ErrorMessage        *string
+	ErrorCode           *string
+	InternalNotes       *string
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
 }
 
 type Role struct {

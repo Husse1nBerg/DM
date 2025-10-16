@@ -849,15 +849,15 @@ type DeleteOperationResponse struct {
 // RetrieveWorkOrderParts retrieves a list of part entries for a specific Work Order and Operation Code
 func (c *Client) RetrieveWorkOrderParts(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderDetailPartEntry, error) {
 	var result []WorkOrderDetailPartEntry
-	
+
 	params := map[string]string{
 		"WorkOrderId": workOrderID,
 	}
-	
+
 	if opcode != "" {
 		params["Opcode"] = opcode
 	}
-	
+
 	endpoint := "/Service/WorkOrders/RetrieveParts"
 
 	err := c.DoJSONRequest(
@@ -907,21 +907,21 @@ func (c *Client) DeleteWorkOrderOperation(ctx context.Context, workOrderId strin
 // ListWorkOrderSublets retrieves sublet purchase orders for work orders
 func (c *Client) ListWorkOrderSublets(ctx context.Context, workOrderID string, opcode string, vendorID string, organizationID uuid.UUID, systemID string) ([]SubletPurchaseOrder, error) {
 	var result []SubletPurchaseOrder
-	
+
 	params := make(map[string]string)
-	
+
 	if workOrderID != "" {
 		params["WorkOrderId"] = workOrderID
 	}
-	
+
 	if opcode != "" {
 		params["Opcode"] = opcode
 	}
-	
+
 	if vendorID != "" {
 		params["VendorId"] = vendorID
 	}
-	
+
 	endpoint := "/Service/WorkOrders/Sublets/List"
 
 	err := c.DoJSONRequest(
@@ -944,12 +944,12 @@ func (c *Client) ListWorkOrderSublets(ctx context.Context, workOrderID string, o
 // RetrieveWorkOrderGroupDescriptions retrieves a list of work order group descriptions
 func (c *Client) RetrieveWorkOrderGroupDescriptions(ctx context.Context, workOrderID string, organizationID uuid.UUID, systemID string) ([]SubletPurchaseOrder, error) {
 	var result []SubletPurchaseOrder
-	
+
 	params := make(map[string]string)
 	if workOrderID != "" {
 		params["WorkOrderId"] = workOrderID
 	}
-	
+
 	endpoint := "/Service/WorkOrders/RetrieveGroupDescription"
 
 	err := c.DoJSONRequest(
@@ -1016,21 +1016,21 @@ func (c *Client) SubmitWorkOrderTimeEntry(ctx context.Context, timeEntry map[str
 // ListWorkOrderTimeEntries lists time entries for work orders
 func (c *Client) ListWorkOrderTimeEntries(ctx context.Context, startDate string, endDate string, page int, pageSize int, listName string, detail bool, organizationID uuid.UUID, systemID string) (*TimeEntryListResponse, error) {
 	var result TimeEntryListResponse
-	
+
 	params := make(map[string]string)
 	params["StartDate"] = startDate
 	params["Page"] = fmt.Sprintf("%d", page)
 	params["PageSize"] = fmt.Sprintf("%d", pageSize)
 	params["Detail"] = fmt.Sprintf("%t", detail)
-	
+
 	if endDate != "" {
 		params["EndDate"] = endDate
 	}
-	
+
 	if listName != "" {
 		params["ListName"] = listName
 	}
-	
+
 	endpoint := "/Service/WorkOrders/ListTimeEntry"
 
 	err := c.DoJSONRequest(
@@ -1053,16 +1053,16 @@ func (c *Client) ListWorkOrderTimeEntries(ctx context.Context, startDate string,
 // ListNewOrChangedWorkOrders searches for work orders created or changed as of a date
 func (c *Client) ListNewOrChangedWorkOrders(ctx context.Context, lastUpdate string, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*WorkOrderList, error) {
 	var result WorkOrderList
-	
+
 	params := make(map[string]string)
 	params["LastUpdate"] = lastUpdate
 	params["Page"] = fmt.Sprintf("%d", page)
 	params["PageSize"] = fmt.Sprintf("%d", pageSize)
-	
+
 	if listName != "" {
 		params["ListName"] = listName
 	}
-	
+
 	endpoint := "/Service/WorkOrders/ListNewOrChanged"
 
 	err := c.DoJSONRequest(
@@ -1174,15 +1174,15 @@ func (c *Client) EstimateRetrieve(ctx context.Context, estimateID string, detail
 // RetrieveEstimateParts retrieves a list of part entries for a specific Estimate and Operation Code
 func (c *Client) RetrieveEstimateParts(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderDetailPartEntry, error) {
 	var result []WorkOrderDetailPartEntry
-	
+
 	params := map[string]string{
 		"EstimatesId": estimateID,
 	}
-	
+
 	if opcode != "" {
 		params["Opcode"] = opcode
 	}
-	
+
 	endpoint := "/Service/Estimates/RetrieveParts"
 
 	err := c.DoJSONRequest(
@@ -1205,21 +1205,21 @@ func (c *Client) RetrieveEstimateParts(ctx context.Context, estimateID string, o
 // ListEstimateSublets retrieves sublet purchase orders for estimates
 func (c *Client) ListEstimateSublets(ctx context.Context, workOrderID string, opcode string, vendorID string, organizationID uuid.UUID, systemID string) ([]SubletPurchaseOrder, error) {
 	var result []SubletPurchaseOrder
-	
+
 	params := make(map[string]string)
-	
+
 	if workOrderID != "" {
 		params["WorkOrderId"] = workOrderID
 	}
-	
+
 	if opcode != "" {
 		params["Opcode"] = opcode
 	}
-	
+
 	if vendorID != "" {
 		params["VendorId"] = vendorID
 	}
-	
+
 	endpoint := "/Service/Estimates/Sublets/List"
 
 	err := c.DoJSONRequest(
@@ -1358,16 +1358,16 @@ func (c *Client) UpdateEstimate(ctx context.Context, estimateData map[string]int
 // ListNewOrChangedOpCodes searches for operation codes created or changed as of a date
 func (c *Client) ListNewOrChangedOpCodes(ctx context.Context, lastUpdate string, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*OpCodeListResponse, error) {
 	var result OpCodeListResponse
-	
+
 	params := make(map[string]string)
 	params["LastUpdate"] = lastUpdate
 	params["Page"] = fmt.Sprintf("%d", page)
 	params["PageSize"] = fmt.Sprintf("%d", pageSize)
-	
+
 	if listName != "" {
 		params["ListName"] = listName
 	}
-	
+
 	endpoint := "/Service/ListNewOrChangedOpCodes"
 
 	err := c.DoJSONRequest(
@@ -1390,15 +1390,15 @@ func (c *Client) ListNewOrChangedOpCodes(ctx context.Context, lastUpdate string,
 // ListWOCategoryCodes returns a list of work order category codes
 func (c *Client) ListWOCategoryCodes(ctx context.Context, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*OpCodeListResponse, error) {
 	var result OpCodeListResponse
-	
+
 	params := make(map[string]string)
 	params["Page"] = fmt.Sprintf("%d", page)
 	params["PageSize"] = fmt.Sprintf("%d", pageSize)
-	
+
 	if listName != "" {
 		params["ListName"] = listName
 	}
-	
+
 	endpoint := "/Service/ListWOCategoryCodes"
 
 	err := c.DoJSONRequest(
@@ -1421,15 +1421,15 @@ func (c *Client) ListWOCategoryCodes(ctx context.Context, page int, pageSize int
 // ListOPCategoryCodes returns a list of operation category codes
 func (c *Client) ListOPCategoryCodes(ctx context.Context, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*OpCodeListResponse, error) {
 	var result OpCodeListResponse
-	
+
 	params := make(map[string]string)
 	params["Page"] = fmt.Sprintf("%d", page)
 	params["PageSize"] = fmt.Sprintf("%d", pageSize)
-	
+
 	if listName != "" {
 		params["ListName"] = listName
 	}
-	
+
 	endpoint := "/Service/ListOPCategoryCodes"
 
 	err := c.DoJSONRequest(
@@ -1452,12 +1452,12 @@ func (c *Client) ListOPCategoryCodes(ctx context.Context, page int, pageSize int
 // RetrieveOperationDescriptions retrieves operation descriptions from the opcode template
 func (c *Client) RetrieveOperationDescriptions(ctx context.Context, opcode string, organizationID uuid.UUID, systemID string) (*WorkOrderOperation, error) {
 	var result WorkOrderOperation
-	
+
 	params := make(map[string]string)
 	if opcode != "" {
 		params["Opcode"] = opcode
 	}
-	
+
 	endpoint := "/Service/OperationDesc"
 
 	err := c.DoJSONRequest(
@@ -1480,15 +1480,15 @@ func (c *Client) RetrieveOperationDescriptions(ctx context.Context, opcode strin
 // ListTechnicians retrieves a list of technician records
 func (c *Client) ListTechnicians(ctx context.Context, techID string, activeOnly bool, organizationID uuid.UUID, systemID string) ([]Technician, error) {
 	var result []Technician
-	
+
 	params := make(map[string]string)
-	
+
 	if techID != "" {
 		params["TechId"] = techID
 	}
-	
+
 	params["ActiveOnly"] = fmt.Sprintf("%t", activeOnly)
-	
+
 	endpoint := "/Service/Technicians"
 
 	err := c.DoJSONRequest(
@@ -1769,7 +1769,7 @@ func generatePaymentSessionID() string {
 // RetrieveFuel retrieves one or all fuel inventory records
 func (c *Client) RetrieveFuel(ctx context.Context, fuelID string, organizationID uuid.UUID, systemID string) ([]FuelInventory, error) {
 	var result []FuelInventory
-	
+
 	var endpoint string
 	if fuelID != "" {
 		endpoint = fmt.Sprintf("/Inventory/RetrieveFuel?Id=%s", fuelID)
@@ -1834,6 +1834,72 @@ func (c *Client) RetrieveOnlinePartsList(ctx context.Context, organizationID uui
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve online parts list: %w", err)
 	}
+
+	return result, nil
+}
+
+// getStringFromMap safely extracts a string value from a map
+func getStringFromMap(m map[string]interface{}, key string) string {
+	if val, ok := m[key]; ok {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return ""
+}
+
+// SubmitBatch submits a batch of cash receipts to DME
+func (c *Client) SubmitBatch(ctx context.Context, locationCode string, cashReceipts []CashReceipt, postBatch bool, orgID uuid.UUID, systemID string) (*BatchSubmissionResponse, error) {
+	// Prepare batch data
+	batchData := map[string]interface{}{
+		"locationCode": locationCode,
+		"postBatch":    postBatch,
+		"cashReceipts": cashReceipts,
+	}
+
+	// Make the API call to DME
+	var dmeResponse map[string]interface{}
+	endpoint := "/AR/SubmitBatch"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		batchData,
+		&dmeResponse,
+		orgID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit batch: %w", err)
+	}
+
+	// Convert DME response to our response format
+	result := &BatchSubmissionResponse{
+		BatchID:      getStringFromMap(dmeResponse, "batchId"),
+		LocationCode: locationCode,
+		PostBatch:    postBatch,
+		PostResult:   getStringFromMap(dmeResponse, "postResult"),
+		SubmittedAt:  time.Now(),
+	}
+
+	// Extract reference IDs if available
+	if refIDs, ok := dmeResponse["referenceIds"].([]interface{}); ok {
+		for _, refID := range refIDs {
+			if refIDStr, ok := refID.(string); ok {
+				result.ReferenceIDs = append(result.ReferenceIDs, refIDStr)
+			}
+		}
+	}
+
+	// Calculate total amount and receipt count
+	totalAmount := 0.0
+	for _, receipt := range cashReceipts {
+		totalAmount += receipt.TotalPayment
+	}
+	result.TotalAmount = totalAmount
+	result.ReceiptCount = len(cashReceipts)
 
 	return result, nil
 }
@@ -1929,7 +1995,7 @@ func (c *Client) RetrievePurchaseOrder(ctx context.Context, poID string, organiz
 // ListPurchaseOrders retrieves a list of purchase orders by single date or date range
 func (c *Client) ListPurchaseOrders(ctx context.Context, startDate string, endDate string, organizationID uuid.UUID, systemID string) ([]PurchaseOrder, error) {
 	var result []PurchaseOrder
-	
+
 	var endpoint string
 	if endDate != "" {
 		endpoint = fmt.Sprintf("/Inventory/PurchaseOrders/PurchaseOrdersList?StartDate=%s&EndDate=%s", startDate, endDate)
@@ -2092,4 +2158,43 @@ func (c *Client) RetrieveInventory(ctx context.Context, partNumbers []string, or
 	}
 
 	return result, nil
+}
+
+// InvPayment represents an invoice payment within a cash receipt
+type InvPayment struct {
+	InvoiceID    string  `json:"invoiceId"`
+	LocationCode string  `json:"locationCode"`
+	DepositType  string  `json:"depositType"`
+	PaymentAmt   float64 `json:"paymentAmt"`
+	Description  string  `json:"description"`
+	CustomerID   string  `json:"customerId"`
+}
+
+// CashReceipt represents a cash receipt for batch submission
+type CashReceipt struct {
+	CustomerID             string       `json:"customerId"`
+	ReferenceNum           string       `json:"referenceNum"`
+	PayType                string       `json:"payType"`
+	TotalPayment           float64      `json:"totalPayment"`
+	StatementDesc          string       `json:"statementDesc"`
+	CCAuthCode             string       `json:"ccAuthCode"`
+	CCTransactionID        string       `json:"ccTransactionID"`
+	CCTransactionTimeStamp string       `json:"ccTransactionTimeStamp"`
+	CCSurcharge            float64      `json:"ccSurcharge"`
+	CCSurchargeTax         float64      `json:"ccSurchargeTax"`
+	CCSurchargeTaxSchema   string       `json:"ccSurchargeTaxSchema"`
+	CCSurchargeTaxIds      []string     `json:"ccSurchargeTaxIds"`
+	InvPayments            []InvPayment `json:"invPayments"`
+}
+
+// BatchSubmissionResponse represents the response from DME batch submission
+type BatchSubmissionResponse struct {
+	BatchID      string    `json:"batchId"`
+	LocationCode string    `json:"locationCode"`
+	PostBatch    bool      `json:"postBatch"`
+	ReferenceIDs []string  `json:"referenceIds"`
+	PostResult   string    `json:"postResult"`
+	SubmittedAt  time.Time `json:"submittedAt"`
+	TotalAmount  float64   `json:"totalAmount"`
+	ReceiptCount int       `json:"receiptCount"`
 }
