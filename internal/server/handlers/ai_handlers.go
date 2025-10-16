@@ -2,13 +2,18 @@ package handlers
 
 import (
 	"bytes"
-	"encoding/base64"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/textract"
+	"github.com/aws/aws-sdk-go-v2/service/textract/types"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
@@ -128,7 +133,7 @@ func (h *AIHandler) RewriteHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, bedrockResponse)
 }
 
-// DetectFormFieldsHandler detects form fields in an image
+// DetectFormFieldsHandler detects form fields in an image using AWS Textract
 //
 // @Summary Detect form fields
 // @Description Detect form fields in an image (supports jpg, jpeg, png) and return structured JSON
@@ -166,140 +171,229 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to read file content").JSON(c)
 	}
 
-	// Llama3 Vision uses a different format: prompt + image array
-	// Format the prompt in Llama3's instruction template with image token
-	userPrompt := `You are looking at a form document image. Your task is to identify every form field and determine its EXACT position by carefully observing where it appears in the image.
+	// Create AWS configuration with credentials
+	awsRegion := os.Getenv("AWS_REGION")
+	if awsRegion == "" {
+		awsRegion = "us-east-1"
+	}
 
-CRITICAL: Look at the ACTUAL image and measure where each field is positioned. Do NOT use template/example coordinates.
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(awsRegion),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			os.Getenv("AWS_ACCESS_KEY_ID"),
+			os.Getenv("AWS_SECRET_ACCESS_KEY"),
+			"",
+		)),
+	)
+	if err != nil {
+		logger.Zap.Errorw("Failed to load AWS config", "error", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to configure AWS client").JSON(c)
+	}
 
-Step 1: Determine the image dimensions
-- Measure or estimate the image width and height in pixels
-- Common sizes: Letter (850x1100), A4 (595x842)
+	// Create Textract client
+	textractClient := textract.NewFromConfig(cfg)
 
-Step 2: Locate each field by observing the image
-For each form field you see, determine its position:
-- Measure from the TOP-LEFT corner (0,0) to the field
-- If a field appears in the MIDDLE of the page, y should be around 500-600 (for 1100px height)
-- If a field appears NEAR THE BOTTOM, y should be 700-900+ (for 1100px height)
-- If a field appears at the TOP, y should be 50-200
-
-IMPORTANT POSITION GUIDELINES:
-- Top third of page: y = 0 to 366px (normalized: 0 to 0.33)
-- Middle third: y = 367 to 733px (normalized: 0.33 to 0.67)
-- Bottom third: y = 734 to 1100px (normalized: 0.67 to 1.0)
-
-For signatures and dates which typically appear NEAR THE BOTTOM of forms:
-- These should have y values of 700+ pixels (normalized 0.64+)
-
-Step 3: Calculate normalized coordinates
-- bboxNorm.x = bbox.x / pageSize.widthPx
-- bboxNorm.y = bbox.y / pageSize.heightPx
-- bboxNorm.w = bbox.w / pageSize.widthPx
-- bboxNorm.h = bbox.h / pageSize.heightPx
-
-Output format - RESPOND WITH ONLY THE YAML BELOW, NO OTHER TEXT:
-
-pages:
-  - pageNumber: 1
-    pageSize: {widthPx: 850, heightPx: 1100}
-    fields:
-      - id: FIELD_ID
-        type: text|signature|date|etc
-        label: "Actual label from image"
-        required: false
-        confidence: 0.9
-        bbox: {x: <actual_x>, y: <actual_y>, w: <actual_w>, h: <actual_h>}
-        bboxNorm: {x: <calculated>, y: <calculated>, w: <calculated>, h: <calculated>}
-
-CRITICAL:
-- Do NOT add "Answer:" or any prefix
-- Do NOT use markdown code blocks
-- Do NOT add explanations
-- Start your response directly with "pages:"
-- Return ONLY the raw YAML data`
-
-	// Include <|image|> token to indicate where the image should be placed
-	formattedPrompt := fmt.Sprintf(`<|begin_of_text|><|start_header_id|>user<|end_header_id|>
-
-<|image|>
-%s
-<|eot_id|>
-<|start_header_id|>assistant<|end_header_id|>
-`, userPrompt)
-
-	bedrockRequest := map[string]interface{}{
-		"prompt": formattedPrompt,
-		"images": []string{
-			base64.StdEncoding.EncodeToString(fileBytes),
+	// Call AnalyzeDocument API
+	input := &textract.AnalyzeDocumentInput{
+		Document: &types.Document{
+			Bytes: fileBytes,
 		},
-		"max_gen_len": 2048,
-		"temperature": 0.2,
-		"top_p":       0.9,
+		FeatureTypes: []types.FeatureType{
+			types.FeatureTypeForms,
+		},
 	}
 
-	// Prepare HTTP request to Bedrock API
-	client := &http.Client{}
-	reqBody, err := json.Marshal(bedrockRequest)
+	result, err := textractClient.AnalyzeDocument(context.TODO(), input)
 	if err != nil {
-		logger.Zap.Errorw("Failed to marshal request body", "error", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to prepare request").JSON(c)
+		logger.Zap.Errorw("Failed to call Textract API", "error", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to analyze document: "+err.Error()).JSON(c)
 	}
 
-	bedrockReq, err := http.NewRequest("POST", "https://bedrock-runtime.us-east-1.amazonaws.com/model/us.meta.llama3-2-90b-instruct-v1:0/invoke", bytes.NewBuffer(reqBody))
-	if err != nil {
-		logger.Zap.Errorw("Failed to create new HTTP request", "error", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create request").JSON(c)
+	// Build a map of block IDs to blocks for easy lookup
+	blockMap := make(map[string]types.Block)
+	for _, block := range result.Blocks {
+		blockMap[*block.Id] = block
 	}
 
-	bedrockReq.Header.Set("Authorization", "Bearer "+os.Getenv("AWS_BEARER_TOKEN_BEDROCK"))
-	bedrockReq.Header.Set("Content-Type", "application/json")
-	bedrockReq.Header.Set("Accept", "application/json")
+	// Define page size constants (standard letter size)
+	const pageWidthPx = 850
+	const pageHeightPx = 1100
 
-	// Send request to Bedrock API
-	resp, err := client.Do(bedrockReq)
-	if err != nil {
-		logger.Zap.Errorw("Failed to send request to Bedrock API", "error", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to send request").JSON(c)
-	}
-	defer resp.Body.Close()
-
-	// Read response body for debugging
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.Zap.Errorw("Failed to read response body", "error", err)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to read response").JSON(c)
+	// Extract form fields (KEY_VALUE_SET blocks)
+	type BoundingBox struct {
+		X float64 `json:"x"`
+		Y float64 `json:"y"`
+		W float64 `json:"w"`
+		H float64 `json:"h"`
 	}
 
-	// Log the raw response for debugging
-	logger.Zap.Infow("Bedrock API Response", "status", resp.StatusCode, "body", string(bodyBytes))
-
-	// Parse response from Bedrock API - Llama3 format
-	var apiResponse struct {
-		Generation           string `json:"generation"`
-		PromptTokenCount     int    `json:"prompt_token_count"`
-		GenerationTokenCount int    `json:"generation_token_count"`
-		StopReason           string `json:"stop_reason"`
+	type FormField struct {
+		ID         string      `json:"id"`
+		Type       string      `json:"type"`
+		Label      string      `json:"label"`
+		Required   bool        `json:"required"`
+		Confidence float64     `json:"confidence"`
+		Bbox       BoundingBox `json:"bbox"`
+		BboxNorm   BoundingBox `json:"bboxNorm"`
 	}
 
-	if err := json.Unmarshal(bodyBytes, &apiResponse); err != nil {
-		logger.Zap.Errorw("Failed to decode response from Bedrock API", "error", err, "body", string(bodyBytes))
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to decode response: "+err.Error()).JSON(c)
+	type PageSize struct {
+		WidthPx  int `json:"widthPx"`
+		HeightPx int `json:"heightPx"`
 	}
 
-	// Check if we got a generation
-	if apiResponse.Generation == "" {
-		logger.Zap.Errorw("No generation in Bedrock response", "response", string(bodyBytes))
-		return responses.NewErrorResponse(http.StatusInternalServerError, "No content in response").JSON(c)
+	type Page struct {
+		PageNumber int         `json:"pageNumber"`
+		PageSize   PageSize    `json:"pageSize"`
+		Fields     []FormField `json:"fields"`
 	}
 
-	// Return the response with the generated YAML
+	type DetectFormFieldsResponse struct {
+		Pages []Page `json:"pages"`
+	}
+
+	var fields []FormField
+	fieldID := 1
+
+	// Process KEY_VALUE_SET blocks with EntityType "KEY"
+	for _, block := range result.Blocks {
+		if block.BlockType == types.BlockTypeKeyValueSet && len(block.EntityTypes) > 0 && block.EntityTypes[0] == types.EntityTypeKey {
+			// Get the label text from child blocks
+			labelText := ""
+			if block.Relationships != nil {
+				for _, rel := range block.Relationships {
+					if rel.Type == types.RelationshipTypeChild {
+						for _, childID := range rel.Ids {
+							if childBlock, ok := blockMap[childID]; ok {
+								if childBlock.Text != nil && *childBlock.Text != "" {
+									if labelText != "" {
+										labelText += " "
+									}
+									labelText += *childBlock.Text
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// Find the VALUE block (the input field coordinates)
+			var valueBlock *types.Block
+			if block.Relationships != nil {
+				for _, rel := range block.Relationships {
+					if rel.Type == types.RelationshipTypeValue && len(rel.Ids) > 0 {
+						if vBlock, ok := blockMap[rel.Ids[0]]; ok {
+							valueBlock = &vBlock
+							break
+						}
+					}
+				}
+			}
+
+			// Skip if no VALUE block found
+			if valueBlock == nil || valueBlock.Geometry == nil {
+				continue
+			}
+
+			// Calculate bounding box from VALUE block
+			var bbox, bboxNorm BoundingBox
+			var bboxHeight float64
+
+			// Prefer polygon coordinates if available, otherwise use BoundingBox
+			if len(valueBlock.Geometry.Polygon) >= 4 {
+				polygon := valueBlock.Geometry.Polygon
+				minX, maxX := float64(polygon[0].X), float64(polygon[0].X)
+				minY, maxY := float64(polygon[0].Y), float64(polygon[0].Y)
+
+				for _, point := range polygon[1:] {
+					x, y := float64(point.X), float64(point.Y)
+					if x < minX {
+						minX = x
+					}
+					if x > maxX {
+						maxX = x
+					}
+					if y < minY {
+						minY = y
+					}
+					if y > maxY {
+						maxY = y
+					}
+				}
+
+				bboxNorm = BoundingBox{X: minX, Y: minY, W: maxX - minX, H: maxY - minY}
+				bbox = BoundingBox{
+					X: minX * pageWidthPx,
+					Y: minY * pageHeightPx,
+					W: (maxX - minX) * pageWidthPx,
+					H: (maxY - minY) * pageHeightPx,
+				}
+				bboxHeight = maxY - minY
+			} else if valueBlock.Geometry.BoundingBox != nil {
+				geomBox := valueBlock.Geometry.BoundingBox
+				bboxNorm = BoundingBox{
+					X: float64(geomBox.Left),
+					Y: float64(geomBox.Top),
+					W: float64(geomBox.Width),
+					H: float64(geomBox.Height),
+				}
+				bbox = BoundingBox{
+					X: float64(geomBox.Left) * pageWidthPx,
+					Y: float64(geomBox.Top) * pageHeightPx,
+					W: float64(geomBox.Width) * pageWidthPx,
+					H: float64(geomBox.Height) * pageHeightPx,
+				}
+				bboxHeight = float64(geomBox.Height)
+			} else {
+				continue
+			}
+
+			// Classify field type using our heuristic function
+			fieldType := classifyFieldType(labelText, bboxHeight)
+
+			// Create the field - use KEY block confidence
+			var confidence float64
+			if block.Confidence != nil {
+				confidence = float64(*block.Confidence) / 100.0 // Convert to 0-1 scale
+			}
+
+			field := FormField{
+				ID:         fmt.Sprintf("field_%d", fieldID),
+				Type:       fieldType,
+				Label:      labelText,
+				Required:   false,
+				Confidence: confidence,
+				Bbox:       bbox,
+				BboxNorm:   bboxNorm,
+			}
+
+			fields = append(fields, field)
+			fieldID++
+		}
+	}
+
+	// Build structured response
+	response := DetectFormFieldsResponse{
+		Pages: []Page{
+			{
+				PageNumber: 1,
+				PageSize: PageSize{
+					WidthPx:  pageWidthPx,
+					HeightPx: pageHeightPx,
+				},
+				Fields: fields,
+			},
+		},
+	}
+
+	// Return the response as JSON
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": apiResponse.Generation,
+		"pages": response.Pages,
 		"tokens": map[string]int{
-			"input":  apiResponse.PromptTokenCount,
-			"output": apiResponse.GenerationTokenCount,
+			"input":  0, // Textract doesn't provide token counts
+			"output": 0,
 		},
-		"stopReason": apiResponse.StopReason,
+		"stopReason": "end_turn", // Textract always completes successfully
 	})
 }
 
@@ -323,4 +417,50 @@ func getImageFormat(contentType string) string {
 	default:
 		return "jpeg" // default to jpeg if unknown
 	}
+}
+
+// classifyFieldType determines the field type based on the label text and bounding box dimensions
+func classifyFieldType(label string, bboxHeight float64) string {
+	labelLower := strings.ToLower(label)
+
+	// Check for signature fields
+	if strings.Contains(labelLower, "signature") || strings.Contains(labelLower, "sign") {
+		return "signature"
+	}
+
+	// Check for date fields
+	if strings.Contains(labelLower, "date") {
+		return "date"
+	}
+
+	// Check for email fields
+	if strings.Contains(labelLower, "email") || strings.Contains(labelLower, "e-mail") {
+		return "email"
+	}
+
+	// Check for phone fields
+	if strings.Contains(labelLower, "phone") || strings.Contains(labelLower, "tel") ||
+		strings.Contains(labelLower, "mobile") || strings.Contains(labelLower, "cell") {
+		return "phone"
+	}
+
+	// Check for number fields
+	if strings.Contains(labelLower, "number") || strings.Contains(labelLower, "rate") ||
+		strings.Contains(labelLower, "value") || strings.Contains(labelLower, "price") ||
+		strings.Contains(labelLower, "amount") || strings.Contains(labelLower, "cost") {
+		return "number"
+	}
+
+	// Check for initials
+	if strings.Contains(labelLower, "initial") {
+		return "initials"
+	}
+
+	// Check for textarea based on height (if field is tall, likely a textarea)
+	if bboxHeight > 0.05 { // If field height is more than 5% of page height
+		return "textarea"
+	}
+
+	// Default to text input
+	return "text"
 }
