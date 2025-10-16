@@ -1931,8 +1931,6 @@ definitions:
         type: array
       title:
         type: string
-    required:
-    - estId
     type: object
   requests.FindPartsRequest:
     properties:

@@ -41,7 +41,7 @@ type EstimateCreateRequest struct {
 
 // EstimateUpdateRequest represents a request to update an existing estimate
 type EstimateUpdateRequest struct {
-	EstId           string           `json:"estId" validate:"required"`
+	EstId           string           `json:"estId"`
 	ClerkId         string           `json:"clerkId"`
 	CustId          string           `json:"custId"`
 	BoatId          string           `json:"boatId"`

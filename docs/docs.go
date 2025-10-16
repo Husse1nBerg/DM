@@ -17550,9 +17550,6 @@ const docTemplate = `{
         },
         "requests.EstimateUpdateRequest": {
             "type": "object",
-            "required": [
-                "estId"
-            ],
             "properties": {
                 "attachments": {
                     "type": "array",
