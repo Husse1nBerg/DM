@@ -2180,15 +2180,21 @@ definitions:
     type: object
   requests.RetrieveInventoryRequest:
     properties:
-      partNumbers:
+      itemIds:
         items:
           type: string
-        minItems: 1
         type: array
+      lastModifiedDate:
+        type: string
+      locationCode:
+        type: string
+      onHandOnly:
+        type: boolean
       systemId:
         type: string
+      vendorId:
+        type: string
     required:
-    - partNumbers
     - systemId
     type: object
   requests.ScheduleAppointmentUpdate:
@@ -10032,7 +10038,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Retrieves inventory records from full inventory
+      description: Retrieves inventory records from full inventory using query parameters
       parameters:
       - description: Retrieve Inventory Request
         in: body
@@ -10071,11 +10077,16 @@ paths:
         name: systemId
         required: true
         type: string
-      - description: Search Term
+      - description: Search String
         in: query
-        name: searchTerm
+        name: searchString
         required: true
         type: string
+      - default: false
+        description: Direct Hit - only return if single match found
+        in: query
+        name: directHit
+        type: boolean
       produces:
       - application/json
       responses:

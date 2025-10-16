@@ -7259,7 +7259,7 @@ const docTemplate = `{
         },
         "/inventory/retrieve": {
             "post": {
-                "description": "Retrieves inventory records from full inventory",
+                "description": "Retrieves inventory records from full inventory using query parameters",
                 "consumes": [
                     "application/json"
                 ],
@@ -7329,10 +7329,17 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Search Term",
-                        "name": "searchTerm",
+                        "description": "Search String",
+                        "name": "searchString",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Direct Hit - only return if single match found",
+                        "name": "directHit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -18349,18 +18356,28 @@ const docTemplate = `{
         "requests.RetrieveInventoryRequest": {
             "type": "object",
             "required": [
-                "partNumbers",
                 "systemId"
             ],
             "properties": {
-                "partNumbers": {
+                "itemIds": {
                     "type": "array",
-                    "minItems": 1,
                     "items": {
                         "type": "string"
                     }
                 },
+                "lastModifiedDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "onHandOnly": {
+                    "type": "boolean"
+                },
                 "systemId": {
+                    "type": "string"
+                },
+                "vendorId": {
                     "type": "string"
                 }
             }

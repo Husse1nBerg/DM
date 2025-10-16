@@ -1144,12 +1144,11 @@ type InventoryPart struct {
 	LotTrackedInventory  bool    `json:"lotTrackedInventory"`
 }
 
-// FindPartsRequest represents a request to find parts by various part numbers
-type FindPartsRequest struct {
-	PartNumbers []string `json:"partNumbers"`
-}
-
-// FindPartsResponse represents the response from finding parts
-type FindPartsResponse struct {
-	PartsFound []InventoryPart `json:"partsFound"`
+// RetrieveInventoryQuery represents the query parameters for retrieving inventory
+type RetrieveInventoryQuery struct {
+	LocationCode     string   `json:"locationCode,omitempty"`
+	LastModifiedDate string   `json:"lastModifiedDate,omitempty"`
+	OnHandOnly       bool     `json:"onHandOnly,omitempty"`
+	VendorID         string   `json:"vendorId,omitempty"`
+	ItemIds          []string `json:"itemIds,omitempty"`
 }
