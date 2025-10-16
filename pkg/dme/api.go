@@ -2021,9 +2021,9 @@ func (c *Client) ListReceivedSpecialOrders(ctx context.Context, organizationID u
 }
 
 // SearchInventory searches the full inventory for an item
-func (c *Client) SearchInventory(ctx context.Context, searchTerm string, organizationID uuid.UUID, systemID string) ([]InventorySearchResult, error) {
+func (c *Client) SearchInventory(ctx context.Context, searchString string, directHit bool, organizationID uuid.UUID, systemID string) ([]InventorySearchResult, error) {
 	var result []InventorySearchResult
-	endpoint := fmt.Sprintf("/Inventory/Search?SearchTerm=%s", searchTerm)
+	endpoint := fmt.Sprintf("/Inventory/Search?SearchString=%s&DirectHit=%t", searchString, directHit)
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -2047,15 +2047,12 @@ func (c *Client) FindParts(ctx context.Context, partNumbers []string, organizati
 	var result []InventoryPart
 	endpoint := "/Inventory/FindParts"
 
-	payload := FindPartsRequest{
-		PartNumbers: partNumbers,
-	}
-
+	// Send the array directly as per Dockmaster API specification
 	err := c.DoJSONRequest(
 		ctx,
 		http.MethodPost,
 		endpoint,
-		payload,
+		partNumbers,
 		&result,
 		organizationID,
 		systemID,
@@ -2069,19 +2066,15 @@ func (c *Client) FindParts(ctx context.Context, partNumbers []string, organizati
 }
 
 // RetrieveInventory retrieves inventory records from full inventory
-func (c *Client) RetrieveInventory(ctx context.Context, partNumbers []string, organizationID uuid.UUID, systemID string) ([]InventoryPart, error) {
+func (c *Client) RetrieveInventory(ctx context.Context, query RetrieveInventoryQuery, organizationID uuid.UUID, systemID string) ([]InventoryPart, error) {
 	var result []InventoryPart
 	endpoint := "/Inventory/Retrieve"
-
-	payload := FindPartsRequest{
-		PartNumbers: partNumbers,
-	}
 
 	err := c.DoJSONRequest(
 		ctx,
 		http.MethodPost,
 		endpoint,
-		payload,
+		query,
 		&result,
 		organizationID,
 		systemID,

@@ -66,8 +66,9 @@ type ListReceivedSpecialOrdersRequest struct {
 
 // SearchInventoryRequest represents a request to search inventory
 type SearchInventoryRequest struct {
-	SystemID   string `json:"systemId" query:"systemId" validate:"required"`
-	SearchTerm string `json:"searchTerm" query:"searchTerm" validate:"required"`
+	SystemID     string `json:"systemId" query:"systemId" validate:"required"`
+	SearchString string `json:"searchString" query:"searchString" validate:"required"`
+	DirectHit    bool   `json:"directHit" query:"directHit"`
 }
 
 // FindPartsRequest represents a request to find parts by part numbers
@@ -78,6 +79,10 @@ type FindPartsRequest struct {
 
 // RetrieveInventoryRequest represents a request to retrieve inventory records
 type RetrieveInventoryRequest struct {
-	SystemID    string   `json:"systemId" validate:"required"`
-	PartNumbers []string `json:"partNumbers" validate:"required,min=1,dive,required"`
+	SystemID         string   `json:"systemId" validate:"required"`
+	LocationCode     string   `json:"locationCode"`
+	LastModifiedDate string   `json:"lastModifiedDate"`
+	OnHandOnly       bool     `json:"onHandOnly"`
+	VendorID         string   `json:"vendorId"`
+	ItemIds          []string `json:"itemIds"`
 }
