@@ -255,6 +255,14 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 	var fields []FormField
 	fieldID := 1
 
+	// First, identify SELECTION_ELEMENT blocks (checkboxes/radio buttons)
+	selectionElements := make(map[string]types.Block)
+	for _, block := range result.Blocks {
+		if block.BlockType == types.BlockTypeSelectionElement {
+			selectionElements[*block.Id] = block
+		}
+	}
+
 	// Process KEY_VALUE_SET blocks with EntityType "KEY"
 	for _, block := range result.Blocks {
 		if block.BlockType == types.BlockTypeKeyValueSet && len(block.EntityTypes) > 0 && block.EntityTypes[0] == types.EntityTypeKey {
@@ -348,8 +356,29 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 				continue
 			}
 
-			// Classify field type using our heuristic function
-			fieldType := classifyFieldType(labelText, bboxHeight)
+			// Check if VALUE block contains SELECTION_ELEMENT (checkbox/radio)
+			fieldType := "text"
+			if valueBlock.Relationships != nil {
+				for _, rel := range valueBlock.Relationships {
+					if rel.Type == types.RelationshipTypeChild {
+						for _, childID := range rel.Ids {
+							if _, ok := selectionElements[childID]; ok {
+								// Found a selection element - determine if checkbox or radio
+								fieldType = classifySelectionType(labelText)
+								break
+							}
+						}
+					}
+					if fieldType == "checkbox" || fieldType == "radio" {
+						break
+					}
+				}
+			}
+
+			// If not a selection element, classify using heuristics
+			if fieldType == "text" {
+				fieldType = classifyFieldType(labelText, bboxHeight)
+			}
 
 			// Create the field - use KEY block confidence
 			var confidence float64
@@ -417,6 +446,22 @@ func getImageFormat(contentType string) string {
 	default:
 		return "jpeg" // default to jpeg if unknown
 	}
+}
+
+// classifySelectionType determines if a selection element is a checkbox or radio button
+func classifySelectionType(label string) string {
+	labelLower := strings.ToLower(label)
+
+	// Radio buttons typically have labels like "Yes/No", "Male/Female", "Option 1/Option 2"
+	// or appear in groups with similar naming patterns
+	if strings.Contains(labelLower, "yes") || strings.Contains(labelLower, "no") ||
+		strings.Contains(labelLower, "male") || strings.Contains(labelLower, "female") ||
+		strings.Contains(labelLower, "option") || strings.Contains(labelLower, "choice") {
+		return "radio"
+	}
+
+	// Default to checkbox for selection elements
+	return "checkbox"
 }
 
 // classifyFieldType determines the field type based on the label text and bounding box dimensions
