@@ -12,11 +12,6 @@ type CustomerInvoiceInquiryListResponse struct {
 	Data []dme.CustomerInvoiceInquiry `json:"data"`
 }
 
-// PaymentInitiationResponse represents the response when initiating a payment
-type PaymentInitiationResponse struct {
-	Data dme.PaymentInitiationResponse `json:"data"`
-}
-
 // ConvertInvoiceList converts a slice of DME InvoiceDetailed to InvoiceListResponse
 func ConvertInvoiceList(invoices []dme.InvoiceDetailed) *InvoiceListResponse {
 	return &InvoiceListResponse{
@@ -31,15 +26,5 @@ func ConvertCustomerInvoiceInquiryList(invoices []dme.CustomerInvoiceInquiry) *C
 	}
 }
 
-// ConvertPaymentInitiation converts DME PaymentInitiationResponse to PaymentInitiationResponse
-func ConvertPaymentInitiation(payment *dme.PaymentInitiationResponse) *PaymentInitiationResponse {
-	return &PaymentInitiationResponse{
-		Data: *payment,
-	}
-}
-
 // swag:response InvoiceListResponse
 type SwagInvoiceListResponse = InvoiceListResponse
-
-// swag:response PaymentInitiationResponse
-type SwagPaymentInitiationResponse = PaymentInitiationResponse

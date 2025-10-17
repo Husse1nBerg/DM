@@ -166,14 +166,21 @@ func (h *EstimateHandler) ListEstimateSublets(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, orgID, *systemID)
+	// Pass empty strings for optional parameters
+	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, "", "", "", orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list estimate sublets",
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertEstimateSublets(dmeResponse)
+	// Convert the typed response to the expected format
+	var genericResponse []interface{}
+	for _, sublet := range dmeResponse {
+		genericResponse = append(genericResponse, sublet)
+	}
+	
+	response := responses.ConvertEstimateSublets(genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -328,8 +335,23 @@ func (h *EstimateHandler) RetrieveEstimatesList(c echo.Context) error {
 
 	// Convert request to map for DME API
 	listRequestData := map[string]interface{}{
-		"withDetail": req.WithDetail,
-		"status":     req.Status,
+		"detail":   req.Detail,
+		"page":     req.Page,
+		"pageSize": req.PageSize,
+	}
+	
+	// Add optional fields if provided
+	if req.Status != "" {
+		listRequestData["status"] = req.Status
+	}
+	if req.LastUpdateDate != "" {
+		listRequestData["lastUpdateDate"] = req.LastUpdateDate
+	}
+	if req.LastUpdateTime != "" {
+		listRequestData["lastUpdateTime"] = req.LastUpdateTime
+	}
+	if len(req.WoIds) > 0 {
+		listRequestData["woIds"] = req.WoIds
 	}
 
 	dmeResponse, err := h.server.DME.RetrieveEstimatesList(ctx, listRequestData, orgID, *systemID)

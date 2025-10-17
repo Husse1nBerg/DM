@@ -295,3 +295,16 @@ func DetectFormFields(pages []struct {
 func GenerateRequestID() string {
 	return uuid.New().String()
 }
+
+// NumericToString converts a pgtype.Numeric to a string representation
+func NumericToString(n pgtype.Numeric) string {
+	if !n.Valid {
+		return "0.00"
+	}
+	// Use the Int value and Exp to calculate the decimal
+	var val float64
+	if n.Int != nil {
+		val = float64(n.Int.Int64()) * float64(n.Exp)
+	}
+	return fmt.Sprintf("%.2f", val)
+}

@@ -68,7 +68,8 @@ func (h *ServiceHandler) ListNewOrChangedOpCodes(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListNewOrChangedOpCodes(ctx, req.AsOfDate, req.Page, req.PageSize, orgID, *systemID)
+	// Pass empty string for optional listName parameter
+	dmeResponse, err := h.server.DME.ListNewOrChangedOpCodes(ctx, req.AsOfDate, req.Page, req.PageSize, "", orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list new or changed operation codes",
 			zap.Error(err))
@@ -121,7 +122,8 @@ func (h *ServiceHandler) ListWOCategoryCodes(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListWOCategoryCodes(ctx, req.Page, req.PageSize, orgID, *systemID)
+	// Pass empty string for optional listName parameter
+	dmeResponse, err := h.server.DME.ListWOCategoryCodes(ctx, req.Page, req.PageSize, "", orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list work order category codes",
 			zap.Error(err))
@@ -174,7 +176,8 @@ func (h *ServiceHandler) ListOPCategoryCodes(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListOPCategoryCodes(ctx, req.Page, req.PageSize, orgID, *systemID)
+	// Pass empty string for optional listName parameter
+	dmeResponse, err := h.server.DME.ListOPCategoryCodes(ctx, req.Page, req.PageSize, "", orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list operation category codes",
 			zap.Error(err))
@@ -190,12 +193,16 @@ func (h *ServiceHandler) ListOPCategoryCodes(c echo.Context) error {
 // @Tags Service
 // @Accept json
 // @Produce json
+// @Param Opcode query string false "Opcode to retrieve"
 // @Success 200 {object} responses.ServiceOperationDescriptionsResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
 // @Router /service/operation-descriptions [get]
 func (h *ServiceHandler) RetrieveOperationDescriptions(c echo.Context) error {
 	ctx := c.Request().Context()
+	
+	// Get optional Opcode query parameter
+	opcode := c.QueryParam("Opcode")
 
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
@@ -217,14 +224,16 @@ func (h *ServiceHandler) RetrieveOperationDescriptions(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveOperationDescriptions(ctx, orgID, *systemID)
+	dmeResponse, err := h.server.DME.RetrieveOperationDescriptions(ctx, opcode, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve operation descriptions",
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertServiceOperationDescriptions(dmeResponse)
+	// Convert typed response to interface for the response converter
+	var genericResponse interface{} = dmeResponse
+	response := responses.ConvertServiceOperationDescriptions(&genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -260,13 +269,19 @@ func (h *ServiceHandler) ListTechnicians(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.ListTechnicians(ctx, orgID, *systemID)
+	// Get optional query parameters
+	techID := c.QueryParam("TechId")
+	activeOnly := c.QueryParam("ActiveOnly") == "true"
+
+	dmeResponse, err := h.server.DME.ListTechnicians(ctx, techID, activeOnly, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list technicians",
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertServiceTechnicians(dmeResponse)
+	// Convert typed response to interface for the response converter
+	var genericResponse interface{} = dmeResponse
+	response := responses.ConvertServiceTechnicians(&genericResponse)
 	return c.JSON(http.StatusOK, response)
 }

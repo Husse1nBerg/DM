@@ -1,15 +1,22 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
+	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+
+	// "github.com/dockworks/dm-web-backend/pkg/adyen"
+	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 )
 
@@ -83,93 +90,51 @@ func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-// @Summary Get invoices by IDs
-// @Description Retrieves invoices by their IDs
+// SubmitBatch godoc
+// @Summary Submit a batch of payments
+// @Description Submits a batch of cash receipts to DME for processing
 // @Tags Invoices
 // @Accept json
 // @Produce json
-// @Param invoiceIds body requests.GetInvoicesByIDsRequest true "Invoice IDs"
-// @Success 200 {object} responses.InvoiceListResponse
+// @Param request body requests.SubmitBatchRequest true "Batch submission request"
+// @Success 200 {object} responses.BatchSubmissionResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
-// @Router /invoices/retrieve [post]
-// func (h *InvoiceHandler) GetInvoicesByIDs(c echo.Context) error {
-// 	ctx := c.Request().Context()
-// 	var req requests.GetInvoicesByIDsRequest
-// 	if err := c.Bind(&req); err != nil {
-// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-// 	}
+// @Security BearerAuth
+// @Router /invoices/batch/submit [post]
+func (h *InvoiceHandler) SubmitBatch(c echo.Context) error {
 
-// 	if err := c.Validate(&req); err != nil {
-// 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
-// 	}
-
-// 	userToken := c.Get("user").(*jwt.Token)
-// 	claims := userToken.Claims.(*token.JwtCustomClaims)
-// 	userID := claims.ID
-// 	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
-// 	if err != nil {
-// 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
-// 	}
-
-// 	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
-// 	if err != nil {
-// 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
-// 	}
-
-// 	orgID := marina.OrganizationID
-// 	systemID := marina.SystemID
-
-// 	// Check if systemID is nil before dereferencing
-// 	if systemID == nil {
-// 		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
-// 	}
-
-// 	dmeResponse, err := h.server.DME.RetrieveInvoices(ctx, req.InvoiceIDs, orgID, *systemID)
-// 	if err != nil {
-// 		h.server.Logger.DesugarZap.Error("Failed to retrieve invoices",
-// 			zap.Error(err),
-// 			zap.Strings("invoiceIds", req.InvoiceIDs))
-// 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
-// 	}
-
-// 	// Convert DME response to API response
-// 	response := responses.ConvertInvoiceList(dmeResponse)
-// 	return c.JSON(http.StatusOK, response)
-// }
-
-// @Summary Initiate payment for invoice
-// @Description Initiates a payment process for a specific invoice
-// @Tags Invoices
-// @Accept json
-// @Produce json
-// @Param payment body requests.InitiatePaymentRequest true "Payment information"
-// @Success 200 {object} responses.PaymentInitiationResponse
-// @Failure 400 {object} responses.Error
-// @Failure 500 {object} responses.Error
-// @Router /invoices/pay [post]
-func (h *InvoiceHandler) InitiatePayment(c echo.Context) error {
-	ctx := c.Request().Context()
-	var req requests.InitiatePaymentRequest
+	var req requests.SubmitBatchRequest
 	if err := c.Bind(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	if err := c.Validate(&req); err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	// Get user context (assuming this is called from a protected route)
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID
+
+	// Get user and marina information
 	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+		h.server.Logger.DesugarZap.Error("Failed to get user",
+			zap.Error(err),
+			zap.String("user_id", userID.String()),
+		)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to get user information")
 	}
 
 	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
 	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+		h.server.Logger.DesugarZap.Error("Failed to get marina",
+			zap.Error(err),
+			zap.String("marina_id", user.MarinaID.String()),
+		)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to get marina information")
 	}
 
 	orgID := marina.OrganizationID
@@ -177,20 +142,204 @@ func (h *InvoiceHandler) InitiatePayment(c echo.Context) error {
 
 	// Check if systemID is nil before dereferencing
 	if systemID == nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Marina system ID is not configured")
 	}
 
-	dmeResponse, err := h.server.DME.InitiatePayment(ctx, req.CustomerID, req.InvoiceID, req.Amount, orgID, *systemID)
+	// Convert request cash receipts to DME format
+	var dmeCashReceipts []dme.CashReceipt
+	totalAmount := 0.0
+	for _, receipt := range req.CashReceipts {
+		// Convert InvPayments to DME format
+		var dmeInvPayments []dme.InvPayment
+		for _, invPayment := range receipt.InvPayments {
+			dmeInvPayments = append(dmeInvPayments, dme.InvPayment{
+				InvoiceID:    invPayment.InvoiceID,
+				LocationCode: invPayment.LocationCode,
+				DepositType:  invPayment.DepositType,
+				PaymentAmt:   invPayment.PaymentAmt,
+				Description:  invPayment.Description,
+				CustomerID:   invPayment.CustomerID,
+			})
+		}
+
+		dmeCashReceipts = append(dmeCashReceipts, dme.CashReceipt{
+			CustomerID:             receipt.CustomerID,
+			ReferenceNum:           receipt.ReferenceNum,
+			PayType:                receipt.PayType,
+			TotalPayment:           receipt.TotalPayment,
+			StatementDesc:          receipt.StatementDesc,
+			CCAuthCode:             receipt.CCAuthCode,
+			CCTransactionID:        receipt.CCTransactionID,
+			CCTransactionTimeStamp: receipt.CCTransactionTimeStamp,
+			CCSurcharge:            receipt.CCSurcharge,
+			CCSurchargeTax:         receipt.CCSurchargeTax,
+			CCSurchargeTaxSchema:   receipt.CCSurchargeTaxSchema,
+			CCSurchargeTaxIds:      receipt.CCSurchargeTaxIds,
+			InvPayments:            dmeInvPayments,
+		})
+		totalAmount += receipt.TotalPayment
+	}
+
+	// Submit batch to DME
+	dmeResponse, err := h.server.DME.SubmitBatch(
+		c.Request().Context(),
+		req.LocationCode,
+		dmeCashReceipts,
+		req.PostBatch,
+		orgID,
+		*systemID,
+	)
 	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to initiate payment",
+		h.server.Logger.DesugarZap.Error("Failed to submit batch to DME",
 			zap.Error(err),
-			zap.String("customerId", req.CustomerID),
-			zap.String("invoiceId", req.InvoiceID),
-			zap.Float64("amount", req.Amount))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+			zap.String("location_code", req.LocationCode),
+			zap.Int("receipt_count", len(req.CashReceipts)),
+		)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to submit batch: "+err.Error())
 	}
 
-	// Convert DME response to API response
-	response := responses.ConvertPaymentInitiation(dmeResponse)
+	// Convert totalAmount to Numeric
+	var totalAmountNumeric pgtype.Numeric
+	err = totalAmountNumeric.Scan(fmt.Sprintf("%.2f", totalAmount))
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to convert total amount to Numeric",
+			zap.Error(err),
+			zap.Float64("total_amount", totalAmount),
+		)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to process total amount")
+	}
+
+	// Convert submittedAt to Timestamptz
+	var submittedAtTimestamptz pgtype.Timestamptz
+	err = submittedAtTimestamptz.Scan(dmeResponse.SubmittedAt)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to convert submitted at to Timestamptz",
+			zap.Error(err),
+			zap.Time("submitted_at", dmeResponse.SubmittedAt),
+		)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to process submission time")
+	}
+
+	// Create batch payment record in database
+	batchPayment, err := h.server.DB.Queries().CreateBatchPayment(c.Request().Context(), db.CreateBatchPaymentParams{
+		OrganizationID: orgID,
+		MarinaID:       user.MarinaID,
+		LocationCode:   req.LocationCode,
+		BatchID:        dmeResponse.BatchID,
+		PostBatch:      req.PostBatch,
+		TotalAmount:    totalAmountNumeric,
+		ReceiptCount:   int32(len(req.CashReceipts)),
+		Status:         "submitted",
+		SubmittedBy:    userID.String(),
+		SubmittedAt:    submittedAtTimestamptz,
+	})
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to create batch payment record",
+			zap.Error(err),
+			zap.String("batch_id", dmeResponse.BatchID),
+		)
+		// Don't fail the request, just log the error
+	}
+
+	// Create individual receipt records
+	for _, receipt := range req.CashReceipts {
+		// Convert total payment amount to Numeric
+		var amountNumeric pgtype.Numeric
+		err = amountNumeric.Scan(fmt.Sprintf("%.2f", receipt.TotalPayment))
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to convert receipt total payment to Numeric",
+				zap.Error(err),
+				zap.Float64("total_payment", receipt.TotalPayment),
+				zap.String("customer_id", receipt.CustomerID),
+			)
+			continue
+		}
+
+		// Parse payment timestamp if available
+		var paymentDateTimestamptz pgtype.Timestamptz
+		if receipt.CCTransactionTimeStamp != "" {
+			paymentDate, err := time.Parse("2006-01-02T15:04:05.000Z", receipt.CCTransactionTimeStamp)
+			if err != nil {
+				// Try alternative format
+				paymentDate, err = time.Parse("2006-01-02T15:04:05Z", receipt.CCTransactionTimeStamp)
+				if err != nil {
+					h.server.Logger.DesugarZap.Error("Failed to parse payment timestamp",
+						zap.Error(err),
+						zap.String("cc_transaction_timestamp", receipt.CCTransactionTimeStamp),
+						zap.String("customer_id", receipt.CustomerID),
+					)
+					// Use current time as fallback
+					paymentDate = time.Now()
+				}
+			}
+			err = paymentDateTimestamptz.Scan(paymentDate)
+			if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to convert payment timestamp to Timestamptz",
+					zap.Error(err),
+					zap.Time("payment_date", paymentDate),
+					zap.String("customer_id", receipt.CustomerID),
+				)
+				// Use current time as fallback
+				paymentDateTimestamptz.Scan(time.Now())
+			}
+		} else {
+			// Use current time if no timestamp provided
+			paymentDateTimestamptz.Scan(time.Now())
+		}
+
+		// Get invoice ID from first inv payment or use empty string if none
+		invoiceID := ""
+		if len(receipt.InvPayments) > 0 {
+			invoiceID = receipt.InvPayments[0].InvoiceID
+		}
+
+		_, err = h.server.DB.Queries().CreateBatchPaymentReceipt(c.Request().Context(), db.CreateBatchPaymentReceiptParams{
+			BatchPaymentID: batchPayment.ID,
+			CustomerID:     receipt.CustomerID,
+			InvoiceID:      invoiceID,
+			Amount:         amountNumeric,
+			PaymentMethod:  receipt.PayType,
+			Reference:      receipt.ReferenceNum,
+			Description:    &receipt.StatementDesc,
+			PaymentDate:    paymentDateTimestamptz,
+		})
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to create batch payment receipt record",
+				zap.Error(err),
+				zap.String("batch_payment_id", batchPayment.ID.String()),
+				zap.String("customer_id", receipt.CustomerID),
+			)
+			// Continue processing other receipts
+		}
+	}
+
+	// Update batch payment with reference IDs if available
+	if len(dmeResponse.ReferenceIDs) > 0 {
+		_, err = h.server.DB.Queries().UpdateBatchPaymentStatus(c.Request().Context(), db.UpdateBatchPaymentStatusParams{
+			ID:           batchPayment.ID,
+			Status:       "completed",
+			PostResult:   &dmeResponse.PostResult,
+			ReferenceIds: dmeResponse.ReferenceIDs,
+		})
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to update batch payment status",
+				zap.Error(err),
+				zap.String("batch_payment_id", batchPayment.ID.String()),
+			)
+		}
+	}
+
+	// Convert to response format
+	response := responses.BatchSubmissionResponse{
+		BatchID:      dmeResponse.BatchID,
+		LocationCode: dmeResponse.LocationCode,
+		PostBatch:    dmeResponse.PostBatch,
+		ReferenceIDs: dmeResponse.ReferenceIDs,
+		PostResult:   dmeResponse.PostResult,
+		SubmittedAt:  dmeResponse.SubmittedAt,
+		TotalAmount:  dmeResponse.TotalAmount,
+		ReceiptCount: dmeResponse.ReceiptCount,
+	}
+
 	return c.JSON(http.StatusOK, response)
 }

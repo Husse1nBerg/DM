@@ -141,13 +141,16 @@ type WorkOrderPartEntryRequest struct {
 
 // WorkOrderTimeEntryRequest represents a request to submit a time entry
 type WorkOrderTimeEntryRequest struct {
-	WorkOrderID   string  `json:"workOrderId" validate:"required"`
-	OperationID   string  `json:"operationId" validate:"required"`
-	TechnicianID  string  `json:"technicianId" validate:"required"`
-	Hours         float64 `json:"hours" validate:"required,min=0"`
-	Rate          float64 `json:"rate" validate:"required,min=0"`
-	Date          string  `json:"date" validate:"required"`
-	Description   string  `json:"description"`
+	TechnicianID       string `json:"techId" validate:"required"`
+	WorkOrderID        string `json:"workOrderId" validate:"required"`
+	OperationID        string `json:"opCode" validate:"required"`
+	Date               string `json:"date" validate:"required"`
+	StartTime          string `json:"startTime" validate:"required"`
+	StopTime           string `json:"stopTime" validate:"required"`
+	IsApproved         *bool  `json:"isApproved"`
+	Comments           string `json:"comments"`
+	TimeEntryUID       string `json:"timeEntryUId,omitempty"`
+	FlagLaborFinished  *bool  `json:"flagLaborFinished"`
 }
 
 // WorkOrderListTimeEntryRequest represents a request to list time entries
@@ -155,4 +158,10 @@ type WorkOrderListTimeEntryRequest struct {
 	AsOfDate string `query:"AsOfDate" validate:"required"`
 	Page     int    `query:"page" validate:"required,min=1"`
 	PageSize int    `query:"pageSize" validate:"required,min=1,max=100"`
+}
+
+// RetrieveAllOperationsRequest represents a request to retrieve all operation codes with pagination
+type RetrieveAllOperationsRequest struct {
+	Page     int `json:"page" validate:"required,min=0"`
+	PageSize int `json:"pageSize" validate:"required,min=1,max=1000"`
 }

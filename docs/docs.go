@@ -7259,7 +7259,7 @@ const docTemplate = `{
         },
         "/inventory/retrieve": {
             "post": {
-                "description": "Retrieves inventory records from full inventory",
+                "description": "Retrieves inventory records from full inventory using query parameters",
                 "consumes": [
                     "application/json"
                 ],
@@ -7329,10 +7329,17 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Search Term",
-                        "name": "searchTerm",
+                        "description": "Search String",
+                        "name": "searchString",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Direct Hit - only return if single match found",
+                        "name": "directHit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -7507,6 +7514,57 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoices/batch/submit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Submits a batch of cash receipts to DME for processing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Submit a batch of payments",
+                "parameters": [
+                    {
+                        "description": "Batch submission request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitBatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BatchSubmissionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
                         }
                     }
                 }
@@ -10727,6 +10785,390 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a paginated list of payments with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "List payments",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, authorized, completed, failed)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity type (invoice, boat, customer, etc.)",
+                        "name": "entityType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity ID",
+                        "name": "entityId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/details": {
+            "post": {
+                "description": "Handles payment completion redirects from Adyen",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Handle payment redirect",
+                "parameters": [
+                    {
+                        "description": "Payment details request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.PaymentDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment result",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/entity": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves all payments for a specific entity (e.g., invoice, boat)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payments by entity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Entity type (invoice, boat, customer, etc.)",
+                        "name": "entityType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.PaymentResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/sessions": {
+            "post": {
+                "description": "Creates a new Adyen payment session for processing payments",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create payment session",
+                "parameters": [
+                    {
+                        "description": "Payment session request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePaymentSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment session created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentSessionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves payment statistics for a date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payment statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD, defaults to 30 days ago)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD, defaults to today)",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/webhooks": {
+            "post": {
+                "description": "Processes incoming webhook notifications from Adyen",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Process webhook",
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WebhookResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid HMAC signature",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a single payment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payment by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/plans/document": {
             "get": {
                 "description": "Get all document plans with pagination",
@@ -11999,6 +12441,14 @@ const docTemplate = `{
                     "Service"
                 ],
                 "summary": "Retrieve operation descriptions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Opcode to retrieve",
+                        "name": "Opcode",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -14349,6 +14799,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/operations/all": {
+            "post": {
+                "description": "Retrieves a list of all Operation Codes (not filtered by USE.ONLINE)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve all work order operations",
+                "parameters": [
+                    {
+                        "description": "Pagination parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RetrieveAllOperationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderAllOperationsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/retrieve": {
             "get": {
                 "description": "Retrieves a work order by its ID",
@@ -14727,6 +15223,1604 @@ const docTemplate = `{
     },
     "definitions": {
         "github_com_dockworks_dm-web-backend_internal_requests.AcceptInvitationRequest": {
+        "dme.Attachment": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
+                "s3Path": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BillingCode": {
+            "type": "object",
+            "properties": {
+                "LOA_LWL_Or_Spar": {
+                    "type": "string"
+                },
+                "Length_Area_Or_CubicFeet": {
+                    "type": "string"
+                },
+                "Slip_Boat_Or_Longest": {
+                    "type": "string"
+                },
+                "cycle": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "departmentDesc": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "overrideRate": {
+                    "type": "number"
+                },
+                "perFoot": {
+                    "type": "boolean"
+                },
+                "proRated": {
+                    "type": "boolean"
+                },
+                "rates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Rate"
+                    }
+                }
+            }
+        },
+        "dme.BillingData": {
+            "type": "object",
+            "properties": {
+                "amountBilled": {
+                    "type": "number"
+                },
+                "billingDate": {
+                    "type": "string"
+                },
+                "environmentCharges": {
+                    "type": "number"
+                },
+                "otherCharges": {
+                    "type": "number"
+                },
+                "salesTax": {
+                    "type": "number"
+                }
+            }
+        },
+        "dme.Boat": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "beam": {
+                    "type": "string"
+                },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Motor"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "ownerIntegrationId": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/dme.Slip"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatDescriptionCode": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatMinimal": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/dme.Slip"
+                }
+            }
+        },
+        "dme.BoatSearch": {
+            "type": "object",
+            "properties": {
+                "arrivalDate": {
+                    "type": "string"
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "departureDate": {
+                    "type": "string"
+                },
+                "ownerName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatUpdate": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "beam": {
+                    "type": "string"
+                },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                    }
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Motor"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.OperationHistory"
+                    }
+                },
+                "ownerIntegrationId": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/dme.Slip"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CategoryCode": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomInformation": {
+            "type": "object",
+            "properties": {
+                "fieldName": {
+                    "type": "string"
+                },
+                "fieldValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Customer": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "allowBackOrders": {
+                    "type": "boolean"
+                },
+                "allowTransactions": {
+                    "type": "boolean"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "balance": {
+                    "type": "number"
+                },
+                "boats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Boat"
+                    }
+                },
+                "categoryCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CategoryCode"
+                    }
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "creditLimit": {
+                    "type": "number"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "inactiveDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "invoices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.InvoiceDetailed"
+                    }
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "noCcSurcharge": {
+                    "type": "boolean"
+                },
+                "paymentTermsCode": {
+                    "type": "string"
+                },
+                "paymentTermsCodeDescription": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "poRequired": {
+                    "type": "boolean"
+                },
+                "priceColumn": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "sendMassEmail": {
+                    "type": "boolean"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "taxId": {
+                    "type": "string"
+                },
+                "taxIdState": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "waitListEntries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WaitListEntry"
+                    }
+                },
+                "webId": {
+                    "type": "string"
+                },
+                "webPassword": {
+                    "type": "string"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerMinimal": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emailAddress": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "postalCode": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "workPhone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerSearch": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "customerID": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerShort": {
+            "type": "object",
+            "properties": {
+                "companyName": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerUpdate": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Installment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "balance": {
+                    "type": "number"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.InvoiceDetailed": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "installments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Installment"
+                    }
+                },
+                "invoiceAmount": {
+                    "type": "number"
+                },
+                "invoiceBalance": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "unappliedPayment": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dme.Motor": {
+            "type": "object",
+            "properties": {
+                "drive": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "transomId": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Operation": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "estCompleteDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedCharges": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isOpcodeApproved": {
+                    "type": "boolean"
+                },
+                "laborBilled": {
+                    "type": "number"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "opcodeDesc": {
+                    "type": "string"
+                },
+                "reqCompDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "techDesc": {
+                    "type": "string"
+                },
+                "totalBillCodes": {
+                    "type": "number"
+                },
+                "totalCharges": {
+                    "type": "number"
+                },
+                "totalEquipment": {
+                    "type": "number"
+                },
+                "totalFreight": {
+                    "type": "number"
+                },
+                "totalLabor": {
+                    "type": "number"
+                },
+                "totalLaborHours": {
+                    "type": "number"
+                },
+                "totalMileage": {
+                    "type": "number"
+                },
+                "totalMiscSupply": {
+                    "type": "number"
+                },
+                "totalParts": {
+                    "type": "number"
+                },
+                "totalSublet": {
+                    "type": "number"
+                },
+                "totalToComplete": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.OperationHistory": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "operationCharges": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "workOrder": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Rate": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                },
+                "startDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Slip": {
+            "type": "object",
+            "properties": {
+                "cableTv": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "electric": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModifedDate": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "string"
+                },
+                "linear": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "boolean"
+                },
+                "tieOff": {
+                    "type": "string"
+                },
+                "transient": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "unusable": {
+                    "type": "boolean"
+                },
+                "water": {
+                    "type": "boolean"
+                },
+                "width": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WaitListEntry": {
+            "type": "object",
+            "properties": {
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "entryDate": {
+                    "type": "string"
+                },
+                "entryNumber": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "waitListName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrder": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "billingData": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BillingData"
+                    }
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatLength": {
+                    "type": "string"
+                },
+                "boatMake": {
+                    "type": "string"
+                },
+                "boatModel": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "boatYear": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "customerID": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEstimate": {
+                    "type": "boolean"
+                },
+                "lastModDate": {
+                    "type": "string"
+                },
+                "lastModTime": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Operation"
+                    }
+                },
+                "promisedDate": {
+                    "type": "string"
+                },
+                "riggingId": {
+                    "type": "string"
+                },
+                "riggingType": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalBillCodes": {
+                    "type": "number"
+                },
+                "totalEquipment": {
+                    "type": "number"
+                },
+                "totalForecastedHours": {
+                    "type": "number"
+                },
+                "totalForecastedLabor": {
+                    "type": "number"
+                },
+                "totalForecastedParts": {
+                    "type": "number"
+                },
+                "totalFreight": {
+                    "type": "number"
+                },
+                "totalFreightCost": {
+                    "type": "number"
+                },
+                "totalLabor": {
+                    "type": "number"
+                },
+                "totalLaborCost": {
+                    "type": "number"
+                },
+                "totalLaborHours": {
+                    "type": "number"
+                },
+                "totalMileage": {
+                    "type": "number"
+                },
+                "totalMiscSupply": {
+                    "type": "number"
+                },
+                "totalParts": {
+                    "type": "number"
+                },
+                "totalPartsCost": {
+                    "type": "number"
+                },
+                "totalSublet": {
+                    "type": "number"
+                },
+                "totalSubletCost": {
+                    "type": "number"
+                },
+                "totalWOCharges": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderOperation": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "boolean"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "laborFinished": {
+                    "type": "boolean"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "managerComments": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
+                },
+                "techDesc": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderSearch": {
+            "type": "object",
+            "properties": {
+                "boat": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "openDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderShort": {
+            "type": "object",
+            "properties": {
+                "boat": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "openDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "\"database\"": "\"connected\"}",
+                        "{\"status\"": "\"ok\""
+                    }
+                }
+            }
+        },
+        "handlers.PermissionTestRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "object"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                }
+            }
+        },
+        "handlers.PermissionTestResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "has_access": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marina_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174001"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Access granted"
+                },
+                "module_info": {
+                    "type": "object",
+                    "properties": {
+                        "module_enabled": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "required_module": {
+                            "type": "string",
+                            "example": "customerVessels"
+                        }
+                    }
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
+        "handlers.ProjectDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "\"version\"": "\"1.0.0\"}",
+                        "{\"name\"": "\"Marina Management System\""
+                    }
+                }
+            }
+        },
+        "models.Modules": {
+            "type": "object",
+            "properties": {
+                "customerVessels": {
+                    "type": "boolean"
+                },
+                "esign": {
+                    "type": "boolean"
+                },
+                "inventoryManagement": {
+                    "type": "boolean"
+                },
+                "marinaManagement": {
+                    "type": "boolean"
+                },
+                "payments": {
+                    "type": "boolean"
+                },
+                "pos": {
+                    "type": "boolean"
+                },
+                "salesManagement": {
+                    "type": "boolean"
+                },
+                "serviceManagement": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Permissions": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "boolean"
+            }
+        },
+        "models.WorkingHours": {
+            "type": "object",
+            "properties": {
+                "friday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "monday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "saturday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "sunday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "thursday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "tuesday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "wednesday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                }
+            }
+        },
+        "requests.AcceptInvitationRequest": {
             "type": "object",
             "required": [
                 "password",
@@ -14919,6 +17013,65 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_requests.CompletePasswordRecoveryRequest": {
+        "requests.CashReceipt": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "invPayments",
+                "payType",
+                "referenceNum",
+                "statementDesc",
+                "totalPayment"
+            ],
+            "properties": {
+                "ccAuthCode": {
+                    "type": "string"
+                },
+                "ccSurcharge": {
+                    "type": "number"
+                },
+                "ccSurchargeTax": {
+                    "type": "number"
+                },
+                "ccSurchargeTaxIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ccSurchargeTaxSchema": {
+                    "type": "string"
+                },
+                "ccTransactionID": {
+                    "type": "string"
+                },
+                "ccTransactionTimeStamp": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "invPayments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.InvPayment"
+                    }
+                },
+                "payType": {
+                    "type": "string"
+                },
+                "referenceNum": {
+                    "type": "string"
+                },
+                "statementDesc": {
+                    "type": "string"
+                },
+                "totalPayment": {
+                    "type": "number"
+                }
+            }
+        },
+        "requests.CompletePasswordRecoveryRequest": {
             "description": "Complete password recovery request payload",
             "type": "object",
             "required": [
@@ -15444,6 +17597,10 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_requests.CreateRoleRequest": {
+        "requests.CreatePaymentSessionRequest": {
+            "type": "object"
+        },
+        "requests.CreateRoleRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -15837,21 +17994,42 @@ const docTemplate = `{
         },
         "github_com_dockworks_dm-web-backend_internal_requests.EstimateRetrieveListRequest": {
             "type": "object",
+            "required": [
+                "page",
+                "pageSize"
+            ],
             "properties": {
+                "detail": {
+                    "type": "boolean"
+                },
+                "lastUpdateDate": {
+                    "type": "string"
+                },
+                "lastUpdateTime": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "pageSize": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
                 "status": {
                     "type": "string"
                 },
-                "withDetail": {
-                    "description": "Add fields as needed based on API requirements",
-                    "type": "boolean"
+                "woIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
         "github_com_dockworks_dm-web-backend_internal_requests.EstimateUpdateRequest": {
             "type": "object",
-            "required": [
-                "estId"
-            ],
             "properties": {
                 "attachments": {
                     "type": "array",
@@ -15942,21 +18120,33 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_requests.InitiatePaymentRequest": {
+        "requests.InvPayment": {
             "type": "object",
             "required": [
-                "amount",
                 "customerId",
-                "invoiceId"
+                "description",
+                "invoiceId",
+                "locationCode",
+                "paymentAmt"
             ],
             "properties": {
-                "amount": {
-                    "type": "number"
-                },
                 "customerId": {
+                    "type": "string"
+                },
+                "depositType": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "invoiceId": {
                     "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "paymentAmt": {
+                    "type": "number"
                 }
             }
         },
@@ -16113,6 +18303,24 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_requests.RedisSetRequest": {
+        "requests.PaymentDetailsRequest": {
+            "type": "object",
+            "required": [
+                "payment_data"
+            ],
+            "properties": {
+                "payload": {
+                    "type": "string"
+                },
+                "payment_data": {
+                    "type": "string"
+                },
+                "redirect_result": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.RedisSetRequest": {
             "type": "object",
             "required": [
                 "key",
@@ -16179,20 +18387,49 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_requests.RetrieveInventoryRequest": {
+        "requests.RetrieveAllOperationsRequest": {
             "type": "object",
             "required": [
-                "partNumbers",
+                "page",
+                "pageSize"
+            ],
+            "properties": {
+                "page": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "pageSize": {
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1
+                }
+            }
+        },
+        "requests.RetrieveInventoryRequest": {
+            "type": "object",
+            "required": [
                 "systemId"
             ],
             "properties": {
-                "partNumbers": {
+                "itemIds": {
                     "type": "array",
-                    "minItems": 1,
                     "items": {
                         "type": "string"
                     }
                 },
+                "lastModifiedDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "onHandOnly": {
+                    "type": "boolean"
+                },
                 "systemId": {
+                    "type": "string"
+                },
+                "vendorId": {
                     "type": "string"
                 }
             }
@@ -16414,6 +18651,29 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_requests.UpdateAddressRequest": {
+        "requests.SubmitBatchRequest": {
+            "type": "object",
+            "required": [
+                "cashReceipts",
+                "locationCode",
+                "postBatch"
+            ],
+            "properties": {
+                "cashReceipts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.CashReceipt"
+                    }
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "postBatch": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "requests.UpdateAddressRequest": {
             "type": "object",
             "properties": {
                 "city": {
@@ -17012,31 +19272,38 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "date",
-                "hours",
-                "operationId",
-                "rate",
-                "technicianId",
+                "opCode",
+                "startTime",
+                "stopTime",
+                "techId",
                 "workOrderId"
             ],
             "properties": {
+                "comments": {
+                    "type": "string"
+                },
                 "date": {
                     "type": "string"
                 },
-                "description": {
+                "flagLaborFinished": {
+                    "type": "boolean"
+                },
+                "isApproved": {
+                    "type": "boolean"
+                },
+                "opCode": {
                     "type": "string"
                 },
-                "hours": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "operationId": {
+                "startTime": {
                     "type": "string"
                 },
-                "rate": {
-                    "type": "number",
-                    "minimum": 0
+                "stopTime": {
+                    "type": "string"
                 },
-                "technicianId": {
+                "techId": {
+                    "type": "string"
+                },
+                "timeEntryUId": {
                     "type": "string"
                 },
                 "workOrderId": {
@@ -17196,6 +19463,39 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_responses.BedrockDetectFormFieldsResponse": {
+        "responses.BatchSubmissionResponse": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "string"
+                },
+                "location_code": {
+                    "type": "string"
+                },
+                "post_batch": {
+                    "type": "boolean"
+                },
+                "post_result": {
+                    "type": "string"
+                },
+                "receipt_count": {
+                    "type": "integer"
+                },
+                "reference_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "submitted_at": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.BedrockDetectFormFieldsResponse": {
             "type": "object",
             "properties": {
                 "output": {
@@ -19733,6 +22033,175 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.PaymentInitiationResponse"
+        "responses.PaymentListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PaymentResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "adyenPspReference": {
+                    "type": "string"
+                },
+                "adyenSessionId": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "string"
+                },
+                "authCode": {
+                    "type": "string"
+                },
+                "authorizationStatus": {
+                    "type": "string"
+                },
+                "authorizedAt": {
+                    "type": "string"
+                },
+                "batchId": {
+                    "type": "string"
+                },
+                "batchPaymentId": {
+                    "type": "string"
+                },
+                "batchStatus": {
+                    "type": "string"
+                },
+                "completedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "entityId": {
+                    "type": "string"
+                },
+                "entityType": {
+                    "type": "string"
+                },
+                "errorCode": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "failedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "internalNotes": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "paymentDate": {
+                    "type": "string"
+                },
+                "paymentMethod": {
+                    "type": "string"
+                },
+                "referenceNumber": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "transactionId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentResultResponse": {
+            "type": "object",
+            "properties": {
+                "pspReference": {
+                    "type": "string"
+                },
+                "refusalReason": {
+                    "type": "string"
+                },
+                "resultCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentSessionResponse": {
+            "type": "object",
+            "properties": {
+                "clientKey": {
+                    "type": "string"
+                },
+                "sessionData": {
+                    "type": "string"
+                },
+                "sessionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentStatsResponse": {
+            "type": "object",
+            "properties": {
+                "authorizedCount": {
+                    "type": "integer"
+                },
+                "completedCount": {
+                    "type": "integer"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "failedCount": {
+                    "type": "integer"
+                },
+                "pendingCount": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "totalCompletedAmount": {
+                    "type": "string"
+                },
+                "totalCount": {
+                    "type": "integer"
                 }
             }
         },
@@ -19977,13 +22446,47 @@ const docTemplate = `{
         "github_com_dockworks_dm-web-backend_internal_responses.ServiceOPCategoryCodesResponse": {
             "type": "object",
             "properties": {
-                "data": {}
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
             }
         },
         "github_com_dockworks_dm-web-backend_internal_responses.ServiceOpCodesResponse": {
             "type": "object",
             "properties": {
-                "data": {}
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
             }
         },
         "github_com_dockworks_dm-web-backend_internal_responses.ServiceOperationDescriptionsResponse": {
@@ -20001,7 +22504,24 @@ const docTemplate = `{
         "github_com_dockworks_dm-web-backend_internal_responses.ServiceWOCategoryCodesResponse": {
             "type": "object",
             "properties": {
-                "data": {}
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
             }
         },
         "github_com_dockworks_dm-web-backend_internal_responses.SpecialOrderResponse": {
@@ -20323,6 +22843,41 @@ const docTemplate = `{
             }
         },
         "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderCompletedResponse": {
+        "responses.WebhookResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkOrderAllOperationsResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.WorkOrderCompletedResponse": {
             "type": "object",
             "properties": {
                 "data": {

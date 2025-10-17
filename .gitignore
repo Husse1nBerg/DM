@@ -37,3 +37,6 @@ logs/
 # PostgreSQL data directory
 pgdata/
 *.csv
+
+# Dockmaser
+DockMaster_API-main

@@ -6,6 +6,7 @@ import (
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -638,7 +639,8 @@ func (h *InventoryHandler) ListReceivedSpecialOrders(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param systemId query string true "System ID"
-// @Param searchTerm query string true "Search Term"
+// @Param searchString query string true "Search String"
+// @Param directHit query boolean false "Direct Hit - only return if single match found" default(false)
 // @Success 200 {array} responses.InventorySearchResultResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
@@ -671,11 +673,12 @@ func (h *InventoryHandler) SearchInventory(c echo.Context) error {
 
 	orgID := marina.OrganizationID
 
-	dmeResponse, err := h.server.DME.SearchInventory(ctx, req.SearchTerm, orgID, req.SystemID)
+	dmeResponse, err := h.server.DME.SearchInventory(ctx, req.SearchString, req.DirectHit, orgID, req.SystemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to search inventory",
 			zap.Error(err),
-			zap.String("searchTerm", req.SearchTerm))
+			zap.String("searchString", req.SearchString),
+			zap.Bool("directHit", req.DirectHit))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
@@ -746,7 +749,7 @@ func (h *InventoryHandler) FindParts(c echo.Context) error {
 
 // RetrieveInventory godoc
 // @Summary Retrieve inventory records
-// @Description Retrieves inventory records from full inventory
+// @Description Retrieves inventory records from full inventory using query parameters
 // @Tags Inventory
 // @Accept json
 // @Produce json
@@ -783,11 +786,20 @@ func (h *InventoryHandler) RetrieveInventory(c echo.Context) error {
 
 	orgID := marina.OrganizationID
 
-	dmeResponse, err := h.server.DME.RetrieveInventory(ctx, req.PartNumbers, orgID, req.SystemID)
+	// Build the query object for Dockmaster API
+	query := dme.RetrieveInventoryQuery{
+		LocationCode:     req.LocationCode,
+		LastModifiedDate: req.LastModifiedDate,
+		OnHandOnly:       req.OnHandOnly,
+		VendorID:         req.VendorID,
+		ItemIds:          req.ItemIds,
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveInventory(ctx, query, orgID, req.SystemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve inventory",
 			zap.Error(err),
-			zap.Any("partNumbers", req.PartNumbers))
+			zap.Any("query", query))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
