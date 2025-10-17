@@ -8564,7 +8564,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves marinas associated with the current authenticated user",
+                "description": "Retrieves marinas associated with the current authenticated user including plan details",
                 "consumes": [
                     "application/json"
                 ],
@@ -8574,15 +8574,12 @@ const docTemplate = `{
                 "tags": [
                     "Marinas"
                 ],
-                "summary": "Get my user marinas",
+                "summary": "Get my user marinas with plan details",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/responses.MarinaListResponse"
-                            }
+                            "$ref": "#/definitions/responses.MarinaWithPlansList"
                         }
                     },
                     "400": {
@@ -19362,6 +19359,44 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.DocumentPlanResponse": {
+            "description": "Document plan data including limits and pricing",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "documentLimit": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMostPopular": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthlyPrice": {
+                    "type": "number",
+                    "example": 9.99
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Basic Document Plan"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2024-01-02T00:00:00Z"
+                },
+                "userLimit": {
+                    "type": "string",
+                    "example": "Unlimited Users"
+                }
+            }
+        },
         "responses.DocumentResponse": {
             "description": "Document data including file path, file type, and size",
             "type": "object",
@@ -20348,6 +20383,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
+                "aiComposeMessageUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "aiFormDetectionUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "country": {
                     "type": "string",
                     "example": "USA"
@@ -20546,6 +20589,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
+                "aiComposeMessageUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "aiFormDetectionUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "country": {
                     "type": "string",
                     "example": "USA"
@@ -20660,6 +20711,51 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.MarinaWithPlansList": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.MarinaWithPlansResponse"
+                    }
+                },
+                "lastPage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "perPage": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "responses.MarinaWithPlansResponse": {
+            "description": "Marina data with all associated plans for usage tracking",
+            "type": "object",
+            "properties": {
+                "documentPlan": {
+                    "$ref": "#/definitions/responses.DocumentPlanResponse"
+                },
+                "marina": {
+                    "$ref": "#/definitions/responses.MarinaResponse"
+                },
+                "notesMessagesPlan": {
+                    "$ref": "#/definitions/responses.NotesMessagesPlanResponse"
+                },
+                "storagePlan": {
+                    "$ref": "#/definitions/responses.StoragePlanResponse"
+                }
+            }
+        },
         "responses.MessageListResponse": {
             "description": "Paginated list of messages",
             "type": "object",
@@ -20750,6 +20846,48 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.MessageResponse"
+                }
+            }
+        },
+        "responses.NotesMessagesPlanResponse": {
+            "description": "Notes and messages plan data including limits and pricing",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "emailLimit": {
+                    "type": "string",
+                    "example": "Unlimited"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMostPopular": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthlyPrice": {
+                    "type": "number",
+                    "example": 29.99
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Basic Plan"
+                },
+                "textLimit": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2024-01-02T00:00:00Z"
+                },
+                "userLimit": {
+                    "type": "string",
+                    "example": "Unlimited"
                 }
             }
         },
@@ -21572,6 +21710,44 @@ const docTemplate = `{
                 },
                 "vendorName": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.StoragePlanResponse": {
+            "description": "Storage plan data including limits and pricing",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMostPopular": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthlyPrice": {
+                    "type": "number",
+                    "example": 19.99
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Basic Storage"
+                },
+                "storageLimitGB": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2024-01-02T00:00:00Z"
+                },
+                "userLimit": {
+                    "type": "string",
+                    "example": "Unlimited"
                 }
             }
         },

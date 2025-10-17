@@ -28,3 +28,9 @@ SELECT * FROM document_plans ORDER BY monthly_price ASC, name ASC;
 
 -- name: GetDocumentPlanByName :one
 SELECT * FROM document_plans WHERE name = $1;
+
+-- name: GetMarinaDocumentPlan :one
+SELECT dp.* 
+FROM document_plans dp
+JOIN marinas m ON m.document_plan_id = dp.id
+WHERE m.id = $1;

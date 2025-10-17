@@ -926,26 +926,28 @@ func (h *MarinaHandler) GetUserMarinas(c echo.Context) error {
 	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
 }
 
-// GetMyUserMarinas retrieves marinas associated with the current user
+// GetMyUserMarinas retrieves marinas associated with the current user with plan details
 //
-//	@Summary		Get my user marinas
-//	@Description	Retrieves marinas associated with the current authenticated user
+//	@Summary		Get my user marinas with plan details
+//	@Description	Retrieves marinas associated with the current authenticated user including plan details
 //	@Tags			Marinas
 //	@Accept			json
 //	@Produce		json
-//	@Success		200			{array}		responses.MarinaListResponse
+//	@Success		200			{object}	responses.MarinaWithPlansList
 //	@Failure		400			{object}	responses.BaseResponse
 //	@Failure		500			{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/marinas/user [get]
 func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
+	ctx := c.Request().Context()
+
 	// Get user ID from the token
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID
 
-	// Get all marinas for this user to calculate total
-	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	// Get all marinas for this user
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(ctx, userID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -953,10 +955,47 @@ func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
 
 	if total == 0 {
 		// Return empty response if no marinas found
-		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
+		return responses.NewMarinasWithPlansResponse([]responses.MarinaWithPlansResponse{}, 0, int32(total), 1).JSON(c)
 	}
 
-	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
+	// Build response with plan details
+	marinasWithPlans := make([]responses.MarinaWithPlansResponse, len(allUserMarinas))
+	for i, marina := range allUserMarinas {
+		marinaResponse := responses.ConvertMarinaToResponse(marina)
+
+		// Fetch document plan
+		var documentPlanPtr *responses.DocumentPlanResponse
+		documentPlan, err := h.server.DB.Queries().GetDocumentPlanByID(ctx, marina.DocumentPlanID)
+		if err == nil {
+			docPlanResp := responses.ConvertDocumentPlanToResponse(documentPlan)
+			documentPlanPtr = &docPlanResp
+		}
+
+		// Fetch storage plan
+		var storagePlanPtr *responses.StoragePlanResponse
+		storagePlan, err := h.server.DB.Queries().GetStoragePlanByID(ctx, marina.StoragePlanID)
+		if err == nil {
+			storagePlanResp := responses.ConvertStoragePlanToResponse(storagePlan)
+			storagePlanPtr = &storagePlanResp
+		}
+
+		// Fetch notes/messages plan
+		var notesMessagesPlanPtr *responses.NotesMessagesPlanResponse
+		notesMessagesPlan, err := h.server.DB.Queries().GetNotesMessagesPlanByID(ctx, marina.NotesMessagesPlanID)
+		if err == nil {
+			notesMsgPlanResp := responses.ConvertNotesMessagesPlanToResponse(notesMessagesPlan)
+			notesMessagesPlanPtr = &notesMsgPlanResp
+		}
+
+		marinasWithPlans[i] = responses.MarinaWithPlansResponse{
+			Marina:            marinaResponse,
+			DocumentPlan:      documentPlanPtr,
+			StoragePlan:       storagePlanPtr,
+			NotesMessagesPlan: notesMessagesPlanPtr,
+		}
+	}
+
+	return responses.NewMarinasWithPlansResponse(marinasWithPlans, total, int32(total), 1).JSON(c)
 }
 
 // GetMarinasOverCurrentLimit retrieves marinas that are over their current limit

@@ -4,9 +4,11 @@ INSERT INTO marina_usage_history (
     storage_usage,
     email_usage,
     text_usage,
-    document_usage
+    document_usage,
+    ai_form_detection_usage,
+    ai_compose_message_usage
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- name: GetMarinaUsageHistoryByID :one
@@ -38,6 +40,8 @@ SET
     email_usage = $3,
     text_usage = $4,
     document_usage = $5,
+    ai_form_detection_usage = $6,
+    ai_compose_message_usage = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;

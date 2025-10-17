@@ -14,9 +14,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/textract"
 	"github.com/aws/aws-sdk-go-v2/service/textract/types"
+	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,6 +30,85 @@ type AIHandler struct {
 
 func NewAIHandler(server *s.Server) *AIHandler {
 	return &AIHandler{server: server}
+}
+
+// getMarinaIDFromContext extracts marina ID from JWT token and user data
+func (h *AIHandler) getMarinaIDFromContext(c echo.Context) (uuid.UUID, error) {
+	userToken := c.Get("user").(*jwt.Token)
+	if userToken == nil {
+		return uuid.Nil, fmt.Errorf("authentication required")
+	}
+
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+
+	// Fetch the user's current marina_id from the database
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to load user: %w", err)
+	}
+
+	return user.MarinaID, nil
+}
+
+// hasDocumentPaidPlan checks if the marina has a paid document plan
+func (h *AIHandler) hasDocumentPaidPlan(ctx context.Context, marinaID uuid.UUID) (bool, error) {
+	// Get marina's document plan
+	documentPlan, err := h.server.DB.Queries().GetMarinaDocumentPlan(ctx, marinaID)
+	if err != nil {
+		return false, fmt.Errorf("failed to get document plan: %w", err)
+	}
+
+	// Allow prepaid plans
+	if documentPlan.Name == "Prepaid" {
+		return true, nil
+	}
+
+	// Block free plans and pay-as-you-go plans
+	if documentPlan.MonthlyPrice == 0 || documentPlan.Name == "Pay as You Go" {
+		return false, nil
+	}
+
+	// Allow paid monthly plans
+	return documentPlan.MonthlyPrice > 0, nil
+}
+
+// hasAnyPaidPlan checks if the marina has any paid plan (storage, notes/messages, or document)
+func (h *AIHandler) hasAnyPaidPlan(ctx context.Context, marinaID uuid.UUID) (bool, error) {
+	// Get marina to access plan IDs
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+	if err != nil {
+		return false, fmt.Errorf("failed to get marina: %w", err)
+	}
+
+	// Check document plan
+	documentPlan, err := h.server.DB.Queries().GetDocumentPlanByID(ctx, marina.DocumentPlanID)
+	if err == nil {
+		// Allow prepaid or paid monthly plans (excluding pay-as-you-go)
+		if documentPlan.Name == "Prepaid" || (documentPlan.MonthlyPrice > 0 && documentPlan.Name != "Pay as You Go") {
+			return true, nil
+		}
+	}
+
+	// Check storage plan
+	storagePlan, err := h.server.DB.Queries().GetStoragePlanByID(ctx, marina.StoragePlanID)
+	if err == nil {
+		// Allow prepaid or paid monthly plans (excluding pay-as-you-go)
+		if storagePlan.Name == "Prepaid" || (storagePlan.MonthlyPrice > 0 && storagePlan.Name != "Pay as You Go") {
+			return true, nil
+		}
+	}
+
+	// Check notes/messages plan
+	notesMessagesPlan, err := h.server.DB.Queries().GetNotesMessagesPlanByID(ctx, marina.NotesMessagesPlanID)
+	if err == nil {
+		// Allow prepaid or paid monthly plans (excluding pay-as-you-go)
+		if notesMessagesPlan.Name == "Prepaid" || (notesMessagesPlan.MonthlyPrice > 0 && notesMessagesPlan.Name != "Pay as You Go") {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // RewriteHandler handles rewriting customer-facing messages using Bedrock API
@@ -41,6 +124,24 @@ func NewAIHandler(server *s.Server) *AIHandler {
 // @Router /ai/compose-message [post]
 func (h *AIHandler) RewriteHandler(c echo.Context) error {
 	logger := h.server.Logger
+	ctx := c.Request().Context()
+
+	// Get marina ID from user context
+	marinaID, err := h.getMarinaIDFromContext(c)
+	if err != nil {
+		logger.Zap.Errorw("Failed to get marina ID", "error", err)
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+	}
+
+	// Check if marina has any paid plan
+	hasPaidPlan, err := h.hasAnyPaidPlan(ctx, marinaID)
+	if err != nil {
+		logger.Zap.Errorw("Failed to check paid plan status", "error", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to verify subscription status").JSON(c)
+	}
+	if !hasPaidPlan {
+		return responses.NewErrorResponse(http.StatusForbidden, "AI compose message is only available on paid plans. Please upgrade your plan to access this feature.").JSON(c)
+	}
 
 	// Parse and validate request
 	req := new(requests.BedrockRewriteRequest)
@@ -129,6 +230,16 @@ func (h *AIHandler) RewriteHandler(c echo.Context) error {
 		},
 	}
 
+	// Increment AI compose message usage counter
+	_, err = h.server.DB.Queries().IncrementMarinaAIComposeMessageUsage(ctx, db.IncrementMarinaAIComposeMessageUsageParams{
+		ID:      marinaID,
+		Column2: 1,
+	})
+	if err != nil {
+		logger.Zap.Errorw("Failed to increment AI compose message usage", "error", err)
+		// Don't fail the request if usage tracking fails
+	}
+
 	// Return response to client
 	return c.JSON(http.StatusOK, bedrockResponse)
 }
@@ -147,6 +258,24 @@ func (h *AIHandler) RewriteHandler(c echo.Context) error {
 // @Router /ai/detect-form-fields [post]
 func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 	logger := h.server.Logger
+	ctx := c.Request().Context()
+
+	// Get marina ID from user context
+	marinaID, err := h.getMarinaIDFromContext(c)
+	if err != nil {
+		logger.Zap.Errorw("Failed to get marina ID", "error", err)
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authentication required").JSON(c)
+	}
+
+	// Check if marina has a paid document plan
+	hasPaidDocumentPlan, err := h.hasDocumentPaidPlan(ctx, marinaID)
+	if err != nil {
+		logger.Zap.Errorw("Failed to check document plan status", "error", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to verify subscription status").JSON(c)
+	}
+	if !hasPaidDocumentPlan {
+		return responses.NewErrorResponse(http.StatusForbidden, "AI form field detection is only available on paid document plans. Please upgrade your plan to access this feature.").JSON(c)
+	}
 
 	// Get file from form
 	file, header, err := c.Request().FormFile("file")
@@ -413,6 +542,16 @@ func (h *AIHandler) DetectFormFieldsHandler(c echo.Context) error {
 				Fields: fields,
 			},
 		},
+	}
+
+	// Increment AI form detection usage counter
+	_, err = h.server.DB.Queries().IncrementMarinaAIFormDetectionUsage(ctx, db.IncrementMarinaAIFormDetectionUsageParams{
+		ID:      marinaID,
+		Column2: 1,
+	})
+	if err != nil {
+		logger.Zap.Errorw("Failed to increment AI form detection usage", "error", err)
+		// Don't fail the request if usage tracking fails
 	}
 
 	// Return the response as JSON

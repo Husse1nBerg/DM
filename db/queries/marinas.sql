@@ -169,7 +169,9 @@ SET name = $2,
     modules = $21,
     document_usage = COALESCE($22, document_usage),
     internal_announcement = $23,
-    external_announcement = $24
+    external_announcement = $24,
+    ai_form_detection_usage = COALESCE($25, ai_form_detection_usage),
+    ai_compose_message_usage = COALESCE($26, ai_compose_message_usage)
 WHERE id = $1
 RETURNING *;
 -- name: SoftDeleteMarina :exec
@@ -247,6 +249,28 @@ WHERE id = $1
 RETURNING *;
 -- name: GetMarinaDocumentUsage :one
 SELECT COALESCE(document_usage, 0)::bigint
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL;
+-- name: IncrementMarinaAIFormDetectionUsage :one
+UPDATE marinas
+SET ai_form_detection_usage = COALESCE(ai_form_detection_usage, 0)::smallint + $2::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: GetMarinaAIFormDetectionUsage :one
+SELECT COALESCE(ai_form_detection_usage, 0)::smallint
+FROM marinas
+WHERE id = $1
+    AND deleted_at IS NULL;
+-- name: IncrementMarinaAIComposeMessageUsage :one
+UPDATE marinas
+SET ai_compose_message_usage = COALESCE(ai_compose_message_usage, 0)::smallint + $2::smallint,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+-- name: GetMarinaAIComposeMessageUsage :one
+SELECT COALESCE(ai_compose_message_usage, 0)::smallint
 FROM marinas
 WHERE id = $1
     AND deleted_at IS NULL;
