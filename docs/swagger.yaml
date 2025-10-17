@@ -3321,6 +3321,34 @@ definitions:
       data:
         $ref: '#/definitions/responses.DMESysIDResponse'
     type: object
+  responses.DocumentPlanResponse:
+    description: Document plan data including limits and pricing
+    properties:
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      documentLimit:
+        example: 1000
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isMostPopular:
+        example: false
+        type: boolean
+      monthlyPrice:
+        example: 9.99
+        type: number
+      name:
+        example: Basic Document Plan
+        type: string
+      updatedAt:
+        example: "2024-01-02T00:00:00Z"
+        type: string
+      userLimit:
+        example: Unlimited Users
+        type: string
+    type: object
   responses.DocumentResponse:
     description: Document data including file path, file type, and size
     properties:
@@ -4018,6 +4046,12 @@ definitions:
       addressId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
+      aiComposeMessageUsage:
+        example: 0
+        type: integer
+      aiFormDetectionUsage:
+        example: 0
+        type: integer
       country:
         example: USA
         type: string
@@ -4026,6 +4060,8 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlan:
+        $ref: '#/definitions/responses.DocumentPlanResponse'
       documentPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -4067,6 +4103,8 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlan:
+        $ref: '#/definitions/responses.NotesMessagesPlanResponse'
       notesMessagesPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -4076,6 +4114,8 @@ definitions:
       phone:
         example: "+15551234567"
         type: string
+      storagePlan:
+        $ref: '#/definitions/responses.StoragePlanResponse'
       storagePlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -4162,6 +4202,12 @@ definitions:
       addressId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
+      aiComposeMessageUsage:
+        example: 0
+        type: integer
+      aiFormDetectionUsage:
+        example: 0
+        type: integer
       country:
         example: USA
         type: string
@@ -4170,6 +4216,8 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlan:
+        $ref: '#/definitions/responses.DocumentPlanResponse'
       documentPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -4211,6 +4259,8 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlan:
+        $ref: '#/definitions/responses.NotesMessagesPlanResponse'
       notesMessagesPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -4220,6 +4270,8 @@ definitions:
       phone:
         example: "+15551234567"
         type: string
+      storagePlan:
+        $ref: '#/definitions/responses.StoragePlanResponse'
       storagePlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -4311,6 +4363,37 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.MessageResponse'
+    type: object
+  responses.NotesMessagesPlanResponse:
+    description: Notes and messages plan data including limits and pricing
+    properties:
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      emailLimit:
+        example: Unlimited
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isMostPopular:
+        example: false
+        type: boolean
+      monthlyPrice:
+        example: 29.99
+        type: number
+      name:
+        example: Basic Plan
+        type: string
+      textLimit:
+        example: 1000
+        type: integer
+      updatedAt:
+        example: "2024-01-02T00:00:00Z"
+        type: string
+      userLimit:
+        example: Unlimited
+        type: string
     type: object
   responses.NotificationListResponse:
     description: Paginated list of notifications
@@ -5016,6 +5099,34 @@ definitions:
       vendorId:
         type: string
       vendorName:
+        type: string
+    type: object
+  responses.StoragePlanResponse:
+    description: Storage plan data including limits and pricing
+    properties:
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isMostPopular:
+        example: false
+        type: boolean
+      monthlyPrice:
+        example: 19.99
+        type: number
+      name:
+        example: Basic Storage
+        type: string
+      storageLimitGB:
+        example: 10
+        type: integer
+      updatedAt:
+        example: "2024-01-02T00:00:00Z"
+        type: string
+      userLimit:
+        example: Unlimited
         type: string
     type: object
   responses.UnreadCountResponse:
@@ -11105,6 +11216,7 @@ paths:
       consumes:
       - application/json
       description: Retrieves marinas associated with the current authenticated user
+        including plan details
       produces:
       - application/json
       responses:
@@ -11124,7 +11236,7 @@ paths:
             $ref: '#/definitions/responses.BaseResponse'
       security:
       - ApiKeyAuth: []
-      summary: Get my user marinas
+      summary: Get my user marinas with plan details
       tags:
       - Marinas
   /marinas/user/{userId}:

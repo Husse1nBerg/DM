@@ -225,35 +225,37 @@ type Invite struct {
 }
 
 type Marina struct {
-	ID                   uuid.UUID
-	OrganizationID       uuid.UUID
-	Name                 string
-	Email                string
-	Location             *string
-	Phone                *string
-	Country              *string
-	Currency             *string
-	WorkingHours         []byte
-	Website              *string
-	Image                *string
-	MaxUsers             *int32
-	IsActive             *bool
-	IsTest               *bool
-	CreatedAt            pgtype.Timestamp
-	UpdatedAt            pgtype.Timestamp
-	DeletedAt            pgtype.Timestamp
-	AddressID            uuid.UUID
-	SystemID             *string
-	StorageUsage         *int64
-	EmailUsage           *int16
-	TextUsage            *int16
-	NotesMessagesPlanID  uuid.UUID
-	StoragePlanID        uuid.UUID
-	Modules              []byte
-	InternalAnnouncement *string
-	ExternalAnnouncement *string
-	DocumentPlanID       uuid.UUID
-	DocumentUsage        *int64
+	ID                    uuid.UUID
+	OrganizationID        uuid.UUID
+	Name                  string
+	Email                 string
+	Location              *string
+	Phone                 *string
+	Country               *string
+	Currency              *string
+	WorkingHours          []byte
+	Website               *string
+	Image                 *string
+	MaxUsers              *int32
+	IsActive              *bool
+	IsTest                *bool
+	CreatedAt             pgtype.Timestamp
+	UpdatedAt             pgtype.Timestamp
+	DeletedAt             pgtype.Timestamp
+	AddressID             uuid.UUID
+	SystemID              *string
+	StorageUsage          *int64
+	EmailUsage            *int16
+	TextUsage             *int16
+	NotesMessagesPlanID   uuid.UUID
+	StoragePlanID         uuid.UUID
+	Modules               []byte
+	InternalAnnouncement  *string
+	ExternalAnnouncement  *string
+	DocumentPlanID        uuid.UUID
+	DocumentUsage         *int64
+	AiFormDetectionUsage  *int16
+	AiComposeMessageUsage *int16
 }
 
 type MarinaGallery struct {
@@ -268,15 +270,17 @@ type MarinaGallery struct {
 }
 
 type MarinaUsageHistory struct {
-	ID            uuid.UUID
-	MarinaID      uuid.UUID
-	StorageUsage  int64
-	EmailUsage    int16
-	TextUsage     int16
-	CreatedAt     pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	MonthDate     pgtype.Date
-	DocumentUsage *int64
+	ID                    uuid.UUID
+	MarinaID              uuid.UUID
+	StorageUsage          int64
+	EmailUsage            int16
+	TextUsage             int16
+	CreatedAt             pgtype.Timestamptz
+	UpdatedAt             pgtype.Timestamptz
+	MonthDate             pgtype.Date
+	DocumentUsage         *int64
+	AiFormDetectionUsage  *int16
+	AiComposeMessageUsage *int16
 }
 
 type Message struct {

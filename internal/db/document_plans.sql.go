@@ -131,6 +131,29 @@ func (q *Queries) GetDocumentPlanByName(ctx context.Context, name string) (Docum
 	return i, err
 }
 
+const getMarinaDocumentPlan = `-- name: GetMarinaDocumentPlan :one
+SELECT dp.id, dp.name, dp.monthly_price, dp.document_limit, dp.user_limit, dp.is_most_popular, dp.created_at, dp.updated_at 
+FROM document_plans dp
+JOIN marinas m ON m.document_plan_id = dp.id
+WHERE m.id = $1
+`
+
+func (q *Queries) GetMarinaDocumentPlan(ctx context.Context, id uuid.UUID) (DocumentPlan, error) {
+	row := q.db.QueryRow(ctx, getMarinaDocumentPlan, id)
+	var i DocumentPlan
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.MonthlyPrice,
+		&i.DocumentLimit,
+		&i.UserLimit,
+		&i.IsMostPopular,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateDocumentPlan = `-- name: UpdateDocumentPlan :one
 UPDATE document_plans
 SET

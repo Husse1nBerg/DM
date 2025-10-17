@@ -52,3 +52,4 @@ services:
 volumes:
   postgres_data:
   postgres_test_data:
+  valkey_data:
