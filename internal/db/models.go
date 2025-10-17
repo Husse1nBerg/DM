@@ -431,6 +431,26 @@ type StoragePlan struct {
 	UpdatedAt      pgtype.Timestamp
 }
 
+type TaxConfiguration struct {
+	ID                        uuid.UUID
+	MarinaID                  uuid.UUID
+	ConvenienceFee            pgtype.Numeric
+	ConvenienceFeeType        string
+	ConvenienceFeeEnabled     bool
+	ConvenienceFeeDescription *string
+	Surcharge                 pgtype.Numeric
+	SurchargeType             string
+	SurchargeEnabled          bool
+	SurchargeDescription      *string
+	TaxRate                   float64
+	TaxEnabled                bool
+	TaxDescription            *string
+	IsActive                  bool
+	CreatedAt                 pgtype.Timestamptz
+	UpdatedAt                 pgtype.Timestamptz
+	CreatedBy                 uuid.UUID
+}
+
 type User struct {
 	ID                  uuid.UUID
 	Username            string

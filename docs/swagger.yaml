@@ -1191,6 +1191,14 @@ definitions:
     - name
     - ownerId
     type: object
+  requests.CalculateFeeRequest:
+    properties:
+      amount:
+        minimum: 0
+        type: number
+    required:
+    - amount
+    type: object
   requests.CashReceipt:
     properties:
       ccAuthCode:
@@ -1614,6 +1622,50 @@ definitions:
     - name
     type: object
   requests.CreatePaymentSessionRequest:
+    type: object
+  requests.CreatePaymentTaxRequest:
+    properties:
+      convenienceFee:
+        minimum: 0
+        type: number
+      convenienceFeeDescription:
+        type: string
+      convenienceFeeEnabled:
+        type: boolean
+      convenienceFeeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      isActive:
+        type: boolean
+      marinaId:
+        type: string
+      surcharge:
+        minimum: 0
+        type: number
+      surchargeDescription:
+        type: string
+      surchargeEnabled:
+        type: boolean
+      surchargeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      taxDescription:
+        type: string
+      taxEnabled:
+        type: boolean
+      taxRate:
+        minimum: 0
+        type: number
+    required:
+    - convenienceFee
+    - convenienceFeeType
+    - marinaId
+    - surcharge
+    - surchargeType
     type: object
   requests.CreateRoleRequest:
     properties:
@@ -2629,6 +2681,42 @@ definitions:
       website:
         example: https://updated-example.com
         type: string
+    type: object
+  requests.UpdatePaymentTaxRequest:
+    properties:
+      convenienceFee:
+        minimum: 0
+        type: number
+      convenienceFeeDescription:
+        type: string
+      convenienceFeeEnabled:
+        type: boolean
+      convenienceFeeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      isActive:
+        type: boolean
+      surcharge:
+        minimum: 0
+        type: number
+      surchargeDescription:
+        type: string
+      surchargeEnabled:
+        type: boolean
+      surchargeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      taxDescription:
+        type: string
+      taxEnabled:
+        type: boolean
+      taxRate:
+        minimum: 0
+        type: number
     type: object
   requests.UpdateRoleRequest:
     properties:
@@ -3756,6 +3844,29 @@ definitions:
       data:
         $ref: '#/definitions/dme.WorkOrder'
     type: object
+  responses.FeeCalculationResponse:
+    properties:
+      baseAmount:
+        type: number
+      convenienceFee:
+        type: number
+      convenienceFeeRate:
+        type: number
+      convenienceFeeType:
+        type: string
+      surcharge:
+        type: number
+      surchargeRate:
+        type: number
+      surchargeType:
+        type: string
+      tax:
+        type: number
+      taxRate:
+        type: number
+      totalAmount:
+        type: number
+    type: object
   responses.FuelInventoryResponse:
     properties:
       costPerUnit:
@@ -4843,6 +4954,58 @@ definitions:
         type: string
       totalCount:
         type: integer
+    type: object
+  responses.PaymentTaxListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.PaymentTaxResponse'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  responses.PaymentTaxResponse:
+    properties:
+      convenienceFee:
+        type: number
+      convenienceFeeDescription:
+        type: string
+      convenienceFeeEnabled:
+        type: boolean
+      convenienceFeeType:
+        type: string
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      marinaId:
+        type: string
+      surcharge:
+        type: number
+      surchargeDescription:
+        type: string
+      surchargeEnabled:
+        type: boolean
+      surchargeType:
+        type: string
+      taxDescription:
+        type: string
+      taxEnabled:
+        type: boolean
+      taxRate:
+        type: number
+      updatedAt:
+        type: string
     type: object
   responses.PurchaseOrderLineResponse:
     properties:
@@ -12431,6 +12594,257 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /payment-tax:
+    get:
+      consumes:
+      - application/json
+      description: Lists all payment tax configurations for the current user's marina
+        with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of payment tax configurations
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxListResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List payment tax configurations
+      tags:
+      - PaymentTax
+    post:
+      consumes:
+      - application/json
+      description: Creates a new payment tax configuration for convenience fees and
+        surcharges for a marina
+      parameters:
+      - description: Payment tax configuration request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePaymentTaxRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Payment tax configuration created successfully
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create payment tax configuration
+      tags:
+      - PaymentTax
+  /payment-tax/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently deletes a payment tax configuration
+      parameters:
+      - description: Payment tax configuration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration deleted successfully
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete payment tax configuration
+      tags:
+      - PaymentTax
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a payment tax configuration by ID
+      parameters:
+      - description: Payment tax configuration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment tax configuration
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get payment tax configuration
+      tags:
+      - PaymentTax
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing payment tax configuration
+      parameters:
+      - description: Payment tax configuration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdatePaymentTaxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated payment tax configuration
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update payment tax configuration
+      tags:
+      - PaymentTax
+  /payment-tax/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivates a payment tax configuration
+      parameters:
+      - description: Payment tax configuration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration deactivated successfully
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Deactivate payment tax configuration
+      tags:
+      - PaymentTax
+  /payment-tax/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the active payment tax configuration for the current
+        user's marina
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Active payment tax configuration
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get active marina payment tax configuration
+      tags:
+      - PaymentTax
+  /payment-tax/calculate:
+    post:
+      consumes:
+      - application/json
+      description: Calculates convenience fee, surcharge, and tax for a given amount
+        using the active configuration
+      parameters:
+      - description: Amount to calculate fees for
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CalculateFeeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Calculated fees
+          schema:
+            $ref: '#/definitions/responses.FeeCalculationResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: No active configuration found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Calculate fees
+      tags:
+      - PaymentTax
   /payments:
     get:
       consumes:

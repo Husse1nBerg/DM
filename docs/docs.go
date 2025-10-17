@@ -10739,6 +10739,394 @@ const docTemplate = `{
                 }
             }
         },
+        "/payment-tax": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Lists all payment tax configurations for the current user's marina with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "List payment tax configurations",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of payment tax configurations",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new payment tax configuration for convenience fees and surcharges for a marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Create payment tax configuration",
+                "parameters": [
+                    {
+                        "description": "Payment tax configuration request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePaymentTaxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Payment tax configuration created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-tax/active": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves the active payment tax configuration for the current user's marina",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Get active marina payment tax configuration",
+                "responses": {
+                    "200": {
+                        "description": "Active payment tax configuration",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-tax/calculate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Calculates convenience fee, surcharge, and tax for a given amount using the active configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Calculate fees",
+                "parameters": [
+                    {
+                        "description": "Amount to calculate fees for",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CalculateFeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Calculated fees",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FeeCalculationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "No active configuration found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-tax/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a payment tax configuration by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Get payment tax configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment tax configuration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment tax configuration",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing payment tax configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Update payment tax configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment tax configuration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdatePaymentTaxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated payment tax configuration",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Permanently deletes a payment tax configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Delete payment tax configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment tax configuration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-tax/{id}/deactivate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deactivates a payment tax configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Deactivate payment tax configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment tax configuration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration deactivated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments": {
             "get": {
                 "security": [
@@ -16965,6 +17353,18 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CalculateFeeRequest": {
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
         "requests.CashReceipt": {
             "type": "object",
             "required": [
@@ -17550,6 +17950,68 @@ const docTemplate = `{
         },
         "requests.CreatePaymentSessionRequest": {
             "type": "object"
+        },
+        "requests.CreatePaymentTaxRequest": {
+            "type": "object",
+            "required": [
+                "convenienceFee",
+                "convenienceFeeType",
+                "marinaId",
+                "surcharge",
+                "surchargeType"
+            ],
+            "properties": {
+                "convenienceFee": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "convenienceFeeDescription": {
+                    "type": "string"
+                },
+                "convenienceFeeEnabled": {
+                    "type": "boolean"
+                },
+                "convenienceFeeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "surcharge": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "surchargeDescription": {
+                    "type": "string"
+                },
+                "surchargeEnabled": {
+                    "type": "boolean"
+                },
+                "surchargeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                },
+                "taxDescription": {
+                    "type": "string"
+                },
+                "taxEnabled": {
+                    "type": "boolean"
+                },
+                "taxRate": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
         },
         "requests.CreateRoleRequest": {
             "type": "object",
@@ -18991,6 +19453,58 @@ const docTemplate = `{
                 "website": {
                     "type": "string",
                     "example": "https://updated-example.com"
+                }
+            }
+        },
+        "requests.UpdatePaymentTaxRequest": {
+            "type": "object",
+            "properties": {
+                "convenienceFee": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "convenienceFeeDescription": {
+                    "type": "string"
+                },
+                "convenienceFeeEnabled": {
+                    "type": "boolean"
+                },
+                "convenienceFeeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "surcharge": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "surchargeDescription": {
+                    "type": "string"
+                },
+                "surchargeEnabled": {
+                    "type": "boolean"
+                },
+                "surchargeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                },
+                "taxDescription": {
+                    "type": "string"
+                },
+                "taxEnabled": {
+                    "type": "boolean"
+                },
+                "taxRate": {
+                    "type": "number",
+                    "minimum": 0
                 }
             }
         },
@@ -20594,6 +21108,41 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.FeeCalculationResponse": {
+            "type": "object",
+            "properties": {
+                "baseAmount": {
+                    "type": "number"
+                },
+                "convenienceFee": {
+                    "type": "number"
+                },
+                "convenienceFeeRate": {
+                    "type": "number"
+                },
+                "convenienceFeeType": {
+                    "type": "string"
+                },
+                "surcharge": {
+                    "type": "number"
+                },
+                "surchargeRate": {
+                    "type": "number"
+                },
+                "surchargeType": {
+                    "type": "string"
+                },
+                "tax": {
+                    "type": "number"
+                },
+                "taxRate": {
+                    "type": "number"
+                },
+                "totalAmount": {
+                    "type": "number"
+                }
+            }
+        },
         "responses.FuelInventoryResponse": {
             "type": "object",
             "properties": {
@@ -22142,6 +22691,85 @@ const docTemplate = `{
                 },
                 "totalCount": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentTaxListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PaymentTaxResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentTaxResponse": {
+            "type": "object",
+            "properties": {
+                "convenienceFee": {
+                    "type": "number"
+                },
+                "convenienceFeeDescription": {
+                    "type": "string"
+                },
+                "convenienceFeeEnabled": {
+                    "type": "boolean"
+                },
+                "convenienceFeeType": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "surcharge": {
+                    "type": "number"
+                },
+                "surchargeDescription": {
+                    "type": "string"
+                },
+                "surchargeEnabled": {
+                    "type": "boolean"
+                },
+                "surchargeType": {
+                    "type": "string"
+                },
+                "taxDescription": {
+                    "type": "string"
+                },
+                "taxEnabled": {
+                    "type": "boolean"
+                },
+                "taxRate": {
+                    "type": "number"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
