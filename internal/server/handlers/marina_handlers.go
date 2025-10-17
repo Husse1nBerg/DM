@@ -933,7 +933,7 @@ func (h *MarinaHandler) GetUserMarinas(c echo.Context) error {
 //	@Tags			Marinas
 //	@Accept			json
 //	@Produce		json
-//	@Success		200			{object}	responses.MarinaWithPlansList
+//	@Success		200			{array}		responses.MarinaListResponse
 //	@Failure		400			{object}	responses.BaseResponse
 //	@Failure		500			{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
@@ -955,47 +955,39 @@ func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
 
 	if total == 0 {
 		// Return empty response if no marinas found
-		return responses.NewMarinasWithPlansResponse([]responses.MarinaWithPlansResponse{}, 0, int32(total), 1).JSON(c)
+		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
 	}
 
-	// Build response with plan details
-	marinasWithPlans := make([]responses.MarinaWithPlansResponse, len(allUserMarinas))
+	// Build response with plan details populated in MarinaResponse
+	marinaResponses := make([]responses.MarinaResponse, len(allUserMarinas))
 	for i, marina := range allUserMarinas {
 		marinaResponse := responses.ConvertMarinaToResponse(marina)
 
 		// Fetch document plan
-		var documentPlanPtr *responses.DocumentPlanResponse
 		documentPlan, err := h.server.DB.Queries().GetDocumentPlanByID(ctx, marina.DocumentPlanID)
 		if err == nil {
 			docPlanResp := responses.ConvertDocumentPlanToResponse(documentPlan)
-			documentPlanPtr = &docPlanResp
+			marinaResponse.DocumentPlan = &docPlanResp
 		}
 
 		// Fetch storage plan
-		var storagePlanPtr *responses.StoragePlanResponse
 		storagePlan, err := h.server.DB.Queries().GetStoragePlanByID(ctx, marina.StoragePlanID)
 		if err == nil {
 			storagePlanResp := responses.ConvertStoragePlanToResponse(storagePlan)
-			storagePlanPtr = &storagePlanResp
+			marinaResponse.StoragePlan = &storagePlanResp
 		}
 
 		// Fetch notes/messages plan
-		var notesMessagesPlanPtr *responses.NotesMessagesPlanResponse
 		notesMessagesPlan, err := h.server.DB.Queries().GetNotesMessagesPlanByID(ctx, marina.NotesMessagesPlanID)
 		if err == nil {
 			notesMsgPlanResp := responses.ConvertNotesMessagesPlanToResponse(notesMessagesPlan)
-			notesMessagesPlanPtr = &notesMsgPlanResp
+			marinaResponse.NotesMessagesPlan = &notesMsgPlanResp
 		}
 
-		marinasWithPlans[i] = responses.MarinaWithPlansResponse{
-			Marina:            marinaResponse,
-			DocumentPlan:      documentPlanPtr,
-			StoragePlan:       storagePlanPtr,
-			NotesMessagesPlan: notesMessagesPlanPtr,
-		}
+		marinaResponses[i] = marinaResponse
 	}
 
-	return responses.NewMarinasWithPlansResponse(marinasWithPlans, total, int32(total), 1).JSON(c)
+	return responses.NewPaginatedResponse(marinaResponses, total, int32(total), 1).JSON(c)
 }
 
 // GetMarinasOverCurrentLimit retrieves marinas that are over their current limit

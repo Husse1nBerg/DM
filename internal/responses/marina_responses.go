@@ -38,11 +38,14 @@ type MarinaResponse struct {
 	StoragePlanID         uuid.UUID             `json:"storagePlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the storage plan for this marina"`
 	DocumentPlanID        uuid.UUID             `json:"documentPlanId" example:"550e8400-e29b-41d4-a716-446655440000" description:"ID of the document plan for this marina"`
 	DocumentUsage         *int64                `json:"documentUsage,omitempty" example:"0" description:"Current document usage for this marina"`
-	AIFormDetectionUsage  *int16                `json:"aiFormDetectionUsage,omitempty" example:"0" description:"Current AI form detection usage for this marina"`
-	AIComposeMessageUsage *int16                `json:"aiComposeMessageUsage,omitempty" example:"0" description:"Current AI compose message usage for this marina"`
-	Modules               *models.Modules       `json:"modules,omitempty"`
-	InternalAnnouncement  *string               `json:"internalAnnouncement,omitempty" example:"This is an internal announcement"`
-	ExternalAnnouncement  *string               `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
+	AIFormDetectionUsage  *int16                     `json:"aiFormDetectionUsage,omitempty" example:"0" description:"Current AI form detection usage for this marina"`
+	AIComposeMessageUsage *int16                     `json:"aiComposeMessageUsage,omitempty" example:"0" description:"Current AI compose message usage for this marina"`
+	Modules               *models.Modules            `json:"modules,omitempty"`
+	InternalAnnouncement  *string                    `json:"internalAnnouncement,omitempty" example:"This is an internal announcement"`
+	ExternalAnnouncement  *string                    `json:"externalAnnouncement,omitempty" example:"This is an external announcement"`
+	DocumentPlan          *DocumentPlanResponse      `json:"documentPlan,omitempty"`
+	StoragePlan           *StoragePlanResponse       `json:"storagePlan,omitempty"`
+	NotesMessagesPlan     *NotesMessagesPlanResponse `json:"notesMessagesPlan,omitempty"`
 }
 
 // MarinaWithAddressResponse represents a marina with its address details
@@ -172,24 +175,6 @@ type MarinaDetailResponse struct {
 	TotalUsers   int64                `json:"totalUsers" example:"50"`
 }
 
-// MarinaWithPlansResponse represents a marina with detailed plan information
-// @Description Marina data with all associated plans for usage tracking
-type MarinaWithPlansResponse struct {
-	Marina            MarinaResponse             `json:"marina"`
-	DocumentPlan      *DocumentPlanResponse      `json:"documentPlan,omitempty"`
-	StoragePlan       *StoragePlanResponse       `json:"storagePlan,omitempty"`
-	NotesMessagesPlan *NotesMessagesPlanResponse `json:"notesMessagesPlan,omitempty"`
-}
-
-// MarinaWithPlansList is for Swagger documentation
-type MarinaWithPlansList struct {
-	Data        []MarinaWithPlansResponse `json:"data"`
-	Total       int64                     `json:"total" example:"1"`
-	PerPage     int32                     `json:"perPage" example:"10"`
-	CurrentPage int32                     `json:"currentPage" example:"1"`
-	LastPage    int32                     `json:"lastPage" example:"1"`
-}
-
 type OverLimitUsageResponse struct {
 	MarinaID       uuid.UUID `json:"marinaId" example:"550e8400-e29b-41d4-a716-446655440000"`
 	OrganizationID uuid.UUID `json:"organizationId" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -202,11 +187,6 @@ type OverLimitUsageResponse struct {
 	TextLimit      *int16    `json:"textLimit,omitempty"`
 	EmailUsage     int16     `json:"emailUsage"`
 	EmailLimit     *int16    `json:"emailLimit,omitempty"`
-}
-
-// NewMarinasWithPlansResponse creates a paginated response of marinas with plan details
-func NewMarinasWithPlansResponse(marinasWithPlans []MarinaWithPlansResponse, total int64, perPage, page int32) BaseResponse {
-	return NewPaginatedResponse(marinasWithPlans, total, perPage, page)
 }
 
 // NewOverLimitUsageResponse creates a response for marinas over their usage limits

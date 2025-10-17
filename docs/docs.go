@@ -40,7 +40,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateAddressRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateAddressRequest"
                         }
                     }
                 ],
@@ -48,19 +48,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/responses.AddressResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.AddressResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -98,25 +98,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.AddressResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.AddressResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -153,7 +153,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateAddressRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateAddressRequest"
                         }
                     }
                 ],
@@ -161,25 +161,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.AddressResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.AddressResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -225,14 +225,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.RoleResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RoleResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -289,19 +289,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of users in the marina",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -327,7 +327,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.BedrockRewriteRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.BedrockRewriteRequest"
                         }
                     }
                 ],
@@ -335,19 +335,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Rewritten message",
                         "schema": {
-                            "$ref": "#/definitions/responses.BedrockRewriteResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BedrockRewriteResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -379,19 +379,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Detected form fields",
                         "schema": {
-                            "$ref": "#/definitions/responses.BedrockDetectFormFieldsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BedrockDetectFormFieldsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid file type or missing file",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -430,31 +430,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ClerkResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ClerkResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -492,25 +492,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ClerkListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ClerkListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -542,25 +542,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.LocationListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.LocationListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -586,7 +586,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.AcceptInvitationRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.AcceptInvitationRequest"
                         }
                     }
                 ],
@@ -594,25 +594,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.AcceptInvitationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.AcceptInvitationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -651,25 +651,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ConfirmTokenResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ConfirmTokenResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -700,7 +700,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RefreshInviteRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.RefreshInviteRequest"
                         }
                     }
                 ],
@@ -708,25 +708,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.RefreshInviteResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RefreshInviteResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -759,19 +759,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Key retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisGetResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse"
                         }
                     },
                     "404": {
                         "description": "Key not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -802,13 +802,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Key deleted successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -835,7 +835,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RedisSetRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.RedisSetRequest"
                         }
                     }
                 ],
@@ -843,19 +843,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Cache operations completed successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisGetResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -876,13 +876,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Redis connection information",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisInfoResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisInfoResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -906,13 +906,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Dual database connection status",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisInfoResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisInfoResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -939,7 +939,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RedisSetRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.RedisSetRequest"
                         }
                     }
                 ],
@@ -947,19 +947,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Test completed successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisGetResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -980,13 +980,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Ping successful",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisPingResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisPingResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1013,7 +1013,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RedisSetRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.RedisSetRequest"
                         }
                     }
                 ],
@@ -1021,19 +1021,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Queue operations completed successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisGetResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1066,13 +1066,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Queue length retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisGetResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1105,19 +1105,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Key retrieved successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisGetResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse"
                         }
                     },
                     "404": {
                         "description": "Key not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1148,13 +1148,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Key deleted successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1181,7 +1181,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RedisSetRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.RedisSetRequest"
                         }
                     }
                 ],
@@ -1189,19 +1189,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Task operations completed successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RedisGetResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1228,7 +1228,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.LoginRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.LoginRequest"
                         }
                     }
                 ],
@@ -1236,31 +1236,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Success response with login data",
                         "schema": {
-                            "$ref": "#/definitions/responses.LoginResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.LoginResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Authentication error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "403": {
                         "description": "Account locked",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1287,7 +1287,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RefreshRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.RefreshRequest"
                         }
                     }
                 ],
@@ -1295,31 +1295,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Success response with new tokens",
                         "schema": {
-                            "$ref": "#/definitions/responses.LoginResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.LoginResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Authentication error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "403": {
                         "description": "Account locked",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1345,7 +1345,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.BoatCreateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.BoatCreateRequest"
                         }
                     }
                 ],
@@ -1353,19 +1353,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BoatResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BoatResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1397,19 +1397,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BoatSearchResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BoatSearchResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1451,19 +1451,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BoatListMinimalResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BoatListMinimalResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1495,19 +1495,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BoatResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BoatResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1546,19 +1546,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BoatSearchResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BoatSearchResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1584,7 +1584,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dme.BoatUpdate"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BoatUpdate"
                         }
                     }
                 ],
@@ -1592,19 +1592,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BoatResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BoatResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1632,19 +1632,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1673,7 +1673,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateCriteriaRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateCriteriaRequest"
                         }
                     }
                 ],
@@ -1681,19 +1681,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1735,19 +1735,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaPaginatedResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaPaginatedResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1784,19 +1784,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1845,19 +1845,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaPaginatedResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaPaginatedResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1895,25 +1895,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -1950,7 +1950,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateCriteriaRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateCriteriaRequest"
                         }
                     }
                 ],
@@ -1958,25 +1958,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2012,25 +2012,25 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2068,25 +2068,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/responses.CriteriaResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2126,7 +2126,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CustomerIntakeRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CustomerIntakeRequest"
                         }
                     }
                 ],
@@ -2134,19 +2134,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created user with customer",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2172,7 +2172,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CustomerCreateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CustomerCreateRequest"
                         }
                     }
                 ],
@@ -2180,19 +2180,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2234,19 +2234,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerListMinimalResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerListMinimalResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2288,19 +2288,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerListShortResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerListShortResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2332,19 +2332,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2383,19 +2383,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerSearchResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerSearchResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2427,19 +2427,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerSettingsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerSettingsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2463,7 +2463,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CustomerSettingsUpdateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CustomerSettingsUpdateRequest"
                         }
                     }
                 ],
@@ -2471,19 +2471,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerSettingsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerSettingsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2509,7 +2509,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dme.CustomerUpdate"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomerUpdate"
                         }
                     }
                 ],
@@ -2517,19 +2517,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.CustomerResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CustomerResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2555,7 +2555,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateDMECredentialRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateDMECredentialRequest"
                         }
                     }
                 ],
@@ -2563,25 +2563,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMECredentialResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2613,25 +2613,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMECredentialResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2662,7 +2662,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateDMECredentialRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateDMECredentialRequest"
                         }
                     }
                 ],
@@ -2670,25 +2670,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMECredentialResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMECredentialResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2721,19 +2721,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2756,13 +2756,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDListResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDListResponseWrapper"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2786,7 +2786,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateDMESysIDRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateDMESysIDRequest"
                         }
                     }
                 ],
@@ -2794,25 +2794,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2844,25 +2844,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2894,19 +2894,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDListResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDListResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2938,25 +2938,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -2988,25 +2988,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -3037,7 +3037,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateDMESysIDRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateDMESysIDRequest"
                         }
                     }
                 ],
@@ -3045,25 +3045,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -3096,19 +3096,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -3141,7 +3141,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.LinkDMESysIDRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.LinkDMESysIDRequest"
                         }
                     }
                 ],
@@ -3149,25 +3149,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -3199,25 +3199,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.DMESysIDResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -3266,7 +3266,7 @@ const docTemplate = `{
                             "items": {
                                 "allOf": [
                                     {
-                                        "$ref": "#/definitions/responses.BaseResponse"
+                                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                     },
                                     {
                                         "type": "object",
@@ -3274,7 +3274,7 @@ const docTemplate = `{
                                             "data": {
                                                 "type": "array",
                                                 "items": {
-                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                                 }
                                             }
                                         }
@@ -3286,19 +3286,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3350,13 +3350,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                         }
                                     }
                                 }
@@ -3366,19 +3366,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3417,7 +3417,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateBoatDocumentPublicRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateBoatDocumentPublicRequest"
                         }
                     }
                 ],
@@ -3427,13 +3427,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                         }
                                     }
                                 }
@@ -3443,19 +3443,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3509,13 +3509,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                         }
                                     }
                                 }
@@ -3525,19 +3525,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3586,7 +3586,7 @@ const docTemplate = `{
                             "items": {
                                 "allOf": [
                                     {
-                                        "$ref": "#/definitions/responses.BaseResponse"
+                                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                     },
                                     {
                                         "type": "object",
@@ -3594,7 +3594,7 @@ const docTemplate = `{
                                             "data": {
                                                 "type": "array",
                                                 "items": {
-                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                                 }
                                             }
                                         }
@@ -3606,19 +3606,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3670,13 +3670,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                         }
                                     }
                                 }
@@ -3686,19 +3686,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3738,13 +3738,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                         }
                                     }
                                 }
@@ -3754,19 +3754,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3802,25 +3802,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -3846,7 +3846,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.SendHTMLEmailRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.SendHTMLEmailRequest"
                         }
                     }
                 ],
@@ -3854,19 +3854,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Email accepted for delivery",
                         "schema": {
-                            "$ref": "#/definitions/responses.EmailSendResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EmailSendResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -3892,7 +3892,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.SendTemplateEmailRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.SendTemplateEmailRequest"
                         }
                     }
                 ],
@@ -3900,19 +3900,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Email accepted for delivery",
                         "schema": {
-                            "$ref": "#/definitions/responses.EmailSendResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EmailSendResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -4007,25 +4007,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EsignDocumentListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4082,13 +4082,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignDocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentResponse"
                                         }
                                     }
                                 }
@@ -4098,19 +4098,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4221,25 +4221,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EsignSubmissionListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4279,13 +4279,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignDocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentResponse"
                                         }
                                     }
                                 }
@@ -4295,25 +4295,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4369,13 +4369,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignDocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentResponse"
                                         }
                                     }
                                 }
@@ -4385,25 +4385,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4439,31 +4439,31 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4560,25 +4560,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EsignSubmissionListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4607,7 +4607,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateEsignSubmissionRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateEsignSubmissionRequest"
                         }
                     }
                 ],
@@ -4617,13 +4617,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionResponse"
                                         }
                                     }
                                 }
@@ -4633,25 +4633,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4682,7 +4682,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateMultipleEsignSubmissionRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateMultipleEsignSubmissionRequest"
                         }
                     }
                 ],
@@ -4692,13 +4692,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionWithSignersResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionWithSignersResponse"
                                         }
                                     }
                                 }
@@ -4708,19 +4708,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4829,25 +4829,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EsignSubmissionListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4887,13 +4887,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionResponse"
                                         }
                                     }
                                 }
@@ -4903,25 +4903,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -4983,13 +4983,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionResponse"
                                         }
                                     }
                                 }
@@ -4999,25 +4999,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -5053,31 +5053,31 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -5172,25 +5172,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EsignTemplateListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignTemplateListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -5253,13 +5253,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignTemplateResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignTemplateResponse"
                                         }
                                     }
                                 }
@@ -5269,19 +5269,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -5321,13 +5321,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignTemplateResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignTemplateResponse"
                                         }
                                     }
                                 }
@@ -5337,25 +5337,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -5423,13 +5423,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignTemplateResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignTemplateResponse"
                                         }
                                     }
                                 }
@@ -5439,25 +5439,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -5493,31 +5493,31 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -5561,19 +5561,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EstimateShortListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EstimateShortListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -5612,19 +5612,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EstimateDeleteOperationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EstimateDeleteOperationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -5663,19 +5663,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EstimateResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EstimateResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -5701,7 +5701,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.EstimateRetrieveListRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.EstimateRetrieveListRequest"
                         }
                     }
                 ],
@@ -5709,19 +5709,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EstimateListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EstimateListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -5763,19 +5763,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EstimateSearchResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EstimateSearchResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -5798,19 +5798,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EstimateSubletsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EstimateSubletsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -5836,7 +5836,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.EstimateUpdateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.EstimateUpdateRequest"
                         }
                     }
                 ],
@@ -5844,19 +5844,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.EstimateUpdateResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EstimateUpdateResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -5916,13 +5916,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignDocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentResponse"
                                         }
                                     }
                                 }
@@ -5932,13 +5932,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6011,13 +6011,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.VesselGalleryItemResponse"
                                         }
                                     }
                                 }
@@ -6027,19 +6027,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6079,13 +6079,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.VesselGalleryItemResponse"
                                         }
                                     }
                                 }
@@ -6095,19 +6095,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6163,13 +6163,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.VesselGalleryItemResponse"
                                         }
                                     }
                                 }
@@ -6179,19 +6179,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6227,25 +6227,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6284,7 +6284,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateVesselGalleryItemPublicRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateVesselGalleryItemPublicRequest"
                         }
                     }
                 ],
@@ -6294,13 +6294,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.VesselGalleryItemResponse"
                                         }
                                     }
                                 }
@@ -6310,19 +6310,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6378,7 +6378,7 @@ const docTemplate = `{
                             "items": {
                                 "allOf": [
                                     {
-                                        "$ref": "#/definitions/responses.BaseResponse"
+                                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                     },
                                     {
                                         "type": "object",
@@ -6386,7 +6386,7 @@ const docTemplate = `{
                                             "data": {
                                                 "type": "array",
                                                 "items": {
-                                                    "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.VesselGalleryItemResponse"
                                                 }
                                             }
                                         }
@@ -6398,19 +6398,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6463,13 +6463,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaGalleryItemResponse"
                                         }
                                     }
                                 }
@@ -6479,19 +6479,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6531,13 +6531,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaGalleryItemResponse"
                                         }
                                     }
                                 }
@@ -6547,19 +6547,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6609,13 +6609,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaGalleryItemResponse"
                                         }
                                     }
                                 }
@@ -6625,19 +6625,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6673,25 +6673,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6733,7 +6733,7 @@ const docTemplate = `{
                             "items": {
                                 "allOf": [
                                     {
-                                        "$ref": "#/definitions/responses.BaseResponse"
+                                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                     },
                                     {
                                         "type": "object",
@@ -6741,7 +6741,7 @@ const docTemplate = `{
                                             "data": {
                                                 "type": "array",
                                                 "items": {
-                                                    "$ref": "#/definitions/responses.MarinaGalleryItemResponse"
+                                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaGalleryItemResponse"
                                                 }
                                             }
                                         }
@@ -6753,19 +6753,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -6788,7 +6788,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Health status information",
                         "schema": {
-                            "$ref": "#/definitions/handlers.HealthResponse"
+                            "$ref": "#/definitions/internal_server_handlers.HealthResponse"
                         }
                     }
                 }
@@ -6814,7 +6814,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.FindPartsRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.FindPartsRequest"
                         }
                     }
                 ],
@@ -6824,20 +6824,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.InventoryPartResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.InventoryPartResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -6877,20 +6877,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.FuelInventoryResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.FuelInventoryResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -6924,20 +6924,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.OnlineBillcodeResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OnlineBillcodeResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -6971,20 +6971,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.OnlinePartResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OnlinePartResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7023,19 +7023,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PartsKitResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PartsKitResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7069,20 +7069,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.PartsKitResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PartsKitResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7121,19 +7121,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PurchaseOrderResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PurchaseOrderResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7180,20 +7180,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.PurchaseOrderResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PurchaseOrderResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7239,19 +7239,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PartQtyInfoResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PartQtyInfoResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7277,7 +7277,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.RetrieveInventoryRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.RetrieveInventoryRequest"
                         }
                     }
                 ],
@@ -7287,20 +7287,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.InventoryPartResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.InventoryPartResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7341,20 +7341,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.InventorySearchResultResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.InventorySearchResultResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7393,19 +7393,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.SpecialOrderResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.SpecialOrderResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7446,20 +7446,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.SpecialOrderResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.SpecialOrderResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7493,20 +7493,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.SpecialOrderResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.SpecialOrderResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7544,19 +7544,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.InvoiceListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.InvoiceListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7582,7 +7582,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.InitiatePaymentRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.InitiatePaymentRequest"
                         }
                     }
                 ],
@@ -7590,19 +7590,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.PaymentInitiationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PaymentInitiationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -7658,19 +7658,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -7711,19 +7711,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -7752,25 +7752,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -7825,19 +7825,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -7866,25 +7866,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -7920,19 +7920,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaUsageHistoryListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8025,19 +8025,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ContactListPaginatedResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ContactListPaginatedResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -8074,7 +8074,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateContactRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateContactRequest"
                         }
                     }
                 ],
@@ -8082,19 +8082,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/responses.ContactResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ContactResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -8141,7 +8141,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateContactRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateContactRequest"
                         }
                     }
                 ],
@@ -8149,25 +8149,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ContactResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ContactResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -8211,19 +8211,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -8294,20 +8294,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.MarinaListResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaListResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8336,7 +8336,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateMarinaRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateMarinaRequest"
                         }
                     }
                 ],
@@ -8344,19 +8344,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8393,25 +8393,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8465,26 +8465,26 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.MarinaListResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaListResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8538,20 +8538,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.OverLimitUsageResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OverLimitUsageResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8579,19 +8579,22 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaWithPlansList"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaListResponse"
+                            }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8631,26 +8634,26 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.MarinaListResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaListResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8688,25 +8691,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8743,7 +8746,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateMarinaRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateMarinaRequest"
                         }
                     }
                 ],
@@ -8751,25 +8754,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8805,25 +8808,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8861,25 +8864,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaWithAddressResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaWithAddressResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -8916,7 +8919,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateMarinaRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateMarinaRequest"
                         }
                     }
                 ],
@@ -8924,25 +8927,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.MarinaWithAddressResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaWithAddressResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -9000,19 +9003,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of customer messages",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9041,7 +9044,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateCustomerMessageRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateCustomerMessageRequest"
                         }
                     }
                 ],
@@ -9049,25 +9052,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated message",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Message not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9096,7 +9099,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateMessageRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateMessageRequest"
                         }
                     }
                 ],
@@ -9104,19 +9107,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created message",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9165,25 +9168,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Message deleted",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Message not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9234,25 +9237,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Message details",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Message not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9310,19 +9313,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of messages",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9351,7 +9354,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateMarinaMessageRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateMarinaMessageRequest"
                         }
                     }
                 ],
@@ -9359,25 +9362,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated message",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Message not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9406,7 +9409,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateMessageRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateMessageRequest"
                         }
                     }
                 ],
@@ -9414,19 +9417,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created message",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9475,25 +9478,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Message deleted",
                         "schema": {
-                            "$ref": "#/definitions/responses.MessageResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Message not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9524,7 +9527,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateNotificationRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateNotificationRequest"
                         }
                     }
                 ],
@@ -9532,25 +9535,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created notification",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9581,7 +9584,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.NotificationPreferenceRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.NotificationPreferenceRequest"
                         }
                     }
                 ],
@@ -9589,19 +9592,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated notification preference",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationPreferenceResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationPreferenceResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9631,7 +9634,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/requests.NotificationPreferenceRequest"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.NotificationPreferenceRequest"
                             }
                         }
                     }
@@ -9640,19 +9643,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationPreferencesResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationPreferencesResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9682,14 +9685,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.NotificationPreferenceResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationPreferenceResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9791,19 +9794,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of notifications",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationListResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9831,19 +9834,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Success message",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9877,13 +9880,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9934,25 +9937,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of notifications",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -9980,19 +9983,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Unread notification count",
                         "schema": {
-                            "$ref": "#/definitions/responses.UnreadCountResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UnreadCountResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10029,31 +10032,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Notification details",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Notification not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10088,31 +10091,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Success message",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Notification not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10149,31 +10152,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated notification",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Notification not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10210,31 +10213,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated notification",
                         "schema": {
-                            "$ref": "#/definitions/responses.NotificationResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Notification not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10309,20 +10312,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.OrganizationsPaginatedResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationsPaginatedResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10351,7 +10354,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateOrganizationRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateOrganizationRequest"
                         }
                     }
                 ],
@@ -10359,19 +10362,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/responses.OrganizationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10408,25 +10411,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.OrganizationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10464,25 +10467,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.OrganizationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10519,7 +10522,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateOrganizationRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateOrganizationRequest"
                         }
                     }
                 ],
@@ -10527,25 +10530,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.OrganizationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10581,25 +10584,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10637,25 +10640,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.OrganizationWithAddressResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationWithAddressResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10692,7 +10695,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateOrgAddressRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateOrgAddressRequest"
                         }
                     }
                 ],
@@ -10700,25 +10703,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.OrganizationWithAddressResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationWithAddressResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -10757,13 +10760,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of plans",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10795,25 +10798,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Plan details",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid plan ID",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Plan not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10852,13 +10855,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of plans",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10890,25 +10893,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Plan details",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid plan ID",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Plan not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10947,13 +10950,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of plans",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -10985,25 +10988,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Plan details",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid plan ID",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Plan not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11026,7 +11029,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Project details information",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ProjectDetailsResponse"
+                            "$ref": "#/definitions/internal_server_handlers.ProjectDetailsResponse"
                         }
                     }
                 }
@@ -11070,7 +11073,7 @@ const docTemplate = `{
                             "items": {
                                 "allOf": [
                                     {
-                                        "$ref": "#/definitions/responses.BaseResponse"
+                                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                     },
                                     {
                                         "type": "object",
@@ -11078,7 +11081,7 @@ const docTemplate = `{
                                             "data": {
                                                 "type": "array",
                                                 "items": {
-                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                                 }
                                             }
                                         }
@@ -11090,19 +11093,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -11149,13 +11152,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse"
                                         }
                                     }
                                 }
@@ -11165,19 +11168,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -11211,7 +11214,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateEsignSubmissionSignerRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateEsignSubmissionSignerRequest"
                         }
                     }
                 ],
@@ -11221,13 +11224,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionSignerResponse"
                                         }
                                     }
                                 }
@@ -11237,25 +11240,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -11290,13 +11293,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionResponse"
                                         }
                                     }
                                 }
@@ -11306,19 +11309,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -11364,13 +11367,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionResponse"
                                         }
                                     }
                                 }
@@ -11380,19 +11383,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -11427,7 +11430,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -11435,7 +11438,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionSignerResponse"
                                             }
                                         }
                                     }
@@ -11446,25 +11449,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -11499,13 +11502,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/responses.BaseResponse"
+                                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/responses.EsignSubmissionWithSignersResponse"
+                                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionWithSignersResponse"
                                         }
                                     }
                                 }
@@ -11515,25 +11518,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -11564,7 +11567,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateRoleRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateRoleRequest"
                         }
                     }
                 ],
@@ -11572,19 +11575,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created role",
                         "schema": {
-                            "$ref": "#/definitions/responses.RoleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RoleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11630,14 +11633,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/responses.RoleResponse"
+                                "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RoleResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11674,25 +11677,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Role details",
                         "schema": {
-                            "$ref": "#/definitions/responses.RoleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RoleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Role not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11729,25 +11732,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Role details",
                         "schema": {
-                            "$ref": "#/definitions/responses.RoleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RoleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Role not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11783,7 +11786,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateRoleRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateRoleRequest"
                         }
                     }
                 ],
@@ -11791,25 +11794,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated role",
                         "schema": {
-                            "$ref": "#/definitions/responses.RoleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.RoleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Role not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11844,25 +11847,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Success message",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "Role not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11911,19 +11914,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ServiceOpCodesResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ServiceOpCodesResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -11965,19 +11968,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ServiceOPCategoryCodesResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ServiceOPCategoryCodesResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12000,19 +12003,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ServiceOperationDescriptionsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ServiceOperationDescriptionsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12065,19 +12068,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12103,7 +12106,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.ScheduleResolveMergeConflictRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ScheduleResolveMergeConflictRequest"
                         }
                     }
                 ],
@@ -12111,19 +12114,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleUpdateResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleUpdateResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12169,19 +12172,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12234,19 +12237,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12299,19 +12302,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12364,19 +12367,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12402,7 +12405,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.ScheduleUpdateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ScheduleUpdateRequest"
                         }
                     }
                 ],
@@ -12410,19 +12413,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleUpdateResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleUpdateResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12468,19 +12471,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ScheduleResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ScheduleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12503,19 +12506,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ServiceTechniciansResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ServiceTechniciansResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12557,19 +12560,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.ServiceWOCategoryCodesResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ServiceWOCategoryCodesResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12595,7 +12598,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.SendSMSRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.SendSMSRequest"
                         }
                     }
                 ],
@@ -12603,19 +12606,19 @@ const docTemplate = `{
                     "200": {
                         "description": "SMS accepted for delivery",
                         "schema": {
-                            "$ref": "#/definitions/responses.SMSSendResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.SMSSendResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12646,7 +12649,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.PermissionTestRequest"
+                            "$ref": "#/definitions/internal_server_handlers.PermissionTestRequest"
                         }
                     }
                 ],
@@ -12654,25 +12657,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Permission check result",
                         "schema": {
-                            "$ref": "#/definitions/handlers.PermissionTestResponse"
+                            "$ref": "#/definitions/internal_server_handlers.PermissionTestResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -12705,7 +12708,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handlers.PermissionTestRequest"
+                                "$ref": "#/definitions/internal_server_handlers.PermissionTestRequest"
                             }
                         }
                     }
@@ -12716,26 +12719,26 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handlers.PermissionTestResponse"
+                                "$ref": "#/definitions/internal_server_handlers.PermissionTestResponse"
                             }
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -12767,13 +12770,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -12805,13 +12808,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     }
                 }
@@ -12842,7 +12845,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateUserRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateUserRequest"
                         }
                     }
                 ],
@@ -12850,19 +12853,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created user",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12893,7 +12896,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateCustomerUserRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateCustomerUserRequest"
                         }
                     }
                 ],
@@ -12901,19 +12904,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created user",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -12971,19 +12974,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of users in the marina for this  customer",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13010,7 +13013,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.ForgotPasswordRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ForgotPasswordRequest"
                         }
                     }
                 ],
@@ -13018,25 +13021,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Password recovery email sent",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13067,7 +13070,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CreateUserWithInvitationRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateUserWithInvitationRequest"
                         }
                     }
                 ],
@@ -13075,19 +13078,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created user",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13160,13 +13163,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of users",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13197,7 +13200,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.AssignUserToMarinaRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.AssignUserToMarinaRequest"
                         }
                     }
                 ],
@@ -13208,13 +13211,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13245,7 +13248,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.AssignUserToMarinaRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.AssignUserToMarinaRequest"
                         }
                     }
                 ],
@@ -13256,13 +13259,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13342,19 +13345,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of users in the marina",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13411,19 +13414,19 @@ const docTemplate = `{
                     "200": {
                         "description": "List of users assigned to the marina",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13474,19 +13477,19 @@ const docTemplate = `{
                     "200": {
                         "description": "List of users not assigned to the marina",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13537,19 +13540,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Paginated list of users in the organization",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13577,13 +13580,13 @@ const docTemplate = `{
                     "200": {
                         "description": "Current user's profile",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13610,7 +13613,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.CompletePasswordRecoveryRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CompletePasswordRecoveryRequest"
                         }
                     }
                 ],
@@ -13618,19 +13621,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Password updated successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid token or validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13662,7 +13665,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.ResetPasswordRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ResetPasswordRequest"
                         }
                     }
                 ],
@@ -13670,25 +13673,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Password reset success",
                         "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Validation error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "401": {
                         "description": "Authentication error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13739,19 +13742,19 @@ const docTemplate = `{
                     "200": {
                         "description": "List of users with the specified role",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13788,25 +13791,25 @@ const docTemplate = `{
                     "200": {
                         "description": "User details",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13842,7 +13845,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateUserRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateUserRequest"
                         }
                     }
                 ],
@@ -13850,25 +13853,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated user",
                         "schema": {
-                            "$ref": "#/definitions/responses.UserResponseWrapper"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "404": {
                         "description": "User not found",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13906,13 +13909,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13944,19 +13947,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderCompletedResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderCompletedResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -13982,7 +13985,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.WorkOrderCreateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.WorkOrderCreateRequest"
                         }
                     }
                 ],
@@ -13990,19 +13993,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14028,7 +14031,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.WorkOrderCreateFromEstimateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.WorkOrderCreateFromEstimateRequest"
                         }
                     }
                 ],
@@ -14036,19 +14039,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderCreateResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderCreateResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14092,19 +14095,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderShortListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderShortListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14143,19 +14146,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderDeleteOperationResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderDeleteOperationResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14178,19 +14181,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderGroupDescriptionsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderGroupDescriptionsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14232,19 +14235,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14293,19 +14296,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderListNewOrChangedResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderListNewOrChangedResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14328,19 +14331,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderOperationsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderOperationsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14372,19 +14375,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14410,7 +14413,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.WorkOrderRetrieveListRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.WorkOrderRetrieveListRequest"
                         }
                     }
                 ],
@@ -14418,19 +14421,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderListResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14469,19 +14472,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderSearchResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderSearchResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14504,19 +14507,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderSubletsResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderSubletsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14542,7 +14545,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.WorkOrderPartEntryRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.WorkOrderPartEntryRequest"
                         }
                     }
                 ],
@@ -14550,19 +14553,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderPartEntryResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderPartEntryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14588,7 +14591,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.WorkOrderTimeEntryRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.WorkOrderTimeEntryRequest"
                         }
                     }
                 ],
@@ -14596,19 +14599,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderTimeEntryResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderTimeEntryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14657,19 +14660,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderTimeEntriesResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderTimeEntriesResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14695,7 +14698,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.WorkOrderUpdateRequest"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.WorkOrderUpdateRequest"
                         }
                     }
                 ],
@@ -14703,19 +14706,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.WorkOrderResponse"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.WorkOrderResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.Error"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.Error"
                         }
                     }
                 }
@@ -14723,1627 +14726,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dme.Attachment": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "fileName": {
-                    "type": "string"
-                },
-                "fileType": {
-                    "type": "string"
-                },
-                "fromDMWeb": {
-                    "type": "boolean"
-                },
-                "s3Path": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.BillingCode": {
-            "type": "object",
-            "properties": {
-                "LOA_LWL_Or_Spar": {
-                    "type": "string"
-                },
-                "Length_Area_Or_CubicFeet": {
-                    "type": "string"
-                },
-                "Slip_Boat_Or_Longest": {
-                    "type": "string"
-                },
-                "cycle": {
-                    "type": "string"
-                },
-                "department": {
-                    "type": "string"
-                },
-                "departmentDesc": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "overrideRate": {
-                    "type": "number"
-                },
-                "perFoot": {
-                    "type": "boolean"
-                },
-                "proRated": {
-                    "type": "boolean"
-                },
-                "rates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Rate"
-                    }
-                }
-            }
-        },
-        "dme.BillingData": {
-            "type": "object",
-            "properties": {
-                "amountBilled": {
-                    "type": "number"
-                },
-                "billingDate": {
-                    "type": "string"
-                },
-                "environmentCharges": {
-                    "type": "number"
-                },
-                "otherCharges": {
-                    "type": "number"
-                },
-                "salesTax": {
-                    "type": "number"
-                }
-            }
-        },
-        "dme.Boat": {
-            "type": "object",
-            "properties": {
-                "attachments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Attachment"
-                    }
-                },
-                "beam": {
-                    "type": "string"
-                },
-                "billingCodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.BillingCode"
-                    }
-                },
-                "boatDescriptionCodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.BoatDescriptionCode"
-                    }
-                },
-                "color": {
-                    "type": "string"
-                },
-                "comments": {
-                    "type": "string"
-                },
-                "customInformation": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.CustomInformation"
-                    }
-                },
-                "doNotLaunch": {
-                    "type": "boolean"
-                },
-                "draft": {
-                    "type": "string"
-                },
-                "height": {
-                    "type": "string"
-                },
-                "hin": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "insuranceCompany": {
-                    "type": "string"
-                },
-                "insuranceExpDate": {
-                    "type": "string"
-                },
-                "integrationId": {
-                    "type": "string"
-                },
-                "lastModified": {
-                    "type": "string"
-                },
-                "loa": {
-                    "type": "string"
-                },
-                "lwl": {
-                    "type": "string"
-                },
-                "make": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "motors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Motor"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "operationsHistory": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.OperationHistory"
-                    }
-                },
-                "ownerId": {
-                    "type": "string"
-                },
-                "ownerIntegrationId": {
-                    "type": "string"
-                },
-                "registration": {
-                    "type": "string"
-                },
-                "slip": {
-                    "$ref": "#/definitions/dme.Slip"
-                },
-                "slipId": {
-                    "type": "string"
-                },
-                "summerSlip": {
-                    "type": "string"
-                },
-                "trailerLocation": {
-                    "type": "string"
-                },
-                "trailerMake": {
-                    "type": "string"
-                },
-                "trailerModel": {
-                    "type": "string"
-                },
-                "trailerRegistration": {
-                    "type": "string"
-                },
-                "trailerSerial": {
-                    "type": "string"
-                },
-                "winterSlip": {
-                    "type": "string"
-                },
-                "year": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.BoatDescriptionCode": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.BoatMinimal": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "lastModified": {
-                    "type": "string"
-                },
-                "make": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "ownerId": {
-                    "type": "string"
-                },
-                "slip": {
-                    "$ref": "#/definitions/dme.Slip"
-                }
-            }
-        },
-        "dme.BoatSearch": {
-            "type": "object",
-            "properties": {
-                "arrivalDate": {
-                    "type": "string"
-                },
-                "boatId": {
-                    "type": "string"
-                },
-                "boatName": {
-                    "type": "string"
-                },
-                "departureDate": {
-                    "type": "string"
-                },
-                "ownerName": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.BoatUpdate": {
-            "type": "object",
-            "properties": {
-                "attachments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Attachment"
-                    }
-                },
-                "beam": {
-                    "type": "string"
-                },
-                "billingCodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.BillingCode"
-                    }
-                },
-                "boatDescriptionCodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.BoatDescriptionCode"
-                    }
-                },
-                "color": {
-                    "type": "string"
-                },
-                "comments": {
-                    "type": "string"
-                },
-                "customInformation": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.CustomInformation"
-                    }
-                },
-                "doNotLaunch": {
-                    "type": "boolean"
-                },
-                "draft": {
-                    "type": "string"
-                },
-                "height": {
-                    "type": "string"
-                },
-                "hin": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "insuranceCompany": {
-                    "type": "string"
-                },
-                "insuranceExpDate": {
-                    "type": "string"
-                },
-                "integrationId": {
-                    "type": "string"
-                },
-                "lastModified": {
-                    "type": "string"
-                },
-                "loa": {
-                    "type": "string"
-                },
-                "lwl": {
-                    "type": "string"
-                },
-                "make": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "motors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Motor"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "operationsHistory": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.OperationHistory"
-                    }
-                },
-                "ownerIntegrationId": {
-                    "type": "string"
-                },
-                "registration": {
-                    "type": "string"
-                },
-                "slip": {
-                    "$ref": "#/definitions/dme.Slip"
-                },
-                "slipId": {
-                    "type": "string"
-                },
-                "summerSlip": {
-                    "type": "string"
-                },
-                "trailerLocation": {
-                    "type": "string"
-                },
-                "trailerMake": {
-                    "type": "string"
-                },
-                "trailerModel": {
-                    "type": "string"
-                },
-                "trailerRegistration": {
-                    "type": "string"
-                },
-                "trailerSerial": {
-                    "type": "string"
-                },
-                "winterSlip": {
-                    "type": "string"
-                },
-                "year": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.CategoryCode": {
-            "type": "object",
-            "properties": {
-                "desc": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.CustomInformation": {
-            "type": "object",
-            "properties": {
-                "fieldName": {
-                    "type": "string"
-                },
-                "fieldValue": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.Customer": {
-            "type": "object",
-            "properties": {
-                "address1": {
-                    "type": "string"
-                },
-                "address2": {
-                    "type": "string"
-                },
-                "address3": {
-                    "type": "string"
-                },
-                "allowBackOrders": {
-                    "type": "boolean"
-                },
-                "allowTransactions": {
-                    "type": "boolean"
-                },
-                "altAddress1": {
-                    "type": "string"
-                },
-                "altAddress2": {
-                    "type": "string"
-                },
-                "altAddress3": {
-                    "type": "string"
-                },
-                "altCity": {
-                    "type": "string"
-                },
-                "altCountry": {
-                    "type": "string"
-                },
-                "altFirstName": {
-                    "type": "string"
-                },
-                "altLastName": {
-                    "type": "string"
-                },
-                "altPhone": {
-                    "type": "string"
-                },
-                "altState": {
-                    "type": "string"
-                },
-                "altZip": {
-                    "type": "string"
-                },
-                "attachments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Attachment"
-                    }
-                },
-                "balance": {
-                    "type": "number"
-                },
-                "boats": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Boat"
-                    }
-                },
-                "categoryCodes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.CategoryCode"
-                    }
-                },
-                "cellPhone": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "comments": {
-                    "type": "string"
-                },
-                "companyName": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "creditLimit": {
-                    "type": "number"
-                },
-                "customInformation": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.CustomInformation"
-                    }
-                },
-                "discount": {
-                    "type": "number"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "emergencyContact": {
-                    "type": "string"
-                },
-                "emergencyPhone": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "inactive": {
-                    "type": "boolean"
-                },
-                "inactiveDate": {
-                    "type": "string"
-                },
-                "integrationId": {
-                    "type": "string"
-                },
-                "invoices": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.InvoiceDetailed"
-                    }
-                },
-                "lastModified": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "noCcSurcharge": {
-                    "type": "boolean"
-                },
-                "paymentTermsCode": {
-                    "type": "string"
-                },
-                "paymentTermsCodeDescription": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "poRequired": {
-                    "type": "boolean"
-                },
-                "priceColumn": {
-                    "type": "string"
-                },
-                "prospectId": {
-                    "type": "string"
-                },
-                "sendMassEmail": {
-                    "type": "boolean"
-                },
-                "shipmentMethod": {
-                    "type": "string"
-                },
-                "shipmentMethodDescription": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "taxFlag": {
-                    "type": "boolean"
-                },
-                "taxId": {
-                    "type": "string"
-                },
-                "taxIdState": {
-                    "type": "string"
-                },
-                "taxSchema": {
-                    "type": "string"
-                },
-                "useAltAddress": {
-                    "type": "boolean"
-                },
-                "waitListEntries": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.WaitListEntry"
-                    }
-                },
-                "webId": {
-                    "type": "string"
-                },
-                "webPassword": {
-                    "type": "string"
-                },
-                "workPhone": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.CustomerMinimal": {
-            "type": "object",
-            "properties": {
-                "address1": {
-                    "type": "string"
-                },
-                "address2": {
-                    "type": "string"
-                },
-                "address3": {
-                    "type": "string"
-                },
-                "cellPhone": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "emailAddress": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "inactive": {
-                    "type": "boolean"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "postalCode": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "workPhone": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.CustomerSearch": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "companyName": {
-                    "type": "string"
-                },
-                "customerID": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "inactive": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "prospectId": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.CustomerShort": {
-            "type": "object",
-            "properties": {
-                "companyName": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.CustomerUpdate": {
-            "type": "object",
-            "properties": {
-                "address1": {
-                    "type": "string"
-                },
-                "address2": {
-                    "type": "string"
-                },
-                "address3": {
-                    "type": "string"
-                },
-                "altAddress1": {
-                    "type": "string"
-                },
-                "altAddress2": {
-                    "type": "string"
-                },
-                "altAddress3": {
-                    "type": "string"
-                },
-                "altCity": {
-                    "type": "string"
-                },
-                "altCountry": {
-                    "type": "string"
-                },
-                "altFirstName": {
-                    "type": "string"
-                },
-                "altLastName": {
-                    "type": "string"
-                },
-                "altPhone": {
-                    "type": "string"
-                },
-                "altState": {
-                    "type": "string"
-                },
-                "altZip": {
-                    "type": "string"
-                },
-                "attachments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Attachment"
-                    }
-                },
-                "cellPhone": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "companyName": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "customInformation": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.CustomInformation"
-                    }
-                },
-                "email": {
-                    "type": "string"
-                },
-                "emergencyContact": {
-                    "type": "string"
-                },
-                "emergencyPhone": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "inactive": {
-                    "type": "boolean"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "shipmentMethod": {
-                    "type": "string"
-                },
-                "shipmentMethodDescription": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "useAltAddress": {
-                    "type": "boolean"
-                },
-                "workPhone": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.Installment": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "balance": {
-                    "type": "number"
-                },
-                "dueDate": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.InvoiceDetailed": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "customerId": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "dueDate": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "installments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Installment"
-                    }
-                },
-                "invoiceAmount": {
-                    "type": "number"
-                },
-                "invoiceBalance": {
-                    "type": "number"
-                },
-                "locationCode": {
-                    "type": "string"
-                },
-                "unappliedPayment": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "dme.Motor": {
-            "type": "object",
-            "properties": {
-                "drive": {
-                    "type": "string"
-                },
-                "hours": {
-                    "type": "number"
-                },
-                "make": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "number": {
-                    "type": "integer"
-                },
-                "serial": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "string"
-                },
-                "transomId": {
-                    "type": "string"
-                },
-                "year": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.Operation": {
-            "type": "object",
-            "properties": {
-                "category": {
-                    "type": "string"
-                },
-                "estCompleteDate": {
-                    "type": "string"
-                },
-                "estStartDate": {
-                    "type": "string"
-                },
-                "estimatedCharges": {
-                    "type": "number"
-                },
-                "flatRateAmount": {
-                    "type": "number"
-                },
-                "flatRatePerFootMethod": {
-                    "type": "string"
-                },
-                "flatRatePerFootRate": {
-                    "type": "number"
-                },
-                "forecastedLaborCharges": {
-                    "type": "number"
-                },
-                "forecastedLaborHours": {
-                    "type": "number"
-                },
-                "forecastedPartsCharges": {
-                    "type": "number"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isOpcodeApproved": {
-                    "type": "boolean"
-                },
-                "laborBilled": {
-                    "type": "number"
-                },
-                "longDesc": {
-                    "type": "string"
-                },
-                "opcode": {
-                    "type": "string"
-                },
-                "opcodeDesc": {
-                    "type": "string"
-                },
-                "reqCompDate": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "techDesc": {
-                    "type": "string"
-                },
-                "totalBillCodes": {
-                    "type": "number"
-                },
-                "totalCharges": {
-                    "type": "number"
-                },
-                "totalEquipment": {
-                    "type": "number"
-                },
-                "totalFreight": {
-                    "type": "number"
-                },
-                "totalLabor": {
-                    "type": "number"
-                },
-                "totalLaborHours": {
-                    "type": "number"
-                },
-                "totalMileage": {
-                    "type": "number"
-                },
-                "totalMiscSupply": {
-                    "type": "number"
-                },
-                "totalParts": {
-                    "type": "number"
-                },
-                "totalSublet": {
-                    "type": "number"
-                },
-                "totalToComplete": {
-                    "type": "number"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.OperationHistory": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "date": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "operationCharges": {
-                    "type": "number"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "workOrder": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.PaymentInitiationResponse": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "customerId": {
-                    "type": "string"
-                },
-                "dmPayClientId": {
-                    "type": "string"
-                },
-                "invoiceId": {
-                    "type": "string"
-                },
-                "paymentSessionId": {
-                    "type": "string"
-                },
-                "paymentUrl": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.Rate": {
-            "type": "object",
-            "properties": {
-                "endDate": {
-                    "type": "string"
-                },
-                "rate": {
-                    "type": "number"
-                },
-                "startDate": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.Slip": {
-            "type": "object",
-            "properties": {
-                "cableTv": {
-                    "type": "boolean"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "draft": {
-                    "type": "string"
-                },
-                "electric": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "lastModifedDate": {
-                    "type": "string"
-                },
-                "length": {
-                    "type": "string"
-                },
-                "linear": {
-                    "type": "boolean"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "boolean"
-                },
-                "tieOff": {
-                    "type": "string"
-                },
-                "transient": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "unusable": {
-                    "type": "boolean"
-                },
-                "water": {
-                    "type": "boolean"
-                },
-                "width": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.WaitListEntry": {
-            "type": "object",
-            "properties": {
-                "boatId": {
-                    "type": "string"
-                },
-                "boatName": {
-                    "type": "string"
-                },
-                "customerId": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "entryDate": {
-                    "type": "string"
-                },
-                "entryNumber": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "waitListName": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.WorkOrder": {
-            "type": "object",
-            "properties": {
-                "attachments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Attachment"
-                    }
-                },
-                "billingData": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.BillingData"
-                    }
-                },
-                "boatId": {
-                    "type": "string"
-                },
-                "boatLength": {
-                    "type": "string"
-                },
-                "boatMake": {
-                    "type": "string"
-                },
-                "boatModel": {
-                    "type": "string"
-                },
-                "boatName": {
-                    "type": "string"
-                },
-                "boatYear": {
-                    "type": "string"
-                },
-                "category": {
-                    "type": "string"
-                },
-                "clerkId": {
-                    "type": "string"
-                },
-                "comments": {
-                    "type": "string"
-                },
-                "creationDate": {
-                    "type": "string"
-                },
-                "customerID": {
-                    "type": "string"
-                },
-                "customerName": {
-                    "type": "string"
-                },
-                "estCompDate": {
-                    "type": "string"
-                },
-                "estStartDate": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isEstimate": {
-                    "type": "boolean"
-                },
-                "lastModDate": {
-                    "type": "string"
-                },
-                "lastModTime": {
-                    "type": "string"
-                },
-                "locationCode": {
-                    "type": "string"
-                },
-                "operations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.Operation"
-                    }
-                },
-                "promisedDate": {
-                    "type": "string"
-                },
-                "riggingId": {
-                    "type": "string"
-                },
-                "riggingType": {
-                    "type": "string"
-                },
-                "startDate": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "taxSchema": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "totalBillCodes": {
-                    "type": "number"
-                },
-                "totalEquipment": {
-                    "type": "number"
-                },
-                "totalForecastedHours": {
-                    "type": "number"
-                },
-                "totalForecastedLabor": {
-                    "type": "number"
-                },
-                "totalForecastedParts": {
-                    "type": "number"
-                },
-                "totalFreight": {
-                    "type": "number"
-                },
-                "totalFreightCost": {
-                    "type": "number"
-                },
-                "totalLabor": {
-                    "type": "number"
-                },
-                "totalLaborCost": {
-                    "type": "number"
-                },
-                "totalLaborHours": {
-                    "type": "number"
-                },
-                "totalMileage": {
-                    "type": "number"
-                },
-                "totalMiscSupply": {
-                    "type": "number"
-                },
-                "totalParts": {
-                    "type": "number"
-                },
-                "totalPartsCost": {
-                    "type": "number"
-                },
-                "totalSublet": {
-                    "type": "number"
-                },
-                "totalSubletCost": {
-                    "type": "number"
-                },
-                "totalWOCharges": {
-                    "type": "number"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.WorkOrderOperation": {
-            "type": "object",
-            "properties": {
-                "approved": {
-                    "type": "boolean"
-                },
-                "categoryCode": {
-                    "type": "string"
-                },
-                "custPromiseDate": {
-                    "type": "string"
-                },
-                "desc": {
-                    "type": "string"
-                },
-                "estCompDate": {
-                    "type": "string"
-                },
-                "estStartDate": {
-                    "type": "string"
-                },
-                "estimatedBillCodes": {
-                    "type": "number"
-                },
-                "estimatedEquipment": {
-                    "type": "number"
-                },
-                "estimatedFreight": {
-                    "type": "number"
-                },
-                "estimatedLabor": {
-                    "type": "number"
-                },
-                "estimatedLaborHours": {
-                    "type": "number"
-                },
-                "estimatedMileage": {
-                    "type": "number"
-                },
-                "estimatedMiscSupply": {
-                    "type": "number"
-                },
-                "estimatedParts": {
-                    "type": "number"
-                },
-                "estimatedSublet": {
-                    "type": "number"
-                },
-                "flatRateAmount": {
-                    "type": "number"
-                },
-                "flatRatePerFootMethod": {
-                    "type": "string"
-                },
-                "flatRatePerFootRate": {
-                    "type": "number"
-                },
-                "forecastedLaborCharges": {
-                    "type": "number"
-                },
-                "forecastedLaborHours": {
-                    "type": "number"
-                },
-                "forecastedPartsCharges": {
-                    "type": "number"
-                },
-                "laborFinished": {
-                    "type": "boolean"
-                },
-                "longDesc": {
-                    "type": "string"
-                },
-                "opcode": {
-                    "type": "string"
-                },
-                "standardHours": {
-                    "type": "number"
-                },
-                "techDesc": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.WorkOrderSearch": {
-            "type": "object",
-            "properties": {
-                "boat": {
-                    "type": "string"
-                },
-                "customer": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "locationCode": {
-                    "type": "string"
-                },
-                "openDate": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.WorkOrderShort": {
-            "type": "object",
-            "properties": {
-                "boat": {
-                    "type": "string"
-                },
-                "customer": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "locationCode": {
-                    "type": "string"
-                },
-                "openDate": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "handlers.HealthResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "example": {
-                        "\"database\"": "\"connected\"}",
-                        "{\"status\"": "\"ok\""
-                    }
-                }
-            }
-        },
-        "handlers.PermissionTestRequest": {
-            "type": "object",
-            "required": [
-                "action",
-                "object"
-            ],
-            "properties": {
-                "action": {
-                    "type": "string",
-                    "example": "read"
-                },
-                "object": {
-                    "type": "string",
-                    "example": "customers"
-                }
-            }
-        },
-        "handlers.PermissionTestResponse": {
-            "type": "object",
-            "properties": {
-                "action": {
-                    "type": "string",
-                    "example": "read"
-                },
-                "has_access": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "marina_id": {
-                    "type": "string",
-                    "example": "123e4567-e89b-12d3-a456-426614174001"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Access granted"
-                },
-                "module_info": {
-                    "type": "object",
-                    "properties": {
-                        "module_enabled": {
-                            "type": "boolean",
-                            "example": true
-                        },
-                        "required_module": {
-                            "type": "string",
-                            "example": "customerVessels"
-                        }
-                    }
-                },
-                "object": {
-                    "type": "string",
-                    "example": "customers"
-                },
-                "user_id": {
-                    "type": "string",
-                    "example": "123e4567-e89b-12d3-a456-426614174000"
-                }
-            }
-        },
-        "handlers.ProjectDetailsResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "example": {
-                        "\"version\"": "\"1.0.0\"}",
-                        "{\"name\"": "\"Marina Management System\""
-                    }
-                }
-            }
-        },
-        "models.Modules": {
-            "type": "object",
-            "properties": {
-                "customerVessels": {
-                    "type": "boolean"
-                },
-                "esign": {
-                    "type": "boolean"
-                },
-                "inventoryManagement": {
-                    "type": "boolean"
-                },
-                "marinaManagement": {
-                    "type": "boolean"
-                },
-                "payments": {
-                    "type": "boolean"
-                },
-                "pos": {
-                    "type": "boolean"
-                },
-                "salesManagement": {
-                    "type": "boolean"
-                },
-                "serviceManagement": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "models.Permissions": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "boolean"
-            }
-        },
-        "models.WorkingHours": {
-            "type": "object",
-            "properties": {
-                "friday": {
-                    "type": "string",
-                    "example": "9:00 AM - 5:00 PM"
-                },
-                "monday": {
-                    "type": "string",
-                    "example": "9:00 AM - 5:00 PM"
-                },
-                "saturday": {
-                    "type": "string",
-                    "example": "9:00 AM - 5:00 PM"
-                },
-                "sunday": {
-                    "type": "string",
-                    "example": "9:00 AM - 5:00 PM"
-                },
-                "thursday": {
-                    "type": "string",
-                    "example": "9:00 AM - 5:00 PM"
-                },
-                "tuesday": {
-                    "type": "string",
-                    "example": "9:00 AM - 5:00 PM"
-                },
-                "wednesday": {
-                    "type": "string",
-                    "example": "9:00 AM - 5:00 PM"
-                }
-            }
-        },
-        "requests.AcceptInvitationRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.AcceptInvitationRequest": {
             "type": "object",
             "required": [
                 "password",
@@ -16360,7 +14743,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.AssignUserToMarinaRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.AssignUserToMarinaRequest": {
             "type": "object",
             "required": [
                 "marinaId",
@@ -16386,7 +14769,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.BedrockRewriteRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.BedrockRewriteRequest": {
             "type": "object",
             "required": [
                 "draft",
@@ -16412,7 +14795,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.BoatCreateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.BoatCreateRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -16422,7 +14805,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
                     }
                 },
                 "beam": {
@@ -16431,13 +14814,13 @@ const docTemplate = `{
                 "billingCodes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.BillingCode"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BillingCode"
                     }
                 },
                 "boatDescriptionCodes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.BoatDescriptionCode"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BoatDescriptionCode"
                     }
                 },
                 "color": {
@@ -16449,7 +14832,7 @@ const docTemplate = `{
                 "customInformation": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.CustomInformation"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomInformation"
                     }
                 },
                 "doNotLaunch": {
@@ -16494,7 +14877,7 @@ const docTemplate = `{
                 "operationsHistory": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.OperationHistory"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.OperationHistory"
                     }
                 },
                 "ownerId": {
@@ -16535,7 +14918,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CompletePasswordRecoveryRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CompletePasswordRecoveryRequest": {
             "description": "Complete password recovery request payload",
             "type": "object",
             "required": [
@@ -16559,7 +14942,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ContactType": {
+        "github_com_dockworks_dm-web-backend_internal_requests.ContactType": {
             "type": "string",
             "enum": [
                 "phone",
@@ -16570,7 +14953,7 @@ const docTemplate = `{
                 "ContactTypeEmail"
             ]
         },
-        "requests.CreateAddressRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateAddressRequest": {
             "type": "object",
             "properties": {
                 "city": {
@@ -16603,7 +14986,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateContactRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateContactRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -16632,13 +15015,13 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/requests.ContactType"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ContactType"
                         }
                     ]
                 }
             }
         },
-        "requests.CreateCriteriaRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateCriteriaRequest": {
             "type": "object",
             "required": [
                 "criteria",
@@ -16655,7 +15038,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateCustomerUserRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateCustomerUserRequest": {
             "type": "object",
             "required": [
                 "customerId",
@@ -16729,7 +15112,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateDMECredentialRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateDMECredentialRequest": {
             "type": "object",
             "required": [
                 "organizationId",
@@ -16765,7 +15148,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateDMESysIDRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateDMESysIDRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -16799,7 +15182,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateEsignSubmissionRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateEsignSubmissionRequest": {
             "type": "object",
             "required": [
                 "documentId",
@@ -16840,7 +15223,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateMarinaRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateMarinaRequest": {
             "type": "object",
             "required": [
                 "documentPlanId",
@@ -16852,7 +15235,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/requests.CreateAddressRequest"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateAddressRequest"
                 },
                 "country": {
                     "type": "string",
@@ -16891,7 +15274,7 @@ const docTemplate = `{
                     "example": 100
                 },
                 "modules": {
-                    "$ref": "#/definitions/models.Modules"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.Modules"
                 },
                 "name": {
                     "type": "string",
@@ -16922,11 +15305,11 @@ const docTemplate = `{
                     "example": "https://harborbay.com"
                 },
                 "workingHours": {
-                    "$ref": "#/definitions/models.WorkingHours"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.WorkingHours"
                 }
             }
         },
-        "requests.CreateMessageRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateMessageRequest": {
             "type": "object",
             "required": [
                 "body",
@@ -16969,7 +15352,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateMultipleEsignSubmissionRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateMultipleEsignSubmissionRequest": {
             "type": "object",
             "required": [
                 "documentId",
@@ -17008,15 +15391,15 @@ const docTemplate = `{
                     "type": "array",
                     "minItems": 2,
                     "items": {
-                        "$ref": "#/definitions/requests.EsignSubmissionSigner"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.EsignSubmissionSigner"
                     }
                 }
             }
         },
-        "requests.CreateNotificationRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateNotificationRequest": {
             "type": "object"
         },
-        "requests.CreateOrganizationRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateOrganizationRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -17024,7 +15407,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/requests.CreateAddressRequest"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.CreateAddressRequest"
                 },
                 "country": {
                     "type": "string",
@@ -17060,7 +15443,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateRoleRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateRoleRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -17088,7 +15471,7 @@ const docTemplate = `{
                     "example": "Admin"
                 },
                 "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.Permissions"
                 },
                 "type": {
                     "type": "string",
@@ -17096,7 +15479,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateUserRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateUserRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -17167,7 +15550,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CreateUserWithInvitationRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CreateUserWithInvitationRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -17232,7 +15615,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CustomerCreateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CustomerCreateRequest": {
             "type": "object",
             "required": [
                 "lastName"
@@ -17280,7 +15663,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
                     }
                 },
                 "cellPhone": {
@@ -17298,7 +15681,7 @@ const docTemplate = `{
                 "customInformation": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.CustomInformation"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomInformation"
                     }
                 },
                 "email": {
@@ -17342,7 +15725,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CustomerIntakeRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CustomerIntakeRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -17412,7 +15795,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.CustomerSettingsUpdateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.CustomerSettingsUpdateRequest": {
             "type": "object",
             "required": [
                 "customerId",
@@ -17430,7 +15813,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.EsignSubmissionSigner": {
+        "github_com_dockworks_dm-web-backend_internal_requests.EsignSubmissionSigner": {
             "type": "object",
             "required": [
                 "email",
@@ -17452,7 +15835,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.EstimateRetrieveListRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.EstimateRetrieveListRequest": {
             "type": "object",
             "properties": {
                 "status": {
@@ -17464,7 +15847,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.EstimateUpdateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.EstimateUpdateRequest": {
             "type": "object",
             "required": [
                 "estId"
@@ -17473,7 +15856,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
                     }
                 },
                 "boatId": {
@@ -17518,7 +15901,7 @@ const docTemplate = `{
                 "operationCodes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/requests.OperationCode"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.OperationCode"
                     }
                 },
                 "title": {
@@ -17526,7 +15909,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.FindPartsRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.FindPartsRequest": {
             "type": "object",
             "required": [
                 "partNumbers",
@@ -17545,7 +15928,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ForgotPasswordRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
             "required": [
@@ -17558,7 +15941,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.InitiatePaymentRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.InitiatePaymentRequest": {
             "type": "object",
             "required": [
                 "amount",
@@ -17577,7 +15960,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.LinkDMESysIDRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.LinkDMESysIDRequest": {
             "type": "object",
             "required": [
                 "marinaId"
@@ -17589,7 +15972,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.LoginRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -17607,11 +15990,11 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.NotificationData": {
+        "github_com_dockworks_dm-web-backend_internal_requests.NotificationData": {
             "type": "object",
             "additionalProperties": true
         },
-        "requests.NotificationPreferenceRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.NotificationPreferenceRequest": {
             "type": "object",
             "required": [
                 "deliveryMethod",
@@ -17646,7 +16029,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.OperationCode": {
+        "github_com_dockworks_dm-web-backend_internal_requests.OperationCode": {
             "type": "object",
             "properties": {
                 "approved": {
@@ -17729,7 +16112,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.RedisSetRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.RedisSetRequest": {
             "type": "object",
             "required": [
                 "key",
@@ -17746,7 +16129,7 @@ const docTemplate = `{
                 "value": {}
             }
         },
-        "requests.RefreshInviteRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.RefreshInviteRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -17759,7 +16142,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.RefreshRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.RefreshRequest": {
             "type": "object",
             "required": [
                 "token"
@@ -17771,7 +16154,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ResetPasswordRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.ResetPasswordRequest": {
             "description": "Password reset request payload",
             "type": "object",
             "required": [
@@ -17795,7 +16178,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.RetrieveInventoryRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.RetrieveInventoryRequest": {
             "type": "object",
             "required": [
                 "partNumbers",
@@ -17814,7 +16197,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ScheduleAppointmentUpdate": {
+        "github_com_dockworks_dm-web-backend_internal_requests.ScheduleAppointmentUpdate": {
             "type": "object",
             "required": [
                 "endTime",
@@ -17873,7 +16256,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ScheduleResolveMergeConflictRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.ScheduleResolveMergeConflictRequest": {
             "type": "object",
             "required": [
                 "appointments",
@@ -17885,7 +16268,7 @@ const docTemplate = `{
                 "appointments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/requests.ScheduleAppointmentUpdate"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ScheduleAppointmentUpdate"
                     }
                 },
                 "clerkId": {
@@ -17899,7 +16282,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ScheduleUpdateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.ScheduleUpdateRequest": {
             "type": "object",
             "required": [
                 "appointments",
@@ -17911,7 +16294,7 @@ const docTemplate = `{
                 "appointments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/requests.ScheduleAppointmentUpdate"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ScheduleAppointmentUpdate"
                     }
                 },
                 "clerkId": {
@@ -17925,7 +16308,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.SendHTMLEmailRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.SendHTMLEmailRequest": {
             "description": "Send HTML email request payload",
             "type": "object",
             "required": [
@@ -17958,7 +16341,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.SendSMSRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.SendSMSRequest": {
             "type": "object",
             "required": [
                 "message",
@@ -17997,7 +16380,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.SendTemplateEmailRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.SendTemplateEmailRequest": {
             "description": "Send template email request payload",
             "type": "object",
             "required": [
@@ -18030,7 +16413,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateAddressRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateAddressRequest": {
             "type": "object",
             "properties": {
                 "city": {
@@ -18063,7 +16446,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateBoatDocumentPublicRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateBoatDocumentPublicRequest": {
             "type": "object",
             "properties": {
                 "public": {
@@ -18072,7 +16455,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateContactRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateContactRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -18101,13 +16484,13 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/requests.ContactType"
+                            "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.ContactType"
                         }
                     ]
                 }
             }
         },
-        "requests.UpdateCriteriaRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateCriteriaRequest": {
             "type": "object",
             "properties": {
                 "criteria": {},
@@ -18119,7 +16502,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateCustomerMessageRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateCustomerMessageRequest": {
             "type": "object",
             "required": [
                 "body",
@@ -18145,7 +16528,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateDMECredentialRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateDMECredentialRequest": {
             "type": "object",
             "properties": {
                 "accessToken": {
@@ -18173,7 +16556,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateDMESysIDRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateDMESysIDRequest": {
             "type": "object",
             "properties": {
                 "description": {
@@ -18198,7 +16581,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateEsignSubmissionSignerRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateEsignSubmissionSignerRequest": {
             "type": "object",
             "required": [
                 "status"
@@ -18220,7 +16603,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateMarinaMessageRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateMarinaMessageRequest": {
             "type": "object",
             "required": [
                 "body",
@@ -18246,11 +16629,11 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateMarinaRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateMarinaRequest": {
             "type": "object",
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/requests.UpdateAddressRequest"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateAddressRequest"
                 },
                 "country": {
                     "type": "string",
@@ -18297,7 +16680,7 @@ const docTemplate = `{
                     "example": 100
                 },
                 "modules": {
-                    "$ref": "#/definitions/models.Modules"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.Modules"
                 },
                 "name": {
                     "type": "string",
@@ -18324,15 +16707,15 @@ const docTemplate = `{
                     "example": "https://harborbay.com"
                 },
                 "workingHours": {
-                    "$ref": "#/definitions/models.WorkingHours"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.WorkingHours"
                 }
             }
         },
-        "requests.UpdateOrgAddressRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateOrgAddressRequest": {
             "type": "object",
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/requests.UpdateAddressRequest"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.UpdateAddressRequest"
                 },
                 "country": {
                     "type": "string",
@@ -18368,7 +16751,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateOrganizationRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateOrganizationRequest": {
             "type": "object",
             "properties": {
                 "country": {
@@ -18405,7 +16788,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateRoleRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateRoleRequest": {
             "type": "object",
             "properties": {
                 "description": {
@@ -18429,7 +16812,7 @@ const docTemplate = `{
                     "example": "Admin"
                 },
                 "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.Permissions"
                 },
                 "type": {
                     "type": "string",
@@ -18437,7 +16820,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateUserRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -18491,7 +16874,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateVesselGalleryItemPublicRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.UpdateVesselGalleryItemPublicRequest": {
             "type": "object",
             "properties": {
                 "public": {
@@ -18500,7 +16883,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.WorkOrderCreateFromEstimateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.WorkOrderCreateFromEstimateRequest": {
             "type": "object",
             "required": [
                 "EstimateId"
@@ -18519,7 +16902,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.WorkOrderCreateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.WorkOrderCreateRequest": {
             "type": "object",
             "required": [
                 "custId",
@@ -18529,7 +16912,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
                     }
                 },
                 "boatId": {
@@ -18571,7 +16954,7 @@ const docTemplate = `{
                 "operationCodes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/requests.OperationCode"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.OperationCode"
                     }
                 },
                 "title": {
@@ -18582,7 +16965,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.WorkOrderPartEntryRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.WorkOrderPartEntryRequest": {
             "type": "object",
             "required": [
                 "partNumber",
@@ -18613,7 +16996,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.WorkOrderRetrieveListRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.WorkOrderRetrieveListRequest": {
             "type": "object",
             "properties": {
                 "status": {
@@ -18625,7 +17008,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.WorkOrderTimeEntryRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.WorkOrderTimeEntryRequest": {
             "type": "object",
             "required": [
                 "date",
@@ -18661,7 +17044,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.WorkOrderUpdateRequest": {
+        "github_com_dockworks_dm-web-backend_internal_requests.WorkOrderUpdateRequest": {
             "type": "object",
             "required": [
                 "woId"
@@ -18670,7 +17053,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
                     }
                 },
                 "boatId": {
@@ -18712,7 +17095,7 @@ const docTemplate = `{
                 "operationCodes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/requests.OperationCode"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.OperationCode"
                     }
                 },
                 "title": {
@@ -18723,7 +17106,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.AcceptInvitationResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.AcceptInvitationResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -18744,7 +17127,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.AddressResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.AddressResponse": {
             "description": "Address response model",
             "type": "object",
             "properties": {
@@ -18790,7 +17173,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BaseResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.BaseResponse": {
             "description": "Standard response structure for all API endpoints",
             "type": "object",
             "properties": {
@@ -18812,7 +17195,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BedrockDetectFormFieldsResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.BedrockDetectFormFieldsResponse": {
             "type": "object",
             "properties": {
                 "output": {
@@ -18858,7 +17241,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BedrockRewriteResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.BedrockRewriteResponse": {
             "description": "Response from the Bedrock API rewrite",
             "type": "object",
             "properties": {
@@ -18878,7 +17261,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BoatListMinimalResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.BoatListMinimalResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -18888,7 +17271,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.BoatMinimal"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BoatMinimal"
                     }
                 },
                 "lastPage": {
@@ -18905,38 +17288,38 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.BoatResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.BoatResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dme.Boat"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Boat"
                 }
             }
         },
-        "responses.BoatSearchResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.BoatSearchResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.BoatSearch"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BoatSearch"
                     }
                 }
             }
         },
-        "responses.ClerkListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ClerkListResponse": {
             "description": "List of system clerks/users from DME API",
             "type": "object",
             "properties": {
                 "clerks": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.ClerkResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ClerkResponse"
                     }
                 }
             }
         },
-        "responses.ClerkResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ClerkResponse": {
             "description": "System clerk/user information from DME API",
             "type": "object",
             "properties": {
@@ -18986,14 +17369,14 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ConfirmTokenResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ConfirmTokenResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/responses.InviteResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.InviteResponse"
                 },
                 "details": {},
                 "error": {},
@@ -19009,7 +17392,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ContactListPaginatedResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ContactListPaginatedResponse": {
             "description": "Contact list paginated response model",
             "type": "object",
             "properties": {
@@ -19020,7 +17403,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.ContactResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ContactResponse"
                     }
                 },
                 "lastPage": {
@@ -19037,7 +17420,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ContactResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ContactResponse": {
             "description": "Contact response model",
             "type": "object",
             "properties": {
@@ -19083,7 +17466,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CriteriaListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CriteriaListResponse": {
             "description": "Criteria list response model",
             "type": "object",
             "properties": {
@@ -19093,7 +17476,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.CriteriaResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaResponse"
                     }
                 },
                 "details": {},
@@ -19110,7 +17493,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CriteriaPaginatedResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CriteriaPaginatedResponse": {
             "description": "Criteria paginated response model",
             "type": "object",
             "properties": {
@@ -19120,7 +17503,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.CriteriaResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.CriteriaResponse"
                     }
                 },
                 "details": {},
@@ -19137,7 +17520,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CriteriaResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CriteriaResponse": {
             "description": "Criteria response model",
             "type": "object",
             "properties": {
@@ -19168,7 +17551,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CustomerListMinimalResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CustomerListMinimalResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -19178,7 +17561,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.CustomerMinimal"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomerMinimal"
                     }
                 },
                 "lastPage": {
@@ -19195,7 +17578,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CustomerListShortResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CustomerListShortResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -19205,7 +17588,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.CustomerShort"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomerShort"
                     }
                 },
                 "lastPage": {
@@ -19222,26 +17605,26 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.CustomerResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CustomerResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dme.Customer"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Customer"
                 }
             }
         },
-        "responses.CustomerSearchResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CustomerSearchResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.CustomerSearch"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomerSearch"
                     }
                 }
             }
         },
-        "responses.CustomerSettingsResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.CustomerSettingsResponse": {
             "type": "object",
             "properties": {
                 "customerId": {
@@ -19255,7 +17638,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.DMECredentialResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.DMECredentialResponse": {
             "description": "DME API credentials used for integration",
             "type": "object",
             "properties": {
@@ -19292,26 +17675,26 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.DMECredentialResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.DMECredentialResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.DMECredentialResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMECredentialResponse"
                 }
             }
         },
-        "responses.DMESysIDListResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.DMESysIDListResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.DMESysIDResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponse"
                     }
                 }
             }
         },
-        "responses.DMESysIDResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponse": {
             "description": "DME System IDs used for marina integration",
             "type": "object",
             "properties": {
@@ -19351,15 +17734,15 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.DMESysIDResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.DMESysIDResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DMESysIDResponse"
                 }
             }
         },
-        "responses.DocumentPlanResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.DocumentPlanResponse": {
             "description": "Document plan data including limits and pricing",
             "type": "object",
             "properties": {
@@ -19397,7 +17780,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.DocumentResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.DocumentResponse": {
             "description": "Document data including file path, file type, and size",
             "type": "object",
             "properties": {
@@ -19449,7 +17832,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EmailSendResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EmailSendResponse": {
             "description": "Email send response",
             "type": "object",
             "properties": {
@@ -19457,7 +17840,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/responses.EmailSendResponseData"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EmailSendResponseData"
                 },
                 "details": {},
                 "error": {},
@@ -19473,7 +17856,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EmailSendResponseData": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EmailSendResponseData": {
             "type": "object",
             "properties": {
                 "accepted": {
@@ -19490,14 +17873,14 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.Error": {
+        "github_com_dockworks_dm-web-backend_internal_responses.Error": {
             "description": "Error response structure with optional validation details",
             "type": "object",
             "properties": {
                 "details": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.ValidationError"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.ValidationError"
                     }
                 },
                 "message": {
@@ -19506,7 +17889,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignDocumentListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -19516,7 +17899,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.EsignDocumentResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentResponse"
                     }
                 },
                 "lastPage": {
@@ -19533,7 +17916,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignDocumentResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignDocumentResponse": {
             "description": "E-signature document data including blob URL, metadata, and signature status",
             "type": "object",
             "properties": {
@@ -19576,7 +17959,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignSubmissionListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -19586,7 +17969,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.EsignSubmissionResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionResponse"
                     }
                 },
                 "lastPage": {
@@ -19603,7 +17986,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignSubmissionResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionResponse": {
             "description": "E-signature submission data including blob URL, metadata, and submission status",
             "type": "object",
             "properties": {
@@ -19668,7 +18051,7 @@ const docTemplate = `{
                 "signers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionSignerResponse"
                     }
                 },
                 "status": {
@@ -19680,7 +18063,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignSubmissionSignerResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionSignerResponse": {
             "description": "E-signature submission signer data including status and signing order",
             "type": "object",
             "properties": {
@@ -19726,7 +18109,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignSubmissionWithSignersResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionWithSignersResponse": {
             "description": "E-signature submission data including signers for multiple signature submissions",
             "type": "object",
             "properties": {
@@ -19791,7 +18174,7 @@ const docTemplate = `{
                 "signers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignSubmissionSignerResponse"
                     }
                 },
                 "status": {
@@ -19803,7 +18186,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignTemplateListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignTemplateListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -19813,7 +18196,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.EsignTemplateResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.EsignTemplateResponse"
                     }
                 },
                 "lastPage": {
@@ -19830,7 +18213,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EsignTemplateResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EsignTemplateResponse": {
             "description": "E-signature template data including blob URL and metadata",
             "type": "object",
             "properties": {
@@ -19881,7 +18264,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EstimateDeleteOperationResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EstimateDeleteOperationResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -19892,7 +18275,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EstimateListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EstimateListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -19902,7 +18285,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.WorkOrder"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder"
                     }
                 },
                 "lastPage": {
@@ -19919,37 +18302,37 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EstimateResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EstimateResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dme.WorkOrder"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder"
                 }
             }
         },
-        "responses.EstimateSearchResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.WorkOrderSearch"
-                    }
-                }
-            }
-        },
-        "responses.EstimateShortListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EstimateSearchResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.WorkOrderShort"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderSearch"
                     }
                 }
             }
         },
-        "responses.EstimateSubletsResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EstimateShortListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderShort"
+                    }
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_internal_responses.EstimateSubletsResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -19958,15 +18341,15 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.EstimateUpdateResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.EstimateUpdateResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dme.WorkOrder"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder"
                 }
             }
         },
-        "responses.FuelInventoryResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.FuelInventoryResponse": {
             "type": "object",
             "properties": {
                 "costPerUnit": {
@@ -20010,7 +18393,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.InventoryPartResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.InventoryPartResponse": {
             "type": "object",
             "properties": {
                 "active": {
@@ -20114,7 +18497,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.InventorySearchResultResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.InventorySearchResultResponse": {
             "type": "object",
             "properties": {
                 "cost": {
@@ -20152,7 +18535,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.InviteResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.InviteResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -20169,30 +18552,30 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.InvoiceListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.InvoiceListResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.InvoiceDetailed"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.InvoiceDetailed"
                     }
                 }
             }
         },
-        "responses.LocationListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.LocationListResponse": {
             "description": "List of business locations from DME API",
             "type": "object",
             "properties": {
                 "locations": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.LocationResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.LocationResponse"
                     }
                 }
             }
         },
-        "responses.LocationResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.LocationResponse": {
             "description": "Business location information from DME API",
             "type": "object",
             "properties": {
@@ -20286,7 +18669,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.LoginResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.LoginResponse": {
             "description": "Authentication token response containing access token, refresh token and expiration",
             "type": "object",
             "properties": {
@@ -20304,11 +18687,11 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.LoginResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.LoginResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.LoginResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.LoginResponse"
                 },
                 "message": {
                     "type": "string",
@@ -20316,7 +18699,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MarinaGalleryItemResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaGalleryItemResponse": {
             "description": "Marina gallery item data including image URL and description",
             "type": "object",
             "properties": {
@@ -20348,7 +18731,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MarinaListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -20358,7 +18741,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.MarinaResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaResponse"
                     }
                 },
                 "lastPage": {
@@ -20375,7 +18758,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MarinaResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaResponse": {
             "description": "Marina data including location, contact information, and operational details",
             "type": "object",
             "properties": {
@@ -20401,6 +18784,9 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlan": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentPlanResponse"
                 },
                 "documentPlanId": {
                     "type": "string",
@@ -20451,11 +18837,14 @@ const docTemplate = `{
                     "example": 100
                 },
                 "modules": {
-                    "$ref": "#/definitions/models.Modules"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.Modules"
                 },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
+                },
+                "notesMessagesPlan": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotesMessagesPlanResponse"
                 },
                 "notesMessagesPlanId": {
                     "type": "string",
@@ -20468,6 +18857,9 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlan": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.StoragePlanResponse"
                 },
                 "storagePlanId": {
                     "type": "string",
@@ -20493,19 +18885,19 @@ const docTemplate = `{
                     "example": "https://harborbay.com"
                 },
                 "workingHours": {
-                    "$ref": "#/definitions/models.WorkingHours"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.WorkingHours"
                 }
             }
         },
-        "responses.MarinaResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.MarinaResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaResponse"
                 }
             }
         },
-        "responses.MarinaUsageHistoryListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -20515,7 +18907,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.MarinaUsageHistoryResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryResponse"
                     }
                 },
                 "lastPage": {
@@ -20532,7 +18924,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MarinaUsageHistoryResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryResponse": {
             "description": "Marina usage history data including storage, email, text, and document usage",
             "type": "object",
             "properties": {
@@ -20570,20 +18962,20 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MarinaUsageHistoryResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.MarinaUsageHistoryResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaUsageHistoryResponse"
                 }
             }
         },
-        "responses.MarinaWithAddressResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaWithAddressResponse": {
             "description": "Marina data with address details",
             "type": "object",
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/responses.AddressResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.AddressResponse"
                 },
                 "addressId": {
                     "type": "string",
@@ -20607,6 +18999,9 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlan": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.DocumentPlanResponse"
                 },
                 "documentPlanId": {
                     "type": "string",
@@ -20657,11 +19052,14 @@ const docTemplate = `{
                     "example": 100
                 },
                 "modules": {
-                    "$ref": "#/definitions/models.Modules"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.Modules"
                 },
                 "name": {
                     "type": "string",
                     "example": "Harbor Bay Marina"
+                },
+                "notesMessagesPlan": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotesMessagesPlanResponse"
                 },
                 "notesMessagesPlanId": {
                     "type": "string",
@@ -20674,6 +19072,9 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlan": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.StoragePlanResponse"
                 },
                 "storagePlanId": {
                     "type": "string",
@@ -20699,64 +19100,19 @@ const docTemplate = `{
                     "example": "https://harborbay.com"
                 },
                 "workingHours": {
-                    "$ref": "#/definitions/models.WorkingHours"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.WorkingHours"
                 }
             }
         },
-        "responses.MarinaWithAddressResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MarinaWithAddressResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.MarinaWithAddressResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MarinaWithAddressResponse"
                 }
             }
         },
-        "responses.MarinaWithPlansList": {
-            "type": "object",
-            "properties": {
-                "currentPage": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.MarinaWithPlansResponse"
-                    }
-                },
-                "lastPage": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "perPage": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 1
-                }
-            }
-        },
-        "responses.MarinaWithPlansResponse": {
-            "description": "Marina data with all associated plans for usage tracking",
-            "type": "object",
-            "properties": {
-                "documentPlan": {
-                    "$ref": "#/definitions/responses.DocumentPlanResponse"
-                },
-                "marina": {
-                    "$ref": "#/definitions/responses.MarinaResponse"
-                },
-                "notesMessagesPlan": {
-                    "$ref": "#/definitions/responses.NotesMessagesPlanResponse"
-                },
-                "storagePlan": {
-                    "$ref": "#/definitions/responses.StoragePlanResponse"
-                }
-            }
-        },
-        "responses.MessageListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MessageListResponse": {
             "description": "Paginated list of messages",
             "type": "object",
             "properties": {
@@ -20767,7 +19123,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.MessageResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponse"
                     }
                 },
                 "lastPage": {
@@ -20784,7 +19140,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MessageResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MessageResponse": {
             "description": "Message data including customer, type, direction, and status information",
             "type": "object",
             "properties": {
@@ -20840,16 +19196,16 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.MessageResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.MessageResponseWrapper": {
             "description": "Wrapper for a single message response",
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.MessageResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.MessageResponse"
                 }
             }
         },
-        "responses.NotesMessagesPlanResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.NotesMessagesPlanResponse": {
             "description": "Notes and messages plan data including limits and pricing",
             "type": "object",
             "properties": {
@@ -20891,7 +19247,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.NotificationListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.NotificationListResponse": {
             "description": "Paginated list of notifications",
             "type": "object",
             "properties": {
@@ -20902,7 +19258,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.NotificationResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationResponse"
                     }
                 },
                 "lastPage": {
@@ -20919,7 +19275,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.NotificationPreferenceResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.NotificationPreferenceResponse": {
             "description": "Notification preference data including type, enabled status, and delivery method",
             "type": "object",
             "properties": {
@@ -20951,19 +19307,19 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.NotificationPreferencesResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.NotificationPreferencesResponse": {
             "description": "List of notification preferences",
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.NotificationPreferenceResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationPreferenceResponse"
                     }
                 }
             }
         },
-        "responses.NotificationResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.NotificationResponse": {
             "description": "Notification data including type, title, content, and status information",
             "type": "object",
             "properties": {
@@ -20975,7 +19331,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "data": {
-                    "$ref": "#/definitions/requests.NotificationData"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_requests.NotificationData"
                 },
                 "id": {
                     "type": "string",
@@ -21017,16 +19373,16 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.NotificationResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.NotificationResponseWrapper": {
             "description": "Wrapper for a single notification response",
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.NotificationResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.NotificationResponse"
                 }
             }
         },
-        "responses.OnlineBillcodeResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.OnlineBillcodeResponse": {
             "type": "object",
             "properties": {
                 "active": {
@@ -21049,7 +19405,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.OnlinePartResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.OnlinePartResponse": {
             "type": "object",
             "properties": {
                 "active": {
@@ -21099,7 +19455,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.OrganizationResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.OrganizationResponse": {
             "type": "object",
             "properties": {
                 "address_id": {
@@ -21152,12 +19508,12 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.OrganizationWithAddressResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.OrganizationWithAddressResponse": {
             "description": "Organization with address response model",
             "type": "object",
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/responses.AddressResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.AddressResponse"
                 },
                 "country": {
                     "type": "string",
@@ -21205,7 +19561,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.OrganizationsPaginatedResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.OrganizationsPaginatedResponse": {
             "description": "Paginated response containing a list of organizations",
             "type": "object",
             "properties": {
@@ -21216,7 +19572,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.OrganizationResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.OrganizationResponse"
                     }
                 },
                 "lastPage": {
@@ -21233,7 +19589,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.OverLimitUsageResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.OverLimitUsageResponse": {
             "type": "object",
             "properties": {
                 "documentLimit": {
@@ -21276,7 +19632,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.PartQtyInfoResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.PartQtyInfoResponse": {
             "type": "object",
             "properties": {
                 "averageCost": {
@@ -21323,7 +19679,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.PartsKitItemResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.PartsKitItemResponse": {
             "type": "object",
             "properties": {
                 "cost": {
@@ -21343,7 +19699,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.PartsKitResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.PartsKitResponse": {
             "type": "object",
             "properties": {
                 "active": {
@@ -21358,7 +19714,7 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.PartsKitItemResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PartsKitItemResponse"
                     }
                 },
                 "lastModified": {
@@ -21372,15 +19728,15 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.PaymentInitiationResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.PaymentInitiationResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dme.PaymentInitiationResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.PaymentInitiationResponse"
                 }
             }
         },
-        "responses.PurchaseOrderLineResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.PurchaseOrderLineResponse": {
             "type": "object",
             "properties": {
                 "description": {
@@ -21412,7 +19768,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.PurchaseOrderResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.PurchaseOrderResponse": {
             "type": "object",
             "properties": {
                 "comments": {
@@ -21436,7 +19792,7 @@ const docTemplate = `{
                 "lines": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.PurchaseOrderLineResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.PurchaseOrderLineResponse"
                     }
                 },
                 "locationCode": {
@@ -21468,7 +19824,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.RedisGetResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.RedisGetResponse": {
             "type": "object",
             "properties": {
                 "key": {
@@ -21487,7 +19843,7 @@ const docTemplate = `{
                 "value": {}
             }
         },
-        "responses.RedisInfoResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.RedisInfoResponse": {
             "type": "object",
             "properties": {
                 "connected": {
@@ -21510,7 +19866,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.RedisPingResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.RedisPingResponse": {
             "type": "object",
             "properties": {
                 "latency": {
@@ -21524,14 +19880,14 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.RefreshInviteResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.RefreshInviteResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/responses.InviteResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.InviteResponse"
                 },
                 "details": {},
                 "error": {},
@@ -21547,7 +19903,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.RoleResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.RoleResponse": {
             "description": "Role representation for API responses",
             "type": "object",
             "properties": {
@@ -21580,7 +19936,7 @@ const docTemplate = `{
                     "example": "Admin"
                 },
                 "permissions": {
-                    "$ref": "#/definitions/models.Permissions"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_models.Permissions"
                 },
                 "type": {
                     "type": "string",
@@ -21592,7 +19948,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.SMSSendResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.SMSSendResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -21606,49 +19962,49 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ScheduleResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ScheduleResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.ScheduleUpdateResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ScheduleUpdateResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.ServiceOPCategoryCodesResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ServiceOPCategoryCodesResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.ServiceOpCodesResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ServiceOpCodesResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.ServiceOperationDescriptionsResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ServiceOperationDescriptionsResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.ServiceTechniciansResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ServiceTechniciansResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.ServiceWOCategoryCodesResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ServiceWOCategoryCodesResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.SpecialOrderResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.SpecialOrderResponse": {
             "type": "object",
             "properties": {
                 "comments": {
@@ -21713,7 +20069,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.StoragePlanResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.StoragePlanResponse": {
             "description": "Storage plan data including limits and pricing",
             "type": "object",
             "properties": {
@@ -21751,7 +20107,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.UnreadCountResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.UnreadCountResponse": {
             "description": "Unread notification count",
             "type": "object",
             "properties": {
@@ -21761,7 +20117,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.UserListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.UserListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -21771,7 +20127,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/responses.UserResponse"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponse"
                     }
                 },
                 "lastPage": {
@@ -21788,7 +20144,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.UserResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.UserResponse": {
             "description": "User profile data including personal information and system roles",
             "type": "object",
             "properties": {
@@ -21888,11 +20244,11 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.UserResponseWrapper": {
+        "github_com_dockworks_dm-web-backend_internal_responses.UserResponseWrapper": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/responses.UserResponse"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_internal_responses.UserResponse"
                 },
                 "message": {
                     "type": "string",
@@ -21900,7 +20256,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ValidationError": {
+        "github_com_dockworks_dm-web-backend_internal_responses.ValidationError": {
             "description": "Specific validation error for a single field",
             "type": "object",
             "properties": {
@@ -21922,7 +20278,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.VesselGalleryItemResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.VesselGalleryItemResponse": {
             "description": "Vessel gallery item data including image URL, description, and main image flag",
             "type": "object",
             "properties": {
@@ -21966,18 +20322,18 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderCompletedResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderCompletedResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.WorkOrder"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder"
                     }
                 }
             }
         },
-        "responses.WorkOrderCreateResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderCreateResponse": {
             "type": "object",
             "properties": {
                 "operations": {
@@ -21994,7 +20350,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderDeleteOperationResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderDeleteOperationResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -22005,7 +20361,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderGroupDescriptionsResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderGroupDescriptionsResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -22014,7 +20370,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderListNewOrChangedResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderListNewOrChangedResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -22024,7 +20380,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.WorkOrder"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder"
                     }
                 },
                 "lastPage": {
@@ -22041,7 +20397,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderListResponse": {
             "type": "object",
             "properties": {
                 "currentPage": {
@@ -22051,7 +20407,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.WorkOrder"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder"
                     }
                 },
                 "lastPage": {
@@ -22068,18 +20424,18 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderOperationsResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderOperationsResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderOperation"
                     }
                 }
             }
         },
-        "responses.WorkOrderPartEntryResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderPartEntryResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -22091,37 +20447,37 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dme.WorkOrder"
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder"
                 }
             }
         },
-        "responses.WorkOrderSearchResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dme.WorkOrderSearch"
-                    }
-                }
-            }
-        },
-        "responses.WorkOrderShortListResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderSearchResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.WorkOrderShort"
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderSearch"
                     }
                 }
             }
         },
-        "responses.WorkOrderSubletsResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderShortListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderShort"
+                    }
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderSubletsResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -22130,13 +20486,13 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.WorkOrderTimeEntriesResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderTimeEntriesResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.WorkOrderTimeEntryResponse": {
+        "github_com_dockworks_dm-web-backend_internal_responses.WorkOrderTimeEntryResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -22145,6 +20501,1626 @@ const docTemplate = `{
                 },
                 "result": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Attachment": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
+                "s3Path": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.BillingCode": {
+            "type": "object",
+            "properties": {
+                "LOA_LWL_Or_Spar": {
+                    "type": "string"
+                },
+                "Length_Area_Or_CubicFeet": {
+                    "type": "string"
+                },
+                "Slip_Boat_Or_Longest": {
+                    "type": "string"
+                },
+                "cycle": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "departmentDesc": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "overrideRate": {
+                    "type": "number"
+                },
+                "perFoot": {
+                    "type": "boolean"
+                },
+                "proRated": {
+                    "type": "boolean"
+                },
+                "rates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Rate"
+                    }
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.BillingData": {
+            "type": "object",
+            "properties": {
+                "amountBilled": {
+                    "type": "number"
+                },
+                "billingDate": {
+                    "type": "string"
+                },
+                "environmentCharges": {
+                    "type": "number"
+                },
+                "otherCharges": {
+                    "type": "number"
+                },
+                "salesTax": {
+                    "type": "number"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Boat": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
+                    }
+                },
+                "beam": {
+                    "type": "string"
+                },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BoatDescriptionCode"
+                    }
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Motor"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.OperationHistory"
+                    }
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "ownerIntegrationId": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Slip"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.BoatDescriptionCode": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.BoatMinimal": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Slip"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.BoatSearch": {
+            "type": "object",
+            "properties": {
+                "arrivalDate": {
+                    "type": "string"
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "departureDate": {
+                    "type": "string"
+                },
+                "ownerName": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.BoatUpdate": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
+                    }
+                },
+                "beam": {
+                    "type": "string"
+                },
+                "billingCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BillingCode"
+                    }
+                },
+                "boatDescriptionCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BoatDescriptionCode"
+                    }
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomInformation"
+                    }
+                },
+                "doNotLaunch": {
+                    "type": "boolean"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "string"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "insuranceCompany": {
+                    "type": "string"
+                },
+                "insuranceExpDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "loa": {
+                    "type": "string"
+                },
+                "lwl": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Motor"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "operationsHistory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.OperationHistory"
+                    }
+                },
+                "ownerIntegrationId": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "slip": {
+                    "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Slip"
+                },
+                "slipId": {
+                    "type": "string"
+                },
+                "summerSlip": {
+                    "type": "string"
+                },
+                "trailerLocation": {
+                    "type": "string"
+                },
+                "trailerMake": {
+                    "type": "string"
+                },
+                "trailerModel": {
+                    "type": "string"
+                },
+                "trailerRegistration": {
+                    "type": "string"
+                },
+                "trailerSerial": {
+                    "type": "string"
+                },
+                "winterSlip": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.CategoryCode": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.CustomInformation": {
+            "type": "object",
+            "properties": {
+                "fieldName": {
+                    "type": "string"
+                },
+                "fieldValue": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Customer": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "allowBackOrders": {
+                    "type": "boolean"
+                },
+                "allowTransactions": {
+                    "type": "boolean"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
+                    }
+                },
+                "balance": {
+                    "type": "number"
+                },
+                "boats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Boat"
+                    }
+                },
+                "categoryCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CategoryCode"
+                    }
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "creditLimit": {
+                    "type": "number"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomInformation"
+                    }
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "inactiveDate": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "invoices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.InvoiceDetailed"
+                    }
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "noCcSurcharge": {
+                    "type": "boolean"
+                },
+                "paymentTermsCode": {
+                    "type": "string"
+                },
+                "paymentTermsCodeDescription": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "poRequired": {
+                    "type": "boolean"
+                },
+                "priceColumn": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "sendMassEmail": {
+                    "type": "boolean"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "taxId": {
+                    "type": "string"
+                },
+                "taxIdState": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "waitListEntries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.WaitListEntry"
+                    }
+                },
+                "webId": {
+                    "type": "string"
+                },
+                "webPassword": {
+                    "type": "string"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.CustomerMinimal": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emailAddress": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "postalCode": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "workPhone": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.CustomerSearch": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "customerID": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.CustomerShort": {
+            "type": "object",
+            "properties": {
+                "companyName": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.CustomerUpdate": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "altAddress1": {
+                    "type": "string"
+                },
+                "altAddress2": {
+                    "type": "string"
+                },
+                "altAddress3": {
+                    "type": "string"
+                },
+                "altCity": {
+                    "type": "string"
+                },
+                "altCountry": {
+                    "type": "string"
+                },
+                "altFirstName": {
+                    "type": "string"
+                },
+                "altLastName": {
+                    "type": "string"
+                },
+                "altPhone": {
+                    "type": "string"
+                },
+                "altState": {
+                    "type": "string"
+                },
+                "altZip": {
+                    "type": "string"
+                },
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
+                    }
+                },
+                "cellPhone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.CustomInformation"
+                    }
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emergencyContact": {
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "shipmentMethod": {
+                    "type": "string"
+                },
+                "shipmentMethodDescription": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "useAltAddress": {
+                    "type": "boolean"
+                },
+                "workPhone": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Installment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "balance": {
+                    "type": "number"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.InvoiceDetailed": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dueDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "installments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Installment"
+                    }
+                },
+                "invoiceAmount": {
+                    "type": "number"
+                },
+                "invoiceBalance": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "unappliedPayment": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Motor": {
+            "type": "object",
+            "properties": {
+                "drive": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "string"
+                },
+                "transomId": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Operation": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "estCompleteDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedCharges": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isOpcodeApproved": {
+                    "type": "boolean"
+                },
+                "laborBilled": {
+                    "type": "number"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "opcodeDesc": {
+                    "type": "string"
+                },
+                "reqCompDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "techDesc": {
+                    "type": "string"
+                },
+                "totalBillCodes": {
+                    "type": "number"
+                },
+                "totalCharges": {
+                    "type": "number"
+                },
+                "totalEquipment": {
+                    "type": "number"
+                },
+                "totalFreight": {
+                    "type": "number"
+                },
+                "totalLabor": {
+                    "type": "number"
+                },
+                "totalLaborHours": {
+                    "type": "number"
+                },
+                "totalMileage": {
+                    "type": "number"
+                },
+                "totalMiscSupply": {
+                    "type": "number"
+                },
+                "totalParts": {
+                    "type": "number"
+                },
+                "totalSublet": {
+                    "type": "number"
+                },
+                "totalToComplete": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.OperationHistory": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "operationCharges": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "workOrder": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.PaymentInitiationResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "dmPayClientId": {
+                    "type": "string"
+                },
+                "invoiceId": {
+                    "type": "string"
+                },
+                "paymentSessionId": {
+                    "type": "string"
+                },
+                "paymentUrl": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Rate": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                },
+                "startDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.Slip": {
+            "type": "object",
+            "properties": {
+                "cableTv": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "electric": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModifedDate": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "string"
+                },
+                "linear": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "boolean"
+                },
+                "tieOff": {
+                    "type": "string"
+                },
+                "transient": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "unusable": {
+                    "type": "boolean"
+                },
+                "water": {
+                    "type": "boolean"
+                },
+                "width": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.WaitListEntry": {
+            "type": "object",
+            "properties": {
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "entryDate": {
+                    "type": "string"
+                },
+                "entryNumber": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "waitListName": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.WorkOrder": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Attachment"
+                    }
+                },
+                "billingData": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.BillingData"
+                    }
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatLength": {
+                    "type": "string"
+                },
+                "boatMake": {
+                    "type": "string"
+                },
+                "boatModel": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "boatYear": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "customerID": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEstimate": {
+                    "type": "boolean"
+                },
+                "lastModDate": {
+                    "type": "string"
+                },
+                "lastModTime": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_dockworks_dm-web-backend_pkg_dme.Operation"
+                    }
+                },
+                "promisedDate": {
+                    "type": "string"
+                },
+                "riggingId": {
+                    "type": "string"
+                },
+                "riggingType": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalBillCodes": {
+                    "type": "number"
+                },
+                "totalEquipment": {
+                    "type": "number"
+                },
+                "totalForecastedHours": {
+                    "type": "number"
+                },
+                "totalForecastedLabor": {
+                    "type": "number"
+                },
+                "totalForecastedParts": {
+                    "type": "number"
+                },
+                "totalFreight": {
+                    "type": "number"
+                },
+                "totalFreightCost": {
+                    "type": "number"
+                },
+                "totalLabor": {
+                    "type": "number"
+                },
+                "totalLaborCost": {
+                    "type": "number"
+                },
+                "totalLaborHours": {
+                    "type": "number"
+                },
+                "totalMileage": {
+                    "type": "number"
+                },
+                "totalMiscSupply": {
+                    "type": "number"
+                },
+                "totalParts": {
+                    "type": "number"
+                },
+                "totalPartsCost": {
+                    "type": "number"
+                },
+                "totalSublet": {
+                    "type": "number"
+                },
+                "totalSubletCost": {
+                    "type": "number"
+                },
+                "totalWOCharges": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderOperation": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "boolean"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flatRateAmount": {
+                    "type": "number"
+                },
+                "flatRatePerFootMethod": {
+                    "type": "string"
+                },
+                "flatRatePerFootRate": {
+                    "type": "number"
+                },
+                "forecastedLaborCharges": {
+                    "type": "number"
+                },
+                "forecastedLaborHours": {
+                    "type": "number"
+                },
+                "forecastedPartsCharges": {
+                    "type": "number"
+                },
+                "laborFinished": {
+                    "type": "boolean"
+                },
+                "longDesc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
+                },
+                "techDesc": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderSearch": {
+            "type": "object",
+            "properties": {
+                "boat": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "openDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_dme.WorkOrderShort": {
+            "type": "object",
+            "properties": {
+                "boat": {
+                    "type": "string"
+                },
+                "customer": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "openDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_models.Modules": {
+            "type": "object",
+            "properties": {
+                "customerVessels": {
+                    "type": "boolean"
+                },
+                "esign": {
+                    "type": "boolean"
+                },
+                "inventoryManagement": {
+                    "type": "boolean"
+                },
+                "marinaManagement": {
+                    "type": "boolean"
+                },
+                "payments": {
+                    "type": "boolean"
+                },
+                "pos": {
+                    "type": "boolean"
+                },
+                "salesManagement": {
+                    "type": "boolean"
+                },
+                "serviceManagement": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_models.Permissions": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "boolean"
+            }
+        },
+        "github_com_dockworks_dm-web-backend_pkg_models.WorkingHours": {
+            "type": "object",
+            "properties": {
+                "friday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "monday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "saturday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "sunday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "thursday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "tuesday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                },
+                "wednesday": {
+                    "type": "string",
+                    "example": "9:00 AM - 5:00 PM"
+                }
+            }
+        },
+        "internal_server_handlers.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "\"database\"": "\"connected\"}",
+                        "{\"status\"": "\"ok\""
+                    }
+                }
+            }
+        },
+        "internal_server_handlers.PermissionTestRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "object"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                }
+            }
+        },
+        "internal_server_handlers.PermissionTestResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "read"
+                },
+                "has_access": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "marina_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174001"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Access granted"
+                },
+                "module_info": {
+                    "type": "object",
+                    "properties": {
+                        "module_enabled": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "required_module": {
+                            "type": "string",
+                            "example": "customerVessels"
+                        }
+                    }
+                },
+                "object": {
+                    "type": "string",
+                    "example": "customers"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
+        "internal_server_handlers.ProjectDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "\"version\"": "\"1.0.0\"}",
+                        "{\"name\"": "\"Marina Management System\""
+                    }
                 }
             }
         }
