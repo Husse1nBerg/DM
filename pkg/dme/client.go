@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -392,23 +393,23 @@ func (c *Client) DoRequest(ctx context.Context, method, endpoint string, body in
 		}
 	}
 
-	url := c.config.BaseURL
+	requestURL := c.config.BaseURL
 	if strings.HasPrefix(endpoint, "/") {
-		url += endpoint
+		requestURL += endpoint
 	} else {
-		url += "/" + endpoint
+		requestURL += "/" + endpoint
 	}
 
 	// Add query parameters if provided
 	if len(params) > 0 {
-		query := make([]string, 0, len(params))
+		queryParams := url.Values{}
 		for k, v := range params {
-			query = append(query, fmt.Sprintf("%s=%s", k, v))
+			queryParams.Add(k, v)
 		}
-		url += "?" + strings.Join(query, "&")
+		requestURL += "?" + queryParams.Encode()
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(reqBody))
+	req, err := http.NewRequestWithContext(ctx, method, requestURL, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -441,9 +442,10 @@ func (c *Client) DoJSONRequest(ctx context.Context, method, endpoint string, bod
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			c.logger.DesugarZap.Error("DME API request failed to read response body", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.Error(err))
+			return fmt.Errorf("DME API request failed with status %d: unable to read response body", resp.StatusCode)
 		}
 		c.logger.DesugarZap.Error("DME API request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.String("response", string(body)))
-		return fmt.Errorf("DME APIrequest failed with status: %d", resp.StatusCode)
+		return fmt.Errorf("DME API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
 	if result != nil {
