@@ -917,13 +917,24 @@ func (h *WorkOrderHandler) SubmitWorkOrderTimeEntry(c echo.Context) error {
 
 	// Convert request to map for DME API
 	timeEntryData := map[string]interface{}{
-		"workOrderId":  req.WorkOrderID,
-		"operationId":  req.OperationID,
-		"technicianId": req.TechnicianID,
-		"hours":        req.Hours,
-		"rate":         req.Rate,
-		"date":         req.Date,
-		"description":  req.Description,
+		"TechId":            req.TechnicianID,
+		"WorkOrderId":       req.WorkOrderID,
+		"OpCode":            req.OperationID,
+		"Date":              req.Date,
+		"StartTime":         req.StartTime,
+		"StopTime":          req.StopTime,
+		"Comments":          req.Comments,
+	}
+	
+	// Add optional fields if provided
+	if req.IsApproved != nil {
+		timeEntryData["IsApproved"] = *req.IsApproved
+	}
+	if req.FlagLaborFinished != nil {
+		timeEntryData["FlagLaborFinished"] = *req.FlagLaborFinished
+	}
+	if req.TimeEntryUID != "" {
+		timeEntryData["TimeEntryUId"] = req.TimeEntryUID
 	}
 
 	dmeResponse, err := h.server.DME.SubmitWorkOrderTimeEntry(ctx, timeEntryData, orgID, *systemID)

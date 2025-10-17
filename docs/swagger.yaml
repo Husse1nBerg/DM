@@ -2786,28 +2786,32 @@ definitions:
     type: object
   requests.WorkOrderTimeEntryRequest:
     properties:
+      comments:
+        type: string
       date:
         type: string
-      description:
+      flagLaborFinished:
+        type: boolean
+      isApproved:
+        type: boolean
+      opCode:
         type: string
-      hours:
-        minimum: 0
-        type: number
-      operationId:
+      startTime:
         type: string
-      rate:
-        minimum: 0
-        type: number
-      technicianId:
+      stopTime:
+        type: string
+      techId:
+        type: string
+      timeEntryUId:
         type: string
       workOrderId:
         type: string
     required:
     - date
-    - hours
-    - operationId
-    - rate
-    - technicianId
+    - opCode
+    - startTime
+    - stopTime
+    - techId
     - workOrderId
     type: object
   requests.WorkOrderUpdateRequest:

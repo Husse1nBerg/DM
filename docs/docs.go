@@ -19219,31 +19219,38 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "date",
-                "hours",
-                "operationId",
-                "rate",
-                "technicianId",
+                "opCode",
+                "startTime",
+                "stopTime",
+                "techId",
                 "workOrderId"
             ],
             "properties": {
+                "comments": {
+                    "type": "string"
+                },
                 "date": {
                     "type": "string"
                 },
-                "description": {
+                "flagLaborFinished": {
+                    "type": "boolean"
+                },
+                "isApproved": {
+                    "type": "boolean"
+                },
+                "opCode": {
                     "type": "string"
                 },
-                "hours": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "operationId": {
+                "startTime": {
                     "type": "string"
                 },
-                "rate": {
-                    "type": "number",
-                    "minimum": 0
+                "stopTime": {
+                    "type": "string"
                 },
-                "technicianId": {
+                "techId": {
+                    "type": "string"
+                },
+                "timeEntryUId": {
                     "type": "string"
                 },
                 "workOrderId": {
