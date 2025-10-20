@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -304,7 +305,20 @@ func NumericToString(n pgtype.Numeric) string {
 	// Use the Int value and Exp to calculate the decimal
 	var val float64
 	if n.Int != nil {
-		val = float64(n.Int.Int64()) * float64(n.Exp)
+		val = float64(n.Int.Int64()) * math.Pow(10, float64(n.Exp))
 	}
 	return fmt.Sprintf("%.2f", val)
+}
+
+// NumericToFloat64 converts a pgtype.Numeric to a float64
+func NumericToFloat64(n pgtype.Numeric) (float64, error) {
+	if !n.Valid {
+		return 0.0, nil
+	}
+	// Use the Int value and Exp to calculate the decimal
+	var val float64
+	if n.Int != nil {
+		val = float64(n.Int.Int64()) * math.Pow(10, float64(n.Exp))
+	}
+	return val, nil
 }

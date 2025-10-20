@@ -196,4 +196,7 @@ func RegisterRoutes(s *s.Server) {
 
 	// Payment webhook routes (public)
 	RegisterPaymentWebhookRoutes(s, base)
+
+	// Payment tax configuration routes
+	RegisterPaymentTaxRoutes(s, permissionProtected)
 }
