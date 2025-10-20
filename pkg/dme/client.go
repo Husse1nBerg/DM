@@ -438,19 +438,35 @@ func (c *Client) DoJSONRequest(ctx context.Context, method, endpoint string, bod
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.logger.DesugarZap.Error("DME API request failed to read response body", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.Error(err))
-			return fmt.Errorf("DME API request failed with status %d: unable to read response body", resp.StatusCode)
-		}
-		c.logger.DesugarZap.Error("DME API request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.String("response", string(body)))
-		return fmt.Errorf("DME API request failed with status %d: %s", resp.StatusCode, string(body))
+	// Read the response body
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.DesugarZap.Error("DME API request failed to read response body", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.Error(err))
+		return fmt.Errorf("DME API request failed to read response body: %w", err)
 	}
 
+	// Log the response for debugging
+	c.logger.DesugarZap.Debug("DME API response received",
+		zap.String("method", method),
+		zap.String("endpoint", endpoint),
+		zap.Int("status", resp.StatusCode),
+		zap.Int("contentLength", len(responseBody)),
+		zap.String("response", string(responseBody)))
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		c.logger.DesugarZap.Error("DME API request failed", zap.String("method", method), zap.String("endpoint", endpoint), zap.Int("status", resp.StatusCode), zap.String("organizationID", organizationID.String()), zap.String("systemID", systemID), zap.String("response", string(responseBody)))
+		return fmt.Errorf("DME API request failed with status %d: %s", resp.StatusCode, string(responseBody))
+	}
+
+	// Only decode if we expect a result and have content
 	if result != nil {
-		if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
-			c.logger.DesugarZap.Error("DME API Request failed to decode response", zap.String("method", method), zap.String("endpoint", endpoint), zap.Error(err))
+		if len(responseBody) == 0 {
+			c.logger.DesugarZap.Warn("DME API returned empty response body", zap.String("method", method), zap.String("endpoint", endpoint))
+			return fmt.Errorf("DME API returned empty response body")
+		}
+
+		if err := json.Unmarshal(responseBody, result); err != nil {
+			c.logger.DesugarZap.Error("DME API Request failed to decode response", zap.String("method", method), zap.String("endpoint", endpoint), zap.String("response", string(responseBody)), zap.Error(err))
 			return fmt.Errorf("DME API request failed to decode response: %w", err)
 		}
 	}
