@@ -18,26 +18,21 @@ CREATE TABLE tax_configurations (
     surcharge_enabled BOOLEAN NOT NULL DEFAULT false,
     surcharge_description TEXT,
     
-    -- Tax Configuration (optional, for general tax)
-    tax_rate NUMERIC(5, 2) DEFAULT 0.00,
-    tax_enabled BOOLEAN NOT NULL DEFAULT false,
-    tax_description TEXT,
-    
-    -- Configuration metadata
-    is_active BOOLEAN NOT NULL DEFAULT true,
+    -- Payment Type Configuration
+    -- CC: Credit Card, DB: Debit Card, CK: Check, ACH: ACH Transfer
+    payment_type VARCHAR(10) NOT NULL CHECK (payment_type IN ('CC', 'DB', 'CK', 'ACH')),
     
     -- Audit fields
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ,
-    created_by UUID
+    updated_at TIMESTAMPTZ
 );
 
 -- Indexes for performance
 CREATE INDEX tax_configurations_marina_id_idx ON tax_configurations(marina_id);
-CREATE INDEX tax_configurations_active_idx ON tax_configurations(is_active) WHERE is_active = true;
--- Ensure only one active configuration per marina at a time (partial unique index)
-CREATE UNIQUE INDEX unique_active_marina_config ON tax_configurations(marina_id) WHERE is_active = true;
+CREATE INDEX tax_configurations_payment_type_idx ON tax_configurations(payment_type);
 CREATE INDEX tax_configurations_created_at_idx ON tax_configurations(created_at DESC);
+-- Ensure only one configuration per marina per payment type
+CREATE UNIQUE INDEX unique_marina_payment_type ON tax_configurations(marina_id, payment_type);
 -- +goose StatementEnd
 
 -- +goose Down

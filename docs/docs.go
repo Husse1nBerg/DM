@@ -10797,7 +10797,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Creates a new payment tax configuration for convenience fees and surcharges for a marina",
+                "description": "Creates a new payment tax configuration for convenience fees and surcharges for a marina. Each marina can have one configuration per payment type.\n\n**Payment Type Options:**\n- **CC** - Credit Card\n- **DB** - Debit Card\n- **CK** - Check\n- **ACH** - ACH Transfer\n\n**Note:** The paymentType field is required and validated against these specific values. Each marina can only have one configuration per payment type (enforced by unique constraint).",
                 "consumes": [
                     "application/json"
                 ],
@@ -10841,14 +10841,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/payment-tax/active": {
+        "/payment-tax/by-type": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves the active payment tax configuration for the current user's marina",
+                "description": "Retrieves the payment tax configuration for the current user's marina and specified payment type",
                 "consumes": [
                     "application/json"
                 ],
@@ -10858,12 +10858,27 @@ const docTemplate = `{
                 "tags": [
                     "PaymentTax"
                 ],
-                "summary": "Get active marina payment tax configuration",
+                "summary": "Get marina payment tax configuration by type",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment type (CC, DB, CK, ACH)",
+                        "name": "paymentType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Active payment tax configuration",
+                        "description": "Payment tax configuration",
                         "schema": {
                             "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
                         }
                     },
                     "404": {
@@ -10882,7 +10897,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Calculates convenience fee, surcharge, and tax for a given amount using the active configuration",
+                "description": "Calculates convenience fee and surcharge for a given amount, marina, and payment type",
                 "consumes": [
                     "application/json"
                 ],
@@ -10895,7 +10910,7 @@ const docTemplate = `{
                 "summary": "Calculate fees",
                 "parameters": [
                     {
-                        "description": "Amount to calculate fees for",
+                        "description": "Calculation request with marina ID, payment type, and amount",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10918,7 +10933,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "No active configuration found",
+                        "description": "Configuration not found",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -10980,7 +10995,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Updates an existing payment tax configuration",
+                "description": "Updates an existing payment tax configuration. All fields are optional.\n\n**Payment Type Options (optional):**\n- **CC** - Credit Card\n- **DB** - Debit Card\n- **CK** - Check\n- **ACH** - ACH Transfer",
                 "consumes": [
                     "application/json"
                 ],
@@ -11059,55 +11074,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "Configuration deleted successfully",
-                        "schema": {
-                            "$ref": "#/definitions/responses.BaseResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/payment-tax/{id}/deactivate": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Deactivates a payment tax configuration",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "PaymentTax"
-                ],
-                "summary": "Deactivate payment tax configuration",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Payment tax configuration ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Configuration deactivated successfully",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
                         }
@@ -17356,12 +17322,26 @@ const docTemplate = `{
         "requests.CalculateFeeRequest": {
             "type": "object",
             "required": [
-                "amount"
+                "amount",
+                "marinaId",
+                "paymentType"
             ],
             "properties": {
                 "amount": {
                     "type": "number",
                     "minimum": 0
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "paymentType": {
+                    "type": "string",
+                    "enum": [
+                        "CC",
+                        "DB",
+                        "CK",
+                        "ACH"
+                    ]
                 }
             }
         },
@@ -17957,6 +17937,7 @@ const docTemplate = `{
                 "convenienceFee",
                 "convenienceFeeType",
                 "marinaId",
+                "paymentType",
                 "surcharge",
                 "surchargeType"
             ],
@@ -17978,11 +17959,17 @@ const docTemplate = `{
                         "fixed"
                     ]
                 },
-                "isActive": {
-                    "type": "boolean"
-                },
                 "marinaId": {
                     "type": "string"
+                },
+                "paymentType": {
+                    "type": "string",
+                    "enum": [
+                        "CC",
+                        "DB",
+                        "CK",
+                        "ACH"
+                    ]
                 },
                 "surcharge": {
                     "type": "number",
@@ -18000,16 +17987,6 @@ const docTemplate = `{
                         "percentage",
                         "fixed"
                     ]
-                },
-                "taxDescription": {
-                    "type": "string"
-                },
-                "taxEnabled": {
-                    "type": "boolean"
-                },
-                "taxRate": {
-                    "type": "number",
-                    "minimum": 0
                 }
             }
         },
@@ -19476,8 +19453,14 @@ const docTemplate = `{
                         "fixed"
                     ]
                 },
-                "isActive": {
-                    "type": "boolean"
+                "paymentType": {
+                    "type": "string",
+                    "enum": [
+                        "CC",
+                        "DB",
+                        "CK",
+                        "ACH"
+                    ]
                 },
                 "surcharge": {
                     "type": "number",
@@ -19495,16 +19478,6 @@ const docTemplate = `{
                         "percentage",
                         "fixed"
                     ]
-                },
-                "taxDescription": {
-                    "type": "string"
-                },
-                "taxEnabled": {
-                    "type": "boolean"
-                },
-                "taxRate": {
-                    "type": "number",
-                    "minimum": 0
                 }
             }
         },
@@ -21123,6 +21096,9 @@ const docTemplate = `{
                 "convenienceFeeType": {
                     "type": "string"
                 },
+                "paymentType": {
+                    "type": "string"
+                },
                 "surcharge": {
                     "type": "number"
                 },
@@ -21131,12 +21107,6 @@ const docTemplate = `{
                 },
                 "surchargeType": {
                     "type": "string"
-                },
-                "tax": {
-                    "type": "number"
-                },
-                "taxRate": {
-                    "type": "number"
                 },
                 "totalAmount": {
                     "type": "number"
@@ -22735,16 +22705,13 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "createdBy": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
-                "isActive": {
-                    "type": "boolean"
-                },
                 "marinaId": {
+                    "type": "string"
+                },
+                "paymentType": {
                     "type": "string"
                 },
                 "surcharge": {
@@ -22758,15 +22725,6 @@ const docTemplate = `{
                 },
                 "surchargeType": {
                     "type": "string"
-                },
-                "taxDescription": {
-                    "type": "string"
-                },
-                "taxEnabled": {
-                    "type": "boolean"
-                },
-                "taxRate": {
-                    "type": "number"
                 },
                 "updatedAt": {
                     "type": "string"

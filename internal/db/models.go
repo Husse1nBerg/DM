@@ -442,13 +442,9 @@ type TaxConfiguration struct {
 	SurchargeType             string
 	SurchargeEnabled          bool
 	SurchargeDescription      *string
-	TaxRate                   float64
-	TaxEnabled                bool
-	TaxDescription            *string
-	IsActive                  bool
+	PaymentType               string
 	CreatedAt                 pgtype.Timestamptz
 	UpdatedAt                 pgtype.Timestamptz
-	CreatedBy                 uuid.UUID
 }
 
 type User struct {

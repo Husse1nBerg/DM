@@ -20,13 +20,9 @@ type PaymentTaxResponse struct {
 	SurchargeType             string     `json:"surchargeType"`
 	SurchargeEnabled          bool       `json:"surchargeEnabled"`
 	SurchargeDescription      *string    `json:"surchargeDescription,omitempty"`
-	TaxRate                   float64    `json:"taxRate"`
-	TaxEnabled                bool       `json:"taxEnabled"`
-	TaxDescription            *string    `json:"taxDescription,omitempty"`
-	IsActive                  bool       `json:"isActive"`
+	PaymentType               string     `json:"paymentType"`
 	CreatedAt                 time.Time  `json:"createdAt"`
 	UpdatedAt                 *time.Time `json:"updatedAt,omitempty"`
-	CreatedBy                 uuid.UUID  `json:"createdBy"`
 }
 
 // PaymentTaxListResponse represents a paginated list of payment tax configurations
@@ -43,13 +39,12 @@ type FeeCalculationResponse struct {
 	BaseAmount         float64 `json:"baseAmount"`
 	ConvenienceFee     float64 `json:"convenienceFee"`
 	Surcharge          float64 `json:"surcharge"`
-	Tax                float64 `json:"tax"`
 	TotalAmount        float64 `json:"totalAmount"`
 	ConvenienceFeeType string  `json:"convenienceFeeType"`
 	SurchargeType      string  `json:"surchargeType"`
 	ConvenienceFeeRate float64 `json:"convenienceFeeRate"`
 	SurchargeRate      float64 `json:"surchargeRate"`
-	TaxRate            float64 `json:"taxRate"`
+	PaymentType        string  `json:"paymentType"`
 }
 
 // ConvertPaymentTaxToResponse converts a db.TaxConfiguration to PaymentTaxResponse
@@ -73,11 +68,8 @@ func ConvertPaymentTaxToResponse(config db.TaxConfiguration) PaymentTaxResponse 
 		Surcharge:             surcharge,
 		SurchargeType:         config.SurchargeType,
 		SurchargeEnabled:      config.SurchargeEnabled,
-		TaxRate:               config.TaxRate,
-		TaxEnabled:            config.TaxEnabled,
-		IsActive:              config.IsActive,
+		PaymentType:           config.PaymentType,
 		CreatedAt:             createdAt,
-		CreatedBy:             config.CreatedBy,
 	}
 
 	// Convert optional fields
@@ -86,9 +78,6 @@ func ConvertPaymentTaxToResponse(config db.TaxConfiguration) PaymentTaxResponse 
 	}
 	if config.SurchargeDescription != nil {
 		response.SurchargeDescription = config.SurchargeDescription
-	}
-	if config.TaxDescription != nil {
-		response.TaxDescription = config.TaxDescription
 	}
 
 	// Convert timestamp fields

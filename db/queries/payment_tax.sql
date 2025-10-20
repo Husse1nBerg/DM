@@ -9,23 +9,19 @@ INSERT INTO tax_configurations (
     surcharge_type,
     surcharge_enabled,
     surcharge_description,
-    tax_rate,
-    tax_enabled,
-    tax_description,
-    is_active,
-    created_by
+    payment_type
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) RETURNING *;
 
 -- name: GetTaxConfigurationByID :one
 SELECT * FROM tax_configurations
 WHERE id = $1;
 
--- name: GetActiveTaxConfigurationByMarinaID :one
+-- name: GetTaxConfigurationByMarinaAndPaymentType :one
 SELECT * FROM tax_configurations
 WHERE marina_id = $1 
-    AND is_active = true
+    AND payment_type = $2
 LIMIT 1;
 
 -- name: GetAllTaxConfigurationsByMarinaID :many
@@ -50,27 +46,11 @@ SET
     surcharge_type = COALESCE(sqlc.narg('surcharge_type'), surcharge_type),
     surcharge_enabled = COALESCE(sqlc.narg('surcharge_enabled'), surcharge_enabled),
     surcharge_description = COALESCE(sqlc.narg('surcharge_description'), surcharge_description),
-    tax_rate = COALESCE(sqlc.narg('tax_rate'), tax_rate),
-    tax_enabled = COALESCE(sqlc.narg('tax_enabled'), tax_enabled),
-    tax_description = COALESCE(sqlc.narg('tax_description'), tax_description),
-    is_active = COALESCE(sqlc.narg('is_active'), is_active),
+    payment_type = COALESCE(sqlc.narg('payment_type'), payment_type),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg('id')
 RETURNING *;
 
--- name: DeactivateTaxConfiguration :exec
-UPDATE tax_configurations
-SET 
-    is_active = false,
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = $1;
-
--- name: DeactivateAllMarinaConfigurations :exec
-UPDATE tax_configurations
-SET 
-    is_active = false,
-    updated_at = CURRENT_TIMESTAMP
-WHERE marina_id = $1 AND is_active = true;
 
 -- name: DeleteTaxConfiguration :exec
 DELETE FROM tax_configurations
@@ -84,10 +64,9 @@ SELECT
     surcharge,
     surcharge_type,
     surcharge_enabled,
-    tax_rate,
-    tax_enabled
+    payment_type
 FROM tax_configurations
-WHERE id = $1 AND is_active = true;
+WHERE id = $1;
 
 -- name: CountTaxConfigurationsByMarinas :one
 SELECT COUNT(*) FROM tax_configurations

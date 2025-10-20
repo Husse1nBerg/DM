@@ -29,7 +29,15 @@ func NewPaymentTaxHandler(server *s.Server) *PaymentTaxHandler {
 // CreatePaymentTax creates a new payment tax configuration
 //
 //	@Summary		Create payment tax configuration
-//	@Description	Creates a new payment tax configuration for convenience fees and surcharges for a marina
+//	@Description	Creates a new payment tax configuration for convenience fees and surcharges for a marina. Each marina can have one configuration per payment type.
+//	@Description
+//	@Description	**Payment Type Options:**
+//	@Description	- **CC** - Credit Card
+//	@Description	- **DB** - Debit Card
+//	@Description	- **CK** - Check
+//	@Description	- **ACH** - ACH Transfer
+//	@Description
+//	@Description	**Note:** The paymentType field is required and validated against these specific values. Each marina can only have one configuration per payment type (enforced by unique constraint).
 //	@Tags			PaymentTax
 //	@Accept			json
 //	@Produce		json
@@ -50,11 +58,6 @@ func (h *PaymentTaxHandler) CreatePaymentTax(c echo.Context) error {
 		h.server.Logger.Zap.Error("Payment tax request validation failed", zap.Error(err))
 		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
 	}
-
-	// Get user ID from JWT token
-	userToken := c.Get("user").(*jwt.Token)
-	claims := userToken.Claims.(*token.JwtCustomClaims)
-	userID := claims.ID
 
 	// Verify marina exists
 	_, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), req.MarinaID)
@@ -77,12 +80,6 @@ func (h *PaymentTaxHandler) CreatePaymentTax(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid surcharge value").JSON(c)
 	}
 
-	// Set default values for optional fields
-	isActive := true
-	if req.IsActive != nil {
-		isActive = *req.IsActive
-	}
-
 	// Create the payment tax configuration
 	config, err := h.server.DB.Queries().CreateTaxConfiguration(c.Request().Context(), db.CreateTaxConfigurationParams{
 		MarinaID:                  req.MarinaID,
@@ -94,11 +91,7 @@ func (h *PaymentTaxHandler) CreatePaymentTax(c echo.Context) error {
 		SurchargeType:             req.SurchargeType,
 		SurchargeEnabled:          req.SurchargeEnabled,
 		SurchargeDescription:      req.SurchargeDescription,
-		TaxRate:                   req.TaxRate,
-		TaxEnabled:                req.TaxEnabled,
-		TaxDescription:            req.TaxDescription,
-		IsActive:                  isActive,
-		CreatedBy:                 userID,
+		PaymentType:               req.PaymentType,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to create payment tax configuration", zap.Error(err))
@@ -147,27 +140,37 @@ func (h *PaymentTaxHandler) GetPaymentTax(c echo.Context) error {
 	return c.JSON(http.StatusOK, responses.NewSuccessResponse(response))
 }
 
-// GetActiveMarinaPaymentTax retrieves the active payment tax configuration for a marina
+// GetMarinaPaymentTaxByType retrieves a payment tax configuration for a marina and payment type
 //
-//	@Summary		Get active marina payment tax configuration
-//	@Description	Retrieves the active payment tax configuration for the current user's marina
+//	@Summary		Get marina payment tax configuration by type
+//	@Description	Retrieves the payment tax configuration for the current user's marina and specified payment type
 //	@Tags			PaymentTax
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	responses.PaymentTaxResponse	"Active payment tax configuration"
-//	@Failure		404	{object}	responses.Error					"Not found"
+//	@Param			paymentType	query		string						true	"Payment type (CC, DB, CK, ACH)"
+//	@Success		200			{object}	responses.PaymentTaxResponse	"Payment tax configuration"
+//	@Failure		400			{object}	responses.Error					"Invalid request"
+//	@Failure		404			{object}	responses.Error					"Not found"
 //	@Security		ApiKeyAuth
-//	@Router			/payment-tax/active [get]
-func (h *PaymentTaxHandler) GetActiveMarinaPaymentTax(c echo.Context) error {
+//	@Router			/payment-tax/by-type [get]
+func (h *PaymentTaxHandler) GetMarinaPaymentTaxByType(c echo.Context) error {
+	paymentType := c.QueryParam("paymentType")
+	if paymentType == "" {
+		return responses.NewErrorResponse(http.StatusBadRequest, "paymentType query parameter is required").JSON(c)
+	}
+
 	// Get marina ID from JWT token
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	marinaID := claims.MarinaId
 
-	config, err := h.server.DB.Queries().GetActiveTaxConfigurationByMarinaID(c.Request().Context(), marinaID)
+	config, err := h.server.DB.Queries().GetTaxConfigurationByMarinaAndPaymentType(c.Request().Context(), db.GetTaxConfigurationByMarinaAndPaymentTypeParams{
+		MarinaID:    marinaID,
+		PaymentType: paymentType,
+	})
 	if err != nil {
-		h.server.Logger.Zap.Error("Failed to get active payment tax configuration", zap.String("marinaId", marinaID.String()), zap.Error(err))
-		return responses.NewErrorResponse(http.StatusNotFound, "Active payment tax configuration not found").JSON(c)
+		h.server.Logger.Zap.Error("Failed to get payment tax configuration", zap.String("marinaId", marinaID.String()), zap.String("paymentType", paymentType), zap.Error(err))
+		return responses.NewErrorResponse(http.StatusNotFound, "Payment tax configuration not found").JSON(c)
 	}
 
 	response := responses.ConvertPaymentTaxToResponse(config)
@@ -246,7 +249,13 @@ func (h *PaymentTaxHandler) ListPaymentTax(c echo.Context) error {
 // UpdatePaymentTax updates a payment tax configuration
 //
 //	@Summary		Update payment tax configuration
-//	@Description	Updates an existing payment tax configuration
+//	@Description	Updates an existing payment tax configuration. All fields are optional.
+//	@Description
+//	@Description	**Payment Type Options (optional):**
+//	@Description	- **CC** - Credit Card
+//	@Description	- **DB** - Debit Card
+//	@Description	- **CK** - Check
+//	@Description	- **ACH** - ACH Transfer
 //	@Tags			PaymentTax
 //	@Accept			json
 //	@Produce		json
@@ -295,11 +304,6 @@ func (h *PaymentTaxHandler) UpdatePaymentTax(c echo.Context) error {
 		surcharge, _ = utils.NumericToFloat64(existingConfig.Surcharge)
 	}
 
-	taxRate := existingConfig.TaxRate
-	if req.TaxRate != nil {
-		taxRate = *req.TaxRate
-	}
-
 	// Update the configuration
 	config, err := h.server.DB.Queries().UpdateTaxConfiguration(c.Request().Context(), db.UpdateTaxConfigurationParams{
 		ID:                        configID,
@@ -311,10 +315,7 @@ func (h *PaymentTaxHandler) UpdatePaymentTax(c echo.Context) error {
 		SurchargeType:             req.SurchargeType,
 		SurchargeEnabled:          req.SurchargeEnabled,
 		SurchargeDescription:      req.SurchargeDescription,
-		TaxRate:                   taxRate,
-		TaxEnabled:                req.TaxEnabled,
-		TaxDescription:            req.TaxDescription,
-		IsActive:                  req.IsActive,
+		PaymentType:               req.PaymentType,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to update payment tax configuration", zap.Error(err))
@@ -325,51 +326,17 @@ func (h *PaymentTaxHandler) UpdatePaymentTax(c echo.Context) error {
 	return c.JSON(http.StatusOK, responses.NewSuccessResponse(response))
 }
 
-// DeactivatePaymentTax deactivates a payment tax configuration
-//
-//	@Summary		Deactivate payment tax configuration
-//	@Description	Deactivates a payment tax configuration
-//	@Tags			PaymentTax
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path		string				true	"Payment tax configuration ID"
-//	@Success		200	{object}	responses.BaseResponse	"Configuration deactivated successfully"
-//	@Failure		400	{object}	responses.Error		"Invalid request"
-//	@Failure		404	{object}	responses.Error		"Not found"
-//	@Security		ApiKeyAuth
-//	@Router			/payment-tax/{id}/deactivate [post]
-func (h *PaymentTaxHandler) DeactivatePaymentTax(c echo.Context) error {
-	configID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid ID").JSON(c)
-	}
-
-	// Check if config exists
-	_, err = h.server.DB.Queries().GetTaxConfigurationByID(c.Request().Context(), configID)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusNotFound, "Payment tax configuration not found").JSON(c)
-	}
-
-	err = h.server.DB.Queries().DeactivateTaxConfiguration(c.Request().Context(), configID)
-	if err != nil {
-		h.server.Logger.Zap.Error("Failed to deactivate payment tax configuration", zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to deactivate configuration").JSON(c)
-	}
-
-	return c.JSON(http.StatusOK, responses.NewSuccessResponse("Configuration deactivated successfully"))
-}
-
-// CalculateFees calculates all fees for a given amount using the active configuration
+// CalculateFees calculates fees for a given amount based on marina and payment type
 //
 //	@Summary		Calculate fees
-//	@Description	Calculates convenience fee, surcharge, and tax for a given amount using the active configuration
+//	@Description	Calculates convenience fee and surcharge for a given amount, marina, and payment type
 //	@Tags			PaymentTax
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		requests.CalculateFeeRequest		true	"Amount to calculate fees for"
-//	@Success		200		{object}	responses.FeeCalculationResponse	"Calculated fees"
-//	@Failure		400		{object}	responses.Error						"Invalid request"
-//	@Failure		404		{object}	responses.Error						"No active configuration found"
+//	@Param			request		body		requests.CalculateFeeRequest		true	"Calculation request with marina ID, payment type, and amount"
+//	@Success		200			{object}	responses.FeeCalculationResponse	"Calculated fees"
+//	@Failure		400			{object}	responses.Error						"Invalid request"
+//	@Failure		404			{object}	responses.Error						"Configuration not found"
 //	@Security		ApiKeyAuth
 //	@Router			/payment-tax/calculate [post]
 func (h *PaymentTaxHandler) CalculateFees(c echo.Context) error {
@@ -382,16 +349,22 @@ func (h *PaymentTaxHandler) CalculateFees(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
 	}
 
-	// Get marina ID from JWT token
-	userToken := c.Get("user").(*jwt.Token)
-	claims := userToken.Claims.(*token.JwtCustomClaims)
-	marinaID := claims.MarinaId
-
-	// Get active configuration
-	config, err := h.server.DB.Queries().GetActiveTaxConfigurationByMarinaID(c.Request().Context(), marinaID)
+	// Get configuration by marina and payment type
+	config, err := h.server.DB.Queries().GetTaxConfigurationByMarinaAndPaymentType(c.Request().Context(), db.GetTaxConfigurationByMarinaAndPaymentTypeParams{
+		MarinaID:    req.MarinaID,
+		PaymentType: req.PaymentType,
+	})
 	if err != nil {
-		h.server.Logger.Zap.Error("Failed to get active configuration", zap.Error(err))
-		return responses.NewErrorResponse(http.StatusNotFound, "No active payment tax configuration found").JSON(c)
+		h.server.Logger.Zap.Error("Failed to get configuration",
+			zap.String("marinaId", req.MarinaID.String()),
+			zap.String("paymentType", req.PaymentType),
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusNotFound, "Payment tax configuration not found for this marina and payment type").JSON(c)
+	}
+
+	// Helper function to round to 2 decimal places
+	roundTo2Decimals := func(val float64) float64 {
+		return math.Round(val*100) / 100
 	}
 
 	// Calculate convenience fee
@@ -403,6 +376,8 @@ func (h *PaymentTaxHandler) CalculateFees(c echo.Context) error {
 		} else {
 			convenienceFee = convenienceFeeValue
 		}
+		// Round immediately after calculation
+		convenienceFee = roundTo2Decimals(convenienceFee)
 	}
 
 	// Calculate surcharge
@@ -414,31 +389,26 @@ func (h *PaymentTaxHandler) CalculateFees(c echo.Context) error {
 		} else {
 			surchargeAmount = surchargeValue
 		}
+		// Round immediately after calculation
+		surchargeAmount = roundTo2Decimals(surchargeAmount)
 	}
 
-	// Calculate tax
-	var taxAmount float64
-	if config.TaxEnabled {
-		taxAmount = req.Amount * config.TaxRate / 100.0
-	}
-
-	// Calculate total
-	totalAmount := req.Amount + convenienceFee + surchargeAmount + taxAmount
+	// Calculate total from rounded values and round the result
+	totalAmount := roundTo2Decimals(roundTo2Decimals(req.Amount) + convenienceFee + surchargeAmount)
 
 	convenienceFeeRate, _ := utils.NumericToFloat64(config.ConvenienceFee)
 	surchargeRate, _ := utils.NumericToFloat64(config.Surcharge)
 
 	response := responses.FeeCalculationResponse{
-		BaseAmount:         req.Amount,
+		BaseAmount:         roundTo2Decimals(req.Amount),
 		ConvenienceFee:     convenienceFee,
 		Surcharge:          surchargeAmount,
-		Tax:                taxAmount,
 		TotalAmount:        totalAmount,
 		ConvenienceFeeType: config.ConvenienceFeeType,
 		SurchargeType:      config.SurchargeType,
-		ConvenienceFeeRate: convenienceFeeRate,
-		SurchargeRate:      surchargeRate,
-		TaxRate:            config.TaxRate,
+		ConvenienceFeeRate: roundTo2Decimals(convenienceFeeRate),
+		SurchargeRate:      roundTo2Decimals(surchargeRate),
+		PaymentType:        config.PaymentType,
 	}
 
 	return c.JSON(http.StatusOK, responses.NewSuccessResponse(response))

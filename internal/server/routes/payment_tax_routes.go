@@ -16,13 +16,11 @@ func RegisterPaymentTaxRoutes(s *s.Server, protected *echo.Group) {
 	// CRUD operations
 	paymentTax.POST("", paymentTaxHandler.CreatePaymentTax)
 	paymentTax.GET("", paymentTaxHandler.ListPaymentTax)
-	paymentTax.GET("/active", paymentTaxHandler.GetActiveMarinaPaymentTax)
+	paymentTax.GET("/by-type", paymentTaxHandler.GetMarinaPaymentTaxByType)
 	paymentTax.GET("/:id", paymentTaxHandler.GetPaymentTax)
 	paymentTax.PUT("/:id", paymentTaxHandler.UpdatePaymentTax)
 	paymentTax.DELETE("/:id", paymentTaxHandler.DeletePaymentTax)
 
 	// Actions
-	paymentTax.POST("/:id/deactivate", paymentTaxHandler.DeactivatePaymentTax)
 	paymentTax.POST("/calculate", paymentTaxHandler.CalculateFees)
 }
-

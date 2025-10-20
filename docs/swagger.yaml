@@ -1196,8 +1196,19 @@ definitions:
       amount:
         minimum: 0
         type: number
+      marinaId:
+        type: string
+      paymentType:
+        enum:
+        - CC
+        - DB
+        - CK
+        - ACH
+        type: string
     required:
     - amount
+    - marinaId
+    - paymentType
     type: object
   requests.CashReceipt:
     properties:
@@ -1637,9 +1648,14 @@ definitions:
         - percentage
         - fixed
         type: string
-      isActive:
-        type: boolean
       marinaId:
+        type: string
+      paymentType:
+        enum:
+        - CC
+        - DB
+        - CK
+        - ACH
         type: string
       surcharge:
         minimum: 0
@@ -1653,17 +1669,11 @@ definitions:
         - percentage
         - fixed
         type: string
-      taxDescription:
-        type: string
-      taxEnabled:
-        type: boolean
-      taxRate:
-        minimum: 0
-        type: number
     required:
     - convenienceFee
     - convenienceFeeType
     - marinaId
+    - paymentType
     - surcharge
     - surchargeType
     type: object
@@ -2696,8 +2706,13 @@ definitions:
         - percentage
         - fixed
         type: string
-      isActive:
-        type: boolean
+      paymentType:
+        enum:
+        - CC
+        - DB
+        - CK
+        - ACH
+        type: string
       surcharge:
         minimum: 0
         type: number
@@ -2710,13 +2725,6 @@ definitions:
         - percentage
         - fixed
         type: string
-      taxDescription:
-        type: string
-      taxEnabled:
-        type: boolean
-      taxRate:
-        minimum: 0
-        type: number
     type: object
   requests.UpdateRoleRequest:
     properties:
@@ -3854,16 +3862,14 @@ definitions:
         type: number
       convenienceFeeType:
         type: string
+      paymentType:
+        type: string
       surcharge:
         type: number
       surchargeRate:
         type: number
       surchargeType:
         type: string
-      tax:
-        type: number
-      taxRate:
-        type: number
       totalAmount:
         type: number
     type: object
@@ -4982,13 +4988,11 @@ definitions:
         type: string
       createdAt:
         type: string
-      createdBy:
-        type: string
       id:
         type: string
-      isActive:
-        type: boolean
       marinaId:
+        type: string
+      paymentType:
         type: string
       surcharge:
         type: number
@@ -4998,12 +5002,6 @@ definitions:
         type: boolean
       surchargeType:
         type: string
-      taxDescription:
-        type: string
-      taxEnabled:
-        type: boolean
-      taxRate:
-        type: number
       updatedAt:
         type: string
     type: object
@@ -12633,8 +12631,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a new payment tax configuration for convenience fees and
-        surcharges for a marina
+      description: |-
+        Creates a new payment tax configuration for convenience fees and surcharges for a marina. Each marina can have one configuration per payment type.
+
+        **Payment Type Options:**
+        - **CC** - Credit Card
+        - **DB** - Debit Card
+        - **CK** - Check
+        - **ACH** - ACH Transfer
+
+        **Note:** The paymentType field is required and validated against these specific values. Each marina can only have one configuration per payment type (enforced by unique constraint).
       parameters:
       - description: Payment tax configuration request
         in: body
@@ -12726,7 +12732,14 @@ paths:
     put:
       consumes:
       - application/json
-      description: Updates an existing payment tax configuration
+      description: |-
+        Updates an existing payment tax configuration. All fields are optional.
+
+        **Payment Type Options (optional):**
+        - **CC** - Credit Card
+        - **DB** - Debit Card
+        - **CK** - Check
+        - **ACH** - ACH Transfer
       parameters:
       - description: Payment tax configuration ID
         in: path
@@ -12759,24 +12772,25 @@ paths:
       summary: Update payment tax configuration
       tags:
       - PaymentTax
-  /payment-tax/{id}/deactivate:
-    post:
+  /payment-tax/by-type:
+    get:
       consumes:
       - application/json
-      description: Deactivates a payment tax configuration
+      description: Retrieves the payment tax configuration for the current user's
+        marina and specified payment type
       parameters:
-      - description: Payment tax configuration ID
-        in: path
-        name: id
+      - description: Payment type (CC, DB, CK, ACH)
+        in: query
+        name: paymentType
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Configuration deactivated successfully
+          description: Payment tax configuration
           schema:
-            $ref: '#/definitions/responses.BaseResponse'
+            $ref: '#/definitions/responses.PaymentTaxResponse'
         "400":
           description: Invalid request
           schema:
@@ -12787,39 +12801,17 @@ paths:
             $ref: '#/definitions/responses.Error'
       security:
       - ApiKeyAuth: []
-      summary: Deactivate payment tax configuration
-      tags:
-      - PaymentTax
-  /payment-tax/active:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves the active payment tax configuration for the current
-        user's marina
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Active payment tax configuration
-          schema:
-            $ref: '#/definitions/responses.PaymentTaxResponse'
-        "404":
-          description: Not found
-          schema:
-            $ref: '#/definitions/responses.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get active marina payment tax configuration
+      summary: Get marina payment tax configuration by type
       tags:
       - PaymentTax
   /payment-tax/calculate:
     post:
       consumes:
       - application/json
-      description: Calculates convenience fee, surcharge, and tax for a given amount
-        using the active configuration
+      description: Calculates convenience fee and surcharge for a given amount, marina,
+        and payment type
       parameters:
-      - description: Amount to calculate fees for
+      - description: Calculation request with marina ID, payment type, and amount
         in: body
         name: request
         required: true
@@ -12837,7 +12829,7 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
         "404":
-          description: No active configuration found
+          description: Configuration not found
           schema:
             $ref: '#/definitions/responses.Error'
       security:

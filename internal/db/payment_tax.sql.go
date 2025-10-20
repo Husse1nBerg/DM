@@ -35,14 +35,10 @@ INSERT INTO tax_configurations (
     surcharge_type,
     surcharge_enabled,
     surcharge_description,
-    tax_rate,
-    tax_enabled,
-    tax_description,
-    is_active,
-    created_by
+    payment_type
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-) RETURNING id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, tax_rate, tax_enabled, tax_description, is_active, created_at, updated_at, created_by
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, payment_type, created_at, updated_at
 `
 
 type CreateTaxConfigurationParams struct {
@@ -55,11 +51,7 @@ type CreateTaxConfigurationParams struct {
 	SurchargeType             string
 	SurchargeEnabled          bool
 	SurchargeDescription      *string
-	TaxRate                   float64
-	TaxEnabled                bool
-	TaxDescription            *string
-	IsActive                  bool
-	CreatedBy                 uuid.UUID
+	PaymentType               string
 }
 
 func (q *Queries) CreateTaxConfiguration(ctx context.Context, arg CreateTaxConfigurationParams) (TaxConfiguration, error) {
@@ -73,11 +65,7 @@ func (q *Queries) CreateTaxConfiguration(ctx context.Context, arg CreateTaxConfi
 		arg.SurchargeType,
 		arg.SurchargeEnabled,
 		arg.SurchargeDescription,
-		arg.TaxRate,
-		arg.TaxEnabled,
-		arg.TaxDescription,
-		arg.IsActive,
-		arg.CreatedBy,
+		arg.PaymentType,
 	)
 	var i TaxConfiguration
 	err := row.Scan(
@@ -91,41 +79,11 @@ func (q *Queries) CreateTaxConfiguration(ctx context.Context, arg CreateTaxConfi
 		&i.SurchargeType,
 		&i.SurchargeEnabled,
 		&i.SurchargeDescription,
-		&i.TaxRate,
-		&i.TaxEnabled,
-		&i.TaxDescription,
-		&i.IsActive,
+		&i.PaymentType,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CreatedBy,
 	)
 	return i, err
-}
-
-const deactivateAllMarinaConfigurations = `-- name: DeactivateAllMarinaConfigurations :exec
-UPDATE tax_configurations
-SET 
-    is_active = false,
-    updated_at = CURRENT_TIMESTAMP
-WHERE marina_id = $1 AND is_active = true
-`
-
-func (q *Queries) DeactivateAllMarinaConfigurations(ctx context.Context, marinaID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deactivateAllMarinaConfigurations, marinaID)
-	return err
-}
-
-const deactivateTaxConfiguration = `-- name: DeactivateTaxConfiguration :exec
-UPDATE tax_configurations
-SET 
-    is_active = false,
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = $1
-`
-
-func (q *Queries) DeactivateTaxConfiguration(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deactivateTaxConfiguration, id)
-	return err
 }
 
 const deleteTaxConfiguration = `-- name: DeleteTaxConfiguration :exec
@@ -138,40 +96,8 @@ func (q *Queries) DeleteTaxConfiguration(ctx context.Context, id uuid.UUID) erro
 	return err
 }
 
-const getActiveTaxConfigurationByMarinaID = `-- name: GetActiveTaxConfigurationByMarinaID :one
-SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, tax_rate, tax_enabled, tax_description, is_active, created_at, updated_at, created_by FROM tax_configurations
-WHERE marina_id = $1 
-    AND is_active = true
-LIMIT 1
-`
-
-func (q *Queries) GetActiveTaxConfigurationByMarinaID(ctx context.Context, marinaID uuid.UUID) (TaxConfiguration, error) {
-	row := q.db.QueryRow(ctx, getActiveTaxConfigurationByMarinaID, marinaID)
-	var i TaxConfiguration
-	err := row.Scan(
-		&i.ID,
-		&i.MarinaID,
-		&i.ConvenienceFee,
-		&i.ConvenienceFeeType,
-		&i.ConvenienceFeeEnabled,
-		&i.ConvenienceFeeDescription,
-		&i.Surcharge,
-		&i.SurchargeType,
-		&i.SurchargeEnabled,
-		&i.SurchargeDescription,
-		&i.TaxRate,
-		&i.TaxEnabled,
-		&i.TaxDescription,
-		&i.IsActive,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.CreatedBy,
-	)
-	return i, err
-}
-
 const getAllTaxConfigurationsByMarinaID = `-- name: GetAllTaxConfigurationsByMarinaID :many
-SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, tax_rate, tax_enabled, tax_description, is_active, created_at, updated_at, created_by FROM tax_configurations
+SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, payment_type, created_at, updated_at FROM tax_configurations
 WHERE marina_id = $1
 ORDER BY created_at DESC
 `
@@ -196,13 +122,9 @@ func (q *Queries) GetAllTaxConfigurationsByMarinaID(ctx context.Context, marinaI
 			&i.SurchargeType,
 			&i.SurchargeEnabled,
 			&i.SurchargeDescription,
-			&i.TaxRate,
-			&i.TaxEnabled,
-			&i.TaxDescription,
-			&i.IsActive,
+			&i.PaymentType,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.CreatedBy,
 		); err != nil {
 			return nil, err
 		}
@@ -215,7 +137,7 @@ func (q *Queries) GetAllTaxConfigurationsByMarinaID(ctx context.Context, marinaI
 }
 
 const getTaxConfigurationByID = `-- name: GetTaxConfigurationByID :one
-SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, tax_rate, tax_enabled, tax_description, is_active, created_at, updated_at, created_by FROM tax_configurations
+SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, payment_type, created_at, updated_at FROM tax_configurations
 WHERE id = $1
 `
 
@@ -233,13 +155,42 @@ func (q *Queries) GetTaxConfigurationByID(ctx context.Context, id uuid.UUID) (Ta
 		&i.SurchargeType,
 		&i.SurchargeEnabled,
 		&i.SurchargeDescription,
-		&i.TaxRate,
-		&i.TaxEnabled,
-		&i.TaxDescription,
-		&i.IsActive,
+		&i.PaymentType,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CreatedBy,
+	)
+	return i, err
+}
+
+const getTaxConfigurationByMarinaAndPaymentType = `-- name: GetTaxConfigurationByMarinaAndPaymentType :one
+SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, payment_type, created_at, updated_at FROM tax_configurations
+WHERE marina_id = $1 
+    AND payment_type = $2
+LIMIT 1
+`
+
+type GetTaxConfigurationByMarinaAndPaymentTypeParams struct {
+	MarinaID    uuid.UUID
+	PaymentType string
+}
+
+func (q *Queries) GetTaxConfigurationByMarinaAndPaymentType(ctx context.Context, arg GetTaxConfigurationByMarinaAndPaymentTypeParams) (TaxConfiguration, error) {
+	row := q.db.QueryRow(ctx, getTaxConfigurationByMarinaAndPaymentType, arg.MarinaID, arg.PaymentType)
+	var i TaxConfiguration
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.ConvenienceFee,
+		&i.ConvenienceFeeType,
+		&i.ConvenienceFeeEnabled,
+		&i.ConvenienceFeeDescription,
+		&i.Surcharge,
+		&i.SurchargeType,
+		&i.SurchargeEnabled,
+		&i.SurchargeDescription,
+		&i.PaymentType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -252,10 +203,9 @@ SELECT
     surcharge,
     surcharge_type,
     surcharge_enabled,
-    tax_rate,
-    tax_enabled
+    payment_type
 FROM tax_configurations
-WHERE id = $1 AND is_active = true
+WHERE id = $1
 `
 
 type GetTaxConfigurationForCalculationRow struct {
@@ -265,8 +215,7 @@ type GetTaxConfigurationForCalculationRow struct {
 	Surcharge             pgtype.Numeric
 	SurchargeType         string
 	SurchargeEnabled      bool
-	TaxRate               float64
-	TaxEnabled            bool
+	PaymentType           string
 }
 
 func (q *Queries) GetTaxConfigurationForCalculation(ctx context.Context, id uuid.UUID) (GetTaxConfigurationForCalculationRow, error) {
@@ -279,14 +228,13 @@ func (q *Queries) GetTaxConfigurationForCalculation(ctx context.Context, id uuid
 		&i.Surcharge,
 		&i.SurchargeType,
 		&i.SurchargeEnabled,
-		&i.TaxRate,
-		&i.TaxEnabled,
+		&i.PaymentType,
 	)
 	return i, err
 }
 
 const listTaxConfigurations = `-- name: ListTaxConfigurations :many
-SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, tax_rate, tax_enabled, tax_description, is_active, created_at, updated_at, created_by FROM tax_configurations
+SELECT id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, payment_type, created_at, updated_at FROM tax_configurations
 WHERE marina_id = ANY($1::uuid[])
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -318,13 +266,9 @@ func (q *Queries) ListTaxConfigurations(ctx context.Context, arg ListTaxConfigur
 			&i.SurchargeType,
 			&i.SurchargeEnabled,
 			&i.SurchargeDescription,
-			&i.TaxRate,
-			&i.TaxEnabled,
-			&i.TaxDescription,
-			&i.IsActive,
+			&i.PaymentType,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.CreatedBy,
 		); err != nil {
 			return nil, err
 		}
@@ -347,13 +291,10 @@ SET
     surcharge_type = COALESCE($6, surcharge_type),
     surcharge_enabled = COALESCE($7, surcharge_enabled),
     surcharge_description = COALESCE($8, surcharge_description),
-    tax_rate = COALESCE($9, tax_rate),
-    tax_enabled = COALESCE($10, tax_enabled),
-    tax_description = COALESCE($11, tax_description),
-    is_active = COALESCE($12, is_active),
+    payment_type = COALESCE($9, payment_type),
     updated_at = CURRENT_TIMESTAMP
-WHERE id = $13
-RETURNING id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, tax_rate, tax_enabled, tax_description, is_active, created_at, updated_at, created_by
+WHERE id = $10
+RETURNING id, marina_id, convenience_fee, convenience_fee_type, convenience_fee_enabled, convenience_fee_description, surcharge, surcharge_type, surcharge_enabled, surcharge_description, payment_type, created_at, updated_at
 `
 
 type UpdateTaxConfigurationParams struct {
@@ -365,10 +306,7 @@ type UpdateTaxConfigurationParams struct {
 	SurchargeType             *string
 	SurchargeEnabled          *bool
 	SurchargeDescription      *string
-	TaxRate                   float64
-	TaxEnabled                *bool
-	TaxDescription            *string
-	IsActive                  *bool
+	PaymentType               *string
 	ID                        uuid.UUID
 }
 
@@ -382,10 +320,7 @@ func (q *Queries) UpdateTaxConfiguration(ctx context.Context, arg UpdateTaxConfi
 		arg.SurchargeType,
 		arg.SurchargeEnabled,
 		arg.SurchargeDescription,
-		arg.TaxRate,
-		arg.TaxEnabled,
-		arg.TaxDescription,
-		arg.IsActive,
+		arg.PaymentType,
 		arg.ID,
 	)
 	var i TaxConfiguration
@@ -400,13 +335,9 @@ func (q *Queries) UpdateTaxConfiguration(ctx context.Context, arg UpdateTaxConfi
 		&i.SurchargeType,
 		&i.SurchargeEnabled,
 		&i.SurchargeDescription,
-		&i.TaxRate,
-		&i.TaxEnabled,
-		&i.TaxDescription,
-		&i.IsActive,
+		&i.PaymentType,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.CreatedBy,
 	)
 	return i, err
 }

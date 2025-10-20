@@ -16,10 +16,7 @@ type CreatePaymentTaxRequest struct {
 	SurchargeType             string    `json:"surchargeType" validate:"required,oneof=percentage fixed"`
 	SurchargeEnabled          bool      `json:"surchargeEnabled"`
 	SurchargeDescription      *string   `json:"surchargeDescription"`
-	TaxRate                   float64   `json:"taxRate" validate:"min=0"`
-	TaxEnabled                bool      `json:"taxEnabled"`
-	TaxDescription            *string   `json:"taxDescription"`
-	IsActive                  *bool     `json:"isActive"`
+	PaymentType               string    `json:"paymentType" validate:"required,oneof=CC DB CK ACH"`
 }
 
 // UpdatePaymentTaxRequest represents the request to update a payment tax configuration
@@ -32,10 +29,7 @@ type UpdatePaymentTaxRequest struct {
 	SurchargeType             *string  `json:"surchargeType" validate:"omitempty,oneof=percentage fixed"`
 	SurchargeEnabled          *bool    `json:"surchargeEnabled"`
 	SurchargeDescription      *string  `json:"surchargeDescription"`
-	TaxRate                   *float64 `json:"taxRate" validate:"omitempty,min=0"`
-	TaxEnabled                *bool    `json:"taxEnabled"`
-	TaxDescription            *string  `json:"taxDescription"`
-	IsActive                  *bool    `json:"isActive"`
+	PaymentType               *string  `json:"paymentType" validate:"omitempty,oneof=CC DB CK ACH"`
 }
 
 // GetPaymentTaxRequest represents the request to get a payment tax configuration by ID
@@ -51,7 +45,9 @@ type ListPaymentTaxRequest struct {
 
 // CalculateFeeRequest represents the request to calculate fees for an amount
 type CalculateFeeRequest struct {
-	Amount float64 `json:"amount" validate:"required,min=0"`
+	MarinaID    uuid.UUID `json:"marinaId" validate:"required,uuid"`
+	PaymentType string    `json:"paymentType" validate:"required,oneof=CC DB CK ACH"`
+	Amount      float64   `json:"amount" validate:"required,min=0"`
 }
 
 // Validate validates the CreatePaymentTaxRequest
