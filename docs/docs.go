@@ -18385,6 +18385,7 @@ const docTemplate = `{
         "requests.ScheduleAppointmentUpdate": {
             "type": "object",
             "required": [
+                "apptDate",
                 "endTime",
                 "id",
                 "locationCode",
@@ -18397,10 +18398,8 @@ const docTemplate = `{
                 "apptComplete": {
                     "type": "boolean"
                 },
-                "apptDescription": {
-                    "type": "string"
-                },
-                "apptSubject": {
+                "apptDate": {
+                    "description": "YYYY-MM-DD format",
                     "type": "string"
                 },
                 "endTime": {
