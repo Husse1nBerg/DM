@@ -1955,6 +1955,46 @@ definitions:
     - email
     - signOrder
     type: object
+  requests.EstimateCreateRequest:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      boatId:
+        type: string
+      boatName:
+        type: string
+      categoryCode:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      custId:
+        type: string
+      custPromiseDate:
+        type: string
+      customerEmail:
+        type: string
+      customerPhone:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      locationCode:
+        type: string
+      operationCodes:
+        items:
+          $ref: '#/definitions/requests.OperationCode'
+        type: array
+      title:
+        type: string
+    required:
+    - custId
+    - title
+    type: object
   requests.EstimateRetrieveListRequest:
     properties:
       detail:
@@ -9207,6 +9247,36 @@ paths:
       summary: Update e-signature template
       tags:
       - E-signature Templates
+  /estimates/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new estimate
+      parameters:
+      - description: Estimate information
+        in: body
+        name: estimate
+        required: true
+        schema:
+          $ref: '#/definitions/requests.EstimateCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateUpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create estimate
+      tags:
+      - Estimates
   /estimates/customer:
     get:
       consumes:
@@ -9405,7 +9475,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new or update an existing estimate
+      description: Updates an existing estimate
       parameters:
       - description: Estimate information
         in: body

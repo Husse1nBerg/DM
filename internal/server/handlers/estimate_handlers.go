@@ -365,8 +365,87 @@ func (h *EstimateHandler) RetrieveEstimatesList(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// @Summary Create estimate
+// @Description Creates a new estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param estimate body requests.EstimateCreateRequest true "Estimate information"
+// @Success 200 {object} responses.EstimateUpdateResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/create [post]
+func (h *EstimateHandler) CreateEstimate(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.EstimateCreateRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Ensure no id is provided in the payload (defensive, in case client sends extra fields)
+	var raw map[string]interface{}
+	if err := c.Bind(&raw); err == nil {
+		if _, hasID := raw["estId"]; hasID {
+			return responses.NewErrorResponse(http.StatusBadRequest, "'estId' field must not be provided when creating an estimate").JSON(c)
+		}
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	estimateData := map[string]interface{}{
+		"clerkId":         req.ClerkId,
+		"custId":          req.CustId,
+		"boatId":          req.BoatId,
+		"boatName":        req.BoatName,
+		"customerPhone":   req.CustomerPhone,
+		"customerEmail":   req.CustomerEmail,
+		"comments":        req.Comments,
+		"locationCode":    req.LocationCode,
+		"estCompDate":     req.EstCompDate,
+		"estStartDate":    req.EstStartDate,
+		"custPromiseDate": req.CustPromiseDate,
+		"categoryCode":    req.CategoryCode,
+		"title":           req.Title,
+		"operationCodes":  req.OperationCodes,
+		"attachments":     req.Attachments,
+	}
+
+	dmeResponse, err := h.server.DME.CreateEstimate(ctx, estimateData, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to create estimate",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimateUpdate(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
 // @Summary Update estimate
-// @Description Create a new or update an existing estimate
+// @Description Updates an existing estimate
 // @Tags Estimates
 // @Accept json
 // @Produce json

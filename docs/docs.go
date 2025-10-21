@@ -5537,6 +5537,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/estimates/create": {
+            "post": {
+                "description": "Creates a new estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Create estimate",
+                "parameters": [
+                    {
+                        "description": "Estimate information",
+                        "name": "estimate",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.EstimateCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/estimates/customer": {
             "get": {
                 "description": "Retrieves a list of basic estimate information for a specific customer",
@@ -5832,7 +5878,7 @@ const docTemplate = `{
         },
         "/estimates/update": {
             "post": {
-                "description": "Create a new or update an existing estimate",
+                "description": "Updates an existing estimate",
                 "consumes": [
                     "application/json"
                 ],
@@ -18393,6 +18439,66 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 1,
                     "example": 1
+                }
+            }
+        },
+        "requests.EstimateCreateRequest": {
+            "type": "object",
+            "required": [
+                "custId",
+                "title"
+            ],
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "custId": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operationCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.OperationCode"
+                    }
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },
