@@ -1356,8 +1356,8 @@ func (c *Client) UpdateEstimate(ctx context.Context, estimateData map[string]int
 	var result WorkOrderCreateResponse
 	endpoint := "/Service/Estimates/Update"
 
-	// Ensure the estimate ID is present
-	estimateID, ok := estimateData["estId"].(string)
+	// Ensure the estimate ID is present (woId is used by DME API for estimates)
+	estimateID, ok := estimateData["woId"].(string)
 	if !ok || estimateID == "" {
 		return nil, fmt.Errorf("estimate ID must be provided when updating")
 	}

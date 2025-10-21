@@ -415,6 +415,7 @@ func (h *EstimateHandler) CreateEstimate(c echo.Context) error {
 	}
 
 	// Convert request to map for DME API
+	// Note: DME API expects "woId" for estimate ID (estimates are treated as work orders)
 	estimateData := map[string]interface{}{
 		"clerkId":         req.ClerkId,
 		"custId":          req.CustId,
@@ -486,8 +487,9 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 	}
 
 	// Convert request to map for DME API
+	// Note: DME API expects "woId" for estimate ID (estimates are treated as work orders)
 	estimateData := map[string]interface{}{
-		"estId":           req.EstId,
+		"woId":            req.EstId,
 		"clerkId":         req.ClerkId,
 		"custId":          req.CustId,
 		"boatId":          req.BoatId,
