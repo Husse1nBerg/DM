@@ -106,6 +106,7 @@ WHERE document_id = $1
   AND ($3 = '' OR customer_id = $3)
   AND ($4 = '' OR LOWER(email) LIKE LOWER('%' || $4 || '%'))
   AND ($5 = '' OR LOWER(name) LIKE LOWER('%' || $5 || '%'))
+  AND ($6 = '' OR LOWER(customer_name) LIKE LOWER('%' || $6 || '%'))
 `
 
 type CountEsignSubmissionsFilteredByDocumentParams struct {
@@ -114,6 +115,7 @@ type CountEsignSubmissionsFilteredByDocumentParams struct {
 	Column3    interface{}
 	Column4    interface{}
 	Column5    interface{}
+	Column6    interface{}
 }
 
 func (q *Queries) CountEsignSubmissionsFilteredByDocument(ctx context.Context, arg CountEsignSubmissionsFilteredByDocumentParams) (int64, error) {
@@ -123,6 +125,7 @@ func (q *Queries) CountEsignSubmissionsFilteredByDocument(ctx context.Context, a
 		arg.Column3,
 		arg.Column4,
 		arg.Column5,
+		arg.Column6,
 	)
 	var count int64
 	err := row.Scan(&count)
@@ -140,6 +143,7 @@ WHERE organization_id = $1
   AND ($5 = '' OR LOWER(email) LIKE LOWER('%' || $5 || '%'))
   AND ($6 = '' OR LOWER(name) LIKE LOWER('%' || $6 || '%'))
   AND ($7 = '' OR document_id = $7::uuid)
+  AND ($8 = '' OR LOWER(customer_name) LIKE LOWER('%' || $8 || '%'))
 `
 
 type CountEsignSubmissionsFilteredByStatusParams struct {
@@ -150,6 +154,7 @@ type CountEsignSubmissionsFilteredByStatusParams struct {
 	Column5        interface{}
 	Column6        interface{}
 	Column7        interface{}
+	Column8        interface{}
 }
 
 func (q *Queries) CountEsignSubmissionsFilteredByStatus(ctx context.Context, arg CountEsignSubmissionsFilteredByStatusParams) (int64, error) {
@@ -161,6 +166,7 @@ func (q *Queries) CountEsignSubmissionsFilteredByStatus(ctx context.Context, arg
 		arg.Column5,
 		arg.Column6,
 		arg.Column7,
+		arg.Column8,
 	)
 	var count int64
 	err := row.Scan(&count)
@@ -178,9 +184,11 @@ WHERE organization_id = $1
     LOWER(email) LIKE LOWER('%' || $4 || '%') OR
     LOWER(name) LIKE LOWER('%' || $4 || '%') OR
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_name) LIKE LOWER('%' || $4 || '%')
   ))
   AND ($5 = '' OR customer_id = $5)
+  AND ($6 = '' OR LOWER(customer_name) LIKE LOWER('%' || $6 || '%'))
 `
 
 type CountEsignSubmissionsWithFiltersParams struct {
@@ -189,6 +197,7 @@ type CountEsignSubmissionsWithFiltersParams struct {
 	Column3        interface{}
 	Column4        interface{}
 	Column5        interface{}
+	Column6        interface{}
 }
 
 func (q *Queries) CountEsignSubmissionsWithFilters(ctx context.Context, arg CountEsignSubmissionsWithFiltersParams) (int64, error) {
@@ -198,6 +207,7 @@ func (q *Queries) CountEsignSubmissionsWithFilters(ctx context.Context, arg Coun
 		arg.Column3,
 		arg.Column4,
 		arg.Column5,
+		arg.Column6,
 	)
 	var count int64
 	err := row.Scan(&count)
@@ -218,10 +228,11 @@ INSERT INTO esign_submissions (
     attachment_required,
     reply_to,
     custom_message,
-    is_multiple_signature
+    is_multiple_signature,
+    customer_name
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
-) RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+) RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 `
 
 type CreateEsignSubmissionParams struct {
@@ -238,6 +249,7 @@ type CreateEsignSubmissionParams struct {
 	ReplyTo             *string
 	CustomMessage       *string
 	IsMultipleSignature bool
+	CustomerName        *string
 }
 
 func (q *Queries) CreateEsignSubmission(ctx context.Context, arg CreateEsignSubmissionParams) (EsignSubmission, error) {
@@ -255,6 +267,7 @@ func (q *Queries) CreateEsignSubmission(ctx context.Context, arg CreateEsignSubm
 		arg.ReplyTo,
 		arg.CustomMessage,
 		arg.IsMultipleSignature,
+		arg.CustomerName,
 	)
 	var i EsignSubmission
 	err := row.Scan(
@@ -275,12 +288,13 @@ func (q *Queries) CreateEsignSubmission(ctx context.Context, arg CreateEsignSubm
 		&i.ReplyTo,
 		&i.CustomMessage,
 		&i.IsMultipleSignature,
+		&i.CustomerName,
 	)
 	return i, err
 }
 
 const getEsignSubmissionByID = `-- name: GetEsignSubmissionByID :one
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE id = $1
     AND deleted_at IS NULL
@@ -307,13 +321,14 @@ func (q *Queries) GetEsignSubmissionByID(ctx context.Context, id uuid.UUID) (Esi
 		&i.ReplyTo,
 		&i.CustomMessage,
 		&i.IsMultipleSignature,
+		&i.CustomerName,
 	)
 	return i, err
 }
 
 const getEsignSubmissionWithSigners = `-- name: GetEsignSubmissionWithSigners :many
 SELECT 
-    es.id, es.organization_id, es.marina_id, es.document_id, es.status, es.blob_url, es.blob_metadata, es.customer_id, es.email, es.created_at, es.updated_at, es.deleted_at, es.name, es.attachment_required, es.reply_to, es.custom_message, es.is_multiple_signature,
+    es.id, es.organization_id, es.marina_id, es.document_id, es.status, es.blob_url, es.blob_metadata, es.customer_id, es.email, es.created_at, es.updated_at, es.deleted_at, es.name, es.attachment_required, es.reply_to, es.custom_message, es.is_multiple_signature, es.customer_name,
     ess.id as signer_id,
     ess.email as signer_email,
     ess.name as signer_name,
@@ -349,6 +364,7 @@ type GetEsignSubmissionWithSignersRow struct {
 	ReplyTo             *string
 	CustomMessage       *string
 	IsMultipleSignature bool
+	CustomerName        *string
 	SignerID            uuid.UUID
 	SignerEmail         *string
 	SignerName          *string
@@ -388,6 +404,7 @@ func (q *Queries) GetEsignSubmissionWithSigners(ctx context.Context, id uuid.UUI
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 			&i.SignerID,
 			&i.SignerEmail,
 			&i.SignerName,
@@ -420,7 +437,7 @@ func (q *Queries) HardDeleteEsignSubmission(ctx context.Context, id uuid.UUID) e
 }
 
 const listEsignSubmissionsByCustomerID = `-- name: ListEsignSubmissionsByCustomerID :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE customer_id = $1
     AND deleted_at IS NULL
@@ -461,6 +478,7 @@ func (q *Queries) ListEsignSubmissionsByCustomerID(ctx context.Context, arg List
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -473,7 +491,7 @@ func (q *Queries) ListEsignSubmissionsByCustomerID(ctx context.Context, arg List
 }
 
 const listEsignSubmissionsByDocument = `-- name: ListEsignSubmissionsByDocument :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE document_id = $1
     AND deleted_at IS NULL
@@ -514,6 +532,7 @@ func (q *Queries) ListEsignSubmissionsByDocument(ctx context.Context, arg ListEs
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -526,7 +545,7 @@ func (q *Queries) ListEsignSubmissionsByDocument(ctx context.Context, arg ListEs
 }
 
 const listEsignSubmissionsByMarina = `-- name: ListEsignSubmissionsByMarina :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE organization_id = $1
     AND marina_id = $2
@@ -574,6 +593,7 @@ func (q *Queries) ListEsignSubmissionsByMarina(ctx context.Context, arg ListEsig
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -586,7 +606,7 @@ func (q *Queries) ListEsignSubmissionsByMarina(ctx context.Context, arg ListEsig
 }
 
 const listEsignSubmissionsByMarinaFiltered = `-- name: ListEsignSubmissionsByMarinaFiltered :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
@@ -640,6 +660,7 @@ func (q *Queries) ListEsignSubmissionsByMarinaFiltered(ctx context.Context, arg 
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -652,7 +673,7 @@ func (q *Queries) ListEsignSubmissionsByMarinaFiltered(ctx context.Context, arg 
 }
 
 const listEsignSubmissionsByStatus = `-- name: ListEsignSubmissionsByStatus :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE organization_id = $1
     AND marina_id = $2
@@ -703,6 +724,7 @@ func (q *Queries) ListEsignSubmissionsByStatus(ctx context.Context, arg ListEsig
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -715,7 +737,7 @@ func (q *Queries) ListEsignSubmissionsByStatus(ctx context.Context, arg ListEsig
 }
 
 const listEsignSubmissionsFilteredByDocument = `-- name: ListEsignSubmissionsFilteredByDocument :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE document_id = $1
   AND deleted_at IS NULL
@@ -723,18 +745,21 @@ WHERE document_id = $1
   AND ($3 = '' OR customer_id = $3)
   AND ($4 = '' OR LOWER(email) LIKE LOWER('%' || $4 || '%'))
   AND ($5 = '' OR LOWER(name) LIKE LOWER('%' || $5 || '%'))
+  AND ($10 = '' OR LOWER(customer_name) LIKE LOWER('%' || $10 || '%'))
 ORDER BY 
   CASE 
     WHEN $6 = 'email' AND $7 = 'asc' THEN email
     WHEN $6 = 'name' AND $7 = 'asc' THEN name
     WHEN $6 = 'status' AND $7 = 'asc' THEN status
     WHEN $6 = 'customer_id' AND $7 = 'asc' THEN customer_id
+    WHEN $6 = 'customer_name' AND $7 = 'asc' THEN customer_name
   END ASC,
   CASE 
     WHEN $6 = 'email' AND $7 = 'desc' THEN email
     WHEN $6 = 'name' AND $7 = 'desc' THEN name
     WHEN $6 = 'status' AND $7 = 'desc' THEN status
     WHEN $6 = 'customer_id' AND $7 = 'desc' THEN customer_id
+    WHEN $6 = 'customer_name' AND $7 = 'desc' THEN customer_name
   END DESC,
   CASE 
     WHEN $6 = 'created_at' AND $7 = 'asc' THEN created_at
@@ -758,6 +783,7 @@ type ListEsignSubmissionsFilteredByDocumentParams struct {
 	Column7    interface{}
 	Limit      int32
 	Offset     int32
+	Column10   interface{}
 }
 
 func (q *Queries) ListEsignSubmissionsFilteredByDocument(ctx context.Context, arg ListEsignSubmissionsFilteredByDocumentParams) ([]EsignSubmission, error) {
@@ -771,6 +797,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByDocument(ctx context.Context, ar
 		arg.Column7,
 		arg.Limit,
 		arg.Offset,
+		arg.Column10,
 	)
 	if err != nil {
 		return nil, err
@@ -797,6 +824,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByDocument(ctx context.Context, ar
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -809,7 +837,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByDocument(ctx context.Context, ar
 }
 
 const listEsignSubmissionsFilteredByStatus = `-- name: ListEsignSubmissionsFilteredByStatus :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
@@ -819,16 +847,19 @@ WHERE organization_id = $1
   AND ($5 = '' OR LOWER(email) LIKE LOWER('%' || $5 || '%'))
   AND ($6 = '' OR LOWER(name) LIKE LOWER('%' || $6 || '%'))
   AND ($7 = '' OR document_id = $7::uuid)
+  AND ($12 = '' OR LOWER(customer_name) LIKE LOWER('%' || $12 || '%'))
 ORDER BY 
   CASE 
     WHEN $8 = 'email' AND $9 = 'asc' THEN email
     WHEN $8 = 'name' AND $9 = 'asc' THEN name
     WHEN $8 = 'customer_id' AND $9 = 'asc' THEN customer_id
+    WHEN $8 = 'customer_name' AND $9 = 'asc' THEN customer_name
   END ASC,
   CASE 
     WHEN $8 = 'email' AND $9 = 'desc' THEN email
     WHEN $8 = 'name' AND $9 = 'desc' THEN name
     WHEN $8 = 'customer_id' AND $9 = 'desc' THEN customer_id
+    WHEN $8 = 'customer_name' AND $9 = 'desc' THEN customer_name
   END DESC,
   CASE 
     WHEN $8 = 'created_at' AND $9 = 'asc' THEN created_at
@@ -854,6 +885,7 @@ type ListEsignSubmissionsFilteredByStatusParams struct {
 	Column9        interface{}
 	Limit          int32
 	Offset         int32
+	Column12       interface{}
 }
 
 func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg ListEsignSubmissionsFilteredByStatusParams) ([]EsignSubmission, error) {
@@ -869,6 +901,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg 
 		arg.Column9,
 		arg.Limit,
 		arg.Offset,
+		arg.Column12,
 	)
 	if err != nil {
 		return nil, err
@@ -895,6 +928,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg 
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -907,7 +941,7 @@ func (q *Queries) ListEsignSubmissionsFilteredByStatus(ctx context.Context, arg 
 }
 
 const listEsignSubmissionsWithFilters = `-- name: ListEsignSubmissionsWithFilters :many
-SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+SELECT id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 FROM esign_submissions
 WHERE organization_id = $1
   AND marina_id = $2
@@ -917,21 +951,25 @@ WHERE organization_id = $1
     LOWER(email) LIKE LOWER('%' || $4 || '%') OR
     LOWER(name) LIKE LOWER('%' || $4 || '%') OR
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_name) LIKE LOWER('%' || $4 || '%')
   ))
   AND ($9 = '' OR customer_id = $9)
+  AND ($10 = '' OR LOWER(customer_name) LIKE LOWER('%' || $10 || '%'))
 ORDER BY 
   CASE 
     WHEN $5 = 'email' AND $6 = 'asc' THEN email
     WHEN $5 = 'name' AND $6 = 'asc' THEN name
     WHEN $5 = 'status' AND $6 = 'asc' THEN status
     WHEN $5 = 'customer_id' AND $6 = 'asc' THEN customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'asc' THEN customer_name
   END ASC,
   CASE 
     WHEN $5 = 'email' AND $6 = 'desc' THEN email
     WHEN $5 = 'name' AND $6 = 'desc' THEN name
     WHEN $5 = 'status' AND $6 = 'desc' THEN status
     WHEN $5 = 'customer_id' AND $6 = 'desc' THEN customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'desc' THEN customer_name
   END DESC,
   CASE 
     WHEN $5 = 'created_at' AND $6 = 'asc' THEN created_at
@@ -955,6 +993,7 @@ type ListEsignSubmissionsWithFiltersParams struct {
 	Limit          int32
 	Offset         int32
 	Column9        interface{}
+	Column10       interface{}
 }
 
 func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListEsignSubmissionsWithFiltersParams) ([]EsignSubmission, error) {
@@ -968,6 +1007,7 @@ func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListE
 		arg.Limit,
 		arg.Offset,
 		arg.Column9,
+		arg.Column10,
 	)
 	if err != nil {
 		return nil, err
@@ -994,6 +1034,7 @@ func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListE
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -1007,7 +1048,7 @@ func (q *Queries) ListEsignSubmissionsWithFilters(ctx context.Context, arg ListE
 
 const listEsignSubmissionsWithSignersAndFilters = `-- name: ListEsignSubmissionsWithSignersAndFilters :many
 SELECT 
-    es.id, es.organization_id, es.marina_id, es.document_id, es.status, es.blob_url, es.blob_metadata, es.customer_id, es.email, es.created_at, es.updated_at, es.deleted_at, es.name, es.attachment_required, es.reply_to, es.custom_message, es.is_multiple_signature,
+    es.id, es.organization_id, es.marina_id, es.document_id, es.status, es.blob_url, es.blob_metadata, es.customer_id, es.email, es.created_at, es.updated_at, es.deleted_at, es.name, es.attachment_required, es.reply_to, es.custom_message, es.is_multiple_signature, es.customer_name,
     ess.id as signer_id,
     ess.email as signer_email,
     ess.name as signer_name,
@@ -1028,21 +1069,25 @@ WHERE es.organization_id = $1
     LOWER(es.email) LIKE LOWER('%' || $4 || '%') OR
     LOWER(es.name) LIKE LOWER('%' || $4 || '%') OR
     LOWER(es.status) LIKE LOWER('%' || $4 || '%') OR
-    LOWER(es.customer_id) LIKE LOWER('%' || $4 || '%')
+    LOWER(es.customer_id) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.customer_name) LIKE LOWER('%' || $4 || '%')
   ))
   AND ($9 = '' OR es.customer_id = $9)
+  AND ($10 = '' OR LOWER(es.customer_name) LIKE LOWER('%' || $10 || '%'))
 ORDER BY 
   CASE 
     WHEN $5 = 'email' AND $6 = 'asc' THEN es.email
     WHEN $5 = 'name' AND $6 = 'asc' THEN es.name
     WHEN $5 = 'status' AND $6 = 'asc' THEN es.status
     WHEN $5 = 'customer_id' AND $6 = 'asc' THEN es.customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'asc' THEN es.customer_name
   END ASC,
   CASE 
     WHEN $5 = 'email' AND $6 = 'desc' THEN es.email
     WHEN $5 = 'name' AND $6 = 'desc' THEN es.name
     WHEN $5 = 'status' AND $6 = 'desc' THEN es.status
     WHEN $5 = 'customer_id' AND $6 = 'desc' THEN es.customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'desc' THEN es.customer_name
   END DESC,
   CASE 
     WHEN $5 = 'created_at' AND $6 = 'asc' THEN es.created_at
@@ -1067,6 +1112,7 @@ type ListEsignSubmissionsWithSignersAndFiltersParams struct {
 	Limit          int32
 	Offset         int32
 	Column9        interface{}
+	Column10       interface{}
 }
 
 type ListEsignSubmissionsWithSignersAndFiltersRow struct {
@@ -1087,6 +1133,7 @@ type ListEsignSubmissionsWithSignersAndFiltersRow struct {
 	ReplyTo             *string
 	CustomMessage       *string
 	IsMultipleSignature bool
+	CustomerName        *string
 	SignerID            uuid.UUID
 	SignerEmail         *string
 	SignerName          *string
@@ -1110,6 +1157,7 @@ func (q *Queries) ListEsignSubmissionsWithSignersAndFilters(ctx context.Context,
 		arg.Limit,
 		arg.Offset,
 		arg.Column9,
+		arg.Column10,
 	)
 	if err != nil {
 		return nil, err
@@ -1136,6 +1184,7 @@ func (q *Queries) ListEsignSubmissionsWithSignersAndFilters(ctx context.Context,
 			&i.ReplyTo,
 			&i.CustomMessage,
 			&i.IsMultipleSignature,
+			&i.CustomerName,
 			&i.SignerID,
 			&i.SignerEmail,
 			&i.SignerName,
@@ -1180,10 +1229,11 @@ SET
     attachment_required = $8,
     reply_to = $9,
     custom_message = $10,
+    customer_name = $11,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 `
 
 type UpdateEsignSubmissionParams struct {
@@ -1197,6 +1247,7 @@ type UpdateEsignSubmissionParams struct {
 	AttachmentRequired *bool
 	ReplyTo            *string
 	CustomMessage      *string
+	CustomerName       *string
 }
 
 func (q *Queries) UpdateEsignSubmission(ctx context.Context, arg UpdateEsignSubmissionParams) (EsignSubmission, error) {
@@ -1211,6 +1262,7 @@ func (q *Queries) UpdateEsignSubmission(ctx context.Context, arg UpdateEsignSubm
 		arg.AttachmentRequired,
 		arg.ReplyTo,
 		arg.CustomMessage,
+		arg.CustomerName,
 	)
 	var i EsignSubmission
 	err := row.Scan(
@@ -1231,6 +1283,7 @@ func (q *Queries) UpdateEsignSubmission(ctx context.Context, arg UpdateEsignSubm
 		&i.ReplyTo,
 		&i.CustomMessage,
 		&i.IsMultipleSignature,
+		&i.CustomerName,
 	)
 	return i, err
 }
@@ -1242,7 +1295,7 @@ SET
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
-RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature
+RETURNING id, organization_id, marina_id, document_id, status, blob_url, blob_metadata, customer_id, email, created_at, updated_at, deleted_at, name, attachment_required, reply_to, custom_message, is_multiple_signature, customer_name
 `
 
 type UpdateEsignSubmissionStatusParams struct {
@@ -1271,6 +1324,7 @@ func (q *Queries) UpdateEsignSubmissionStatus(ctx context.Context, arg UpdateEsi
 		&i.ReplyTo,
 		&i.CustomMessage,
 		&i.IsMultipleSignature,
+		&i.CustomerName,
 	)
 	return i, err
 }

@@ -4174,6 +4174,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "Filter by customer name (partial match)",
+                        "name": "customerName",
+                        "in": "query"
+                    },
+                    {
                         "minimum": 1,
                         "type": "integer",
                         "default": 1,
@@ -4196,6 +4202,7 @@ const docTemplate = `{
                             "name",
                             "status",
                             "customer_id",
+                            "customer_name",
                             "created_at",
                             "updated_at"
                         ],
@@ -4502,7 +4509,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Global search across email, name, status, and customer_id",
+                        "description": "Global search across email, name, status, customer_id, and customer_name",
                         "name": "search",
                         "in": "query"
                     },
@@ -4510,6 +4517,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by exact customer ID",
                         "name": "customerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by customer name (partial match)",
+                        "name": "customerName",
                         "in": "query"
                     },
                     {
@@ -4535,6 +4548,7 @@ const docTemplate = `{
                             "name",
                             "status",
                             "customer_id",
+                            "customer_name",
                             "created_at",
                             "updated_at"
                         ],
@@ -20257,6 +20271,10 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string",
                     "example": "CUST123"
+                },
+                "customerName": {
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "documentId": {
                     "type": "string",

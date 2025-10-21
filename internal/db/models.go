@@ -181,6 +181,7 @@ type EsignSubmission struct {
 	ReplyTo             *string
 	CustomMessage       *string
 	IsMultipleSignature bool
+	CustomerName        *string
 }
 
 type EsignSubmissionSigner struct {
