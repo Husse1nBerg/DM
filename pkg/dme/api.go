@@ -1317,10 +1317,50 @@ func (c *Client) RetrieveEstimatesList(ctx context.Context, listRequest map[stri
 	return &result, nil
 }
 
-// UpdateEstimate updates an estimate
+// CreateEstimate creates a new estimate
+func (c *Client) CreateEstimate(ctx context.Context, estimateData map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrder, error) {
+	var result WorkOrderCreateResponse
+	endpoint := "/Service/Estimates/Update"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		estimateData,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create estimate: %w", err)
+	}
+
+	// Extract the estimate ID from the response
+	estimateID := result.WoId
+	if estimateID == "" {
+		return nil, fmt.Errorf("failed to get estimate ID from response")
+	}
+
+	// Retrieve the created estimate
+	createdEstimate, err := c.EstimateRetrieve(ctx, estimateID, false, organizationID, systemID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve created estimate: %w", err)
+	}
+
+	return createdEstimate, nil
+}
+
+// UpdateEstimate updates an existing estimate
 func (c *Client) UpdateEstimate(ctx context.Context, estimateData map[string]interface{}, organizationID uuid.UUID, systemID string) (*WorkOrder, error) {
 	var result WorkOrderCreateResponse
 	endpoint := "/Service/Estimates/Update"
+
+	// Ensure the estimate ID is present
+	estimateID, ok := estimateData["estId"].(string)
+	if !ok || estimateID == "" {
+		return nil, fmt.Errorf("estimate ID must be provided when updating")
+	}
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -1337,13 +1377,13 @@ func (c *Client) UpdateEstimate(ctx context.Context, estimateData map[string]int
 	}
 
 	// Extract the estimate ID from the response
-	estimateID := result.WoId
-	if estimateID == "" {
+	updatedID := result.WoId
+	if updatedID == "" {
 		return nil, fmt.Errorf("failed to get estimate ID from response")
 	}
 
 	// Retrieve the updated estimate
-	updatedEstimate, err := c.EstimateRetrieve(ctx, estimateID, false, organizationID, systemID)
+	updatedEstimate, err := c.EstimateRetrieve(ctx, updatedID, false, organizationID, systemID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve updated estimate: %w", err)
 	}
