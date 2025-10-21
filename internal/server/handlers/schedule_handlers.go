@@ -71,8 +71,11 @@ func (h *ScheduleHandler) RetrieveSchedule(c echo.Context) error {
 	dmeResponse, err := h.server.DME.RetrieveSchedule(ctx, req.LocationCode, req.StartDate, req.SessionID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve schedule",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("startDate", req.StartDate),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -126,8 +129,12 @@ func (h *ScheduleHandler) RetrieveScheduleForManager(c echo.Context) error {
 	dmeResponse, err := h.server.DME.RetrieveScheduleForManager(ctx, req.LocationCode, req.StartDate, req.ManagerID, req.SessionID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve schedule for manager",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("startDate", req.StartDate),
+			zap.String("managerId", req.ManagerID),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for manager: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -181,8 +188,12 @@ func (h *ScheduleHandler) RetrieveScheduleForTech(c echo.Context) error {
 	dmeResponse, err := h.server.DME.RetrieveScheduleForTech(ctx, req.LocationCode, req.StartDate, req.TechID, req.SessionID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve schedule for tech",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("startDate", req.StartDate),
+			zap.String("techId", req.TechID),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for tech: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -236,8 +247,12 @@ func (h *ScheduleHandler) RetrieveScheduleForWorkOrder(c echo.Context) error {
 	dmeResponse, err := h.server.DME.RetrieveScheduleForWorkOrder(ctx, req.LocationCode, req.StartDate, req.WorkOrderID, req.SessionID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve schedule for work order",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("startDate", req.StartDate),
+			zap.String("workOrderId", req.WorkOrderID),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for work order: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -290,8 +305,11 @@ func (h *ScheduleHandler) RetrieveWorkOrderSchedule(c echo.Context) error {
 	dmeResponse, err := h.server.DME.RetrieveWorkOrderSchedule(ctx, req.LocationCode, req.WorkOrderID, req.SessionID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve work order schedule",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("workOrderId", req.WorkOrderID),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve work order schedule: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -345,8 +363,12 @@ func (h *ScheduleHandler) RetrieveOperationSchedule(c echo.Context) error {
 	dmeResponse, err := h.server.DME.RetrieveOperationSchedule(ctx, req.LocationCode, req.WorkOrderID, req.Opcode, req.SessionID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve operation schedule",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("workOrderId", req.WorkOrderID),
+			zap.String("opcode", req.Opcode),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve operation schedule: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -405,8 +427,11 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 	dmeResponse, err := h.server.DME.UpdateSchedule(ctx, scheduleUpdate, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to update schedule",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("clerkId", req.ClerkID),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update schedule: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleUpdateResponse(dmeResponse)
@@ -465,8 +490,11 @@ func (h *ScheduleHandler) ResolveMergeConflict(c echo.Context) error {
 	dmeResponse, err := h.server.DME.ResolveMergeConflict(ctx, conflictResolution, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to resolve merge conflict",
+			zap.String("locationCode", req.LocationCode),
+			zap.String("clerkId", req.ClerkID),
+			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to resolve merge conflict: "+err.Error()).JSON(c)
 	}
 
 	response := responses.ConvertScheduleUpdateResponse(dmeResponse)

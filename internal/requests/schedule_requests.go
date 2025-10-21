@@ -53,9 +53,8 @@ type ScheduleAppointmentUpdate struct {
 	WorkOrderID     string  `json:"workOrderId" validate:"required"`
 	Opcode          string  `json:"opcode" validate:"required"`
 	LocationCode    string  `json:"locationCode" validate:"required"`
-	ApptDescription string  `json:"apptDescription"`
-	ApptSubject     string  `json:"apptSubject"`
 	EstHours        float64 `json:"estHours"`
+	ApptDate        string  `json:"apptDate" validate:"required"` // YYYY-MM-DD format
 	StartTime       string  `json:"startTime" validate:"required"`
 	EndTime         string  `json:"endTime" validate:"required"`
 	Status          string  `json:"status"`
