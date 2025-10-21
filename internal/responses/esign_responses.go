@@ -52,6 +52,7 @@ type EsignSubmissionResponse struct {
 	BlobURL             string                          `json:"blobUrl" example:"https://s3.amazonaws.com/bucket/submissions/submission-001.pdf"`
 	BlobMetadata        *json.RawMessage                `json:"blobMetadata,omitempty" swaggertype:"object"`
 	CustomerID          *string                         `json:"customerId,omitempty" example:"CUST123"`
+	CustomerName        *string                         `json:"customerName,omitempty" example:"John Doe"`
 	Email               string                          `json:"email" example:"customer@example.com"`
 	Name                *string                         `json:"name,omitempty" example:"Customer Agreement"`
 	AttachmentRequired  *bool                           `json:"attachmentRequired,omitempty" example:"false"`
@@ -145,6 +146,7 @@ func ConvertEsignSubmissionToResponse(submission db.EsignSubmission) EsignSubmis
 		BlobURL:             *blobURL,
 		BlobMetadata:        blobMetadata,
 		CustomerID:          submission.CustomerID,
+		CustomerName:        submission.CustomerName,
 		Email:               submission.Email,
 		Name:                submission.Name,
 		AttachmentRequired:  submission.AttachmentRequired,
@@ -182,6 +184,7 @@ func ConvertEsignSubmissionWithSignersToResponse(submission db.EsignSubmission, 
 		BlobURL:             *blobURL,
 		BlobMetadata:        blobMetadata,
 		CustomerID:          submission.CustomerID,
+		CustomerName:        submission.CustomerName,
 		Email:               submission.Email,
 		Name:                submission.Name,
 		AttachmentRequired:  submission.AttachmentRequired,

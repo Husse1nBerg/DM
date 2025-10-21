@@ -3653,6 +3653,9 @@ definitions:
       customerId:
         example: CUST123
         type: string
+      customerName:
+        example: John Doe
+        type: string
       documentId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
@@ -8352,6 +8355,10 @@ paths:
         in: query
         name: name
         type: string
+      - description: Filter by customer name (partial match)
+        in: query
+        name: customerName
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -8372,6 +8379,7 @@ paths:
         - name
         - status
         - customer_id
+        - customer_name
         - created_at
         - updated_at
         in: query
@@ -8565,13 +8573,17 @@ paths:
         in: query
         name: status
         type: string
-      - description: Global search across email, name, status, and customer_id
+      - description: Global search across email, name, status, customer_id, and customer_name
         in: query
         name: search
         type: string
       - description: Filter by exact customer ID
         in: query
         name: customerId
+        type: string
+      - description: Filter by customer name (partial match)
+        in: query
+        name: customerName
         type: string
       - default: 1
         description: Page number
@@ -8593,6 +8605,7 @@ paths:
         - name
         - status
         - customer_id
+        - customer_name
         - created_at
         - updated_at
         in: query
