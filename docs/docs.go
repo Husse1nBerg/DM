@@ -16523,6 +16523,12 @@ const docTemplate = `{
         "dme.Operation": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "category": {
                     "type": "string"
                 },
@@ -16532,8 +16538,38 @@ const docTemplate = `{
                 "estStartDate": {
                     "type": "string"
                 },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
                 "estimatedCharges": {
                     "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flagLaborFinished": {
+                    "type": "boolean"
                 },
                 "flatRateAmount": {
                     "type": "number"
@@ -16565,6 +16601,9 @@ const docTemplate = `{
                 "longDesc": {
                     "type": "string"
                 },
+                "managerComments": {
+                    "type": "string"
+                },
                 "opcode": {
                     "type": "string"
                 },
@@ -16573,6 +16612,9 @@ const docTemplate = `{
                 },
                 "reqCompDate": {
                     "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
                 },
                 "status": {
                     "type": "string"
