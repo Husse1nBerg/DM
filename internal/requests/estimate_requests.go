@@ -39,24 +39,30 @@ type EstimateCreateRequest struct {
 	Attachments     []dme.Attachment `json:"attachments"`
 }
 
+// AttachmentWithPublic extends dme.Attachment with a Public field for update requests
+type AttachmentWithPublic struct {
+	dme.Attachment
+	Public bool `json:"public"`
+}
+
 // EstimateUpdateRequest represents a request to update an existing estimate
 type EstimateUpdateRequest struct {
-	EstId           string           `json:"estId"`
-	ClerkId         string           `json:"clerkId"`
-	CustId          string           `json:"custId"`
-	BoatId          string           `json:"boatId"`
-	BoatName        string           `json:"boatName"`
-	CustomerPhone   string           `json:"customerPhone"`
-	CustomerEmail   string           `json:"customerEmail"`
-	Comments        string           `json:"comments"`
-	LocationCode    string           `json:"locationCode"`
-	EstCompDate     string           `json:"estCompDate"`
-	EstStartDate    string           `json:"estStartDate"`
-	CustPromiseDate string           `json:"custPromiseDate"`
-	CategoryCode    string           `json:"categoryCode"`
-	Title           string           `json:"title"`
-	OperationCodes  []OperationCode  `json:"operationCodes"`
-	Attachments     []dme.Attachment `json:"attachments"`
+	EstId           string                  `json:"estId"`
+	ClerkId         string                  `json:"clerkId"`
+	CustId          string                  `json:"custId"`
+	BoatId          string                  `json:"boatId"`
+	BoatName        string                  `json:"boatName"`
+	CustomerPhone   string                  `json:"customerPhone"`
+	CustomerEmail   string                  `json:"customerEmail"`
+	Comments        string                  `json:"comments"`
+	LocationCode    string                  `json:"locationCode"`
+	EstCompDate     string                  `json:"estCompDate"`
+	EstStartDate    string                  `json:"estStartDate"`
+	CustPromiseDate string                  `json:"custPromiseDate"`
+	CategoryCode    string                  `json:"categoryCode"`
+	Title           string                  `json:"title"`
+	OperationCodes  []OperationCode         `json:"operationCodes"`
+	Attachments     []AttachmentWithPublic  `json:"attachments"`
 }
 
 // EstimatesForCustomerRequest represents a request to list estimates for a specific customer

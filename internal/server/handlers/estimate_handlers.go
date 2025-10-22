@@ -579,6 +579,42 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
+	// Process attachments if provided
+	var attachmentsForDME []dme.Attachment
+	if len(req.Attachments) > 0 {
+		// Convert []AttachmentWithPublic to []dme.Attachment
+		attachmentsForDME = make([]dme.Attachment, 0, len(req.Attachments))
+		for _, att := range req.Attachments {
+			attachmentsForDME = append(attachmentsForDME, att.Attachment)
+		}
+		
+		// Update public status in dme_attachment_metadata for each attachment
+		for _, att := range req.Attachments {
+			if att.S3Path == "" {
+				continue
+			}
+			_, err := h.server.DB.Queries().UpdateAttachmentMetadataPublic(ctx, db.UpdateAttachmentMetadataPublicParams{
+				S3Path: att.S3Path,
+				Public: att.Public,
+			})
+			if err != nil && strings.Contains(err.Error(), "no rows") {
+				_, createErr := h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+					S3Path: att.S3Path,
+					Public: att.Public,
+				})
+				if createErr != nil {
+					h.server.Logger.DesugarZap.Error("Failed to create attachment metadata",
+						zap.Error(createErr),
+						zap.String("s3Path", att.S3Path))
+				}
+			} else if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to update attachment metadata",
+					zap.Error(err),
+					zap.String("s3Path", att.S3Path))
+			}
+		}
+	}
+
 	// Convert request to map for DME API
 	// Note: DME API expects "woId" for estimate ID (estimates are treated as work orders)
 	estimateData := map[string]interface{}{
@@ -597,7 +633,11 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
 		"operationCodes":  req.OperationCodes,
-		"attachments":     req.Attachments,
+	}
+	
+	// Add attachments to estimate data if provided
+	if len(attachmentsForDME) > 0 {
+		estimateData["attachments"] = attachmentsForDME
 	}
 
 	dmeResponse, err := h.server.DME.UpdateEstimate(ctx, estimateData, orgID, *systemID)
