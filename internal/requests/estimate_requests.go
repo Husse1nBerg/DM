@@ -39,12 +39,6 @@ type EstimateCreateRequest struct {
 	Attachments     []dme.Attachment `json:"attachments"`
 }
 
-// AttachmentWithPublic extends dme.Attachment with a Public field for update requests
-type AttachmentWithPublic struct {
-	dme.Attachment
-	Public bool `json:"public"`
-}
-
 // EstimateUpdateRequest represents a request to update an existing estimate
 type EstimateUpdateRequest struct {
 	EstId           string                  `json:"estId"`

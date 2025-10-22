@@ -17272,6 +17272,29 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.AttachmentWithPublic": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
+                "public": {
+                    "type": "boolean"
+                },
+                "s3Path": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.BedrockRewriteRequest": {
             "type": "object",
             "required": [
@@ -18586,7 +18609,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/requests.AttachmentWithPublic"
                     }
                 },
                 "boatId": {
@@ -19915,7 +19938,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/requests.AttachmentWithPublic"
                     }
                 },
                 "boatId": {

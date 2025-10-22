@@ -70,12 +70,6 @@ type WorkOrderCreateRequest struct {
 	Attachments     []dme.Attachment `json:"attachments"`
 }
 
-// AttachmentWithPublic extends dme.Attachment with a Public field for update requests
-type AttachmentWithPublic struct {
-	dme.Attachment
-	Public bool `json:"public"`
-}
-
 // WorkOrderUpdateRequest represents a request to update an existing work order
 type WorkOrderUpdateRequest struct {
 	WoId            string                  `json:"woId" validate:"required"`
