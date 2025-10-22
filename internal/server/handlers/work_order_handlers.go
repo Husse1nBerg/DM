@@ -444,6 +444,42 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 		operationCodes[i] = opMap
 	}
 
+	// Process attachments if provided
+	var attachmentsForDME []dme.Attachment
+	if len(req.Attachments) > 0 {
+		// Convert []AttachmentWithPublic to []dme.Attachment
+		attachmentsForDME = make([]dme.Attachment, 0, len(req.Attachments))
+		for _, att := range req.Attachments {
+			attachmentsForDME = append(attachmentsForDME, att.Attachment)
+		}
+		
+		// Update public status in dme_attachment_metadata for each attachment
+		for _, att := range req.Attachments {
+			if att.S3Path == "" {
+				continue
+			}
+			_, err := h.server.DB.Queries().UpdateAttachmentMetadataPublic(ctx, db.UpdateAttachmentMetadataPublicParams{
+				S3Path: att.S3Path,
+				Public: att.Public,
+			})
+			if err != nil && strings.Contains(err.Error(), "no rows") {
+				_, createErr := h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+					S3Path: att.S3Path,
+					Public: att.Public,
+				})
+				if createErr != nil {
+					h.server.Logger.DesugarZap.Error("Failed to create attachment metadata",
+						zap.Error(createErr),
+						zap.String("s3Path", att.S3Path))
+				}
+			} else if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to update attachment metadata",
+					zap.Error(err),
+					zap.String("s3Path", att.S3Path))
+			}
+		}
+	}
+
 	// Create a map with all the work order data
 	// Directly map all fields without conditionals, just like in CreateWorkOrder
 	workOrderData := map[string]interface{}{
@@ -462,6 +498,11 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
 		"operationCodes":  operationCodes,
+	}
+
+	// Add attachments to work order data if provided
+	if len(attachmentsForDME) > 0 {
+		workOrderData["attachments"] = attachmentsForDME
 	}
 
 	dmeResponse, err := h.server.DME.UpdateWorkOrder(ctx, workOrderData, orgID, *systemID)
