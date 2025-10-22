@@ -1119,6 +1119,21 @@ definitions:
     - roleId
     - userId
     type: object
+  requests.AttachmentWithPublic:
+    properties:
+      description:
+        type: string
+      fileName:
+        type: string
+      fileType:
+        type: string
+      fromDMWeb:
+        type: boolean
+      public:
+        type: boolean
+      s3Path:
+        type: string
+    type: object
   requests.BedrockRewriteRequest:
     properties:
       draft:
@@ -2052,7 +2067,7 @@ definitions:
     properties:
       attachments:
         items:
-          $ref: '#/definitions/dme.Attachment'
+          $ref: '#/definitions/requests.AttachmentWithPublic'
         type: array
       boatId:
         type: string
@@ -2982,7 +2997,7 @@ definitions:
     properties:
       attachments:
         items:
-          $ref: '#/definitions/dme.Attachment'
+          $ref: '#/definitions/requests.AttachmentWithPublic'
         type: array
       boatId:
         type: string
