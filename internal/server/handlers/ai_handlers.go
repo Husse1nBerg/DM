@@ -591,11 +591,22 @@ func getImageFormat(contentType string) string {
 func classifySelectionType(label string) string {
 	labelLower := strings.ToLower(label)
 
+	// Check for initials first - even if Textract detected a checkbox, we want to preserve the "initials" type
+	// Be specific to avoid matching "initial payment", "initial deposit", etc.
+	if strings.Contains(labelLower, "initials") ||
+		strings.HasSuffix(labelLower, "initial") ||
+		strings.HasSuffix(labelLower, "initial:") {
+		return "initials"
+	}
+
 	// Radio buttons typically have labels like "Yes/No", "Male/Female", "Option 1/Option 2"
 	// or appear in groups with similar naming patterns
 	if strings.Contains(labelLower, "yes") || strings.Contains(labelLower, "no") ||
 		strings.Contains(labelLower, "male") || strings.Contains(labelLower, "female") ||
-		strings.Contains(labelLower, "option") || strings.Contains(labelLower, "choice") {
+		strings.Contains(labelLower, "gender") || strings.Contains(labelLower, "sex") ||
+		strings.Contains(labelLower, "option") || strings.Contains(labelLower, "choice") ||
+		strings.Contains(labelLower, "agree") || strings.Contains(labelLower, "disagree") ||
+		strings.Contains(labelLower, "accept") || strings.Contains(labelLower, "decline") {
 		return "radio"
 	}
 
@@ -607,13 +618,17 @@ func classifySelectionType(label string) string {
 func classifyFieldType(label string, bboxHeight float64) string {
 	labelLower := strings.ToLower(label)
 
-	// Check for signature fields
-	if strings.Contains(labelLower, "signature") || strings.Contains(labelLower, "sign") {
+	// Check for signature fields - be specific to avoid "assignment", "designation", "consignment"
+	if strings.Contains(labelLower, "signature") || strings.Contains(labelLower, "sign here") ||
+		strings.Contains(labelLower, "signed") || strings.HasPrefix(labelLower, "sign") ||
+		strings.HasSuffix(labelLower, "sign") || strings.HasSuffix(labelLower, "sign:") {
 		return "signature"
 	}
 
-	// Check for date fields
-	if strings.Contains(labelLower, "date") {
+	// Check for date fields - be specific to avoid "update", "validate", "mandate"
+	if strings.Contains(labelLower, " date") || strings.Contains(labelLower, "date ") ||
+		strings.HasPrefix(labelLower, "date") || strings.HasSuffix(labelLower, "date") ||
+		strings.HasSuffix(labelLower, "date:") {
 		return "date"
 	}
 
@@ -628,16 +643,37 @@ func classifyFieldType(label string, bboxHeight float64) string {
 		return "phone"
 	}
 
-	// Check for number fields
-	if strings.Contains(labelLower, "number") || strings.Contains(labelLower, "rate") ||
-		strings.Contains(labelLower, "value") || strings.Contains(labelLower, "price") ||
-		strings.Contains(labelLower, "amount") || strings.Contains(labelLower, "cost") {
+	// Check for number fields - avoid conflicts with "phone number", "card number", "license number"
+	// Only match "number" if it's not preceded by other field type indicators
+	if (strings.Contains(labelLower, "number") &&
+		!strings.Contains(labelLower, "phone") &&
+		!strings.Contains(labelLower, "tel") &&
+		!strings.Contains(labelLower, "cell") &&
+		!strings.Contains(labelLower, "card") &&
+		!strings.Contains(labelLower, "license") &&
+		!strings.Contains(labelLower, "fax")) ||
+		strings.Contains(labelLower, "rate") ||
+		strings.Contains(labelLower, "value") ||
+		strings.Contains(labelLower, "price") ||
+		strings.Contains(labelLower, "amount") ||
+		strings.Contains(labelLower, "cost") ||
+		strings.Contains(labelLower, "quantity") ||
+		strings.Contains(labelLower, "qty") {
 		return "number"
 	}
 
-	// Check for initials
-	if strings.Contains(labelLower, "initial") {
+	// Check for initials - be specific to avoid matching "initial payment", "initial deposit", etc.
+	if strings.Contains(labelLower, "initials") ||
+		strings.HasSuffix(labelLower, "initial") ||
+		strings.HasSuffix(labelLower, "initial:") {
 		return "initials"
+	}
+
+	// Check for dropdown/select fields - only explicit indicators
+	if strings.Contains(labelLower, "select") || strings.Contains(labelLower, "choose") ||
+		strings.Contains(labelLower, "dropdown") || strings.Contains(labelLower, "drop-down") ||
+		strings.Contains(labelLower, "drop down") || strings.Contains(labelLower, "option") {
+		return "dropdown"
 	}
 
 	// Check for textarea based on height (if field is tall, likely a textarea)
