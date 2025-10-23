@@ -10655,7 +10655,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves invoices for a specific customer
+      description: Retrieves invoices for a specific customer (supports both JWT and
+        token authentication)
       parameters:
       - description: Customer ID
         in: query
@@ -10665,6 +10666,12 @@ paths:
       - description: 'Invoice date (format: YYYY-MM-DD)'
         in: query
         name: invoiceDate
+        type: string
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
         type: string
       produces:
       - application/json

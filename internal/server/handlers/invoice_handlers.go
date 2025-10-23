@@ -33,12 +33,13 @@ func NewInvoiceHandler(server *s.Server) *InvoiceHandler {
 }
 
 // @Summary Get customer invoices
-// @Description Retrieves invoices for a specific customer
+// @Description Retrieves invoices for a specific customer (supports both JWT and token authentication)
 // @Tags Invoices
 // @Accept json
 // @Produce json
 // @Param customerId query string true "Customer ID"
 // @Param invoiceDate query string false "Invoice date (format: YYYY-MM-DD)"
+// @Param marinaId query string true "Marina ID" Format(uuid)
 // @Success 200 {object} responses.InvoiceListResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
@@ -54,15 +55,7 @@ func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
-	userToken := c.Get("user").(*jwt.Token)
-	claims := userToken.Claims.(*token.JwtCustomClaims)
-	userID := claims.ID
-	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
-	}
-
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), req.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}

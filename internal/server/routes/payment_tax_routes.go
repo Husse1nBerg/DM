@@ -7,10 +7,14 @@ import (
 )
 
 // RegisterPaymentTaxRoutes registers all payment tax configuration routes
-func RegisterPaymentTaxRoutes(s *s.Server, protected *echo.Group) {
+func RegisterPaymentTaxRoutes(s *s.Server, base *echo.Group, protected *echo.Group) {
 	paymentTaxHandler := h.NewPaymentTaxHandler(s)
 
-	// Payment tax routes group
+	// Public payment tax routes (no authentication required)
+	publicPaymentTax := base.Group("/payment-tax")
+	publicPaymentTax.POST("/calculate", paymentTaxHandler.CalculateFees)
+
+	// Protected payment tax routes (authentication required)
 	paymentTax := protected.Group("/payment-tax")
 
 	// CRUD operations
@@ -20,7 +24,4 @@ func RegisterPaymentTaxRoutes(s *s.Server, protected *echo.Group) {
 	paymentTax.GET("/:id", paymentTaxHandler.GetPaymentTax)
 	paymentTax.PUT("/:id", paymentTaxHandler.UpdatePaymentTax)
 	paymentTax.DELETE("/:id", paymentTaxHandler.DeletePaymentTax)
-
-	// Actions
-	paymentTax.POST("/calculate", paymentTaxHandler.CalculateFees)
 }

@@ -7632,7 +7632,7 @@ const docTemplate = `{
         },
         "/invoices/customer": {
             "get": {
-                "description": "Retrieves invoices for a specific customer",
+                "description": "Retrieves invoices for a specific customer (supports both JWT and token authentication)",
                 "consumes": [
                     "application/json"
                 ],
@@ -7656,6 +7656,14 @@ const docTemplate = `{
                         "description": "Invoice date (format: YYYY-MM-DD)",
                         "name": "invoiceDate",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
