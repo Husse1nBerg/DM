@@ -1,15 +1,19 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
+	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 )
 
@@ -130,8 +134,97 @@ func (h *EstimateHandler) RetrieveEstimate(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
-	response := responses.ConvertEstimate(dmeResponse)
-	return c.JSON(http.StatusOK, response)
+	// Process estimate level attachments with metadata
+	type AttachmentWithPublic struct {
+		FileName    string  `json:"fileName"`
+		Description string  `json:"description"`
+		S3Path      string  `json:"s3Path"`
+		FileType    *string `json:"fileType"`
+		FromDMWeb   *bool   `json:"fromDMWeb"`
+		Public      bool    `json:"public"`
+	}
+
+	// Helper function to process attachments
+	processAttachments := func(attachments []dme.Attachment) []AttachmentWithPublic {
+		mergedMap := make(map[string]map[string]interface{})
+		for _, att := range attachments {
+			if att.S3Path == "" {
+				continue
+			}
+			if _, exists := mergedMap[att.S3Path]; exists {
+				continue // skip duplicates
+			}
+			meta, err := h.server.DB.Queries().GetAttachmentMetadataByS3Path(ctx, att.S3Path)
+			public := false
+			if err == nil {
+				public = meta.Public
+			} else if strings.Contains(err.Error(), "no rows") {
+				_, _ = h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+					S3Path: att.S3Path,
+					Public: false,
+				})
+				public = false
+			}
+			merged := map[string]interface{}{
+				"fileName":    att.FileName,
+				"description": att.Description,
+				"s3Path":      att.S3Path,
+				"fileType":    att.FileType,
+				"fromDMWeb":   att.FromDMWeb,
+				"public":      public,
+			}
+			mergedMap[att.S3Path] = merged
+		}
+
+		result := make([]AttachmentWithPublic, 0, len(mergedMap))
+		for _, v := range mergedMap {
+			result = append(result, AttachmentWithPublic{
+				FileName:    v["fileName"].(string),
+				Description: v["description"].(string),
+				S3Path:      v["s3Path"].(string),
+				FileType:    v["fileType"].(*string),
+				FromDMWeb:   v["fromDMWeb"].(*bool),
+				Public:      v["public"].(bool),
+			})
+		}
+		return result
+	}
+
+	// Store original operation attachments before processing
+	operationAttachmentsMap := make(map[int][]dme.Attachment)
+	for i := range dmeResponse.Operations {
+		if len(dmeResponse.Operations[i].Attachments) > 0 {
+			operationAttachmentsMap[i] = dmeResponse.Operations[i].Attachments
+		}
+	}
+
+	// Process estimate level attachments
+	estimateAttachments := processAttachments(dmeResponse.Attachments)
+
+	// Marshal the estimate to a map to add merged attachments
+	estimateBytes, _ := json.Marshal(dmeResponse)
+	var estimateMap map[string]interface{}
+	json.Unmarshal(estimateBytes, &estimateMap)
+
+	// Set the merged estimate level attachments
+	estimateMap["attachments"] = estimateAttachments
+
+	// Process and set operation level attachments
+	if operations, ok := estimateMap["operations"].([]interface{}); ok {
+		for i, op := range operations {
+			if opMap, ok := op.(map[string]interface{}); ok {
+				if origAttachments, exists := operationAttachmentsMap[i]; exists {
+					operationAttachments := processAttachments(origAttachments)
+					opMap["attachments"] = operationAttachments
+				}
+			}
+		}
+	}
+
+	// Return response with enriched attachments
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": estimateMap,
+	})
 }
 
 // @Summary List estimate sublets
@@ -486,6 +579,42 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
+	// Process attachments if provided
+	var attachmentsForDME []dme.Attachment
+	if len(req.Attachments) > 0 {
+		// Convert []AttachmentWithPublic to []dme.Attachment
+		attachmentsForDME = make([]dme.Attachment, 0, len(req.Attachments))
+		for _, att := range req.Attachments {
+			attachmentsForDME = append(attachmentsForDME, att.Attachment)
+		}
+		
+		// Update public status in dme_attachment_metadata for each attachment
+		for _, att := range req.Attachments {
+			if att.S3Path == "" {
+				continue
+			}
+			_, err := h.server.DB.Queries().UpdateAttachmentMetadataPublic(ctx, db.UpdateAttachmentMetadataPublicParams{
+				S3Path: att.S3Path,
+				Public: att.Public,
+			})
+			if err != nil && strings.Contains(err.Error(), "no rows") {
+				_, createErr := h.server.DB.Queries().CreateAttachmentMetadata(ctx, db.CreateAttachmentMetadataParams{
+					S3Path: att.S3Path,
+					Public: att.Public,
+				})
+				if createErr != nil {
+					h.server.Logger.DesugarZap.Error("Failed to create attachment metadata",
+						zap.Error(createErr),
+						zap.String("s3Path", att.S3Path))
+				}
+			} else if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to update attachment metadata",
+					zap.Error(err),
+					zap.String("s3Path", att.S3Path))
+			}
+		}
+	}
+
 	// Convert request to map for DME API
 	// Note: DME API expects "woId" for estimate ID (estimates are treated as work orders)
 	estimateData := map[string]interface{}{
@@ -504,7 +633,11 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
 		"operationCodes":  req.OperationCodes,
-		"attachments":     req.Attachments,
+	}
+	
+	// Add attachments to estimate data if provided
+	if len(attachmentsForDME) > 0 {
+		estimateData["attachments"] = attachmentsForDME
 	}
 
 	dmeResponse, err := h.server.DME.UpdateEstimate(ctx, estimateData, orgID, *systemID)

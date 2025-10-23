@@ -201,6 +201,7 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["GET /api/v1/work-orders/search"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["GET /api/v1/work-orders/customer"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["GET /api/v1/work-orders/operations"] = RoutePermission{Object: "work_orders", Action: "read"}
+	routeMap["POST /api/v1/work-orders/operations/all"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["GET /api/v1/work-orders/completed"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["GET /api/v1/work-orders/sublets"] = RoutePermission{Object: "work_orders", Action: "read"}
 	routeMap["GET /api/v1/work-orders/group-descriptions"] = RoutePermission{Object: "work_orders", Action: "read"}
@@ -222,6 +223,7 @@ func buildRoutePermissionMap() map[string]RoutePermission {
 	routeMap["POST /api/v1/estimates/delete-operation"] = RoutePermission{Object: "estimates", Action: "delete"}
 	routeMap["POST /api/v1/estimates/retrieve-list"] = RoutePermission{Object: "estimates", Action: "read"}
 	routeMap["POST /api/v1/estimates/update"] = RoutePermission{Object: "estimates", Action: "write"}
+	routeMap["POST /api/v1/estimates/create"] = RoutePermission{Object: "estimates", Action: "create"}
 
 	// Service routes (general service management)
 	routeMap["GET /api/v1/service/opcodes/new-or-changed"] = RoutePermission{Object: "service_management", Action: "read"}

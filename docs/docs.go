@@ -16523,6 +16523,12 @@ const docTemplate = `{
         "dme.Operation": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "category": {
                     "type": "string"
                 },
@@ -16532,8 +16538,38 @@ const docTemplate = `{
                 "estStartDate": {
                     "type": "string"
                 },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
                 "estimatedCharges": {
                     "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flagLaborFinished": {
+                    "type": "boolean"
                 },
                 "flatRateAmount": {
                     "type": "number"
@@ -16565,6 +16601,9 @@ const docTemplate = `{
                 "longDesc": {
                     "type": "string"
                 },
+                "managerComments": {
+                    "type": "string"
+                },
                 "opcode": {
                     "type": "string"
                 },
@@ -16573,6 +16612,9 @@ const docTemplate = `{
                 },
                 "reqCompDate": {
                     "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
                 },
                 "status": {
                     "type": "string"
@@ -17227,6 +17269,29 @@ const docTemplate = `{
                 "userId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "requests.AttachmentWithPublic": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
+                "public": {
+                    "type": "boolean"
+                },
+                "s3Path": {
+                    "type": "string"
                 }
             }
         },
@@ -18544,7 +18609,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/requests.AttachmentWithPublic"
                     }
                 },
                 "boatId": {
@@ -19873,7 +19938,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/requests.AttachmentWithPublic"
                     }
                 },
                 "boatId": {
