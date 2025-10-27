@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -294,4 +295,60 @@ func DetectFormFields(pages []struct {
 // GenerateRequestID generates a unique request ID
 func GenerateRequestID() string {
 	return uuid.New().String()
+}
+
+// NumericToString converts a pgtype.Numeric to a string representation
+func NumericToString(n pgtype.Numeric) string {
+	if !n.Valid {
+		return "0.00"
+	}
+	// Use the Int value and Exp to calculate the decimal
+	var val float64
+	if n.Int != nil {
+		val = float64(n.Int.Int64()) * math.Pow(10, float64(n.Exp))
+	}
+	return fmt.Sprintf("%.2f", val)
+}
+
+// FormatCustomerName transforms customer name from "lastname, firstname" to "firstname lastname"
+// If the name doesn't contain a comma, it returns the name as-is
+func FormatCustomerName(name string) string {
+	if name == "" {
+		return name
+	}
+
+	// Trim whitespace
+	name = strings.TrimSpace(name)
+
+	// Check if name contains a comma
+	if !strings.Contains(name, ",") {
+		// Name is already in correct format or is just a single name
+		return name
+	}
+
+	// Split by comma
+	parts := strings.SplitN(name, ",", 2)
+	if len(parts) != 2 {
+		return name
+	}
+
+	// Extract lastname and firstname, trim whitespace
+	lastname := strings.TrimSpace(parts[0])
+	firstname := strings.TrimSpace(parts[1])
+
+	// Return in "firstname lastname" format
+	return fmt.Sprintf("%s %s", firstname, lastname)
+}
+
+// NumericToFloat64 converts a pgtype.Numeric to a float64
+func NumericToFloat64(n pgtype.Numeric) (float64, error) {
+	if !n.Valid {
+		return 0.0, nil
+	}
+	// Use the Int value and Exp to calculate the decimal
+	var val float64
+	if n.Int != nil {
+		val = float64(n.Int.Int64()) * math.Pow(10, float64(n.Exp))
+	}
+	return val, nil
 }

@@ -42,6 +42,15 @@ type WorkOrderOperationsResponse struct {
 	Data []dme.WorkOrderOperation `json:"data"`
 }
 
+// WorkOrderAllOperationsResponse represents a paginated list of all operation codes
+type WorkOrderAllOperationsResponse struct {
+	CurrentPage int                      `json:"currentPage"`
+	MaxPages    int                      `json:"maxPages"`
+	PageSize    int                      `json:"pageSize"`
+	ListName    string                   `json:"listName"`
+	Content     []dme.WorkOrderOperation `json:"content"`
+}
+
 // WorkOrderCompletedResponse represents a list of completed work orders
 type WorkOrderCompletedResponse struct {
 	Data []dme.WorkOrder `json:"data"`
@@ -211,5 +220,16 @@ func ConvertWorkOrderListNewOrChanged(dmeResponse *dme.WorkOrderList) *WorkOrder
 		PerPage:     int32(dmeResponse.PageSize),
 		CurrentPage: int32(dmeResponse.CurrentPage),
 		LastPage:    int32(dmeResponse.MaxPages),
+	}
+}
+
+// ConvertWorkOrderAllOperations converts DME OperationsListResponse to WorkOrderAllOperationsResponse
+func ConvertWorkOrderAllOperations(dmeResponse *dme.OperationsListResponse) *WorkOrderAllOperationsResponse {
+	return &WorkOrderAllOperationsResponse{
+		CurrentPage: dmeResponse.CurrentPage,
+		MaxPages:    dmeResponse.MaxPages,
+		PageSize:    dmeResponse.PageSize,
+		ListName:    dmeResponse.ListName,
+		Content:     dmeResponse.Content,
 	}
 }

@@ -23,6 +23,39 @@ type Address struct {
 	DeletedAt  pgtype.Timestamp
 }
 
+type BatchPayment struct {
+	ID             uuid.UUID
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	LocationCode   string
+	BatchID        string
+	PostBatch      bool
+	TotalAmount    pgtype.Numeric
+	ReceiptCount   int32
+	Status         string
+	PostResult     *string
+	ReferenceIds   []string
+	SubmittedBy    string
+	SubmittedAt    pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	DeletedAt      pgtype.Timestamptz
+}
+
+type BatchPaymentReceipt struct {
+	ID             uuid.UUID
+	BatchPaymentID uuid.UUID
+	CustomerID     string
+	InvoiceID      string
+	Amount         pgtype.Numeric
+	PaymentMethod  string
+	Reference      string
+	Description    *string
+	PaymentDate    pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
 type Contact struct {
 	ID          uuid.UUID
 	MarinaID    uuid.UUID
@@ -148,6 +181,7 @@ type EsignSubmission struct {
 	ReplyTo             *string
 	CustomMessage       *string
 	IsMultipleSignature bool
+	CustomerName        *string
 }
 
 type EsignSubmissionSigner struct {
@@ -192,35 +226,37 @@ type Invite struct {
 }
 
 type Marina struct {
-	ID                   uuid.UUID
-	OrganizationID       uuid.UUID
-	Name                 string
-	Email                string
-	Location             *string
-	Phone                *string
-	Country              *string
-	Currency             *string
-	WorkingHours         []byte
-	Website              *string
-	Image                *string
-	MaxUsers             *int32
-	IsActive             *bool
-	IsTest               *bool
-	CreatedAt            pgtype.Timestamp
-	UpdatedAt            pgtype.Timestamp
-	DeletedAt            pgtype.Timestamp
-	AddressID            uuid.UUID
-	SystemID             *string
-	StorageUsage         *int64
-	EmailUsage           *int16
-	TextUsage            *int16
-	NotesMessagesPlanID  uuid.UUID
-	StoragePlanID        uuid.UUID
-	Modules              []byte
-	InternalAnnouncement *string
-	ExternalAnnouncement *string
-	DocumentPlanID       uuid.UUID
-	DocumentUsage        *int64
+	ID                    uuid.UUID
+	OrganizationID        uuid.UUID
+	Name                  string
+	Email                 string
+	Location              *string
+	Phone                 *string
+	Country               *string
+	Currency              *string
+	WorkingHours          []byte
+	Website               *string
+	Image                 *string
+	MaxUsers              *int32
+	IsActive              *bool
+	IsTest                *bool
+	CreatedAt             pgtype.Timestamp
+	UpdatedAt             pgtype.Timestamp
+	DeletedAt             pgtype.Timestamp
+	AddressID             uuid.UUID
+	SystemID              *string
+	StorageUsage          *int64
+	EmailUsage            *int16
+	TextUsage             *int16
+	NotesMessagesPlanID   uuid.UUID
+	StoragePlanID         uuid.UUID
+	Modules               []byte
+	InternalAnnouncement  *string
+	ExternalAnnouncement  *string
+	DocumentPlanID        uuid.UUID
+	DocumentUsage         *int64
+	AiFormDetectionUsage  *int16
+	AiComposeMessageUsage *int16
 }
 
 type MarinaGallery struct {
@@ -235,15 +271,17 @@ type MarinaGallery struct {
 }
 
 type MarinaUsageHistory struct {
-	ID            uuid.UUID
-	MarinaID      uuid.UUID
-	StorageUsage  int64
-	EmailUsage    int16
-	TextUsage     int16
-	CreatedAt     pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	MonthDate     pgtype.Date
-	DocumentUsage *int64
+	ID                    uuid.UUID
+	MarinaID              uuid.UUID
+	StorageUsage          int64
+	EmailUsage            int16
+	TextUsage             int16
+	CreatedAt             pgtype.Timestamptz
+	UpdatedAt             pgtype.Timestamptz
+	MonthDate             pgtype.Date
+	DocumentUsage         *int64
+	AiFormDetectionUsage  *int16
+	AiComposeMessageUsage *int16
 }
 
 type Message struct {
@@ -334,6 +372,41 @@ type PasswordRecovery struct {
 	CreatedAt pgtype.Timestamp
 }
 
+type Payment struct {
+	ID                  uuid.UUID
+	MarinaID            uuid.UUID
+	OrganizationID      uuid.UUID
+	EntityType          *string
+	EntityID            *string
+	Amount              pgtype.Numeric
+	Currency            string
+	PaymentMethod       *string
+	ReferenceNumber     string
+	Status              string
+	AuthorizationStatus *string
+	BatchStatus         *string
+	AdyenPspReference   *string
+	AdyenSessionID      *string
+	BatchID             *string
+	BatchPaymentID      uuid.UUID
+	PaymentDate         pgtype.Timestamptz
+	AuthorizedAt        pgtype.Timestamptz
+	CompletedAt         pgtype.Timestamptz
+	FailedAt            pgtype.Timestamptz
+	CustomerID          *string
+	LocationCode        *string
+	TransactionID       *string
+	AuthCode            *string
+	AdyenWebhookPayload *string
+	DmeBatchRequest     *string
+	DmeBatchResponse    *string
+	ErrorMessage        *string
+	ErrorCode           *string
+	InternalNotes       *string
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
+}
+
 type Role struct {
 	ID             uuid.UUID
 	Name           string
@@ -357,6 +430,22 @@ type StoragePlan struct {
 	IsMostPopular  *bool
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
+}
+
+type TaxConfiguration struct {
+	ID                        uuid.UUID
+	MarinaID                  uuid.UUID
+	ConvenienceFee            pgtype.Numeric
+	ConvenienceFeeType        string
+	ConvenienceFeeEnabled     bool
+	ConvenienceFeeDescription *string
+	Surcharge                 pgtype.Numeric
+	SurchargeType             string
+	SurchargeEnabled          bool
+	SurchargeDescription      *string
+	PaymentType               string
+	CreatedAt                 pgtype.Timestamptz
+	UpdatedAt                 pgtype.Timestamptz
 }
 
 type User struct {

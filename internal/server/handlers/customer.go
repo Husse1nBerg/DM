@@ -313,94 +313,96 @@ func (h *CustomerHandler) UpdateCustomer(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve existing customer: "+err.Error()).JSON(c)
 	}
 
-	// Only update fields that are present in the request
-	if req.Name != "" {
-		existingCustomer.Name = req.Name
+	// Only update fields that are present in the request (nil means don't update)
+	if req.Name != nil {
+		existingCustomer.Name = *req.Name
 	}
-	if req.FirstName != "" {
-		existingCustomer.FirstName = req.FirstName
+	if req.FirstName != nil {
+		existingCustomer.FirstName = *req.FirstName
 	}
-	if req.LastName != "" {
-		existingCustomer.LastName = req.LastName
+	if req.LastName != nil {
+		existingCustomer.LastName = *req.LastName
 	}
-	if req.Email != "" {
-		existingCustomer.Email = req.Email
+	if req.Email != nil {
+		existingCustomer.Email = *req.Email
 	}
-	if req.Address1 != "" {
-		existingCustomer.Address1 = req.Address1
+	if req.Address1 != nil {
+		existingCustomer.Address1 = *req.Address1
 	}
-	if req.Address2 != "" {
-		existingCustomer.Address2 = req.Address2
+	if req.Address2 != nil {
+		existingCustomer.Address2 = *req.Address2
 	}
-	if req.Address3 != "" {
-		existingCustomer.Address3 = req.Address3
+	if req.Address3 != nil {
+		existingCustomer.Address3 = *req.Address3
 	}
-	if req.City != "" {
-		existingCustomer.City = req.City
+	if req.City != nil {
+		existingCustomer.City = *req.City
 	}
-	if req.State != "" {
-		existingCustomer.State = req.State
+	if req.State != nil {
+		existingCustomer.State = *req.State
 	}
-	if req.Zip != "" {
-		existingCustomer.Zip = req.Zip
+	if req.Zip != nil {
+		existingCustomer.Zip = *req.Zip
 	}
-	if req.Country != "" {
-		existingCustomer.Country = req.Country
+	if req.Country != nil {
+		existingCustomer.Country = *req.Country
 	}
-	if req.Phone != "" {
-		existingCustomer.Phone = req.Phone
+	if req.Phone != nil {
+		existingCustomer.Phone = *req.Phone
 	}
-	if req.AltFirstName != "" {
-		existingCustomer.AltFirstName = req.AltFirstName
+	if req.AltFirstName != nil {
+		existingCustomer.AltFirstName = *req.AltFirstName
 	}
-	if req.AltLastName != "" {
-		existingCustomer.AltLastName = req.AltLastName
+	if req.AltLastName != nil {
+		existingCustomer.AltLastName = *req.AltLastName
 	}
-	if req.AltAddress1 != "" {
-		existingCustomer.AltAddress1 = req.AltAddress1
+	if req.AltAddress1 != nil {
+		existingCustomer.AltAddress1 = *req.AltAddress1
 	}
-	if req.AltAddress2 != "" {
-		existingCustomer.AltAddress2 = req.AltAddress2
+	if req.AltAddress2 != nil {
+		existingCustomer.AltAddress2 = *req.AltAddress2
 	}
-	if req.AltAddress3 != "" {
-		existingCustomer.AltAddress3 = req.AltAddress3
+	if req.AltAddress3 != nil {
+		existingCustomer.AltAddress3 = *req.AltAddress3
 	}
-	if req.AltCity != "" {
-		existingCustomer.AltCity = req.AltCity
+	if req.AltCity != nil {
+		existingCustomer.AltCity = *req.AltCity
 	}
-	if req.AltState != "" {
-		existingCustomer.AltState = req.AltState
+	if req.AltState != nil {
+		existingCustomer.AltState = *req.AltState
 	}
-	if req.AltZip != "" {
-		existingCustomer.AltZip = req.AltZip
+	if req.AltZip != nil {
+		existingCustomer.AltZip = *req.AltZip
 	}
-	if req.AltCountry != "" {
-		existingCustomer.AltCountry = req.AltCountry
+	if req.AltCountry != nil {
+		existingCustomer.AltCountry = *req.AltCountry
 	}
-	if req.AltPhone != "" {
-		existingCustomer.AltPhone = req.AltPhone
+	if req.AltPhone != nil {
+		existingCustomer.AltPhone = *req.AltPhone
 	}
-	existingCustomer.UseAltAddress = req.UseAltAddress
-	if req.WorkPhone != "" {
-		existingCustomer.WorkPhone = req.WorkPhone
+	if req.UseAltAddress != nil {
+		existingCustomer.UseAltAddress = *req.UseAltAddress
 	}
-	if req.CellPhone != "" {
-		existingCustomer.CellPhone = req.CellPhone
+	if req.WorkPhone != nil {
+		existingCustomer.WorkPhone = *req.WorkPhone
 	}
-	if req.EmergencyContact != "" {
-		existingCustomer.EmergencyContact = req.EmergencyContact
+	if req.CellPhone != nil {
+		existingCustomer.CellPhone = *req.CellPhone
 	}
-	if req.EmergencyPhone != "" {
-		existingCustomer.EmergencyPhone = req.EmergencyPhone
+	if req.EmergencyContact != nil {
+		existingCustomer.EmergencyContact = *req.EmergencyContact
 	}
-	if req.CompanyName != "" {
-		existingCustomer.CompanyName = req.CompanyName
+	if req.EmergencyPhone != nil {
+		existingCustomer.EmergencyPhone = *req.EmergencyPhone
 	}
-	if req.ShipmentMethod != "" {
-		existingCustomer.ShipmentMethod = req.ShipmentMethod
+	if req.CompanyName != nil {
+		existingCustomer.CompanyName = *req.CompanyName
 	}
-	if req.ShipmentMethodDescription != "" {
-		existingCustomer.ShipmentMethodDescription = req.ShipmentMethodDescription
+	if req.ShipmentMethod != nil {
+		existingCustomer.ShipmentMethod = *req.ShipmentMethod
+	}
+	if req.ShipmentMethodDescription != nil {
+		existingCustomer.ShipmentMethodDescription = *req.ShipmentMethodDescription
 	}
 	if req.CustomInformation != nil {
 		existingCustomer.CustomInformation = req.CustomInformation

@@ -37,3 +37,48 @@ jobs:
             --service ${{ secrets.ECS_DEV_SERVICE }} \
             --force-new-deployment \
             --output json
+            
+          aws ecs wait services-stable \
+            --cluster ${{ secrets.ECS_DEV_CLUSTER }} \
+            --services ${{ secrets.ECS_DEV_SERVICE }}
+
+
+      - name: Notify Team on Deployment Success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" -d '{
+            "@type": "MessageCard",
+            "@context": "https://schema.org/extensions",
+            "summary": "Backend Deployment",
+            "themeColor": "00FF00",
+            "title": "✅ Deployment Successful",
+            "sections": [{
+              "activityTitle": "**DMWeb Backend deployed successfully!**",
+              "facts": [
+                { "name": "Branch", "value": "${GITHUB_REF#refs/heads/}" },
+                { "name": "Commit", "value": "${GITHUB_SHA}" },
+                { "name": "Environment", "value": "DEV" }
+              ],
+              "markdown": true
+            }]
+          }' ${{ secrets.TEAMS_WEBHOOK_URL }}
+          
+      - name: Notify Team on Deployment Failure
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" -d '{
+            "@type": "MessageCard",
+            "@context": "https://schema.org/extensions",
+            "summary": "Backend Deployment",
+            "themeColor": "FF0000",
+            "title": "❌ Deployment Failed",
+            "sections": [{
+              "activityTitle": "**DMWeb Backend deployment failed!**",
+              "facts": [
+                { "name": "Branch", "value": "${GITHUB_REF#refs/heads/}" },
+                { "name": "Commit", "value": "${GITHUB_SHA}" },
+                { "name": "Environment", "value": "DEV" }
+              ],
+              "markdown": true
+            }]
+          }' ${{ secrets.TEAMS_WEBHOOK_URL }}

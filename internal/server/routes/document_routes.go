@@ -25,6 +25,7 @@ func RegisterDocumentRoutes(server *s.Server, base *echo.Group, permissionProtec
 	// Boat document routes
 	documents.POST("/boat", documentHandler.BoatUploadDocument)
 	documents.GET("/boat", documentHandler.BoatGetDocumentsByEntity)
+	documents.PUT("/boat/:id/public", documentHandler.UpdateBoatDocumentPublic)
 
 	// User document routes
 	documents.POST("/user", documentHandler.UserUploadDocument)

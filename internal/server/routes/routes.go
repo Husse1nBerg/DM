@@ -155,6 +155,9 @@ func RegisterRoutes(s *s.Server) {
 	// Service routes
 	RegisterServiceRoutes(s, permissionProtected)
 
+	// Schedule routes
+	RegisterScheduleRoutes(s, permissionProtected)
+
 	// Invoice routes
 	RegisterInvoiceRoutes(s, permissionProtected)
 
@@ -184,4 +187,16 @@ func RegisterRoutes(s *s.Server) {
 
 	// General DME API routes
 	RegisterGeneralRoutes(s, permissionProtected)
+
+	// Inventory routes
+	RegisterInventoryRoutes(s, base, permissionProtected)
+
+	// Payment routes (protected)
+	RegisterPaymentRoutes(s, permissionProtected)
+
+	// Payment webhook routes (public)
+	RegisterPaymentWebhookRoutes(s, base)
+
+	// Payment tax configuration routes
+	RegisterPaymentTaxRoutes(s, permissionProtected)
 }

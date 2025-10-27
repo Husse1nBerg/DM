@@ -136,3 +136,10 @@ WHERE ess.submission_id = $1
     AND ess.deleted_at IS NULL
     AND es.deleted_at IS NULL
 ORDER BY ess.sign_order ASC;
+
+-- name: ListEsignSubmissionSignersBySubmissionIDs :many
+SELECT *
+FROM esign_submission_signers
+WHERE submission_id = ANY($1::uuid[])
+    AND deleted_at IS NULL
+ORDER BY submission_id, sign_order ASC;
