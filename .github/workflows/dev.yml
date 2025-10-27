@@ -60,6 +60,7 @@ jobs:
               "branch": "'"${GITHUB_REF#refs/heads/}"'",
               "commit": "'"${GITHUB_SHA}"'",
               "environment": "DEV",
+              "attachments": [],
               "service": "'"${{ secrets.ECS_DEV_SERVICE }}"'"
             }' \
             "${{ secrets.POWER_AUTOMATE_URL }}"
