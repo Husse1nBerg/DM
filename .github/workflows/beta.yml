@@ -88,7 +88,7 @@ jobs:
                       },
                       {
                         "type": "TextBlock",
-                        "text": "Service: '"${{ secrets.ECS_DEV_SERVICE }}"'",
+                        "text": "Service: '"${{ secrets.ECS_BETA_SERVICE }}"'",
                         "wrap": true
                       }
                     ]
