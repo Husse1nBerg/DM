@@ -616,14 +616,38 @@ definitions:
     type: object
   dme.Operation:
     properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
       category:
         type: string
       estCompleteDate:
         type: string
       estStartDate:
         type: string
+      estimatedBillCodes:
+        type: number
       estimatedCharges:
         type: number
+      estimatedEquipment:
+        type: number
+      estimatedFreight:
+        type: number
+      estimatedLabor:
+        type: number
+      estimatedLaborHours:
+        type: number
+      estimatedMileage:
+        type: number
+      estimatedMiscSupply:
+        type: number
+      estimatedParts:
+        type: number
+      estimatedSublet:
+        type: number
+      flagLaborFinished:
+        type: boolean
       flatRateAmount:
         type: number
       flatRatePerFootMethod:
@@ -644,12 +668,16 @@ definitions:
         type: number
       longDesc:
         type: string
+      managerComments:
+        type: string
       opcode:
         type: string
       opcodeDesc:
         type: string
       reqCompDate:
         type: string
+      standardHours:
+        type: number
       status:
         type: string
       techDesc:
@@ -692,23 +720,6 @@ definitions:
       type:
         type: string
       workOrder:
-        type: string
-    type: object
-  dme.PaymentInitiationResponse:
-    properties:
-      amount:
-        type: number
-      customerId:
-        type: string
-      dmPayClientId:
-        type: string
-      invoiceId:
-        type: string
-      paymentSessionId:
-        type: string
-      paymentUrl:
-        type: string
-      status:
         type: string
     type: object
   dme.Rate:
@@ -925,6 +936,8 @@ definitions:
         type: boolean
       longDesc:
         type: string
+      managerComments:
+        type: string
       opcode:
         type: string
       standardHours:
@@ -1106,6 +1119,21 @@ definitions:
     - roleId
     - userId
     type: object
+  requests.AttachmentWithPublic:
+    properties:
+      description:
+        type: string
+      fileName:
+        type: string
+      fileType:
+        type: string
+      fromDMWeb:
+        type: boolean
+      public:
+        type: boolean
+      s3Path:
+        type: string
+    type: object
   requests.BedrockRewriteRequest:
     properties:
       draft:
@@ -1206,33 +1234,64 @@ definitions:
     - name
     - ownerId
     type: object
-  requests.ClerkListRequest:
+  requests.CalculateFeeRequest:
     properties:
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
+      amount:
+        minimum: 0
+        type: number
+      marinaId:
         type: string
-      systemId:
-        example: SYS001
+      paymentType:
+        enum:
+        - CC
+        - DB
+        - CK
+        - ACH
         type: string
     required:
-    - organizationId
-    - systemId
+    - amount
+    - marinaId
+    - paymentType
     type: object
-  requests.ClerkRequest:
+  requests.CashReceipt:
     properties:
-      clerkId:
-        example: CLERK001
+      ccAuthCode:
         type: string
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
+      ccSurcharge:
+        type: number
+      ccSurchargeTax:
+        type: number
+      ccSurchargeTaxIds:
+        items:
+          type: string
+        type: array
+      ccSurchargeTaxSchema:
         type: string
-      systemId:
-        example: SYS001
+      ccTransactionID:
         type: string
+      ccTransactionTimeStamp:
+        type: string
+      customerId:
+        type: string
+      invPayments:
+        items:
+          $ref: '#/definitions/requests.InvPayment'
+        type: array
+      payType:
+        type: string
+      referenceNum:
+        type: string
+      statementDesc:
+        type: string
+      totalPayment:
+        type: number
     required:
-    - clerkId
-    - organizationId
-    - systemId
+    - customerId
+    - invPayments
+    - payType
+    - referenceNum
+    - statementDesc
+    - totalPayment
     type: object
   requests.CompletePasswordRecoveryRequest:
     description: Complete password recovery request payload
@@ -1616,6 +1675,51 @@ definitions:
     - email
     - name
     type: object
+  requests.CreatePaymentSessionRequest:
+    type: object
+  requests.CreatePaymentTaxRequest:
+    properties:
+      convenienceFee:
+        minimum: 0
+        type: number
+      convenienceFeeDescription:
+        type: string
+      convenienceFeeEnabled:
+        type: boolean
+      convenienceFeeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      marinaId:
+        type: string
+      paymentType:
+        enum:
+        - CC
+        - DB
+        - CK
+        - ACH
+        type: string
+      surcharge:
+        minimum: 0
+        type: number
+      surchargeDescription:
+        type: string
+      surchargeEnabled:
+        type: boolean
+      surchargeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+    required:
+    - convenienceFee
+    - convenienceFeeType
+    - marinaId
+    - paymentType
+    - surcharge
+    - surchargeType
+    type: object
   requests.CreateRoleRequest:
     properties:
       description:
@@ -1894,19 +1998,76 @@ definitions:
     - email
     - signOrder
     type: object
+  requests.EstimateCreateRequest:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/dme.Attachment'
+        type: array
+      boatId:
+        type: string
+      boatName:
+        type: string
+      categoryCode:
+        type: string
+      clerkId:
+        type: string
+      comments:
+        type: string
+      custId:
+        type: string
+      custPromiseDate:
+        type: string
+      customerEmail:
+        type: string
+      customerPhone:
+        type: string
+      estCompDate:
+        type: string
+      estStartDate:
+        type: string
+      locationCode:
+        type: string
+      operationCodes:
+        items:
+          $ref: '#/definitions/requests.OperationCode'
+        type: array
+      title:
+        type: string
+    required:
+    - custId
+    - title
+    type: object
   requests.EstimateRetrieveListRequest:
     properties:
+      detail:
+        type: boolean
+      lastUpdateDate:
+        type: string
+      lastUpdateTime:
+        type: string
+      page:
+        minimum: 0
+        type: integer
+      pageSize:
+        maximum: 100
+        minimum: 1
+        type: integer
       status:
         type: string
-      withDetail:
-        description: Add fields as needed based on API requirements
-        type: boolean
+      woIds:
+        items:
+          type: string
+        type: array
+    required:
+    - page
+    - pageSize
     type: object
   requests.EstimateUpdateRequest:
     properties:
       attachments:
         items:
-          $ref: '#/definitions/dme.Attachment'
+          $ref: '#/definitions/requests.AttachmentWithPublic'
         type: array
       boatId:
         type: string
@@ -1940,8 +2101,19 @@ definitions:
         type: array
       title:
         type: string
+    type: object
+  requests.FindPartsRequest:
+    properties:
+      partNumbers:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      systemId:
+        type: string
     required:
-    - estId
+    - partNumbers
+    - systemId
     type: object
   requests.ForgotPasswordRequest:
     description: Forgot password request payload
@@ -1952,18 +2124,26 @@ definitions:
     required:
     - email
     type: object
-  requests.InitiatePaymentRequest:
+  requests.InvPayment:
     properties:
-      amount:
-        type: number
       customerId:
+        type: string
+      depositType:
+        type: string
+      description:
         type: string
       invoiceId:
         type: string
+      locationCode:
+        type: string
+      paymentAmt:
+        type: number
     required:
-    - amount
     - customerId
+    - description
     - invoiceId
+    - locationCode
+    - paymentAmt
     type: object
   requests.LinkDMESysIDRequest:
     properties:
@@ -1972,18 +2152,6 @@ definitions:
         type: string
     required:
     - marinaId
-    type: object
-  requests.LocationListRequest:
-    properties:
-      organizationId:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      systemId:
-        example: SYS001
-        type: string
-    required:
-    - organizationId
-    - systemId
     type: object
   requests.LoginRequest:
     properties:
@@ -2084,6 +2252,17 @@ definitions:
       techDesc:
         type: string
     type: object
+  requests.PaymentDetailsRequest:
+    properties:
+      payload:
+        type: string
+      payment_data:
+        type: string
+      redirect_result:
+        type: string
+    required:
+    - payment_data
+    type: object
   requests.RedisSetRequest:
     properties:
       expiration:
@@ -2130,6 +2309,115 @@ definitions:
     - newPassword
     - oldPassword
     - userId
+    type: object
+  requests.RetrieveAllOperationsRequest:
+    properties:
+      page:
+        minimum: 0
+        type: integer
+      pageSize:
+        maximum: 1000
+        minimum: 1
+        type: integer
+    required:
+    - page
+    - pageSize
+    type: object
+  requests.RetrieveInventoryRequest:
+    properties:
+      itemIds:
+        items:
+          type: string
+        type: array
+      lastModifiedDate:
+        type: string
+      locationCode:
+        type: string
+      onHandOnly:
+        type: boolean
+      systemId:
+        type: string
+      vendorId:
+        type: string
+    required:
+    - systemId
+    type: object
+  requests.ScheduleAppointmentUpdate:
+    properties:
+      apptComplete:
+        type: boolean
+      apptDate:
+        description: YYYY-MM-DD format
+        type: string
+      endTime:
+        type: string
+      estHours:
+        type: number
+      id:
+        type: string
+      isDeleted:
+        type: boolean
+      label:
+        type: integer
+      locationCode:
+        type: string
+      opLaborFinished:
+        type: boolean
+      opcode:
+        type: string
+      startTime:
+        type: string
+      status:
+        type: string
+      techId:
+        type: string
+      workOrderId:
+        type: string
+    required:
+    - apptDate
+    - endTime
+    - id
+    - locationCode
+    - opcode
+    - startTime
+    - techId
+    - workOrderId
+    type: object
+  requests.ScheduleResolveMergeConflictRequest:
+    properties:
+      appointments:
+        items:
+          $ref: '#/definitions/requests.ScheduleAppointmentUpdate'
+        type: array
+      clerkId:
+        type: string
+      locationCode:
+        type: string
+      sessionId:
+        type: string
+    required:
+    - appointments
+    - clerkId
+    - locationCode
+    - sessionId
+    type: object
+  requests.ScheduleUpdateRequest:
+    properties:
+      appointments:
+        items:
+          $ref: '#/definitions/requests.ScheduleAppointmentUpdate'
+        type: array
+      clerkId:
+        type: string
+      locationCode:
+        type: string
+      sessionId:
+        type: string
+    required:
+    - appointments
+    - clerkId
+    - locationCode
+    - sessionId
     type: object
   requests.SendHTMLEmailRequest:
     description: Send HTML email request payload
@@ -2206,6 +2494,21 @@ definitions:
     - templateName
     - to
     type: object
+  requests.SubmitBatchRequest:
+    properties:
+      cashReceipts:
+        items:
+          $ref: '#/definitions/requests.CashReceipt'
+        type: array
+      locationCode:
+        type: string
+      postBatch:
+        type: boolean
+    required:
+    - cashReceipts
+    - locationCode
+    - postBatch
+    type: object
   requests.UpdateAddressRequest:
     properties:
       city:
@@ -2229,6 +2532,12 @@ definitions:
       street:
         example: 123 Main St
         type: string
+    type: object
+  requests.UpdateBoatDocumentPublicRequest:
+    properties:
+      public:
+        example: true
+        type: boolean
     type: object
   requests.UpdateContactRequest:
     properties:
@@ -2466,6 +2775,40 @@ definitions:
         example: https://updated-example.com
         type: string
     type: object
+  requests.UpdatePaymentTaxRequest:
+    properties:
+      convenienceFee:
+        minimum: 0
+        type: number
+      convenienceFeeDescription:
+        type: string
+      convenienceFeeEnabled:
+        type: boolean
+      convenienceFeeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+      paymentType:
+        enum:
+        - CC
+        - DB
+        - CK
+        - ACH
+        type: string
+      surcharge:
+        minimum: 0
+        type: number
+      surchargeDescription:
+        type: string
+      surchargeEnabled:
+        type: boolean
+      surchargeType:
+        enum:
+        - percentage
+        - fixed
+        type: string
+    type: object
   requests.UpdateRoleRequest:
     properties:
       description:
@@ -2526,6 +2869,12 @@ definitions:
         example: Manager
         type: string
       userAnalytics:
+        example: true
+        type: boolean
+    type: object
+  requests.UpdateVesselGalleryItemPublicRequest:
+    properties:
+      public:
         example: true
         type: boolean
     type: object
@@ -2616,35 +2965,39 @@ definitions:
     type: object
   requests.WorkOrderTimeEntryRequest:
     properties:
+      comments:
+        type: string
       date:
         type: string
-      description:
+      flagLaborFinished:
+        type: boolean
+      isApproved:
+        type: boolean
+      opCode:
         type: string
-      hours:
-        minimum: 0
-        type: number
-      operationId:
+      startTime:
         type: string
-      rate:
-        minimum: 0
-        type: number
-      technicianId:
+      stopTime:
+        type: string
+      techId:
+        type: string
+      timeEntryUId:
         type: string
       workOrderId:
         type: string
     required:
     - date
-    - hours
-    - operationId
-    - rate
-    - technicianId
+    - opCode
+    - startTime
+    - stopTime
+    - techId
     - workOrderId
     type: object
   requests.WorkOrderUpdateRequest:
     properties:
       attachments:
         items:
-          $ref: '#/definitions/dme.Attachment'
+          $ref: '#/definitions/requests.AttachmentWithPublic'
         type: array
       boatId:
         type: string
@@ -2745,6 +3098,27 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  responses.BatchSubmissionResponse:
+    properties:
+      batch_id:
+        type: string
+      location_code:
+        type: string
+      post_batch:
+        type: boolean
+      post_result:
+        type: string
+      receipt_count:
+        type: integer
+      reference_ids:
+        items:
+          type: string
+        type: array
+      submitted_at:
+        type: string
+      total_amount:
+        type: number
     type: object
   responses.BedrockDetectFormFieldsResponse:
     properties:
@@ -3126,6 +3500,34 @@ definitions:
       data:
         $ref: '#/definitions/responses.DMESysIDResponse'
     type: object
+  responses.DocumentPlanResponse:
+    description: Document plan data including limits and pricing
+    properties:
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      documentLimit:
+        example: 1000
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isMostPopular:
+        example: false
+        type: boolean
+      monthlyPrice:
+        example: 9.99
+        type: number
+      name:
+        example: Basic Document Plan
+        type: string
+      updatedAt:
+        example: "2024-01-02T00:00:00Z"
+        type: string
+      userLimit:
+        example: Unlimited Users
+        type: string
+    type: object
   responses.DocumentResponse:
     description: Document data including file path, file type, and size
     properties:
@@ -3294,6 +3696,9 @@ definitions:
       customerId:
         example: CUST123
         type: string
+      customerName:
+        example: John Doe
+        type: string
       documentId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
@@ -3321,6 +3726,10 @@ definitions:
       replyTo:
         example: support@example.com
         type: string
+      signers:
+        items:
+          $ref: '#/definitions/responses.EsignSubmissionSignerResponse'
+        type: array
       status:
         example: pending
         type: string
@@ -3529,6 +3938,150 @@ definitions:
       data:
         $ref: '#/definitions/dme.WorkOrder'
     type: object
+  responses.FeeCalculationResponse:
+    properties:
+      baseAmount:
+        type: number
+      convenienceFee:
+        type: number
+      convenienceFeeRate:
+        type: number
+      convenienceFeeType:
+        type: string
+      paymentType:
+        type: string
+      surcharge:
+        type: number
+      surchargeRate:
+        type: number
+      surchargeType:
+        type: string
+      totalAmount:
+        type: number
+    type: object
+  responses.FuelInventoryResponse:
+    properties:
+      costPerUnit:
+        type: number
+      currentQuantity:
+        type: number
+      description:
+        type: string
+      id:
+        type: string
+      lastDeliveryDate:
+        type: string
+      lastDeliveryQty:
+        type: number
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      pricePerUnit:
+        type: number
+      reorderLevel:
+        type: number
+      tankCapacity:
+        type: number
+      tankNumber:
+        type: string
+      unitOfMeasure:
+        type: string
+    type: object
+  responses.InventoryPartResponse:
+    properties:
+      active:
+        type: boolean
+      averageCost:
+        type: number
+      binLocation:
+        type: string
+      cost:
+        type: number
+      department:
+        type: string
+      description:
+        type: string
+      lastCost:
+        type: number
+      lastModified:
+        type: string
+      lastReceiptDate:
+        type: string
+      lastSaleDate:
+        type: string
+      leadTimeDays:
+        type: integer
+      locationCode:
+        type: string
+      lotTrackedInventory:
+        type: boolean
+      manufacturerPartNum:
+        type: string
+      maxOrderQty:
+        type: number
+      minOrderQty:
+        type: number
+      notes:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      price2:
+        type: number
+      price3:
+        type: number
+      quantityAvailable:
+        type: number
+      quantityCommitted:
+        type: number
+      quantityOnHand:
+        type: number
+      quantityOnOrder:
+        type: number
+      reorderLevel:
+        type: number
+      reorderQty:
+        type: number
+      serializedInventory:
+        type: boolean
+      taxFlag:
+        type: boolean
+      unitOfMeasure:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+      vendorPartNumber:
+        type: string
+    type: object
+  responses.InventorySearchResultResponse:
+    properties:
+      cost:
+        type: number
+      department:
+        type: string
+      description:
+        type: string
+      locationCode:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      quantityAvailable:
+        type: number
+      quantityOnHand:
+        type: number
+      unitOfMeasure:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
   responses.InviteResponse:
     properties:
       email:
@@ -3696,6 +4249,12 @@ definitions:
       addressId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
+      aiComposeMessageUsage:
+        example: 0
+        type: integer
+      aiFormDetectionUsage:
+        example: 0
+        type: integer
       country:
         example: USA
         type: string
@@ -3704,6 +4263,8 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlan:
+        $ref: '#/definitions/responses.DocumentPlanResponse'
       documentPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -3745,6 +4306,8 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlan:
+        $ref: '#/definitions/responses.NotesMessagesPlanResponse'
       notesMessagesPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -3754,6 +4317,8 @@ definitions:
       phone:
         example: "+15551234567"
         type: string
+      storagePlan:
+        $ref: '#/definitions/responses.StoragePlanResponse'
       storagePlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -3840,6 +4405,12 @@ definitions:
       addressId:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
+      aiComposeMessageUsage:
+        example: 0
+        type: integer
+      aiFormDetectionUsage:
+        example: 0
+        type: integer
       country:
         example: USA
         type: string
@@ -3848,6 +4419,8 @@ definitions:
       currency:
         example: USD
         type: string
+      documentPlan:
+        $ref: '#/definitions/responses.DocumentPlanResponse'
       documentPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -3889,6 +4462,8 @@ definitions:
       name:
         example: Harbor Bay Marina
         type: string
+      notesMessagesPlan:
+        $ref: '#/definitions/responses.NotesMessagesPlanResponse'
       notesMessagesPlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -3898,6 +4473,8 @@ definitions:
       phone:
         example: "+15551234567"
         type: string
+      storagePlan:
+        $ref: '#/definitions/responses.StoragePlanResponse'
       storagePlanId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -3989,6 +4566,37 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.MessageResponse'
+    type: object
+  responses.NotesMessagesPlanResponse:
+    description: Notes and messages plan data including limits and pricing
+    properties:
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      emailLimit:
+        example: Unlimited
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isMostPopular:
+        example: false
+        type: boolean
+      monthlyPrice:
+        example: 29.99
+        type: number
+      name:
+        example: Basic Plan
+        type: string
+      textLimit:
+        example: 1000
+        type: integer
+      updatedAt:
+        example: "2024-01-02T00:00:00Z"
+        type: string
+      userLimit:
+        example: Unlimited
+        type: string
     type: object
   responses.NotificationListResponse:
     description: Paginated list of notifications
@@ -4086,6 +4694,54 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.NotificationResponse'
+    type: object
+  responses.OnlineBillcodeResponse:
+    properties:
+      active:
+        type: boolean
+      department:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      price:
+        type: number
+      taxFlag:
+        type: boolean
+    type: object
+  responses.OnlinePartResponse:
+    properties:
+      active:
+        type: boolean
+      cost:
+        type: number
+      department:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      quantityAvailable:
+        type: number
+      quantityOnHand:
+        type: number
+      taxFlag:
+        type: boolean
+      unitOfMeasure:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
     type: object
   responses.OrganizationResponse:
     properties:
@@ -4215,10 +4871,283 @@ definitions:
       textUsage:
         type: integer
     type: object
-  responses.PaymentInitiationResponse:
+  responses.PartQtyInfoResponse:
+    properties:
+      averageCost:
+        type: number
+      cost:
+        type: number
+      lastCost:
+        type: number
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      maxOrderQty:
+        type: number
+      minOrderQty:
+        type: number
+      partNumber:
+        type: string
+      quantityAvailable:
+        type: number
+      quantityCommitted:
+        type: number
+      quantityOnHand:
+        type: number
+      quantityOnOrder:
+        type: number
+      reorderLevel:
+        type: number
+      reorderQty:
+        type: number
+    type: object
+  responses.PartsKitItemResponse:
+    properties:
+      cost:
+        type: number
+      description:
+        type: string
+      partNumber:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: number
+    type: object
+  responses.PartsKitResponse:
+    properties:
+      active:
+        type: boolean
+      description:
+        type: string
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/responses.PartsKitItemResponse'
+        type: array
+      lastModified:
+        type: string
+      totalCost:
+        type: number
+      totalPrice:
+        type: number
+    type: object
+  responses.PaymentListResponse:
     properties:
       data:
-        $ref: '#/definitions/dme.PaymentInitiationResponse'
+        items:
+          $ref: '#/definitions/responses.PaymentResponse'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  responses.PaymentResponse:
+    properties:
+      adyenPspReference:
+        type: string
+      adyenSessionId:
+        type: string
+      amount:
+        type: string
+      authCode:
+        type: string
+      authorizationStatus:
+        type: string
+      authorizedAt:
+        type: string
+      batchId:
+        type: string
+      batchPaymentId:
+        type: string
+      batchStatus:
+        type: string
+      completedAt:
+        type: string
+      createdAt:
+        type: string
+      currency:
+        type: string
+      customerId:
+        type: string
+      entityId:
+        type: string
+      entityType:
+        type: string
+      errorCode:
+        type: string
+      errorMessage:
+        type: string
+      failedAt:
+        type: string
+      id:
+        type: string
+      internalNotes:
+        type: string
+      locationCode:
+        type: string
+      marinaId:
+        type: string
+      organizationId:
+        type: string
+      paymentDate:
+        type: string
+      paymentMethod:
+        type: string
+      referenceNumber:
+        type: string
+      status:
+        type: string
+      transactionId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.PaymentResultResponse:
+    properties:
+      pspReference:
+        type: string
+      refusalReason:
+        type: string
+      resultCode:
+        type: string
+    type: object
+  responses.PaymentSessionResponse:
+    properties:
+      clientKey:
+        type: string
+      sessionData:
+        type: string
+      sessionId:
+        type: string
+    type: object
+  responses.PaymentStatsResponse:
+    properties:
+      authorizedCount:
+        type: integer
+      completedCount:
+        type: integer
+      endDate:
+        type: string
+      failedCount:
+        type: integer
+      pendingCount:
+        type: integer
+      startDate:
+        type: string
+      totalCompletedAmount:
+        type: string
+      totalCount:
+        type: integer
+    type: object
+  responses.PaymentTaxListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.PaymentTaxResponse'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  responses.PaymentTaxResponse:
+    properties:
+      convenienceFee:
+        type: number
+      convenienceFeeDescription:
+        type: string
+      convenienceFeeEnabled:
+        type: boolean
+      convenienceFeeType:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      marinaId:
+        type: string
+      paymentType:
+        type: string
+      surcharge:
+        type: number
+      surchargeDescription:
+        type: string
+      surchargeEnabled:
+        type: boolean
+      surchargeType:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.PurchaseOrderLineResponse:
+    properties:
+      description:
+        type: string
+      discount:
+        type: number
+      extendedCost:
+        type: number
+      lineNumber:
+        type: integer
+      partNumber:
+        type: string
+      quantityOrder:
+        type: number
+      quantityRecvd:
+        type: number
+      taxFlag:
+        type: boolean
+      unitCost:
+        type: number
+    type: object
+  responses.PurchaseOrderResponse:
+    properties:
+      comments:
+        type: string
+      createdBy:
+        type: string
+      expectedDate:
+        type: string
+      id:
+        type: string
+      lastModified:
+        type: string
+      lastModifiedBy:
+        type: string
+      lines:
+        items:
+          $ref: '#/definitions/responses.PurchaseOrderLineResponse'
+        type: array
+      locationCode:
+        type: string
+      orderDate:
+        type: string
+      poNumber:
+        type: string
+      receivedDate:
+        type: string
+      status:
+        type: string
+      totalAmount:
+        type: number
+      totalReceived:
+        type: number
+      vendorId:
+        type: string
+      vendorName:
+        type: string
     type: object
   responses.RedisGetResponse:
     properties:
@@ -4315,13 +5244,43 @@ definitions:
       task_id:
         type: string
     type: object
-  responses.ServiceOPCategoryCodesResponse:
+  responses.ScheduleResponse:
     properties:
       data: {}
     type: object
-  responses.ServiceOpCodesResponse:
+  responses.ScheduleUpdateResponse:
     properties:
       data: {}
+    type: object
+  responses.ServiceOPCategoryCodesResponse:
+    properties:
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      opCodes:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      pageSize:
+        type: integer
+    type: object
+  responses.ServiceOpCodesResponse:
+    properties:
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      opCodes:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      pageSize:
+        type: integer
     type: object
   responses.ServiceOperationDescriptionsResponse:
     properties:
@@ -4333,7 +5292,89 @@ definitions:
     type: object
   responses.ServiceWOCategoryCodesResponse:
     properties:
-      data: {}
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      opCodes:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      pageSize:
+        type: integer
+    type: object
+  responses.SpecialOrderResponse:
+    properties:
+      comments:
+        type: string
+      customerId:
+        type: string
+      customerName:
+        type: string
+      description:
+        type: string
+      expectedDate:
+        type: string
+      id:
+        type: string
+      lastModified:
+        type: string
+      locationCode:
+        type: string
+      orderDate:
+        type: string
+      orderNumber:
+        type: string
+      partNumber:
+        type: string
+      poNumber:
+        type: string
+      quantityOrdered:
+        type: number
+      quantityRecvd:
+        type: number
+      receivedDate:
+        type: string
+      status:
+        type: string
+      unitCost:
+        type: number
+      unitPrice:
+        type: number
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
+  responses.StoragePlanResponse:
+    description: Storage plan data including limits and pricing
+    properties:
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isMostPopular:
+        example: false
+        type: boolean
+      monthlyPrice:
+        example: 19.99
+        type: number
+      name:
+        example: Basic Storage
+        type: string
+      storageLimitGB:
+        example: 10
+        type: integer
+      updatedAt:
+        example: "2024-01-02T00:00:00Z"
+        type: string
+      userLimit:
+        example: Unlimited
+        type: string
     type: object
   responses.UnreadCountResponse:
     description: Unread notification count
@@ -4490,6 +5531,28 @@ definitions:
         type: boolean
       updatedAt:
         type: string
+    type: object
+  responses.WebhookResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  responses.WorkOrderAllOperationsResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      pageSize:
+        type: integer
     type: object
   responses.WorkOrderCompletedResponse:
     properties:
@@ -4872,12 +5935,16 @@ paths:
       - application/json
       description: Retrieves a specific clerk (user) record from the DME API
       parameters:
-      - description: Retrieve clerk request
-        in: body
-        name: request
+      - description: Clerk ID
+        in: query
+        name: clerkId
         required: true
-        schema:
-          $ref: '#/definitions/requests.ClerkRequest'
+        type: string
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -4910,12 +5977,15 @@ paths:
       - application/json
       description: Retrieves a list of system clerks (users) from the DME API
       parameters:
-      - description: List clerks request
-        in: body
-        name: request
+      - description: Include inactive clerks
+        in: query
+        name: includeInactive
+        type: boolean
+      - description: System ID
+        in: query
+        name: systemId
         required: true
-        schema:
-          $ref: '#/definitions/requests.ClerkListRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -4944,12 +6014,11 @@ paths:
       - application/json
       description: Retrieves a list of business locations from the DME API
       parameters:
-      - description: List locations request
-        in: body
-        name: request
+      - description: System ID
+        in: query
+        name: systemId
         required: true
-        schema:
-          $ref: '#/definitions/requests.LocationListRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -6904,6 +7973,53 @@ paths:
       summary: Upload document
       tags:
       - Documents
+  /documents/boat/{id}/public:
+    put:
+      consumes:
+      - application/json
+      description: Updates the public field of a boat document and syncs with DME
+      parameters:
+      - description: Document ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateBoatDocumentPublicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update boat document public field
+      tags:
+      - Documents
   /documents/customer:
     post:
       consumes:
@@ -7282,6 +8398,10 @@ paths:
         in: query
         name: name
         type: string
+      - description: Filter by customer name (partial match)
+        in: query
+        name: customerName
+        type: string
       - default: 1
         description: Page number
         in: query
@@ -7302,6 +8422,7 @@ paths:
         - name
         - status
         - customer_id
+        - customer_name
         - created_at
         - updated_at
         in: query
@@ -7495,13 +8616,17 @@ paths:
         in: query
         name: status
         type: string
-      - description: Global search across email, name, status, and customer_id
+      - description: Global search across email, name, status, customer_id, and customer_name
         in: query
         name: search
         type: string
       - description: Filter by exact customer ID
         in: query
         name: customerId
+        type: string
+      - description: Filter by customer name (partial match)
+        in: query
+        name: customerName
         type: string
       - default: 1
         description: Page number
@@ -7523,6 +8648,7 @@ paths:
         - name
         - status
         - customer_id
+        - customer_name
         - created_at
         - updated_at
         in: query
@@ -8164,6 +9290,36 @@ paths:
       summary: Update e-signature template
       tags:
       - E-signature Templates
+  /estimates/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new estimate
+      parameters:
+      - description: Estimate information
+        in: body
+        name: estimate
+        required: true
+        schema:
+          $ref: '#/definitions/requests.EstimateCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateUpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create estimate
+      tags:
+      - Estimates
   /estimates/customer:
     get:
       consumes:
@@ -8362,7 +9518,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new or update an existing estimate
+      description: Updates an existing estimate
       parameters:
       - description: Estimate information
         in: body
@@ -8688,6 +9844,54 @@ paths:
       summary: Update vessel gallery item
       tags:
       - Vessel Gallery
+  /gallery/boat/item/{id}/public:
+    put:
+      consumes:
+      - application/json
+      description: Updates the public field of a vessel gallery item and syncs with
+        DME
+      parameters:
+      - description: Gallery Item ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateVesselGalleryItemPublicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.VesselGalleryItemResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update vessel gallery item public field
+      tags:
+      - Vessel Gallery
   /gallery/marina:
     post:
       consumes:
@@ -8922,6 +10126,522 @@ paths:
       summary: Health check
       tags:
       - Generic
+  /inventory/find-parts:
+    post:
+      consumes:
+      - application/json
+      description: Attempts to find parts using various part numbers
+      parameters:
+      - description: Find Parts Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.FindPartsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.InventoryPartResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Find parts by part numbers
+      tags:
+      - Inventory
+  /inventory/fuel:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves one or all fuel inventory records from DockMaster
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Fuel ID (optional - if empty, retrieves all)
+        in: query
+        name: fuelId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.FuelInventoryResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve fuel inventory
+      tags:
+      - Inventory
+  /inventory/online-billcodes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of billing codes that have been selected for use
+        online
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.OnlineBillcodeResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve online billing codes
+      tags:
+      - Inventory
+  /inventory/online-parts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of inventory records that have been selected for
+        use online
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.OnlinePartResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve online parts list
+      tags:
+      - Inventory
+  /inventory/parts-kits:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a parts kit record by ID
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Kit ID
+        in: query
+        name: kitId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PartsKitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a parts kit
+      tags:
+      - Inventory
+  /inventory/parts-kits/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all parts kits
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.PartsKitResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List all parts kits
+      tags:
+      - Inventory
+  /inventory/purchase-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a purchase order by its ID
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Purchase Order ID
+        in: query
+        name: poId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PurchaseOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a purchase order
+      tags:
+      - Inventory
+  /inventory/purchase-orders/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of purchase orders by single date or date range
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: End Date (YYYY-MM-DD) - optional for date range
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.PurchaseOrderResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List purchase orders
+      tags:
+      - Inventory
+  /inventory/qty-info:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves quantity information for a specific part at a specific
+        location
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Part Number
+        in: query
+        name: partNumber
+        required: true
+        type: string
+      - description: Location Code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PartQtyInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve quantity information for a part
+      tags:
+      - Inventory
+  /inventory/retrieve:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves inventory records from full inventory using query parameters
+      parameters:
+      - description: Retrieve Inventory Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RetrieveInventoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.InventoryPartResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve inventory records
+      tags:
+      - Inventory
+  /inventory/search:
+    get:
+      consumes:
+      - application/json
+      description: Searches the full inventory for an item
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Search String
+        in: query
+        name: searchString
+        required: true
+        type: string
+      - default: false
+        description: Direct Hit - only return if single match found
+        in: query
+        name: directHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.InventorySearchResultResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search inventory
+      tags:
+      - Inventory
+  /inventory/special-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a special order by ID
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Special Order ID
+        in: query
+        name: orderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SpecialOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a special order
+      tags:
+      - Inventory
+  /inventory/special-orders/customer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of special orders for a specific customer
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.SpecialOrderResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List customer special orders
+      tags:
+      - Inventory
+  /inventory/special-orders/received:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of received special orders
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.SpecialOrderResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List received special orders
+      tags:
+      - Inventory
+  /invoices/batch/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submits a batch of cash receipts to DME for processing
+      parameters:
+      - description: Batch submission request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.BatchSubmissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Submit a batch of payments
+      tags:
+      - Invoices
   /invoices/customer:
     get:
       consumes:
@@ -8953,36 +10673,6 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Get customer invoices
-      tags:
-      - Invoices
-  /invoices/pay:
-    post:
-      consumes:
-      - application/json
-      description: Initiates a payment process for a specific invoice
-      parameters:
-      - description: Payment information
-        in: body
-        name: payment
-        required: true
-        schema:
-          $ref: '#/definitions/requests.InitiatePaymentRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.PaymentInitiationResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      summary: Initiate payment for invoice
       tags:
       - Invoices
   /marina-usage-history/{marinaId}/date-range:
@@ -9813,6 +11503,7 @@ paths:
       consumes:
       - application/json
       description: Retrieves marinas associated with the current authenticated user
+        including plan details
       produces:
       - application/json
       responses:
@@ -9832,7 +11523,7 @@ paths:
             $ref: '#/definitions/responses.BaseResponse'
       security:
       - ApiKeyAuth: []
-      summary: Get my user marinas
+      summary: Get my user marinas with plan details
       tags:
       - Marinas
   /marinas/user/{userId}:
@@ -11027,6 +12718,500 @@ paths:
       summary: Get organization by email
       tags:
       - Organizations
+  /payment-tax:
+    get:
+      consumes:
+      - application/json
+      description: Lists all payment tax configurations for the current user's marina
+        with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of payment tax configurations
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxListResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List payment tax configurations
+      tags:
+      - PaymentTax
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Creates a new payment tax configuration for convenience fees and surcharges for a marina. Each marina can have one configuration per payment type.
+
+        **Payment Type Options:**
+        - **CC** - Credit Card
+        - **DB** - Debit Card
+        - **CK** - Check
+        - **ACH** - ACH Transfer
+
+        **Note:** The paymentType field is required and validated against these specific values. Each marina can only have one configuration per payment type (enforced by unique constraint).
+      parameters:
+      - description: Payment tax configuration request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePaymentTaxRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Payment tax configuration created successfully
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create payment tax configuration
+      tags:
+      - PaymentTax
+  /payment-tax/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently deletes a payment tax configuration
+      parameters:
+      - description: Payment tax configuration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Configuration deleted successfully
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete payment tax configuration
+      tags:
+      - PaymentTax
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a payment tax configuration by ID
+      parameters:
+      - description: Payment tax configuration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment tax configuration
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get payment tax configuration
+      tags:
+      - PaymentTax
+    put:
+      consumes:
+      - application/json
+      description: |-
+        Updates an existing payment tax configuration. All fields are optional.
+
+        **Payment Type Options (optional):**
+        - **CC** - Credit Card
+        - **DB** - Debit Card
+        - **CK** - Check
+        - **ACH** - ACH Transfer
+      parameters:
+      - description: Payment tax configuration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdatePaymentTaxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated payment tax configuration
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update payment tax configuration
+      tags:
+      - PaymentTax
+  /payment-tax/by-type:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the payment tax configuration for the current user's
+        marina and specified payment type
+      parameters:
+      - description: Payment type (CC, DB, CK, ACH)
+        in: query
+        name: paymentType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment tax configuration
+          schema:
+            $ref: '#/definitions/responses.PaymentTaxResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get marina payment tax configuration by type
+      tags:
+      - PaymentTax
+  /payment-tax/calculate:
+    post:
+      consumes:
+      - application/json
+      description: Calculates convenience fee and surcharge for a given amount, marina,
+        and payment type
+      parameters:
+      - description: Calculation request with marina ID, payment type, and amount
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CalculateFeeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Calculated fees
+          schema:
+            $ref: '#/definitions/responses.FeeCalculationResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Configuration not found
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Calculate fees
+      tags:
+      - PaymentTax
+  /payments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of payments with optional filtering
+      parameters:
+      - description: Page number
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      - description: Filter by status (pending, authorized, completed, failed)
+        in: query
+        name: status
+        type: string
+      - description: Filter by entity type (invoice, boat, customer, etc.)
+        in: query
+        name: entityType
+        type: string
+      - description: Filter by entity ID
+        in: query
+        name: entityId
+        type: string
+      - description: Filter by start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: Filter by end date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: List payments
+      tags:
+      - Payments
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a single payment by its ID
+      parameters:
+      - description: Payment ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payment by ID
+      tags:
+      - Payments
+  /payments/details:
+    post:
+      consumes:
+      - application/json
+      description: Handles payment completion redirects from Adyen
+      parameters:
+      - description: Payment details request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.PaymentDetailsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment result
+          schema:
+            $ref: '#/definitions/responses.PaymentResultResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Handle payment redirect
+      tags:
+      - Payments
+  /payments/entity:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all payments for a specific entity (e.g., invoice, boat)
+      parameters:
+      - description: Entity type (invoice, boat, customer, etc.)
+        in: query
+        name: entityType
+        required: true
+        type: string
+      - description: Entity ID
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.PaymentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payments by entity
+      tags:
+      - Payments
+  /payments/sessions:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new Adyen payment session for processing payments
+      parameters:
+      - description: Payment session request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePaymentSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment session created successfully
+          schema:
+            $ref: '#/definitions/responses.PaymentSessionResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Create payment session
+      tags:
+      - Payments
+  /payments/stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves payment statistics for a date range
+      parameters:
+      - description: Start date (YYYY-MM-DD, defaults to 30 days ago)
+        in: query
+        name: startDate
+        type: string
+      - description: End date (YYYY-MM-DD, defaults to today)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get payment statistics
+      tags:
+      - Payments
+  /payments/webhooks:
+    post:
+      consumes:
+      - application/json
+      description: Processes incoming webhook notifications from Adyen
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook processed successfully
+          schema:
+            $ref: '#/definitions/responses.WebhookResponse'
+        "401":
+          description: Invalid HMAC signature
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Process webhook
+      tags:
+      - Payments
   /plans/document:
     get:
       consumes:
@@ -11846,6 +14031,11 @@ paths:
       consumes:
       - application/json
       description: Retrieve the operation descriptions from the opcode template
+      parameters:
+      - description: Opcode to retrieve
+        in: query
+        name: Opcode
+        type: string
       produces:
       - application/json
       responses:
@@ -11864,6 +14054,320 @@ paths:
       summary: Retrieve operation descriptions
       tags:
       - Service
+  /service/schedule/operation-schedule:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves operation schedule
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Work order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Operation code
+        in: query
+        name: opcode
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve operation schedule
+      tags:
+      - Schedule
+  /service/schedule/resolve-merge-conflict:
+    post:
+      consumes:
+      - application/json
+      description: Resolves merge conflicts in schedule updates
+      parameters:
+      - description: Merge conflict resolution request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ScheduleResolveMergeConflictRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleUpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Resolve merge conflict
+      tags:
+      - Schedule
+  /service/schedule/retrieve:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments with optional filters
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule
+      tags:
+      - Schedule
+  /service/schedule/retrieve-for-manager:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments for a specific manager
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Manager ID
+        in: query
+        name: managerId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule for manager
+      tags:
+      - Schedule
+  /service/schedule/retrieve-for-tech:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments for a specific technician
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Technician ID
+        in: query
+        name: techId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule for technician
+      tags:
+      - Schedule
+  /service/schedule/retrieve-for-work-order:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves schedule appointments for a specific work order
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: Work order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule for work order
+      tags:
+      - Schedule
+  /service/schedule/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates schedule appointments
+      parameters:
+      - description: Schedule update request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ScheduleUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleUpdateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Update schedule
+      tags:
+      - Schedule
+  /service/schedule/work-order-schedule:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves work order schedule
+      parameters:
+      - description: Location code
+        in: query
+        name: locationCode
+        required: true
+        type: string
+      - description: Work order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Session ID (GUID)
+        in: query
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order schedule
+      tags:
+      - Schedule
   /service/technicians:
     get:
       consumes:
@@ -13085,6 +15589,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve work order operations
+      tags:
+      - WorkOrders
+  /work-orders/operations/all:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves a list of all Operation Codes (not filtered by USE.ONLINE)
+      parameters:
+      - description: Pagination parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RetrieveAllOperationsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderAllOperationsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve all work order operations
       tags:
       - WorkOrders
   /work-orders/retrieve:

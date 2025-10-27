@@ -508,7 +508,7 @@ func (q *Queries) GetUserMarinaAssignmentByUserAndMarina(ctx context.Context, ar
 }
 
 const getUserMarinasList = `-- name: GetUserMarinasList :many
-SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage, m.ai_form_detection_usage, m.ai_compose_message_usage
 FROM marinas m
     JOIN user_marinas um ON m.id = um.marina_id
 WHERE um.user_id = $1
@@ -554,6 +554,8 @@ func (q *Queries) GetUserMarinasList(ctx context.Context, userID uuid.UUID) ([]M
 			&i.ExternalAnnouncement,
 			&i.DocumentPlanID,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -566,7 +568,7 @@ func (q *Queries) GetUserMarinasList(ctx context.Context, userID uuid.UUID) ([]M
 }
 
 const getUserMarinasListPaginated = `-- name: GetUserMarinasListPaginated :many
-SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage
+SELECT m.id, m.organization_id, m.name, m.email, m.location, m.phone, m.country, m.currency, m.working_hours, m.website, m.image, m.max_users, m.is_active, m.is_test, m.created_at, m.updated_at, m.deleted_at, m.address_id, m.system_id, m.storage_usage, m.email_usage, m.text_usage, m.notes_messages_plan_id, m.storage_plan_id, m.modules, m.internal_announcement, m.external_announcement, m.document_plan_id, m.document_usage, m.ai_form_detection_usage, m.ai_compose_message_usage
 FROM marinas m
     JOIN user_marinas um ON m.id = um.marina_id
 WHERE um.user_id = $1
@@ -620,6 +622,8 @@ func (q *Queries) GetUserMarinasListPaginated(ctx context.Context, arg GetUserMa
 			&i.ExternalAnnouncement,
 			&i.DocumentPlanID,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -1044,7 +1048,8 @@ ORDER BY
   (CASE WHEN $6 = 'last_password_reset'  THEN u.last_password_reset END) ASC,
   (CASE WHEN $6 = 'created_at'           THEN u.created_at END) ASC,
   (CASE WHEN $6 = 'updated_at'           THEN u.updated_at END) ASC,
-  (CASE WHEN $6 = 'role_name'            THEN r.name END) ASC
+  (CASE WHEN $6 = 'role_name'            THEN r.name END) ASC,
+  (CASE WHEN $6 = 'is_active'            THEN u.is_active END) ASC
 LIMIT $7 OFFSET $8
 `
 
@@ -1197,7 +1202,8 @@ ORDER BY
   (CASE WHEN $6 = 'last_password_reset'  THEN u.last_password_reset END) DESC,
   (CASE WHEN $6 = 'created_at'           THEN u.created_at END) DESC,
   (CASE WHEN $6 = 'updated_at'           THEN u.updated_at END) DESC,
-  (CASE WHEN $6 = 'role_name'            THEN r.name END) DESC
+  (CASE WHEN $6 = 'role_name'            THEN r.name END) DESC,
+  (CASE WHEN $6 = 'is_active'            THEN u.is_active END) DESC
 LIMIT $7 OFFSET $8
 `
 

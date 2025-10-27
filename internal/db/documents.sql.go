@@ -19,9 +19,10 @@ INSERT INTO documents (
     file_name,
     file_type,
     file_path,
-    file_size
+    file_size,
+    public
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 ) RETURNING id, marina_id, entity_type, entity_id, file_name, file_type, file_path, file_size, created_at, updated_at, public
 `
 
@@ -33,6 +34,7 @@ type CreateDocumentParams struct {
 	FileType   string
 	FilePath   string
 	FileSize   int64
+	Public     bool
 }
 
 func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) (Document, error) {
@@ -44,6 +46,7 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 		arg.FileType,
 		arg.FilePath,
 		arg.FileSize,
+		arg.Public,
 	)
 	var i Document
 	err := row.Scan(

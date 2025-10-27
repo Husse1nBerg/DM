@@ -13,6 +13,5 @@ func RegisterInvoiceRoutes(server *s.Server, permissionProtected *echo.Group) {
 	// Invoice routes
 	invoices := permissionProtected.Group("/invoices")
 	invoices.GET("/customer", invoiceHandler.GetCustomerInvoices)
-	// invoices.POST("/retrieve", invoiceHandler.GetInvoicesByIDs)
-	invoices.POST("/pay", invoiceHandler.InitiatePayment)
+	invoices.POST("/batch/submit", invoiceHandler.SubmitBatch)
 }

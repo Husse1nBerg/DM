@@ -412,13 +412,18 @@ const docTemplate = `{
                 "summary": "Retrieve a specific clerk (user) record",
                 "parameters": [
                     {
-                        "description": "Retrieve clerk request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.ClerkRequest"
-                        }
+                        "type": "string",
+                        "description": "Clerk ID",
+                        "name": "clerkId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -470,13 +475,17 @@ const docTemplate = `{
                 "summary": "List system clerks (users)",
                 "parameters": [
                     {
-                        "description": "List clerks request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.ClerkListRequest"
-                        }
+                        "type": "boolean",
+                        "description": "Include inactive clerks",
+                        "name": "includeInactive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -522,13 +531,11 @@ const docTemplate = `{
                 "summary": "List business locations",
                 "parameters": [
                     {
-                        "description": "List locations request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.LocationListRequest"
-                        }
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3377,6 +3384,83 @@ const docTemplate = `{
                 }
             }
         },
+        "/documents/boat/{id}/public": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates the public field of a boat document and syncs with DME",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Update boat document public field",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateBoatDocumentPublicRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/documents/customer": {
             "post": {
                 "security": [
@@ -4090,6 +4174,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "Filter by customer name (partial match)",
+                        "name": "customerName",
+                        "in": "query"
+                    },
+                    {
                         "minimum": 1,
                         "type": "integer",
                         "default": 1,
@@ -4112,6 +4202,7 @@ const docTemplate = `{
                             "name",
                             "status",
                             "customer_id",
+                            "customer_name",
                             "created_at",
                             "updated_at"
                         ],
@@ -4418,7 +4509,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Global search across email, name, status, and customer_id",
+                        "description": "Global search across email, name, status, customer_id, and customer_name",
                         "name": "search",
                         "in": "query"
                     },
@@ -4426,6 +4517,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by exact customer ID",
                         "name": "customerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by customer name (partial match)",
+                        "name": "customerName",
                         "in": "query"
                     },
                     {
@@ -4451,6 +4548,7 @@ const docTemplate = `{
                             "name",
                             "status",
                             "customer_id",
+                            "customer_name",
                             "created_at",
                             "updated_at"
                         ],
@@ -5439,6 +5537,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/estimates/create": {
+            "post": {
+                "description": "Creates a new estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Create estimate",
+                "parameters": [
+                    {
+                        "description": "Estimate information",
+                        "name": "estimate",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.EstimateCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/estimates/customer": {
             "get": {
                 "description": "Retrieves a list of basic estimate information for a specific customer",
@@ -5734,7 +5878,7 @@ const docTemplate = `{
         },
         "/estimates/update": {
             "post": {
-                "description": "Create a new or update an existing estimate",
+                "description": "Updates an existing estimate",
                 "consumes": [
                     "application/json"
                 ],
@@ -6144,6 +6288,83 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/gallery/boat/item/{id}/public": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates the public field of a vessel gallery item and syncs with DME",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vessel Gallery"
+                ],
+                "summary": "Update vessel gallery item public field",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Gallery Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateVesselGalleryItemPublicRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.VesselGalleryItemResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -6633,6 +6854,782 @@ const docTemplate = `{
                 }
             }
         },
+        "/inventory/find-parts": {
+            "post": {
+                "description": "Attempts to find parts using various part numbers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Find parts by part numbers",
+                "parameters": [
+                    {
+                        "description": "Find Parts Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.FindPartsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.InventoryPartResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/fuel": {
+            "get": {
+                "description": "Retrieves one or all fuel inventory records from DockMaster",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve fuel inventory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fuel ID (optional - if empty, retrieves all)",
+                        "name": "fuelId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.FuelInventoryResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/online-billcodes": {
+            "get": {
+                "description": "Retrieves a list of billing codes that have been selected for use online",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve online billing codes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.OnlineBillcodeResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/online-parts": {
+            "get": {
+                "description": "Retrieves a list of inventory records that have been selected for use online",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve online parts list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.OnlinePartResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/parts-kits": {
+            "get": {
+                "description": "Retrieves a parts kit record by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve a parts kit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Kit ID",
+                        "name": "kitId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PartsKitResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/parts-kits/list": {
+            "get": {
+                "description": "Retrieves a list of all parts kits",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List all parts kits",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.PartsKitResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/purchase-orders": {
+            "get": {
+                "description": "Retrieves a purchase order by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve a purchase order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Purchase Order ID",
+                        "name": "poId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PurchaseOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/purchase-orders/list": {
+            "get": {
+                "description": "Retrieves a list of purchase orders by single date or date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List purchase orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date (YYYY-MM-DD) - optional for date range",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.PurchaseOrderResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/qty-info": {
+            "get": {
+                "description": "Retrieves quantity information for a specific part at a specific location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve quantity information for a part",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Part Number",
+                        "name": "partNumber",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location Code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PartQtyInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/retrieve": {
+            "post": {
+                "description": "Retrieves inventory records from full inventory using query parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve inventory records",
+                "parameters": [
+                    {
+                        "description": "Retrieve Inventory Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RetrieveInventoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.InventoryPartResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/search": {
+            "get": {
+                "description": "Searches the full inventory for an item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Search inventory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search String",
+                        "name": "searchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Direct Hit - only return if single match found",
+                        "name": "directHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.InventorySearchResultResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/special-orders": {
+            "get": {
+                "description": "Retrieves a special order by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Retrieve a special order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Special Order ID",
+                        "name": "orderId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SpecialOrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/special-orders/customer": {
+            "get": {
+                "description": "Retrieves a list of special orders for a specific customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List customer special orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SpecialOrderResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/special-orders/received": {
+            "get": {
+                "description": "Retrieves a list of received special orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List received special orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SpecialOrderResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoices/batch/submit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Submits a batch of cash receipts to DME for processing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Submit a batch of payments",
+                "parameters": [
+                    {
+                        "description": "Batch submission request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitBatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BatchSubmissionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/invoices/customer": {
             "get": {
                 "description": "Retrieves invoices for a specific customer",
@@ -6666,52 +7663,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.InvoiceListResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/pay": {
-            "post": {
-                "description": "Initiates a payment process for a specific invoice",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Invoices"
-                ],
-                "summary": "Initiate payment for invoice",
-                "parameters": [
-                    {
-                        "description": "Payment information",
-                        "name": "payment",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.InitiatePaymentRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.PaymentInitiationResponse"
                         }
                     },
                     "400": {
@@ -7685,7 +8636,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves marinas associated with the current authenticated user",
+                "description": "Retrieves marinas associated with the current authenticated user including plan details",
                 "consumes": [
                     "application/json"
                 ],
@@ -7695,7 +8646,7 @@ const docTemplate = `{
                 "tags": [
                     "Marinas"
                 ],
-                "summary": "Get my user marinas",
+                "summary": "Get my user marinas with plan details",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -9848,6 +10799,744 @@ const docTemplate = `{
                 }
             }
         },
+        "/payment-tax": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Lists all payment tax configurations for the current user's marina with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "List payment tax configurations",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of payment tax configurations",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new payment tax configuration for convenience fees and surcharges for a marina. Each marina can have one configuration per payment type.\n\n**Payment Type Options:**\n- **CC** - Credit Card\n- **DB** - Debit Card\n- **CK** - Check\n- **ACH** - ACH Transfer\n\n**Note:** The paymentType field is required and validated against these specific values. Each marina can only have one configuration per payment type (enforced by unique constraint).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Create payment tax configuration",
+                "parameters": [
+                    {
+                        "description": "Payment tax configuration request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePaymentTaxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Payment tax configuration created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-tax/by-type": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves the payment tax configuration for the current user's marina and specified payment type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Get marina payment tax configuration by type",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment type (CC, DB, CK, ACH)",
+                        "name": "paymentType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment tax configuration",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-tax/calculate": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Calculates convenience fee and surcharge for a given amount, marina, and payment type",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Calculate fees",
+                "parameters": [
+                    {
+                        "description": "Calculation request with marina ID, payment type, and amount",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CalculateFeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Calculated fees",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FeeCalculationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Configuration not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment-tax/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a payment tax configuration by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Get payment tax configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment tax configuration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment tax configuration",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing payment tax configuration. All fields are optional.\n\n**Payment Type Options (optional):**\n- **CC** - Credit Card\n- **DB** - Debit Card\n- **CK** - Check\n- **ACH** - ACH Transfer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Update payment tax configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment tax configuration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdatePaymentTaxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated payment tax configuration",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTaxResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Permanently deletes a payment tax configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PaymentTax"
+                ],
+                "summary": "Delete payment tax configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment tax configuration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a paginated list of payments with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "List payments",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, authorized, completed, failed)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity type (invoice, boat, customer, etc.)",
+                        "name": "entityType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity ID",
+                        "name": "entityId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/details": {
+            "post": {
+                "description": "Handles payment completion redirects from Adyen",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Handle payment redirect",
+                "parameters": [
+                    {
+                        "description": "Payment details request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.PaymentDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment result",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/entity": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves all payments for a specific entity (e.g., invoice, boat)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payments by entity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Entity type (invoice, boat, customer, etc.)",
+                        "name": "entityType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.PaymentResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/sessions": {
+            "post": {
+                "description": "Creates a new Adyen payment session for processing payments",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create payment session",
+                "parameters": [
+                    {
+                        "description": "Payment session request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePaymentSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment session created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentSessionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves payment statistics for a date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payment statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD, defaults to 30 days ago)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD, defaults to today)",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/webhooks": {
+            "post": {
+                "description": "Processes incoming webhook notifications from Adyen",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Process webhook",
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WebhookResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid HMAC signature",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a single payment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get payment by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/plans/document": {
             "get": {
                 "description": "Get all document plans with pagination",
@@ -11120,11 +12809,487 @@ const docTemplate = `{
                     "Service"
                 ],
                 "summary": "Retrieve operation descriptions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Opcode to retrieve",
+                        "name": "Opcode",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.ServiceOperationDescriptionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/operation-schedule": {
+            "get": {
+                "description": "Retrieves operation schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve operation schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Work order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code",
+                        "name": "opcode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/resolve-merge-conflict": {
+            "post": {
+                "description": "Resolves merge conflicts in schedule updates",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Resolve merge conflict",
+                "parameters": [
+                    {
+                        "description": "Merge conflict resolution request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ScheduleResolveMergeConflictRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve": {
+            "get": {
+                "description": "Retrieves schedule appointments with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve-for-manager": {
+            "get": {
+                "description": "Retrieves schedule appointments for a specific manager",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule for manager",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Manager ID",
+                        "name": "managerId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve-for-tech": {
+            "get": {
+                "description": "Retrieves schedule appointments for a specific technician",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule for technician",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Technician ID",
+                        "name": "techId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/retrieve-for-work-order": {
+            "get": {
+                "description": "Retrieves schedule appointments for a specific work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule for work order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Work order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/update": {
+            "post": {
+                "description": "Updates schedule appointments",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Update schedule",
+                "parameters": [
+                    {
+                        "description": "Schedule update request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ScheduleUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleUpdateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/work-order-schedule": {
+            "get": {
+                "description": "Retrieves work order schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve work order schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Location code",
+                        "name": "locationCode",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Work order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (GUID)",
+                        "name": "sessionId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleResponse"
                         }
                     },
                     "400": {
@@ -13002,6 +15167,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/operations/all": {
+            "post": {
+                "description": "Retrieves a list of all Operation Codes (not filtered by USE.ONLINE)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve all work order operations",
+                "parameters": [
+                    {
+                        "description": "Pagination parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RetrieveAllOperationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderAllOperationsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/retrieve": {
             "get": {
                 "description": "Retrieves a work order by its ID",
@@ -14312,6 +16523,12 @@ const docTemplate = `{
         "dme.Operation": {
             "type": "object",
             "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
                 "category": {
                     "type": "string"
                 },
@@ -14321,8 +16538,38 @@ const docTemplate = `{
                 "estStartDate": {
                     "type": "string"
                 },
+                "estimatedBillCodes": {
+                    "type": "number"
+                },
                 "estimatedCharges": {
                     "type": "number"
+                },
+                "estimatedEquipment": {
+                    "type": "number"
+                },
+                "estimatedFreight": {
+                    "type": "number"
+                },
+                "estimatedLabor": {
+                    "type": "number"
+                },
+                "estimatedLaborHours": {
+                    "type": "number"
+                },
+                "estimatedMileage": {
+                    "type": "number"
+                },
+                "estimatedMiscSupply": {
+                    "type": "number"
+                },
+                "estimatedParts": {
+                    "type": "number"
+                },
+                "estimatedSublet": {
+                    "type": "number"
+                },
+                "flagLaborFinished": {
+                    "type": "boolean"
                 },
                 "flatRateAmount": {
                     "type": "number"
@@ -14354,6 +16601,9 @@ const docTemplate = `{
                 "longDesc": {
                     "type": "string"
                 },
+                "managerComments": {
+                    "type": "string"
+                },
                 "opcode": {
                     "type": "string"
                 },
@@ -14362,6 +16612,9 @@ const docTemplate = `{
                 },
                 "reqCompDate": {
                     "type": "string"
+                },
+                "standardHours": {
+                    "type": "number"
                 },
                 "status": {
                     "type": "string"
@@ -14426,32 +16679,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workOrder": {
-                    "type": "string"
-                }
-            }
-        },
-        "dme.PaymentInitiationResponse": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "customerId": {
-                    "type": "string"
-                },
-                "dmPayClientId": {
-                    "type": "string"
-                },
-                "invoiceId": {
-                    "type": "string"
-                },
-                "paymentSessionId": {
-                    "type": "string"
-                },
-                "paymentUrl": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -14779,6 +17006,9 @@ const docTemplate = `{
                 "longDesc": {
                     "type": "string"
                 },
+                "managerComments": {
+                    "type": "string"
+                },
                 "opcode": {
                     "type": "string"
                 },
@@ -15042,6 +17272,29 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.AttachmentWithPublic": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "fileType": {
+                    "type": "string"
+                },
+                "fromDMWeb": {
+                    "type": "boolean"
+                },
+                "public": {
+                    "type": "boolean"
+                },
+                "s3Path": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.BedrockRewriteRequest": {
             "type": "object",
             "required": [
@@ -15191,42 +17444,87 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ClerkListRequest": {
+        "requests.CalculateFeeRequest": {
             "type": "object",
             "required": [
-                "organizationId",
-                "systemId"
+                "amount",
+                "marinaId",
+                "paymentType"
             ],
             "properties": {
-                "organizationId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                "amount": {
+                    "type": "number",
+                    "minimum": 0
                 },
-                "systemId": {
+                "marinaId": {
+                    "type": "string"
+                },
+                "paymentType": {
                     "type": "string",
-                    "example": "SYS001"
+                    "enum": [
+                        "CC",
+                        "DB",
+                        "CK",
+                        "ACH"
+                    ]
                 }
             }
         },
-        "requests.ClerkRequest": {
+        "requests.CashReceipt": {
             "type": "object",
             "required": [
-                "clerkId",
-                "organizationId",
-                "systemId"
+                "customerId",
+                "invPayments",
+                "payType",
+                "referenceNum",
+                "statementDesc",
+                "totalPayment"
             ],
             "properties": {
-                "clerkId": {
-                    "type": "string",
-                    "example": "CLERK001"
+                "ccAuthCode": {
+                    "type": "string"
                 },
-                "organizationId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                "ccSurcharge": {
+                    "type": "number"
                 },
-                "systemId": {
-                    "type": "string",
-                    "example": "SYS001"
+                "ccSurchargeTax": {
+                    "type": "number"
+                },
+                "ccSurchargeTaxIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ccSurchargeTaxSchema": {
+                    "type": "string"
+                },
+                "ccTransactionID": {
+                    "type": "string"
+                },
+                "ccTransactionTimeStamp": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "invPayments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.InvPayment"
+                    }
+                },
+                "payType": {
+                    "type": "string"
+                },
+                "referenceNum": {
+                    "type": "string"
+                },
+                "statementDesc": {
+                    "type": "string"
+                },
+                "totalPayment": {
+                    "type": "number"
                 }
             }
         },
@@ -15755,6 +18053,68 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.CreatePaymentSessionRequest": {
+            "type": "object"
+        },
+        "requests.CreatePaymentTaxRequest": {
+            "type": "object",
+            "required": [
+                "convenienceFee",
+                "convenienceFeeType",
+                "marinaId",
+                "paymentType",
+                "surcharge",
+                "surchargeType"
+            ],
+            "properties": {
+                "convenienceFee": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "convenienceFeeDescription": {
+                    "type": "string"
+                },
+                "convenienceFeeEnabled": {
+                    "type": "boolean"
+                },
+                "convenienceFeeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "paymentType": {
+                    "type": "string",
+                    "enum": [
+                        "CC",
+                        "DB",
+                        "CK",
+                        "ACH"
+                    ]
+                },
+                "surcharge": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "surchargeDescription": {
+                    "type": "string"
+                },
+                "surchargeEnabled": {
+                    "type": "boolean"
+                },
+                "surchargeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                }
+            }
+        },
         "requests.CreateRoleRequest": {
             "type": "object",
             "required": [
@@ -16147,28 +18507,109 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.EstimateRetrieveListRequest": {
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "string"
-                },
-                "withDetail": {
-                    "description": "Add fields as needed based on API requirements",
-                    "type": "boolean"
-                }
-            }
-        },
-        "requests.EstimateUpdateRequest": {
+        "requests.EstimateCreateRequest": {
             "type": "object",
             "required": [
-                "estId"
+                "custId",
+                "title"
             ],
             "properties": {
                 "attachments": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dme.Attachment"
+                    }
+                },
+                "boatId": {
+                    "type": "string"
+                },
+                "boatName": {
+                    "type": "string"
+                },
+                "categoryCode": {
+                    "type": "string"
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "custId": {
+                    "type": "string"
+                },
+                "custPromiseDate": {
+                    "type": "string"
+                },
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
+                "estCompDate": {
+                    "type": "string"
+                },
+                "estStartDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "operationCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.OperationCode"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.EstimateRetrieveListRequest": {
+            "type": "object",
+            "required": [
+                "page",
+                "pageSize"
+            ],
+            "properties": {
+                "detail": {
+                    "type": "boolean"
+                },
+                "lastUpdateDate": {
+                    "type": "string"
+                },
+                "lastUpdateTime": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "pageSize": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
+                "status": {
+                    "type": "string"
+                },
+                "woIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "requests.EstimateUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "attachments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.AttachmentWithPublic"
                     }
                 },
                 "boatId": {
@@ -16221,6 +18662,25 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.FindPartsRequest": {
+            "type": "object",
+            "required": [
+                "partNumbers",
+                "systemId"
+            ],
+            "properties": {
+                "partNumbers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "systemId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ForgotPasswordRequest": {
             "description": "Forgot password request payload",
             "type": "object",
@@ -16234,22 +18694,33 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.InitiatePaymentRequest": {
+        "requests.InvPayment": {
             "type": "object",
             "required": [
-                "amount",
                 "customerId",
-                "invoiceId"
+                "description",
+                "invoiceId",
+                "locationCode",
+                "paymentAmt"
             ],
             "properties": {
-                "amount": {
-                    "type": "number"
-                },
                 "customerId": {
+                    "type": "string"
+                },
+                "depositType": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "invoiceId": {
                     "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "paymentAmt": {
+                    "type": "number"
                 }
             }
         },
@@ -16262,23 +18733,6 @@ const docTemplate = `{
                 "marinaId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
-                }
-            }
-        },
-        "requests.LocationListRequest": {
-            "type": "object",
-            "required": [
-                "organizationId",
-                "systemId"
-            ],
-            "properties": {
-                "organizationId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440001"
-                },
-                "systemId": {
-                    "type": "string",
-                    "example": "SYS001"
                 }
             }
         },
@@ -16422,6 +18876,23 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.PaymentDetailsRequest": {
+            "type": "object",
+            "required": [
+                "payment_data"
+            ],
+            "properties": {
+                "payload": {
+                    "type": "string"
+                },
+                "payment_data": {
+                    "type": "string"
+                },
+                "redirect_result": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.RedisSetRequest": {
             "type": "object",
             "required": [
@@ -16485,6 +18956,163 @@ const docTemplate = `{
                 "userId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "requests.RetrieveAllOperationsRequest": {
+            "type": "object",
+            "required": [
+                "page",
+                "pageSize"
+            ],
+            "properties": {
+                "page": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "pageSize": {
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1
+                }
+            }
+        },
+        "requests.RetrieveInventoryRequest": {
+            "type": "object",
+            "required": [
+                "systemId"
+            ],
+            "properties": {
+                "itemIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "lastModifiedDate": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "onHandOnly": {
+                    "type": "boolean"
+                },
+                "systemId": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ScheduleAppointmentUpdate": {
+            "type": "object",
+            "required": [
+                "apptDate",
+                "endTime",
+                "id",
+                "locationCode",
+                "opcode",
+                "startTime",
+                "techId",
+                "workOrderId"
+            ],
+            "properties": {
+                "apptComplete": {
+                    "type": "boolean"
+                },
+                "apptDate": {
+                    "description": "YYYY-MM-DD format",
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "estHours": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isDeleted": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "integer"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opLaborFinished": {
+                    "type": "boolean"
+                },
+                "opcode": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "techId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ScheduleResolveMergeConflictRequest": {
+            "type": "object",
+            "required": [
+                "appointments",
+                "clerkId",
+                "locationCode",
+                "sessionId"
+            ],
+            "properties": {
+                "appointments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.ScheduleAppointmentUpdate"
+                    }
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "sessionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ScheduleUpdateRequest": {
+            "type": "object",
+            "required": [
+                "appointments",
+                "clerkId",
+                "locationCode",
+                "sessionId"
+            ],
+            "properties": {
+                "appointments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.ScheduleAppointmentUpdate"
+                    }
+                },
+                "clerkId": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "sessionId": {
+                    "type": "string"
                 }
             }
         },
@@ -16593,6 +19221,28 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.SubmitBatchRequest": {
+            "type": "object",
+            "required": [
+                "cashReceipts",
+                "locationCode",
+                "postBatch"
+            ],
+            "properties": {
+                "cashReceipts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/requests.CashReceipt"
+                    }
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "postBatch": {
+                    "type": "boolean"
+                }
+            }
+        },
         "requests.UpdateAddressRequest": {
             "type": "object",
             "properties": {
@@ -16623,6 +19273,15 @@ const docTemplate = `{
                 "street": {
                     "type": "string",
                     "example": "123 Main St"
+                }
+            }
+        },
+        "requests.UpdateBoatDocumentPublicRequest": {
+            "type": "object",
+            "properties": {
+                "public": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -16959,6 +19618,54 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.UpdatePaymentTaxRequest": {
+            "type": "object",
+            "properties": {
+                "convenienceFee": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "convenienceFeeDescription": {
+                    "type": "string"
+                },
+                "convenienceFeeEnabled": {
+                    "type": "boolean"
+                },
+                "convenienceFeeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                },
+                "paymentType": {
+                    "type": "string",
+                    "enum": [
+                        "CC",
+                        "DB",
+                        "CK",
+                        "ACH"
+                    ]
+                },
+                "surcharge": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "surchargeDescription": {
+                    "type": "string"
+                },
+                "surchargeEnabled": {
+                    "type": "boolean"
+                },
+                "surchargeType": {
+                    "type": "string",
+                    "enum": [
+                        "percentage",
+                        "fixed"
+                    ]
+                }
+            }
+        },
         "requests.UpdateRoleRequest": {
             "type": "object",
             "properties": {
@@ -17040,6 +19747,15 @@ const docTemplate = `{
                     "example": "Manager"
                 },
                 "userAnalytics": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "requests.UpdateVesselGalleryItemPublicRequest": {
+            "type": "object",
+            "properties": {
+                "public": {
                     "type": "boolean",
                     "example": true
                 }
@@ -17174,31 +19890,38 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "date",
-                "hours",
-                "operationId",
-                "rate",
-                "technicianId",
+                "opCode",
+                "startTime",
+                "stopTime",
+                "techId",
                 "workOrderId"
             ],
             "properties": {
+                "comments": {
+                    "type": "string"
+                },
                 "date": {
                     "type": "string"
                 },
-                "description": {
+                "flagLaborFinished": {
+                    "type": "boolean"
+                },
+                "isApproved": {
+                    "type": "boolean"
+                },
+                "opCode": {
                     "type": "string"
                 },
-                "hours": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "operationId": {
+                "startTime": {
                     "type": "string"
                 },
-                "rate": {
-                    "type": "number",
-                    "minimum": 0
+                "stopTime": {
+                    "type": "string"
                 },
-                "technicianId": {
+                "techId": {
+                    "type": "string"
+                },
+                "timeEntryUId": {
                     "type": "string"
                 },
                 "workOrderId": {
@@ -17215,7 +19938,7 @@ const docTemplate = `{
                 "attachments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dme.Attachment"
+                        "$ref": "#/definitions/requests.AttachmentWithPublic"
                     }
                 },
                 "boatId": {
@@ -17354,6 +20077,38 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.BatchSubmissionResponse": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "string"
+                },
+                "location_code": {
+                    "type": "string"
+                },
+                "post_batch": {
+                    "type": "boolean"
+                },
+                "post_result": {
+                    "type": "string"
+                },
+                "receipt_count": {
+                    "type": "integer"
+                },
+                "reference_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "submitted_at": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "number"
                 }
             }
         },
@@ -17904,6 +20659,44 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.DocumentPlanResponse": {
+            "description": "Document plan data including limits and pricing",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "documentLimit": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMostPopular": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthlyPrice": {
+                    "type": "number",
+                    "example": 9.99
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Basic Document Plan"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2024-01-02T00:00:00Z"
+                },
+                "userLimit": {
+                    "type": "string",
+                    "example": "Unlimited Users"
+                }
+            }
+        },
         "responses.DocumentResponse": {
             "description": "Document data including file path, file type, and size",
             "type": "object",
@@ -18136,6 +20929,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "CUST123"
                 },
+                "customerName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
                 "documentId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440003"
@@ -18171,6 +20968,12 @@ const docTemplate = `{
                 "replyTo": {
                     "type": "string",
                     "example": "support@example.com"
+                },
+                "signers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.EsignSubmissionSignerResponse"
+                    }
                 },
                 "status": {
                     "type": "string",
@@ -18467,6 +21270,224 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.FeeCalculationResponse": {
+            "type": "object",
+            "properties": {
+                "baseAmount": {
+                    "type": "number"
+                },
+                "convenienceFee": {
+                    "type": "number"
+                },
+                "convenienceFeeRate": {
+                    "type": "number"
+                },
+                "convenienceFeeType": {
+                    "type": "string"
+                },
+                "paymentType": {
+                    "type": "string"
+                },
+                "surcharge": {
+                    "type": "number"
+                },
+                "surchargeRate": {
+                    "type": "number"
+                },
+                "surchargeType": {
+                    "type": "string"
+                },
+                "totalAmount": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.FuelInventoryResponse": {
+            "type": "object",
+            "properties": {
+                "costPerUnit": {
+                    "type": "number"
+                },
+                "currentQuantity": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastDeliveryDate": {
+                    "type": "string"
+                },
+                "lastDeliveryQty": {
+                    "type": "number"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "pricePerUnit": {
+                    "type": "number"
+                },
+                "reorderLevel": {
+                    "type": "number"
+                },
+                "tankCapacity": {
+                    "type": "number"
+                },
+                "tankNumber": {
+                    "type": "string"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.InventoryPartResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "averageCost": {
+                    "type": "number"
+                },
+                "binLocation": {
+                    "type": "string"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "lastCost": {
+                    "type": "number"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastReceiptDate": {
+                    "type": "string"
+                },
+                "lastSaleDate": {
+                    "type": "string"
+                },
+                "leadTimeDays": {
+                    "type": "integer"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "lotTrackedInventory": {
+                    "type": "boolean"
+                },
+                "manufacturerPartNum": {
+                    "type": "string"
+                },
+                "maxOrderQty": {
+                    "type": "number"
+                },
+                "minOrderQty": {
+                    "type": "number"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "price2": {
+                    "type": "number"
+                },
+                "price3": {
+                    "type": "number"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityCommitted": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "quantityOnOrder": {
+                    "type": "number"
+                },
+                "reorderLevel": {
+                    "type": "number"
+                },
+                "reorderQty": {
+                    "type": "number"
+                },
+                "serializedInventory": {
+                    "type": "boolean"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                },
+                "vendorPartNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.InventorySearchResultResponse": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "number"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.InviteResponse": {
             "type": "object",
             "properties": {
@@ -18698,6 +21719,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
+                "aiComposeMessageUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "aiFormDetectionUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "country": {
                     "type": "string",
                     "example": "USA"
@@ -18708,6 +21737,9 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlan": {
+                    "$ref": "#/definitions/responses.DocumentPlanResponse"
                 },
                 "documentPlanId": {
                     "type": "string",
@@ -18764,6 +21796,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Harbor Bay Marina"
                 },
+                "notesMessagesPlan": {
+                    "$ref": "#/definitions/responses.NotesMessagesPlanResponse"
+                },
                 "notesMessagesPlanId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -18775,6 +21810,9 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlan": {
+                    "$ref": "#/definitions/responses.StoragePlanResponse"
                 },
                 "storagePlanId": {
                     "type": "string",
@@ -18896,6 +21934,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
+                "aiComposeMessageUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "aiFormDetectionUsage": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "country": {
                     "type": "string",
                     "example": "USA"
@@ -18906,6 +21952,9 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "USD"
+                },
+                "documentPlan": {
+                    "$ref": "#/definitions/responses.DocumentPlanResponse"
                 },
                 "documentPlanId": {
                     "type": "string",
@@ -18962,6 +22011,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Harbor Bay Marina"
                 },
+                "notesMessagesPlan": {
+                    "$ref": "#/definitions/responses.NotesMessagesPlanResponse"
+                },
                 "notesMessagesPlanId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -18973,6 +22025,9 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+15551234567"
+                },
+                "storagePlan": {
+                    "$ref": "#/definitions/responses.StoragePlanResponse"
                 },
                 "storagePlanId": {
                     "type": "string",
@@ -19100,6 +22155,48 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.MessageResponse"
+                }
+            }
+        },
+        "responses.NotesMessagesPlanResponse": {
+            "description": "Notes and messages plan data including limits and pricing",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "emailLimit": {
+                    "type": "string",
+                    "example": "Unlimited"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMostPopular": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthlyPrice": {
+                    "type": "number",
+                    "example": 29.99
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Basic Plan"
+                },
+                "textLimit": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2024-01-02T00:00:00Z"
+                },
+                "userLimit": {
+                    "type": "string",
+                    "example": "Unlimited"
                 }
             }
         },
@@ -19235,6 +22332,79 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.NotificationResponse"
+                }
+            }
+        },
+        "responses.OnlineBillcodeResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.OnlinePartResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "unitOfMeasure": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
                 }
             }
         },
@@ -19415,11 +22585,426 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.PaymentInitiationResponse": {
+        "responses.PartQtyInfoResponse": {
+            "type": "object",
+            "properties": {
+                "averageCost": {
+                    "type": "number"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "lastCost": {
+                    "type": "number"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "maxOrderQty": {
+                    "type": "number"
+                },
+                "minOrderQty": {
+                    "type": "number"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "quantityAvailable": {
+                    "type": "number"
+                },
+                "quantityCommitted": {
+                    "type": "number"
+                },
+                "quantityOnHand": {
+                    "type": "number"
+                },
+                "quantityOnOrder": {
+                    "type": "number"
+                },
+                "reorderLevel": {
+                    "type": "number"
+                },
+                "reorderQty": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.PartsKitItemResponse": {
+            "type": "object",
+            "properties": {
+                "cost": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.PartsKitResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PartsKitItemResponse"
+                    }
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "totalPrice": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.PaymentListResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dme.PaymentInitiationResponse"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PaymentResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "adyenPspReference": {
+                    "type": "string"
+                },
+                "adyenSessionId": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "string"
+                },
+                "authCode": {
+                    "type": "string"
+                },
+                "authorizationStatus": {
+                    "type": "string"
+                },
+                "authorizedAt": {
+                    "type": "string"
+                },
+                "batchId": {
+                    "type": "string"
+                },
+                "batchPaymentId": {
+                    "type": "string"
+                },
+                "batchStatus": {
+                    "type": "string"
+                },
+                "completedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "entityId": {
+                    "type": "string"
+                },
+                "entityType": {
+                    "type": "string"
+                },
+                "errorCode": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "failedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "internalNotes": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "paymentDate": {
+                    "type": "string"
+                },
+                "paymentMethod": {
+                    "type": "string"
+                },
+                "referenceNumber": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "transactionId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentResultResponse": {
+            "type": "object",
+            "properties": {
+                "pspReference": {
+                    "type": "string"
+                },
+                "refusalReason": {
+                    "type": "string"
+                },
+                "resultCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentSessionResponse": {
+            "type": "object",
+            "properties": {
+                "clientKey": {
+                    "type": "string"
+                },
+                "sessionData": {
+                    "type": "string"
+                },
+                "sessionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentStatsResponse": {
+            "type": "object",
+            "properties": {
+                "authorizedCount": {
+                    "type": "integer"
+                },
+                "completedCount": {
+                    "type": "integer"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "failedCount": {
+                    "type": "integer"
+                },
+                "pendingCount": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "totalCompletedAmount": {
+                    "type": "string"
+                },
+                "totalCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentTaxListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PaymentTaxResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.PaymentTaxResponse": {
+            "type": "object",
+            "properties": {
+                "convenienceFee": {
+                    "type": "number"
+                },
+                "convenienceFeeDescription": {
+                    "type": "string"
+                },
+                "convenienceFeeEnabled": {
+                    "type": "boolean"
+                },
+                "convenienceFeeType": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "paymentType": {
+                    "type": "string"
+                },
+                "surcharge": {
+                    "type": "number"
+                },
+                "surchargeDescription": {
+                    "type": "string"
+                },
+                "surchargeEnabled": {
+                    "type": "boolean"
+                },
+                "surchargeType": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PurchaseOrderLineResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "extendedCost": {
+                    "type": "number"
+                },
+                "lineNumber": {
+                    "type": "integer"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "quantityOrder": {
+                    "type": "number"
+                },
+                "quantityRecvd": {
+                    "type": "number"
+                },
+                "taxFlag": {
+                    "type": "boolean"
+                },
+                "unitCost": {
+                    "type": "number"
+                }
+            }
+        },
+        "responses.PurchaseOrderResponse": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "expectedDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "lastModifiedBy": {
+                    "type": "string"
+                },
+                "lines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PurchaseOrderLineResponse"
+                    }
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "orderDate": {
+                    "type": "string"
+                },
+                "poNumber": {
+                    "type": "string"
+                },
+                "receivedDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "totalAmount": {
+                    "type": "number"
+                },
+                "totalReceived": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
                 }
             }
         },
@@ -19561,16 +23146,62 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ServiceOPCategoryCodesResponse": {
+        "responses.ScheduleResponse": {
             "type": "object",
             "properties": {
                 "data": {}
             }
         },
-        "responses.ServiceOpCodesResponse": {
+        "responses.ScheduleUpdateResponse": {
             "type": "object",
             "properties": {
                 "data": {}
+            }
+        },
+        "responses.ServiceOPCategoryCodesResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.ServiceOpCodesResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
             }
         },
         "responses.ServiceOperationDescriptionsResponse": {
@@ -19588,7 +23219,127 @@ const docTemplate = `{
         "responses.ServiceWOCategoryCodesResponse": {
             "type": "object",
             "properties": {
-                "data": {}
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "opCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.SpecialOrderResponse": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "expectedDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "orderDate": {
+                    "type": "string"
+                },
+                "orderNumber": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "poNumber": {
+                    "type": "string"
+                },
+                "quantityOrdered": {
+                    "type": "number"
+                },
+                "quantityRecvd": {
+                    "type": "number"
+                },
+                "receivedDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "unitCost": {
+                    "type": "number"
+                },
+                "unitPrice": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.StoragePlanResponse": {
+            "description": "Storage plan data including limits and pricing",
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isMostPopular": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthlyPrice": {
+                    "type": "number",
+                    "example": 19.99
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Basic Storage"
+                },
+                "storageLimitGB": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2024-01-02T00:00:00Z"
+                },
+                "userLimit": {
+                    "type": "string",
+                    "example": "Unlimited"
+                }
             }
         },
         "responses.UnreadCountResponse": {
@@ -19803,6 +23554,40 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.WebhookResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkOrderAllOperationsResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                },
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
                 }
             }
         },

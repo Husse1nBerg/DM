@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
+	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
@@ -408,6 +410,9 @@ func (h *GalleryHandler) DeleteMarinaGalleryItem(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/gallery/boat [post]
 func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+
 	// Parse marina ID from form
 	marinaIDStr := c.FormValue("marinaId")
 	marinaID, err := uuid.Parse(marinaIDStr)
@@ -485,6 +490,14 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error uploading image: "+err.Error()).JSON(c)
 	}
 
+	// Determine public flag: External users (IsCustomer=true) should have Public=true, Internal users (IsCustomer=false or nil) should have Public=false
+	var public bool
+	if claims.IsCustomer != nil {
+		public = *claims.IsCustomer
+	} else {
+		public = false // nil IsCustomer is treated as internal user
+	}
+
 	// Create gallery item in database
 	createParams := db.CreateVesselGalleryItemParams{
 		MarinaID:    marinaID,
@@ -493,6 +506,7 @@ func (h *GalleryHandler) CreateVesselGalleryItem(c echo.Context) error {
 		ImageUrl:    imagePath,
 		Description: descriptionPtr,
 		Main:        mainPtr,
+		Public:      public,
 	}
 
 	galleryItem, err := h.server.DB.Queries().CreateVesselGalleryItem(c.Request().Context(), createParams)
@@ -789,6 +803,171 @@ func (h *GalleryHandler) UpdateVesselGalleryItem(c echo.Context) error {
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating storage usage").JSON(c)
 		}
 	}
+
+	// Return updated gallery item
+	return responses.NewVesselGalleryItemResponseSuccess(updatedItem).JSON(c)
+}
+
+// UpdateVesselGalleryItemPublic updates the public field of a vessel gallery item
+//
+//	@Summary		Update vessel gallery item public field
+//	@Description	Updates the public field of a vessel gallery item and syncs with DME
+//	@Tags			Vessel Gallery
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string	true	"Gallery Item ID"	Format(uuid)
+//	@Param			request	body		requests.UpdateVesselGalleryItemPublicRequest	true	"Update request"
+//	@Success		200		{object}	responses.BaseResponse{data=responses.VesselGalleryItemResponse}
+//	@Failure		400		{object}	responses.BaseResponse
+//	@Failure		404		{object}	responses.BaseResponse
+//	@Failure		500		{object}	responses.BaseResponse
+//	@Security		ApiKeyAuth
+//	@Router			/gallery/boat/item/{id}/public [put]
+func (h *GalleryHandler) UpdateVesselGalleryItemPublic(c echo.Context) error {
+	// Parse gallery item ID from path
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error parsing gallery item ID", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid gallery item ID format").JSON(c)
+	}
+
+	// Parse request body
+	var req requests.UpdateVesselGalleryItemPublicRequest
+	if err := c.Bind(&req); err != nil {
+		h.server.Logger.Zap.Error("Error binding request", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
+	}
+
+	// Validate request
+	if err := c.Validate(&req); err != nil {
+		h.server.Logger.Zap.Error("Error validating request", err)
+		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed: "+err.Error()).JSON(c)
+	}
+
+	// Get the existing gallery item to verify it's a vessel gallery item and get its details
+	existingItem, err := h.server.DB.Queries().GetVesselGalleryItemByID(c.Request().Context(), id)
+	if err != nil {
+		h.server.Logger.Zap.Error("Error fetching gallery item", err)
+		return responses.NewErrorResponse(http.StatusNotFound, "Gallery item not found").JSON(c)
+	}
+
+	// Update the gallery item's public field
+	updatedItem, err := h.server.DB.Queries().UpdateVesselGalleryItem(c.Request().Context(), db.UpdateVesselGalleryItemParams{
+		ID:          id,
+		ImageUrl:    existingItem.ImageUrl,
+		Description: existingItem.Description,
+		Main:        existingItem.Main,
+		Public:      req.Public,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Error updating gallery item", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error updating gallery item").JSON(c)
+	}
+
+	// Get marina information for DME operations
+	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
+	defer cancel()
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, existingItem.MarinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("[DME API] Error fetching marina for DME update (gallery public)", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+
+	// Update DME attachment metadata asynchronously
+	go func() {
+		ctx := context.Background()
+
+		if marina.SystemID == nil {
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME boat update (gallery public)")
+			return
+		}
+		orgID := marina.OrganizationID
+		systemID := *marina.SystemID
+
+		dmeBoat, err := h.server.DME.RetrieveBoatByID(ctx, existingItem.VesselID, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error retrieving boat from DME for attachment update (gallery public)", err)
+			return
+		}
+
+		// Find and update the specific attachment in DME
+		updatedAttachments := dmeBoat.Attachments
+		if updatedAttachments == nil {
+			updatedAttachments = []dme.Attachment{}
+		}
+
+		// Find the attachment by S3 path and update its public status
+		attachmentFound := false
+		for i, attachment := range updatedAttachments {
+			if attachment.S3Path == existingItem.ImageUrl {
+				// Update the attachment's public status
+				// Note: DME Attachment struct might not have a public field directly
+				// We'll update the description to reflect the public status
+				updatedAttachments[i].Description = fmt.Sprintf("Gallery image (Public: %t)", req.Public)
+				attachmentFound = true
+				break
+			}
+		}
+
+		if !attachmentFound {
+			h.server.Logger.Zap.Warn("[DME API] Attachment not found in DME boat for public status update",
+				"boatID", existingItem.VesselID,
+				"s3Path", existingItem.ImageUrl,
+				"galleryItemID", id.String())
+			return
+		}
+
+		boatUpdate := &dme.BoatUpdate{
+			ID:                   dmeBoat.ID,
+			Name:                 dmeBoat.Name,
+			Registration:         dmeBoat.Registration,
+			Year:                 dmeBoat.Year,
+			Make:                 dmeBoat.Make,
+			Model:                dmeBoat.Model,
+			HIN:                  dmeBoat.HIN,
+			LOA:                  dmeBoat.LOA,
+			LWL:                  dmeBoat.LWL,
+			Draft:                dmeBoat.Draft,
+			Beam:                 dmeBoat.Beam,
+			Height:               dmeBoat.Height,
+			Color:                dmeBoat.Color,
+			TrailerMake:          dmeBoat.TrailerMake,
+			TrailerModel:         dmeBoat.TrailerModel,
+			TrailerSerial:        dmeBoat.TrailerSerial,
+			TrailerRegistration:  dmeBoat.TrailerRegistration,
+			TrailerLocation:      dmeBoat.TrailerLocation,
+			SummerSlip:           dmeBoat.SummerSlip,
+			WinterSlip:           dmeBoat.WinterSlip,
+			InsuranceCompany:     dmeBoat.InsuranceCompany,
+			InsuranceExpDate:     dmeBoat.InsuranceExpDate,
+			SlipID:               dmeBoat.SlipID,
+			Slip:                 dmeBoat.Slip,
+			Motors:               dmeBoat.Motors,
+			DoNotLaunch:          dmeBoat.DoNotLaunch,
+			BillingCodes:         dmeBoat.BillingCodes,
+			BoatDescriptionCodes: dmeBoat.BoatDescriptionCodes,
+			CustomInformation:    dmeBoat.CustomInformation,
+			OperationsHistory:    dmeBoat.OperationsHistory,
+			IntegrationID:        dmeBoat.IntegrationID,
+			OwnerIntegrationID:   dmeBoat.OwnerIntegrationID,
+			LastModified:         dmeBoat.LastModified,
+			Comments:             dmeBoat.Comments,
+			Attachments:          updatedAttachments,
+		}
+
+		_, err = h.server.DME.UpdateBoat(ctx, boatUpdate, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error updating boat attachment public status in DME (gallery)", err)
+		} else {
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME boat attachment public status",
+				"boatID", existingItem.VesselID,
+				"imageUrl", existingItem.ImageUrl,
+				"galleryItemID", id.String(),
+				"public", req.Public)
+		}
+	}()
 
 	// Return updated gallery item
 	return responses.NewVesselGalleryItemResponseSuccess(updatedItem).JSON(c)

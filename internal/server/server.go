@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/dockworks/dm-web-backend/internal/config"
 	db "github.com/dockworks/dm-web-backend/internal/pg"
+	"github.com/dockworks/dm-web-backend/pkg/adyen"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/logger"
 	"github.com/dockworks/dm-web-backend/pkg/redis"
@@ -27,6 +28,8 @@ type Server struct {
 	DME             *dme.Client
 	SendGrid        *sendgrid.Client
 	Telgorithm      *telgorithm.Client
+	Adyen           *adyen.Client
+	PaymentService  *adyen.PaymentService
 }
 
 func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
@@ -65,6 +68,10 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 	utils.SetDocumentService(docURLService)
 	utils.SetESignService(esignService)
 
+	// Initialize Adyen client and payment service
+	adyenClient := adyen.NewClient(&cfg.Adyen)
+	paymentService := adyen.NewPaymentService(adyenClient)
+
 	return &Server{
 		Config:          cfg,
 		Echo:            echo.New(),
@@ -79,6 +86,8 @@ func NewServer(cfg *config.Config, logger *logger.Logger) *Server {
 		DME:             dme.NewClientFromConfig(cfg, logger, dbConn),
 		SendGrid:        sendgrid.NewClient(cfg),
 		Telgorithm:      telgorithm.NewClient(cfg),
+		Adyen:           adyenClient,
+		PaymentService:  paymentService,
 	}
 }
 

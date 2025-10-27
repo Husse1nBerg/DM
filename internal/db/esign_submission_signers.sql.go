@@ -357,6 +357,47 @@ func (q *Queries) ListEsignSubmissionSignersBySubmissionID(ctx context.Context, 
 	return items, nil
 }
 
+const listEsignSubmissionSignersBySubmissionIDs = `-- name: ListEsignSubmissionSignersBySubmissionIDs :many
+SELECT id, submission_id, email, name, sign_order, status, signed_at, declined_at, declined_reason, created_at, updated_at, deleted_at
+FROM esign_submission_signers
+WHERE submission_id = ANY($1::uuid[])
+    AND deleted_at IS NULL
+ORDER BY submission_id, sign_order ASC
+`
+
+func (q *Queries) ListEsignSubmissionSignersBySubmissionIDs(ctx context.Context, dollar_1 []uuid.UUID) ([]EsignSubmissionSigner, error) {
+	rows, err := q.db.Query(ctx, listEsignSubmissionSignersBySubmissionIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EsignSubmissionSigner
+	for rows.Next() {
+		var i EsignSubmissionSigner
+		if err := rows.Scan(
+			&i.ID,
+			&i.SubmissionID,
+			&i.Email,
+			&i.Name,
+			&i.SignOrder,
+			&i.Status,
+			&i.SignedAt,
+			&i.DeclinedAt,
+			&i.DeclinedReason,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const softDeleteEsignSubmissionSigner = `-- name: SoftDeleteEsignSubmissionSigner :exec
 UPDATE esign_submission_signers
 SET deleted_at = CURRENT_TIMESTAMP

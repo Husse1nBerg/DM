@@ -41,22 +41,22 @@ type EstimateCreateRequest struct {
 
 // EstimateUpdateRequest represents a request to update an existing estimate
 type EstimateUpdateRequest struct {
-	EstId           string           `json:"estId" validate:"required"`
-	ClerkId         string           `json:"clerkId"`
-	CustId          string           `json:"custId"`
-	BoatId          string           `json:"boatId"`
-	BoatName        string           `json:"boatName"`
-	CustomerPhone   string           `json:"customerPhone"`
-	CustomerEmail   string           `json:"customerEmail"`
-	Comments        string           `json:"comments"`
-	LocationCode    string           `json:"locationCode"`
-	EstCompDate     string           `json:"estCompDate"`
-	EstStartDate    string           `json:"estStartDate"`
-	CustPromiseDate string           `json:"custPromiseDate"`
-	CategoryCode    string           `json:"categoryCode"`
-	Title           string           `json:"title"`
-	OperationCodes  []OperationCode  `json:"operationCodes"`
-	Attachments     []dme.Attachment `json:"attachments"`
+	EstId           string                  `json:"estId"`
+	ClerkId         string                  `json:"clerkId"`
+	CustId          string                  `json:"custId"`
+	BoatId          string                  `json:"boatId"`
+	BoatName        string                  `json:"boatName"`
+	CustomerPhone   string                  `json:"customerPhone"`
+	CustomerEmail   string                  `json:"customerEmail"`
+	Comments        string                  `json:"comments"`
+	LocationCode    string                  `json:"locationCode"`
+	EstCompDate     string                  `json:"estCompDate"`
+	EstStartDate    string                  `json:"estStartDate"`
+	CustPromiseDate string                  `json:"custPromiseDate"`
+	CategoryCode    string                  `json:"categoryCode"`
+	Title           string                  `json:"title"`
+	OperationCodes  []OperationCode         `json:"operationCodes"`
+	Attachments     []AttachmentWithPublic  `json:"attachments"`
 }
 
 // EstimatesForCustomerRequest represents a request to list estimates for a specific customer
@@ -74,7 +74,11 @@ type EstimateDeleteOperationRequest struct {
 
 // EstimateRetrieveListRequest represents a request to retrieve a list of estimates
 type EstimateRetrieveListRequest struct {
-	// Add fields as needed based on API requirements
-	WithDetail bool `json:"withDetail"`
-	Status     string `json:"status,omitempty"`
+	LastUpdateDate string   `json:"lastUpdateDate,omitempty"`
+	LastUpdateTime string   `json:"lastUpdateTime,omitempty"`
+	Status         string   `json:"status,omitempty"`
+	WoIds          []string `json:"woIds,omitempty"`
+	Detail         bool     `json:"detail"`
+	Page           int      `json:"page" validate:"required,min=0"`
+	PageSize       int      `json:"pageSize" validate:"required,min=1,max=100"`
 }

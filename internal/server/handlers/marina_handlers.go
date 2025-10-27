@@ -926,10 +926,10 @@ func (h *MarinaHandler) GetUserMarinas(c echo.Context) error {
 	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
 }
 
-// GetMyUserMarinas retrieves marinas associated with the current user
+// GetMyUserMarinas retrieves marinas associated with the current user with plan details
 //
-//	@Summary		Get my user marinas
-//	@Description	Retrieves marinas associated with the current authenticated user
+//	@Summary		Get my user marinas with plan details
+//	@Description	Retrieves marinas associated with the current authenticated user including plan details
 //	@Tags			Marinas
 //	@Accept			json
 //	@Produce		json
@@ -939,13 +939,15 @@ func (h *MarinaHandler) GetUserMarinas(c echo.Context) error {
 //	@Security		ApiKeyAuth
 //	@Router			/marinas/user [get]
 func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
+	ctx := c.Request().Context()
+
 	// Get user ID from the token
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID
 
-	// Get all marinas for this user to calculate total
-	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(c.Request().Context(), userID)
+	// Get all marinas for this user
+	allUserMarinas, err := h.server.DB.Queries().GetUserMarinasList(ctx, userID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -956,7 +958,36 @@ func (h *MarinaHandler) GetMyUserMarinas(c echo.Context) error {
 		return responses.NewMarinasPaginatedResponse([]db.Marina{}, 0, int32(total), 1).JSON(c)
 	}
 
-	return responses.NewMarinasPaginatedResponse(allUserMarinas, total, int32(total), 1).JSON(c)
+	// Build response with plan details populated in MarinaResponse
+	marinaResponses := make([]responses.MarinaResponse, len(allUserMarinas))
+	for i, marina := range allUserMarinas {
+		marinaResponse := responses.ConvertMarinaToResponse(marina)
+
+		// Fetch document plan
+		documentPlan, err := h.server.DB.Queries().GetDocumentPlanByID(ctx, marina.DocumentPlanID)
+		if err == nil {
+			docPlanResp := responses.ConvertDocumentPlanToResponse(documentPlan)
+			marinaResponse.DocumentPlan = &docPlanResp
+		}
+
+		// Fetch storage plan
+		storagePlan, err := h.server.DB.Queries().GetStoragePlanByID(ctx, marina.StoragePlanID)
+		if err == nil {
+			storagePlanResp := responses.ConvertStoragePlanToResponse(storagePlan)
+			marinaResponse.StoragePlan = &storagePlanResp
+		}
+
+		// Fetch notes/messages plan
+		notesMessagesPlan, err := h.server.DB.Queries().GetNotesMessagesPlanByID(ctx, marina.NotesMessagesPlanID)
+		if err == nil {
+			notesMsgPlanResp := responses.ConvertNotesMessagesPlanToResponse(notesMessagesPlan)
+			marinaResponse.NotesMessagesPlan = &notesMsgPlanResp
+		}
+
+		marinaResponses[i] = marinaResponse
+	}
+
+	return responses.NewPaginatedResponse(marinaResponses, total, int32(total), 1).JSON(c)
 }
 
 // GetMarinasOverCurrentLimit retrieves marinas that are over their current limit

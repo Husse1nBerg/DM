@@ -77,16 +77,14 @@ func ConvertEstimateListShort(dmeResponse *dme.WorkOrderListShort) *EstimateList
 	}
 }
 
-// ConvertEstimateList converts DME WorkOrder array to EstimateListResponse
-func ConvertEstimateList(dmeResponse []dme.WorkOrder) *EstimateListResponse {
+// ConvertEstimateList converts DME WorkOrderList to EstimateListResponse
+func ConvertEstimateList(dmeResponse *dme.WorkOrderList) *EstimateListResponse {
 	return &EstimateListResponse{
-		Data: dmeResponse,
-		// DME Estimates API returns a plain array without pagination metadata
-		// Setting basic values for API consistency
-		Total:       int64(len(dmeResponse)),
-		PerPage:     int32(len(dmeResponse)),
-		CurrentPage: 1,
-		LastPage:    1,
+		Data:        dmeResponse.Content,
+		Total:       int64(dmeResponse.MaxPages * dmeResponse.PageSize),
+		PerPage:     int32(dmeResponse.PageSize),
+		CurrentPage: int32(dmeResponse.CurrentPage),
+		LastPage:    int32(dmeResponse.MaxPages),
 	}
 }
 

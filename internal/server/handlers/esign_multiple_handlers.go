@@ -281,6 +281,28 @@ func (h *EsignHandler) CreateMultipleEsignSubmission(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error duplicating document file: "+err.Error()).JSON(c)
 	}
 
+	// Fetch customer name from DME if customer_id is provided
+	var customerName *string
+	if req.CustomerID != nil && *req.CustomerID != "" {
+		marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaID)
+		if err == nil && marina.SystemID != nil {
+			customer, err := h.server.DME.CustomerRetrieve(c.Request().Context(), *req.CustomerID, organizationID, *marina.SystemID)
+			if err != nil {
+				h.server.Logger.Zap.Warnw("Failed to fetch customer name from DME",
+					"customer_id", *req.CustomerID,
+					"error", err)
+			} else if customer != nil && customer.Name != "" {
+				customerName = &customer.Name
+			}
+		} else {
+			if err != nil {
+				h.server.Logger.Zap.Warnw("Failed to get marina for DME customer lookup", "error", err)
+			} else {
+				h.server.Logger.Zap.Warnw("Marina has no system ID configured for DME lookup")
+			}
+		}
+	}
+
 	// Create submission with duplicated file
 	submission, err := h.server.DB.Queries().CreateEsignSubmission(c.Request().Context(), db.CreateEsignSubmissionParams{
 		OrganizationID:      organizationID,
@@ -296,6 +318,7 @@ func (h *EsignHandler) CreateMultipleEsignSubmission(c echo.Context) error {
 		ReplyTo:             req.ReplyTo,
 		CustomMessage:       req.CustomMessage,
 		IsMultipleSignature: true,
+		CustomerName:        customerName,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature submission", err)

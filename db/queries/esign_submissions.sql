@@ -12,9 +12,10 @@ INSERT INTO esign_submissions (
     attachment_required,
     reply_to,
     custom_message,
-    is_multiple_signature
+    is_multiple_signature,
+    customer_name
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 ) RETURNING *;
 
 -- name: GetEsignSubmissionByID :one
@@ -70,6 +71,7 @@ SET
     attachment_required = $8,
     reply_to = $9,
     custom_message = $10,
+    customer_name = $11,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL
@@ -145,21 +147,25 @@ WHERE organization_id = $1
     LOWER(email) LIKE LOWER('%' || $4 || '%') OR
     LOWER(name) LIKE LOWER('%' || $4 || '%') OR
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_name) LIKE LOWER('%' || $4 || '%')
   ))
   AND ($9 = '' OR customer_id = $9)
+  AND ($10 = '' OR LOWER(customer_name) LIKE LOWER('%' || $10 || '%'))
 ORDER BY 
   CASE 
     WHEN $5 = 'email' AND $6 = 'asc' THEN email
     WHEN $5 = 'name' AND $6 = 'asc' THEN name
     WHEN $5 = 'status' AND $6 = 'asc' THEN status
     WHEN $5 = 'customer_id' AND $6 = 'asc' THEN customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'asc' THEN customer_name
   END ASC,
   CASE 
     WHEN $5 = 'email' AND $6 = 'desc' THEN email
     WHEN $5 = 'name' AND $6 = 'desc' THEN name
     WHEN $5 = 'status' AND $6 = 'desc' THEN status
     WHEN $5 = 'customer_id' AND $6 = 'desc' THEN customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'desc' THEN customer_name
   END DESC,
   CASE 
     WHEN $5 = 'created_at' AND $6 = 'asc' THEN created_at
@@ -183,9 +189,11 @@ WHERE organization_id = $1
     LOWER(email) LIKE LOWER('%' || $4 || '%') OR
     LOWER(name) LIKE LOWER('%' || $4 || '%') OR
     LOWER(status) LIKE LOWER('%' || $4 || '%') OR
-    LOWER(customer_id) LIKE LOWER('%' || $4 || '%')
+    LOWER(customer_id) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(customer_name) LIKE LOWER('%' || $4 || '%')
   ))
-  AND ($5 = '' OR customer_id = $5);
+  AND ($5 = '' OR customer_id = $5)
+  AND ($6 = '' OR LOWER(customer_name) LIKE LOWER('%' || $6 || '%'));
 
 -- name: ListEsignSubmissionsFilteredByDocument :many
 SELECT *
@@ -196,18 +204,21 @@ WHERE document_id = $1
   AND ($3 = '' OR customer_id = $3)
   AND ($4 = '' OR LOWER(email) LIKE LOWER('%' || $4 || '%'))
   AND ($5 = '' OR LOWER(name) LIKE LOWER('%' || $5 || '%'))
+  AND ($10 = '' OR LOWER(customer_name) LIKE LOWER('%' || $10 || '%'))
 ORDER BY 
   CASE 
     WHEN $6 = 'email' AND $7 = 'asc' THEN email
     WHEN $6 = 'name' AND $7 = 'asc' THEN name
     WHEN $6 = 'status' AND $7 = 'asc' THEN status
     WHEN $6 = 'customer_id' AND $7 = 'asc' THEN customer_id
+    WHEN $6 = 'customer_name' AND $7 = 'asc' THEN customer_name
   END ASC,
   CASE 
     WHEN $6 = 'email' AND $7 = 'desc' THEN email
     WHEN $6 = 'name' AND $7 = 'desc' THEN name
     WHEN $6 = 'status' AND $7 = 'desc' THEN status
     WHEN $6 = 'customer_id' AND $7 = 'desc' THEN customer_id
+    WHEN $6 = 'customer_name' AND $7 = 'desc' THEN customer_name
   END DESC,
   CASE 
     WHEN $6 = 'created_at' AND $7 = 'asc' THEN created_at
@@ -228,7 +239,8 @@ WHERE document_id = $1
   AND ($2 = '' OR status = $2)
   AND ($3 = '' OR customer_id = $3)
   AND ($4 = '' OR LOWER(email) LIKE LOWER('%' || $4 || '%'))
-  AND ($5 = '' OR LOWER(name) LIKE LOWER('%' || $5 || '%'));
+  AND ($5 = '' OR LOWER(name) LIKE LOWER('%' || $5 || '%'))
+  AND ($6 = '' OR LOWER(customer_name) LIKE LOWER('%' || $6 || '%'));
 
 -- name: ListEsignSubmissionsFilteredByStatus :many
 SELECT *
@@ -241,16 +253,19 @@ WHERE organization_id = $1
   AND ($5 = '' OR LOWER(email) LIKE LOWER('%' || $5 || '%'))
   AND ($6 = '' OR LOWER(name) LIKE LOWER('%' || $6 || '%'))
   AND ($7 = '' OR document_id = $7::uuid)
+  AND ($12 = '' OR LOWER(customer_name) LIKE LOWER('%' || $12 || '%'))
 ORDER BY 
   CASE 
     WHEN $8 = 'email' AND $9 = 'asc' THEN email
     WHEN $8 = 'name' AND $9 = 'asc' THEN name
     WHEN $8 = 'customer_id' AND $9 = 'asc' THEN customer_id
+    WHEN $8 = 'customer_name' AND $9 = 'asc' THEN customer_name
   END ASC,
   CASE 
     WHEN $8 = 'email' AND $9 = 'desc' THEN email
     WHEN $8 = 'name' AND $9 = 'desc' THEN name
     WHEN $8 = 'customer_id' AND $9 = 'desc' THEN customer_id
+    WHEN $8 = 'customer_name' AND $9 = 'desc' THEN customer_name
   END DESC,
   CASE 
     WHEN $8 = 'created_at' AND $9 = 'asc' THEN created_at
@@ -273,7 +288,8 @@ WHERE organization_id = $1
   AND ($4 = '' OR customer_id = $4)
   AND ($5 = '' OR LOWER(email) LIKE LOWER('%' || $5 || '%'))
   AND ($6 = '' OR LOWER(name) LIKE LOWER('%' || $6 || '%'))
-  AND ($7 = '' OR document_id = $7::uuid);
+  AND ($7 = '' OR document_id = $7::uuid)
+  AND ($8 = '' OR LOWER(customer_name) LIKE LOWER('%' || $8 || '%'));
 
 -- name: GetEsignSubmissionWithSigners :many
 SELECT 
@@ -293,3 +309,58 @@ LEFT JOIN esign_submission_signers ess ON es.id = ess.submission_id AND ess.dele
 WHERE es.id = $1
     AND es.deleted_at IS NULL
 ORDER BY ess.sign_order ASC;
+
+-- name: ListEsignSubmissionsWithSignersAndFilters :many
+SELECT 
+    es.*,
+    ess.id as signer_id,
+    ess.email as signer_email,
+    ess.name as signer_name,
+    ess.sign_order,
+    ess.status as signer_status,
+    ess.signed_at,
+    ess.declined_at,
+    ess.declined_reason,
+    ess.created_at as signer_created_at,
+    ess.updated_at as signer_updated_at
+FROM esign_submissions es
+LEFT JOIN esign_submission_signers ess ON es.id = ess.submission_id AND ess.deleted_at IS NULL
+WHERE es.organization_id = $1
+  AND es.marina_id = $2
+  AND es.deleted_at IS NULL
+  AND ($3 = '' OR es.status = $3)
+  AND ($4 = '' OR (
+    LOWER(es.email) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.name) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.status) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.customer_id) LIKE LOWER('%' || $4 || '%') OR
+    LOWER(es.customer_name) LIKE LOWER('%' || $4 || '%')
+  ))
+  AND ($9 = '' OR es.customer_id = $9)
+  AND ($10 = '' OR LOWER(es.customer_name) LIKE LOWER('%' || $10 || '%'))
+ORDER BY 
+  CASE 
+    WHEN $5 = 'email' AND $6 = 'asc' THEN es.email
+    WHEN $5 = 'name' AND $6 = 'asc' THEN es.name
+    WHEN $5 = 'status' AND $6 = 'asc' THEN es.status
+    WHEN $5 = 'customer_id' AND $6 = 'asc' THEN es.customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'asc' THEN es.customer_name
+  END ASC,
+  CASE 
+    WHEN $5 = 'email' AND $6 = 'desc' THEN es.email
+    WHEN $5 = 'name' AND $6 = 'desc' THEN es.name
+    WHEN $5 = 'status' AND $6 = 'desc' THEN es.status
+    WHEN $5 = 'customer_id' AND $6 = 'desc' THEN es.customer_id
+    WHEN $5 = 'customer_name' AND $6 = 'desc' THEN es.customer_name
+  END DESC,
+  CASE 
+    WHEN $5 = 'created_at' AND $6 = 'asc' THEN es.created_at
+    WHEN $5 = 'updated_at' AND $6 = 'asc' THEN es.updated_at
+  END ASC,
+  CASE 
+    WHEN $5 = 'created_at' AND $6 = 'desc' THEN es.created_at
+    WHEN $5 = 'updated_at' AND $6 = 'desc' THEN es.updated_at
+    ELSE es.created_at
+  END DESC,
+  ess.sign_order ASC
+LIMIT $7 OFFSET $8;

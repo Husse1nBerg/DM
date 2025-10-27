@@ -915,17 +915,18 @@ func (h *EsignHandler) DeleteEsignDocument(c echo.Context) error {
 //	@Tags			E-signature Submissions
 //	@Accept			json
 //	@Produce		json
-//	@Param			status		query		string	false	"Filter by submission status" Enums(pending, signed, questions, sent)
-//	@Param			search		query		string	false	"Global search across email, name, status, and customer_id"
-//	@Param			customerId	query		string	false	"Filter by exact customer ID"
-//	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
-//	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
-//	@Param			sortBy		query		string	false	"Sort field" Enums(email, name, status, customer_id, created_at, updated_at) default(created_at)
-//	@Param			sortOrder	query		string	false	"Sort direction" Enums(asc, desc) default(desc)
-//	@Success		200			{object}	responses.EsignSubmissionListResponse
-//	@Failure		400			{object}	responses.BaseResponse
-//	@Failure		401			{object}	responses.BaseResponse
-//	@Failure		500			{object}	responses.BaseResponse
+//	@Param			status			query		string	false	"Filter by submission status" Enums(pending, signed, questions, sent)
+//	@Param			search			query		string	false	"Global search across email, name, status, customer_id, and customer_name"
+//	@Param			customerId		query		string	false	"Filter by exact customer ID"
+//	@Param			customerName	query		string	false	"Filter by customer name (partial match)"
+//	@Param			page			query		int		false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize		query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Param			sortBy			query		string	false	"Sort field" Enums(email, name, status, customer_id, customer_name, created_at, updated_at) default(created_at)
+//	@Param			sortOrder		query		string	false	"Sort direction" Enums(asc, desc) default(desc)
+//	@Success		200				{object}	responses.EsignSubmissionListResponse
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		401				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/esign/submissions [get]
 func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
@@ -960,6 +961,7 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 	status := c.QueryParam("status")
 	search := c.QueryParam("search")
 	customerID := c.QueryParam("customerId")
+	customerName := c.QueryParam("customerName")
 
 	// Override with filters map if provided
 	if req.Filters != nil {
@@ -971,6 +973,9 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		}
 		if val, exists := req.Filters["customerId"]; exists && customerID == "" {
 			customerID = val
+		}
+		if val, exists := req.Filters["customerName"]; exists && customerName == "" {
+			customerName = val
 		}
 	}
 
@@ -991,7 +996,7 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	// Use the comprehensive filtered query with specific status filter
+	// First, get the paginated submissions without signers to ensure proper pagination
 	submissions, err := h.server.DB.Queries().ListEsignSubmissionsWithFilters(ctx, db.ListEsignSubmissionsWithFiltersParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
@@ -1002,25 +1007,50 @@ func (h *EsignHandler) ListEsignSubmissions(c echo.Context) error {
 		Limit:          req.PageSize,
 		Offset:         (req.Page - 1) * req.PageSize,
 		Column9:        customerID,
+		Column10:       customerName,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching filtered submissions", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching submissions").JSON(c)
 	}
 
+	// Get the total count with the same filters
 	total, err := h.server.DB.Queries().CountEsignSubmissionsWithFilters(ctx, db.CountEsignSubmissionsWithFiltersParams{
 		OrganizationID: req.OrganizationID,
 		MarinaID:       req.MarinaID,
 		Column3:        status,
 		Column4:        search,
 		Column5:        customerID,
+		Column6:        customerName,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error counting filtered submissions", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error counting submissions").JSON(c)
 	}
 
-	return responses.NewEsignSubmissionsPaginatedResponse(submissions, total, req.PageSize, req.Page).JSON(c)
+	// Now fetch signers for the returned submissions
+	signersMap := make(map[uuid.UUID][]db.EsignSubmissionSigner)
+	if len(submissions) > 0 {
+		// Create a slice of submission IDs
+		submissionIDs := make([]uuid.UUID, len(submissions))
+		for i, submission := range submissions {
+			submissionIDs[i] = submission.ID
+		}
+
+		// Fetch signers for these submissions
+		signers, err := h.server.DB.Queries().ListEsignSubmissionSignersBySubmissionIDs(ctx, submissionIDs)
+		if err != nil {
+			h.server.Logger.Zap.Error("Error fetching signers for submissions", err)
+			// Don't fail the request if signers can't be fetched, just log the error
+		} else {
+			// Group signers by submission ID
+			for _, signer := range signers {
+				signersMap[signer.SubmissionID] = append(signersMap[signer.SubmissionID], signer)
+			}
+		}
+	}
+
+	return responses.NewEsignSubmissionsWithSignersPaginatedResponse(submissions, signersMap, total, req.PageSize, req.Page).JSON(c)
 }
 
 // CreateEsignSubmission creates a new e-signature submission
@@ -1084,6 +1114,33 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error duplicating document file: "+err.Error()).JSON(c)
 	}
 
+	// Fetch customer name from DME if customer_id is provided
+	var customerName *string
+	if req.CustomerID != nil && *req.CustomerID != "" {
+		// Get marina to retrieve system ID for DME API
+		marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), marinaID)
+		if err == nil && marina.SystemID != nil {
+			// Fetch customer from DME
+			customer, err := h.server.DME.CustomerRetrieve(c.Request().Context(), *req.CustomerID, organizationID, *marina.SystemID)
+			if err != nil {
+				// Log warning but continue - don't fail submission if DME API is down
+				h.server.Logger.Zap.Warnw("Failed to fetch customer name from DME",
+					"customer_id", *req.CustomerID,
+					"error", err)
+			} else if customer != nil && customer.Name != "" {
+				// Transform name from "lastname, firstname" to "firstname lastname"
+				formattedName := utils.FormatCustomerName(customer.Name)
+				customerName = &formattedName
+			}
+		} else {
+			if err != nil {
+				h.server.Logger.Zap.Warnw("Failed to get marina for DME customer lookup", "error", err)
+			} else {
+				h.server.Logger.Zap.Warnw("Marina has no system ID configured for DME lookup")
+			}
+		}
+	}
+
 	// Create submission with duplicated file
 	submission, err := h.server.DB.Queries().CreateEsignSubmission(c.Request().Context(), db.CreateEsignSubmissionParams{
 		OrganizationID:      organizationID,
@@ -1099,6 +1156,7 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		ReplyTo:             req.ReplyTo,
 		CustomMessage:       req.CustomMessage,
 		IsMultipleSignature: false, // Single signature submission
+		CustomerName:        customerName,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error creating e-signature submission", err)
@@ -1335,6 +1393,25 @@ func (h *EsignHandler) UpdateEsignSubmission(c echo.Context) error {
 		blobUrl = filePath
 	}
 
+	// Fetch customer name from DME if customer_id is being updated
+	customerName := existingSubmission.CustomerName // Keep existing by default
+	if customerIDPtr != nil && *customerIDPtr != "" {
+		// Only fetch if customer ID is different from existing
+		if existingSubmission.CustomerID == nil || *customerIDPtr != *existingSubmission.CustomerID {
+			marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), existingSubmission.MarinaID)
+			if err == nil && marina.SystemID != nil {
+				customer, err := h.server.DME.CustomerRetrieve(c.Request().Context(), *customerIDPtr, existingSubmission.OrganizationID, *marina.SystemID)
+				if err != nil {
+					h.server.Logger.Zap.Warnw("Failed to fetch customer name from DME during update",
+						"customer_id", *customerIDPtr,
+						"error", err)
+				} else if customer != nil && customer.Name != "" {
+					customerName = &customer.Name
+				}
+			}
+		}
+	}
+
 	// Update submission
 	submission, err := h.server.DB.Queries().UpdateEsignSubmission(c.Request().Context(), db.UpdateEsignSubmissionParams{
 		ID:                 submissionID,
@@ -1345,6 +1422,7 @@ func (h *EsignHandler) UpdateEsignSubmission(c echo.Context) error {
 		Email:              existingSubmission.Email,
 		Name:               namePtr,
 		AttachmentRequired: attachmentRequiredPtr,
+		CustomerName:       customerName,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error updating e-signature submission", err)
@@ -1399,19 +1477,20 @@ func (h *EsignHandler) DeleteEsignSubmission(c echo.Context) error {
 //	@Tags			E-signature Submissions
 //	@Accept			json
 //	@Produce		json
-//	@Param			documentId	path		string	true	"Document ID"	Format(uuid)
-//	@Param			status		query		string	false	"Filter by submission status" Enums(pending, signed, questions, sent)
-//	@Param			customerId	query		string	false	"Filter by customer ID"
-//	@Param			email		query		string	false	"Filter by email (partial match)"
-//	@Param			name		query		string	false	"Filter by name (partial match)"
-//	@Param			page		query		int		false	"Page number"	default(1)	minimum(1)
-//	@Param			pageSize	query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
-//	@Param			sortBy		query		string	false	"Sort field" Enums(email, name, status, customer_id, created_at, updated_at) default(created_at)
-//	@Param			sortOrder	query		string	false	"Sort direction" Enums(asc, desc) default(desc)
-//	@Success		200			{object}	responses.EsignSubmissionListResponse
-//	@Failure		400			{object}	responses.BaseResponse
-//	@Failure		401			{object}	responses.BaseResponse
-//	@Failure		500			{object}	responses.BaseResponse
+//	@Param			documentId		path		string	true	"Document ID"	Format(uuid)
+//	@Param			status			query		string	false	"Filter by submission status" Enums(pending, signed, questions, sent)
+//	@Param			customerId		query		string	false	"Filter by customer ID"
+//	@Param			email			query		string	false	"Filter by email (partial match)"
+//	@Param			name			query		string	false	"Filter by name (partial match)"
+//	@Param			customerName	query		string	false	"Filter by customer name (partial match)"
+//	@Param			page			query		int		false	"Page number"	default(1)	minimum(1)
+//	@Param			pageSize		query		int		false	"Page size"	default(10)	minimum(1)	maximum(100)
+//	@Param			sortBy			query		string	false	"Sort field" Enums(email, name, status, customer_id, customer_name, created_at, updated_at) default(created_at)
+//	@Param			sortOrder		query		string	false	"Sort direction" Enums(asc, desc) default(desc)
+//	@Success		200				{object}	responses.EsignSubmissionListResponse
+//	@Failure		400				{object}	responses.BaseResponse
+//	@Failure		401				{object}	responses.BaseResponse
+//	@Failure		500				{object}	responses.BaseResponse
 //	@Security		ApiKeyAuth
 //	@Router			/esign/documents/{documentId}/submissions [get]
 func (h *EsignHandler) ListEsignSubmissionsByDocument(c echo.Context) error {
@@ -1446,6 +1525,7 @@ func (h *EsignHandler) ListEsignSubmissionsByDocument(c echo.Context) error {
 	customerID := c.QueryParam("customerId")
 	email := c.QueryParam("email")
 	name := c.QueryParam("name")
+	customerName := c.QueryParam("customerName")
 
 	// Override with filters map if provided
 	if req.Filters != nil {
@@ -1460,6 +1540,9 @@ func (h *EsignHandler) ListEsignSubmissionsByDocument(c echo.Context) error {
 		}
 		if val, exists := req.Filters["name"]; exists && name == "" {
 			name = val
+		}
+		if val, exists := req.Filters["customerName"]; exists && customerName == "" {
+			customerName = val
 		}
 	}
 
@@ -1486,6 +1569,7 @@ func (h *EsignHandler) ListEsignSubmissionsByDocument(c echo.Context) error {
 		Column7:    sortOrder,
 		Limit:      req.PageSize,
 		Offset:     (req.Page - 1) * req.PageSize,
+		Column10:   customerName,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error fetching filtered submissions by document", err)
@@ -1498,6 +1582,7 @@ func (h *EsignHandler) ListEsignSubmissionsByDocument(c echo.Context) error {
 		Column3:    customerID,
 		Column4:    email,
 		Column5:    name,
+		Column6:    customerName,
 	})
 	if err != nil {
 		h.server.Logger.Zap.Error("Error counting filtered submissions by document", err)

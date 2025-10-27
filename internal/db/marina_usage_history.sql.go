@@ -18,18 +18,22 @@ INSERT INTO marina_usage_history (
     storage_usage,
     email_usage,
     text_usage,
-    document_usage
+    document_usage,
+    ai_form_detection_usage,
+    ai_compose_message_usage
 ) VALUES (
-    $1, $2, $3, $4, $5
-) RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage
 `
 
 type CreateMarinaUsageHistoryParams struct {
-	MarinaID      uuid.UUID
-	StorageUsage  int64
-	EmailUsage    int16
-	TextUsage     int16
-	DocumentUsage *int64
+	MarinaID              uuid.UUID
+	StorageUsage          int64
+	EmailUsage            int16
+	TextUsage             int16
+	DocumentUsage         *int64
+	AiFormDetectionUsage  *int16
+	AiComposeMessageUsage *int16
 }
 
 func (q *Queries) CreateMarinaUsageHistory(ctx context.Context, arg CreateMarinaUsageHistoryParams) (MarinaUsageHistory, error) {
@@ -39,6 +43,8 @@ func (q *Queries) CreateMarinaUsageHistory(ctx context.Context, arg CreateMarina
 		arg.EmailUsage,
 		arg.TextUsage,
 		arg.DocumentUsage,
+		arg.AiFormDetectionUsage,
+		arg.AiComposeMessageUsage,
 	)
 	var i MarinaUsageHistory
 	err := row.Scan(
@@ -51,6 +57,8 @@ func (q *Queries) CreateMarinaUsageHistory(ctx context.Context, arg CreateMarina
 		&i.UpdatedAt,
 		&i.MonthDate,
 		&i.DocumentUsage,
+		&i.AiFormDetectionUsage,
+		&i.AiComposeMessageUsage,
 	)
 	return i, err
 }
@@ -66,7 +74,7 @@ func (q *Queries) DeleteMarinaUsageHistory(ctx context.Context, id uuid.UUID) er
 }
 
 const getAllMarinaUsageHistory = `-- name: GetAllMarinaUsageHistory :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 ORDER BY created_at DESC
 `
 
@@ -89,6 +97,8 @@ func (q *Queries) GetAllMarinaUsageHistory(ctx context.Context) ([]MarinaUsageHi
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -101,7 +111,7 @@ func (q *Queries) GetAllMarinaUsageHistory(ctx context.Context) ([]MarinaUsageHi
 }
 
 const getAllMarinaUsageHistoryByDateRange = `-- name: GetAllMarinaUsageHistoryByDateRange :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE created_at >= $1
   AND created_at <= $2
 ORDER BY created_at DESC
@@ -131,6 +141,8 @@ func (q *Queries) GetAllMarinaUsageHistoryByDateRange(ctx context.Context, arg G
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -143,7 +155,7 @@ func (q *Queries) GetAllMarinaUsageHistoryByDateRange(ctx context.Context, arg G
 }
 
 const getAllMarinaUsageHistoryByDateRangePaginated = `-- name: GetAllMarinaUsageHistoryByDateRangePaginated :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE created_at >= $1
   AND created_at <= $2
 ORDER BY created_at DESC
@@ -181,6 +193,8 @@ func (q *Queries) GetAllMarinaUsageHistoryByDateRangePaginated(ctx context.Conte
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -211,7 +225,7 @@ func (q *Queries) GetAllMarinaUsageHistoryByDateRangeTotal(ctx context.Context, 
 }
 
 const getAllMarinaUsageHistoryPaginated = `-- name: GetAllMarinaUsageHistoryPaginated :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -240,6 +254,8 @@ func (q *Queries) GetAllMarinaUsageHistoryPaginated(ctx context.Context, arg Get
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -263,7 +279,7 @@ func (q *Queries) GetAllMarinaUsageHistoryTotal(ctx context.Context) (int64, err
 }
 
 const getLatestMarinaUsageHistory = `-- name: GetLatestMarinaUsageHistory :one
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = $1
 ORDER BY created_at DESC
 LIMIT 1
@@ -282,12 +298,14 @@ func (q *Queries) GetLatestMarinaUsageHistory(ctx context.Context, marinaID uuid
 		&i.UpdatedAt,
 		&i.MonthDate,
 		&i.DocumentUsage,
+		&i.AiFormDetectionUsage,
+		&i.AiComposeMessageUsage,
 	)
 	return i, err
 }
 
 const getMarinaUsageHistoryByDateRange = `-- name: GetMarinaUsageHistoryByDateRange :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = $1
 AND created_at >= $2
 AND created_at <= $3
@@ -319,6 +337,8 @@ func (q *Queries) GetMarinaUsageHistoryByDateRange(ctx context.Context, arg GetM
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -331,7 +351,7 @@ func (q *Queries) GetMarinaUsageHistoryByDateRange(ctx context.Context, arg GetM
 }
 
 const getMarinaUsageHistoryByDateRangePaginated = `-- name: GetMarinaUsageHistoryByDateRangePaginated :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = $1
   AND created_at >= $2
   AND created_at <= $3
@@ -372,6 +392,8 @@ func (q *Queries) GetMarinaUsageHistoryByDateRangePaginated(ctx context.Context,
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -404,7 +426,7 @@ func (q *Queries) GetMarinaUsageHistoryByDateRangeTotal(ctx context.Context, arg
 }
 
 const getMarinaUsageHistoryByID = `-- name: GetMarinaUsageHistoryByID :one
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE id = $1
 `
 
@@ -421,12 +443,14 @@ func (q *Queries) GetMarinaUsageHistoryByID(ctx context.Context, id uuid.UUID) (
 		&i.UpdatedAt,
 		&i.MonthDate,
 		&i.DocumentUsage,
+		&i.AiFormDetectionUsage,
+		&i.AiComposeMessageUsage,
 	)
 	return i, err
 }
 
 const getMarinaUsageHistoryByMarinaID = `-- name: GetMarinaUsageHistoryByMarinaID :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = $1
 ORDER BY created_at DESC
 `
@@ -450,6 +474,8 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaID(ctx context.Context, marinaID 
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -462,7 +488,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaID(ctx context.Context, marinaID 
 }
 
 const getMarinaUsageHistoryByMarinaIDPaginated = `-- name: GetMarinaUsageHistoryByMarinaIDPaginated :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -493,6 +519,8 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDPaginated(ctx context.Context, 
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -517,7 +545,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDTotal(ctx context.Context, mari
 }
 
 const getMarinaUsageHistoryByMarinaIDs = `-- name: GetMarinaUsageHistoryByMarinaIDs :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = ANY($1::uuid[])
 ORDER BY created_at DESC
 `
@@ -541,6 +569,8 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDs(ctx context.Context, dollar_1
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -553,7 +583,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDs(ctx context.Context, dollar_1
 }
 
 const getMarinaUsageHistoryByMarinaIDsAndDateRange = `-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRange :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = ANY($1::uuid[])
   AND created_at >= $2
   AND created_at <= $3
@@ -585,6 +615,8 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDsAndDateRange(ctx context.Conte
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -597,7 +629,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDsAndDateRange(ctx context.Conte
 }
 
 const getMarinaUsageHistoryByMarinaIDsAndDateRangePaginated = `-- name: GetMarinaUsageHistoryByMarinaIDsAndDateRangePaginated :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = ANY($1::uuid[])
   AND created_at >= $2
   AND created_at <= $3
@@ -638,6 +670,8 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDsAndDateRangePaginated(ctx cont
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -670,7 +704,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDsAndDateRangeTotal(ctx context.
 }
 
 const getMarinaUsageHistoryByMarinaIDsPaginated = `-- name: GetMarinaUsageHistoryByMarinaIDsPaginated :many
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = ANY($1::uuid[])
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -701,6 +735,8 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDsPaginated(ctx context.Context,
 			&i.UpdatedAt,
 			&i.MonthDate,
 			&i.DocumentUsage,
+			&i.AiFormDetectionUsage,
+			&i.AiComposeMessageUsage,
 		); err != nil {
 			return nil, err
 		}
@@ -725,7 +761,7 @@ func (q *Queries) GetMarinaUsageHistoryByMarinaIDsTotal(ctx context.Context, dol
 }
 
 const getMarinaUsageHistoryByMonth = `-- name: GetMarinaUsageHistoryByMonth :one
-SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage FROM marina_usage_history
+SELECT id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage FROM marina_usage_history
 WHERE marina_id = $1
 AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', $2::timestamp)
 ORDER BY created_at DESC
@@ -750,6 +786,8 @@ func (q *Queries) GetMarinaUsageHistoryByMonth(ctx context.Context, arg GetMarin
 		&i.UpdatedAt,
 		&i.MonthDate,
 		&i.DocumentUsage,
+		&i.AiFormDetectionUsage,
+		&i.AiComposeMessageUsage,
 	)
 	return i, err
 }
@@ -761,17 +799,21 @@ SET
     email_usage = $3,
     text_usage = $4,
     document_usage = $5,
+    ai_form_detection_usage = $6,
+    ai_compose_message_usage = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage
+RETURNING id, marina_id, storage_usage, email_usage, text_usage, created_at, updated_at, month_date, document_usage, ai_form_detection_usage, ai_compose_message_usage
 `
 
 type UpdateMarinaUsageHistoryParams struct {
-	ID            uuid.UUID
-	StorageUsage  int64
-	EmailUsage    int16
-	TextUsage     int16
-	DocumentUsage *int64
+	ID                    uuid.UUID
+	StorageUsage          int64
+	EmailUsage            int16
+	TextUsage             int16
+	DocumentUsage         *int64
+	AiFormDetectionUsage  *int16
+	AiComposeMessageUsage *int16
 }
 
 func (q *Queries) UpdateMarinaUsageHistory(ctx context.Context, arg UpdateMarinaUsageHistoryParams) (MarinaUsageHistory, error) {
@@ -781,6 +823,8 @@ func (q *Queries) UpdateMarinaUsageHistory(ctx context.Context, arg UpdateMarina
 		arg.EmailUsage,
 		arg.TextUsage,
 		arg.DocumentUsage,
+		arg.AiFormDetectionUsage,
+		arg.AiComposeMessageUsage,
 	)
 	var i MarinaUsageHistory
 	err := row.Scan(
@@ -793,6 +837,8 @@ func (q *Queries) UpdateMarinaUsageHistory(ctx context.Context, arg UpdateMarina
 		&i.UpdatedAt,
 		&i.MonthDate,
 		&i.DocumentUsage,
+		&i.AiFormDetectionUsage,
+		&i.AiComposeMessageUsage,
 	)
 	return i, err
 }

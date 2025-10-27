@@ -568,37 +568,50 @@ type WorkOrderShort struct {
 
 // Operation represents operation information
 type Operation struct {
-	ID                     string  `json:"id"`
-	Opcode                 string  `json:"opcode"`
-	OpcodeDesc             string  `json:"opcodeDesc"`
-	Status                 string  `json:"status"`
-	Type                   string  `json:"type"`
-	Category               string  `json:"category"`
-	TotalCharges           float64 `json:"totalCharges"`
-	TotalParts             float64 `json:"totalParts"`
-	TotalLabor             float64 `json:"totalLabor"`
-	TotalLaborHours        float64 `json:"totalLaborHours"`
-	TotalFreight           float64 `json:"totalFreight"`
-	TotalEquipment         float64 `json:"totalEquipment"`
-	TotalSublet            float64 `json:"totalSublet"`
-	TotalMileage           float64 `json:"totalMileage"`
-	TotalMiscSupply        float64 `json:"totalMiscSupply"`
-	TotalBillCodes         float64 `json:"totalBillCodes"`
-	LaborBilled            float64 `json:"laborBilled"`
-	TotalToComplete        float64 `json:"totalToComplete"`
-	EstStartDate           string  `json:"estStartDate"`
-	EstCompleteDate        string  `json:"estCompleteDate"`
-	ReqCompDate            string  `json:"reqCompDate"`
-	LongDesc               string  `json:"longDesc"`
-	TechDesc               string  `json:"techDesc"`
-	EstimatedCharges       float64 `json:"estimatedCharges"`
-	IsOpcodeApproved       bool    `json:"isOpcodeApproved"`
-	FlatRateAmount         float64 `json:"flatRateAmount"`
-	FlatRatePerFootRate    float64 `json:"flatRatePerFootRate"`
-	FlatRatePerFootMethod  string  `json:"flatRatePerFootMethod"`
-	ForecastedPartsCharges float64 `json:"forecastedPartsCharges"`
-	ForecastedLaborCharges float64 `json:"forecastedLaborCharges"`
-	ForecastedLaborHours   float64 `json:"forecastedLaborHours"`
+	ID                     string       `json:"id"`
+	Opcode                 string       `json:"opcode"`
+	OpcodeDesc             string       `json:"opcodeDesc"`
+	Status                 string       `json:"status"`
+	Type                   string       `json:"type"`
+	Category               string       `json:"category"`
+	TotalCharges           float64      `json:"totalCharges"`
+	TotalParts             float64      `json:"totalParts"`
+	TotalLabor             float64      `json:"totalLabor"`
+	TotalLaborHours        float64      `json:"totalLaborHours"`
+	TotalFreight           float64      `json:"totalFreight"`
+	TotalEquipment         float64      `json:"totalEquipment"`
+	TotalSublet            float64      `json:"totalSublet"`
+	TotalMileage           float64      `json:"totalMileage"`
+	TotalMiscSupply        float64      `json:"totalMiscSupply"`
+	TotalBillCodes         float64      `json:"totalBillCodes"`
+	LaborBilled            float64      `json:"laborBilled"`
+	TotalToComplete        float64      `json:"totalToComplete"`
+	EstStartDate           string       `json:"estStartDate"`
+	EstCompleteDate        string       `json:"estCompleteDate"`
+	ReqCompDate            string       `json:"reqCompDate"`
+	StandardHours          float64      `json:"standardHours"`
+	LongDesc               string       `json:"longDesc"`
+	TechDesc               string       `json:"techDesc"`
+	ManagerComments        string       `json:"managerComments"`
+	EstimatedCharges       float64      `json:"estimatedCharges"`
+	EstimatedParts         float64      `json:"estimatedParts"`
+	EstimatedLabor         float64      `json:"estimatedLabor"`
+	EstimatedLaborHours    float64      `json:"estimatedLaborHours"`
+	EstimatedFreight       float64      `json:"estimatedFreight"`
+	EstimatedEquipment     float64      `json:"estimatedEquipment"`
+	EstimatedSublet        float64      `json:"estimatedSublet"`
+	EstimatedMileage       float64      `json:"estimatedMileage"`
+	EstimatedMiscSupply    float64      `json:"estimatedMiscSupply"`
+	EstimatedBillCodes     float64      `json:"estimatedBillCodes"`
+	IsOpcodeApproved       bool         `json:"isOpcodeApproved"`
+	FlatRateAmount         float64      `json:"flatRateAmount"`
+	FlatRatePerFootRate    float64      `json:"flatRatePerFootRate"`
+	FlatRatePerFootMethod  string       `json:"flatRatePerFootMethod"`
+	ForecastedPartsCharges float64      `json:"forecastedPartsCharges"`
+	ForecastedLaborCharges float64      `json:"forecastedLaborCharges"`
+	ForecastedLaborHours   float64      `json:"forecastedLaborHours"`
+	FlagLaborFinished      bool         `json:"flagLaborFinished"`
+	Attachments            []Attachment `json:"attachments"`
 }
 
 // BillingData represents billing data information
@@ -752,6 +765,109 @@ type WorkOrderOperation struct {
 	ForecastedPartsCharges float64 `json:"forecastedPartsCharges"`
 	ForecastedLaborCharges float64 `json:"forecastedLaborCharges"`
 	ForecastedLaborHours   float64 `json:"forecastedLaborHours"`
+	ManagerComments        string  `json:"managerComments"`
+}
+
+// PaginationRequest represents pagination parameters for POST endpoints
+type PaginationRequest struct {
+	Page     int `json:"page"`
+	PageSize int `json:"pageSize"`
+}
+
+// OperationsListResponse represents paginated list of operations
+type OperationsListResponse struct {
+	CurrentPage int                  `json:"currentPage"`
+	MaxPages    int                  `json:"maxPages"`
+	PageSize    int                  `json:"pageSize"`
+	ListName    string               `json:"listName"`
+	Content     []WorkOrderOperation `json:"content"`
+}
+
+// WorkOrderDetailPartEntry represents a part entry in a work order
+type WorkOrderDetailPartEntry struct {
+	TechID       string  `json:"techId"`
+	WorkOrderID  string  `json:"workOrderId"`
+	OpCode       string  `json:"opCode"`
+	Department   string  `json:"department"`
+	Date         string  `json:"date"`
+	PartID       string  `json:"partId"`
+	Description  string  `json:"description"`
+	LocationCode string  `json:"locationCode"`
+	Quantity     float64 `json:"quantity"`
+	Price        float64 `json:"price"`
+	Cost         float64 `json:"cost"`
+	Discount     float64 `json:"discount"`
+	Comments     string  `json:"comments"`
+	UID          string  `json:"uid"`
+}
+
+// SubletPurchaseOrder represents a sublet purchase order
+type SubletPurchaseOrder struct {
+	ID              string  `json:"id"`
+	VendorID        string  `json:"vendorId"`
+	VendorName      string  `json:"vendorName"`
+	Date            string  `json:"date"`
+	WorkOrderID     string  `json:"workOrderId"`
+	Operation       string  `json:"operation"`
+	PartsCost       float64 `json:"partsCost"`
+	PartsPrice      float64 `json:"partsPrice"`
+	PartsDiscount   float64 `json:"partsDiscount"`
+	LaborCost       float64 `json:"laborCost"`
+	LaborPrice      float64 `json:"laborPrice"`
+	LaborDiscount   float64 `json:"laborDiscount"`
+	Comments        string  `json:"comments"`
+	DepartmentID    string  `json:"departmentId"`
+	DepartmentDesc  string  `json:"departmentDesc"`
+	BilledDate      string  `json:"billedDate"`
+	ClosedDate      string  `json:"closedDate"`
+	LocationCode    string  `json:"locationCode"`
+	ShipToName      string  `json:"shipToName"`
+	ShipToAddress1  string  `json:"shipToAddress1"`
+	ShipToAddress2  string  `json:"shipToAddress2"`
+	ShipToAddress3  string  `json:"shipToAddress3"`
+	ShipToAddress4  string  `json:"shipToAddress4"`
+	BillToName      string  `json:"billToName"`
+	BillToAddress1  string  `json:"billToAddress1"`
+	BillToAddress2  string  `json:"billToAddress2"`
+	BillToAddress3  string  `json:"billToAddress3"`
+	BillToAddress4  string  `json:"billToAddress4"`
+}
+
+// TimeEntryDetail represents a time entry detail in the list
+type TimeEntryDetail struct {
+	LaborUID    string      `json:"laborUID"`
+	TechID      string      `json:"techId"`
+	WorkOrderID string      `json:"workOrderId"`
+	DepartmentID string     `json:"departmentId"`
+	TotalHours  string      `json:"totalHours"`
+	EffHours    string      `json:"effHours"`
+	Operations  []Operation `json:"operations"`
+}
+
+// TimeEntryListResponse represents paginated list of time entries
+type TimeEntryListResponse struct {
+	CurrentPage int               `json:"currentPage"`
+	MaxPages    int               `json:"maxPages"`
+	PageSize    int               `json:"pageSize"`
+	ListName    string            `json:"listName"`
+	Content     []TimeEntryDetail `json:"content"`
+}
+
+// OpCodeListResponse represents a paginated list of operation codes
+type OpCodeListResponse struct {
+	CurrentPage int                  `json:"currentPage"`
+	MaxPages    int                  `json:"maxPages"`
+	PageSize    int                  `json:"pageSize"`
+	ListName    string               `json:"listName"`
+	OpCodes     []WorkOrderOperation `json:"opCodes"`
+}
+
+// Technician represents a technician record
+type Technician struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Active   bool   `json:"active"`
 }
 
 //
@@ -834,4 +950,218 @@ type PaymentInitiationResponse struct {
 	Amount           float64 `json:"amount"`
 	Status           string  `json:"status"`
 	PaymentURL       string  `json:"paymentUrl"`
+}
+
+//
+// INVENTORY MODELS
+//
+
+// FuelInventory represents a fuel inventory record
+type FuelInventory struct {
+	ID               string  `json:"id"`
+	Description      string  `json:"description"`
+	LocationCode     string  `json:"locationCode"`
+	TankNumber       string  `json:"tankNumber"`
+	TankCapacity     float64 `json:"tankCapacity"`
+	CurrentQuantity  float64 `json:"currentQuantity"`
+	UnitOfMeasure    string  `json:"unitOfMeasure"`
+	CostPerUnit      float64 `json:"costPerUnit"`
+	PricePerUnit     float64 `json:"pricePerUnit"`
+	ReorderLevel     float64 `json:"reorderLevel"`
+	LastDeliveryDate string  `json:"lastDeliveryDate"`
+	LastDeliveryQty  float64 `json:"lastDeliveryQty"`
+	LastModified     string  `json:"lastModified"`
+}
+
+// OnlineBillcode represents a billing code available for online use
+type OnlineBillcode struct {
+	ID          string  `json:"id"`
+	Description string  `json:"description"`
+	Department  string  `json:"department"`
+	Price       float64 `json:"price"`
+	TaxFlag     bool    `json:"taxFlag"`
+	Active      bool    `json:"active"`
+}
+
+// OnlinePart represents an inventory part available for online use
+type OnlinePart struct {
+	ID                string  `json:"id"`
+	PartNumber        string  `json:"partNumber"`
+	Description       string  `json:"description"`
+	LocationCode      string  `json:"locationCode"`
+	QuantityOnHand    float64 `json:"quantityOnHand"`
+	QuantityAvailable float64 `json:"quantityAvailable"`
+	Price             float64 `json:"price"`
+	Cost              float64 `json:"cost"`
+	UnitOfMeasure     string  `json:"unitOfMeasure"`
+	VendorID          string  `json:"vendorId"`
+	VendorName        string  `json:"vendorName"`
+	TaxFlag           bool    `json:"taxFlag"`
+	Active            bool    `json:"active"`
+	Department        string  `json:"department"`
+	LastModified      string  `json:"lastModified"`
+}
+
+// PartQtyInfo represents quantity information for a specific part at a location
+type PartQtyInfo struct {
+	PartNumber        string  `json:"partNumber"`
+	LocationCode      string  `json:"locationCode"`
+	QuantityOnHand    float64 `json:"quantityOnHand"`
+	QuantityOnOrder   float64 `json:"quantityOnOrder"`
+	QuantityCommitted float64 `json:"quantityCommitted"`
+	QuantityAvailable float64 `json:"quantityAvailable"`
+	Cost              float64 `json:"cost"`
+	AverageCost       float64 `json:"averageCost"`
+	LastCost          float64 `json:"lastCost"`
+	ReorderLevel      float64 `json:"reorderLevel"`
+	ReorderQty        float64 `json:"reorderQty"`
+	MinOrderQty       float64 `json:"minOrderQty"`
+	MaxOrderQty       float64 `json:"maxOrderQty"`
+	LastModified      string  `json:"lastModified"`
+}
+
+// PartsKitItem represents an item in a parts kit
+type PartsKitItem struct {
+	PartNumber  string  `json:"partNumber"`
+	Description string  `json:"description"`
+	Quantity    float64 `json:"quantity"`
+	Price       float64 `json:"price"`
+	Cost        float64 `json:"cost"`
+}
+
+// PartsKit represents a parts kit
+type PartsKit struct {
+	ID           string         `json:"id"`
+	Description  string         `json:"description"`
+	Active       bool           `json:"active"`
+	TotalPrice   float64        `json:"totalPrice"`
+	TotalCost    float64        `json:"totalCost"`
+	Items        []PartsKitItem `json:"items"`
+	LastModified string         `json:"lastModified"`
+}
+
+// PurchaseOrderLine represents a line item in a purchase order
+type PurchaseOrderLine struct {
+	LineNumber    int     `json:"lineNumber"`
+	PartNumber    string  `json:"partNumber"`
+	Description   string  `json:"description"`
+	QuantityOrder float64 `json:"quantityOrder"`
+	QuantityRecvd float64 `json:"quantityRecvd"`
+	UnitCost      float64 `json:"unitCost"`
+	ExtendedCost  float64 `json:"extendedCost"`
+	TaxFlag       bool    `json:"taxFlag"`
+	Discount      float64 `json:"discount"`
+}
+
+// PurchaseOrder represents a purchase order
+type PurchaseOrder struct {
+	ID              string              `json:"id"`
+	PONumber        string              `json:"poNumber"`
+	VendorID        string              `json:"vendorId"`
+	VendorName      string              `json:"vendorName"`
+	OrderDate       string              `json:"orderDate"`
+	ExpectedDate    string              `json:"expectedDate"`
+	ReceivedDate    string              `json:"receivedDate"`
+	Status          string              `json:"status"`
+	LocationCode    string              `json:"locationCode"`
+	TotalAmount     float64             `json:"totalAmount"`
+	TotalReceived   float64             `json:"totalReceived"`
+	Comments        string              `json:"comments"`
+	Lines           []PurchaseOrderLine `json:"lines"`
+	CreatedBy       string              `json:"createdBy"`
+	LastModifiedBy  string              `json:"lastModifiedBy"`
+	LastModified    string              `json:"lastModified"`
+}
+
+// PurchaseOrdersList represents a list of purchase orders
+type PurchaseOrdersList struct {
+	Content     []PurchaseOrder `json:"content"`
+	CurrentPage int             `json:"currentPage"`
+	MaxPages    int             `json:"maxPages"`
+	PageSize    int             `json:"pageSize"`
+}
+
+// SpecialOrder represents a special order
+type SpecialOrder struct {
+	ID              string  `json:"id"`
+	OrderNumber     string  `json:"orderNumber"`
+	CustomerID      string  `json:"customerId"`
+	CustomerName    string  `json:"customerName"`
+	PartNumber      string  `json:"partNumber"`
+	Description     string  `json:"description"`
+	QuantityOrdered float64 `json:"quantityOrdered"`
+	QuantityRecvd   float64 `json:"quantityRecvd"`
+	UnitPrice       float64 `json:"unitPrice"`
+	UnitCost        float64 `json:"unitCost"`
+	OrderDate       string  `json:"orderDate"`
+	ExpectedDate    string  `json:"expectedDate"`
+	ReceivedDate    string  `json:"receivedDate"`
+	Status          string  `json:"status"`
+	VendorID        string  `json:"vendorId"`
+	VendorName      string  `json:"vendorName"`
+	LocationCode    string  `json:"locationCode"`
+	Comments        string  `json:"comments"`
+	PONumber        string  `json:"poNumber"`
+	LastModified    string  `json:"lastModified"`
+}
+
+// InventorySearchResult represents a search result from inventory
+type InventorySearchResult struct {
+	PartNumber        string  `json:"partNumber"`
+	Description       string  `json:"description"`
+	LocationCode      string  `json:"locationCode"`
+	QuantityOnHand    float64 `json:"quantityOnHand"`
+	QuantityAvailable float64 `json:"quantityAvailable"`
+	Price             float64 `json:"price"`
+	Cost              float64 `json:"cost"`
+	UnitOfMeasure     string  `json:"unitOfMeasure"`
+	Department        string  `json:"department"`
+	VendorID          string  `json:"vendorId"`
+	VendorName        string  `json:"vendorName"`
+}
+
+// InventoryPart represents a full inventory part record from Retrieve endpoint
+type InventoryPart struct {
+	PartNumber           string  `json:"partNumber"`
+	Description          string  `json:"description"`
+	LocationCode         string  `json:"locationCode"`
+	QuantityOnHand       float64 `json:"quantityOnHand"`
+	QuantityOnOrder      float64 `json:"quantityOnOrder"`
+	QuantityCommitted    float64 `json:"quantityCommitted"`
+	QuantityAvailable    float64 `json:"quantityAvailable"`
+	Price                float64 `json:"price"`
+	Price2               float64 `json:"price2"`
+	Price3               float64 `json:"price3"`
+	Cost                 float64 `json:"cost"`
+	AverageCost          float64 `json:"averageCost"`
+	LastCost             float64 `json:"lastCost"`
+	UnitOfMeasure        string  `json:"unitOfMeasure"`
+	Department           string  `json:"department"`
+	VendorID             string  `json:"vendorId"`
+	VendorName           string  `json:"vendorName"`
+	VendorPartNumber     string  `json:"vendorPartNumber"`
+	ManufacturerPartNum  string  `json:"manufacturerPartNum"`
+	TaxFlag              bool    `json:"taxFlag"`
+	Active               bool    `json:"active"`
+	ReorderLevel         float64 `json:"reorderLevel"`
+	ReorderQty           float64 `json:"reorderQty"`
+	MinOrderQty          float64 `json:"minOrderQty"`
+	MaxOrderQty          float64 `json:"maxOrderQty"`
+	LeadTimeDays         int     `json:"leadTimeDays"`
+	BinLocation          string  `json:"binLocation"`
+	Notes                string  `json:"notes"`
+	LastModified         string  `json:"lastModified"`
+	LastSaleDate         string  `json:"lastSaleDate"`
+	LastReceiptDate      string  `json:"lastReceiptDate"`
+	SerializedInventory  bool    `json:"serializedInventory"`
+	LotTrackedInventory  bool    `json:"lotTrackedInventory"`
+}
+
+// RetrieveInventoryQuery represents the query parameters for retrieving inventory
+type RetrieveInventoryQuery struct {
+	LocationCode     string   `json:"locationCode,omitempty"`
+	LastModifiedDate string   `json:"lastModifiedDate,omitempty"`
+	OnHandOnly       bool     `json:"onHandOnly,omitempty"`
+	VendorID         string   `json:"vendorId,omitempty"`
+	ItemIds          []string `json:"itemIds,omitempty"`
 }
