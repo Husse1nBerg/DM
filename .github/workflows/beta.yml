@@ -39,8 +39,8 @@ jobs:
             --output json
 
           aws ecs wait services-stable \
-            --cluster ${{ secrets.ECS_DEV_CLUSTER }} \
-            --services ${{ secrets.ECS_DEV_SERVICE }}
+            --cluster ${{ secrets.ECS_BETA_CLUSTER }} \
+            --services ${{ secrets.ECS_BETA_SERVICE }}
 
 
       - name: Notify via Power Automate Flow
