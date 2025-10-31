@@ -161,6 +161,9 @@ type CreateMultipleEsignSubmissionRequest struct {
 type UpdateEsignSubmissionSignerRequest struct {
 	Status         string  `json:"status" validate:"required,oneof=pending signed declined expired" example:"signed"`
 	DeclinedReason *string `json:"declinedReason,omitempty" example:"Document needs revision"`
+	CustomMessage  *string `json:"customMessage,omitempty" example:"Instructions for recipients"`
+	ReplyName      *string `json:"replyName,omitempty" example:"Marina Manager"`
+	ReplyTo        *string `json:"replyTo,omitempty" example:"marina@example.com"`
 }
 
 // ListEsignSubmissionSignersRequest represents the parameters to list signers for a submission
