@@ -104,7 +104,7 @@ func (h *EsignHandler) sendEmailsToSignersSequentially(submission db.EsignSubmis
 }
 
 // processNextSigner processes the next signer in the sequence when a signer completes signing
-func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.UUID) {
+func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.UUID, customMessage *string, replyName *string, replyTo *string) {
 	// Get the next signer in order
 	nextSigner, err := h.server.DB.Queries().GetNextSignerForSubmission(ctx, submissionID)
 	if err != nil {
@@ -132,18 +132,28 @@ func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.
 	}
 
 	// Create email data for the next signer
-	var replyTo string
-	if submission.ReplyTo != nil && *submission.ReplyTo != "" {
-		replyTo = *submission.ReplyTo
+	// Use provided values from request, otherwise fall back to submission values
+	var replyToValue string
+	if replyTo != nil && *replyTo != "" {
+		replyToValue = *replyTo
+	} else if submission.ReplyTo != nil && *submission.ReplyTo != "" {
+		replyToValue = *submission.ReplyTo
 	} else {
-		replyTo = marina.Email
+		replyToValue = marina.Email
 	}
 
-	var customMessage string
-	if submission.CustomMessage != nil && *submission.CustomMessage != "" {
-		customMessage = *submission.CustomMessage
+	var customMessageValue string
+	if customMessage != nil && *customMessage != "" {
+		customMessageValue = *customMessage
+	} else if submission.CustomMessage != nil && *submission.CustomMessage != "" {
+		customMessageValue = *submission.CustomMessage
 	} else {
-		customMessage = ""
+		customMessageValue = ""
+	}
+
+	var replyNameValue string
+	if replyName != nil && *replyName != "" {
+		replyNameValue = *replyName
 	}
 
 	// Include marina logo if available
@@ -167,11 +177,11 @@ func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.
 		DocumentURL:     h.server.Config.App.EsignDocumentURL(submission.ID.String()),
 		Recipient:       "",
 		Sender:          marina.Name,
-		ReplyTo:         replyTo,
-		ReplyName:       "", // Could be enhanced to store reply name
+		ReplyTo:         replyToValue,
+		ReplyName:       replyNameValue,
 		TermsConditions: h.server.Config.App.TermsConditionsURL(),
 		Name:            submissionName,
-		CustomMessage:   customMessage,
+		CustomMessage:   customMessageValue,
 		Logo:            logo,
 	}
 	to := []string{nextSigner.Email}
@@ -407,7 +417,7 @@ func (h *EsignHandler) GetEsignSubmissionSignersPublic(c echo.Context) error {
 // UpdateEsignSubmissionSigner updates a signer's status
 //
 //	@Summary		Update e-signature submission signer
-//	@Description	Updates a signer's status in an e-signature submission
+//	@Description	Updates a signer's status in an e-signature submission. When status is "signed", an email notification will be sent to the next signer. Optional customMessage, replyName, and replyTo fields can be provided to customize the email sent to the next signer.
 //	@Tags			E-signature Submissions
 //	@Accept			json
 //	@Produce		json
@@ -467,7 +477,7 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 
 	// If signer signed, check if we need to send email to next signer
 	if req.Status == "signed" {
-		go h.processNextSigner(context.Background(), signer.SubmissionID)
+		go h.processNextSigner(context.Background(), signer.SubmissionID, req.CustomMessage, req.ReplyName, req.ReplyTo)
 	}
 
 	return responses.NewEsignSubmissionSignerResponseSuccess(signer).JSON(c)
