@@ -14,6 +14,7 @@ import (
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/adyen"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
+	"github.com/dockworks/dm-web-backend/pkg/sendgrid"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -31,6 +32,95 @@ func NewPaymentHandler(server *s.Server) *PaymentHandler {
 	return &PaymentHandler{server: server}
 }
 
+// (SendPaymentLinkEmail removed; use CreatePaymentLink with optional email fields)
+
+// CreatePaymentLink generates a short-lived token allowing limited access to payment endpoints
+//
+//	@Summary      Create payment link
+//	@Description  Generates a short-lived token tied to a customer and marina to fetch invoices and create sessions
+//	@Tags         Payments
+//	@Accept       json
+//	@Produce      json
+//	@Param        request  body   requests.CreatePaymentLinkRequest  true  "Create payment link request"
+//	@Success      200      {object} responses.PaymentLinkResponse
+//	@Failure      400      {object} responses.Error
+//	@Failure      500      {object} responses.Error
+//	@Security     BearerAuth
+//	@Router       /payments/links [post]
+func (h *PaymentHandler) CreatePaymentLink(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.CreatePaymentLinkRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
+	}
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
+	}
+
+	marinaID, err := uuid.Parse(req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marinaId").JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to get marina", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
+	}
+
+	ttl := time.Duration(60) * time.Minute
+	if req.TTLMinutes > 0 {
+		ttl = time.Duration(req.TTLMinutes) * time.Minute
+	}
+
+	// Generate a secure random token
+	tokenStr, err := utils.GenerateRandomToken(32)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to generate token", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to generate token").JSON(c)
+	}
+
+	expiresAt := pgtype.Timestamptz{}
+	expiresAt.Scan(time.Now().Add(ttl))
+
+	// Create DB record
+	link, err := h.server.DB.Queries().CreatePaymentLink(ctx, db.CreatePaymentLinkParams{
+		Token:          tokenStr,
+		OrganizationID: marina.OrganizationID,
+		MarinaID:       marinaID,
+		CustomerID:     req.CustomerID,
+		Scope:          "customer",
+		ExpiresAt:      expiresAt,
+	})
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to create payment link", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create payment link").JSON(c)
+	}
+
+	// If an email was provided, send the payment link using the payment_link template
+	if req.Email != "" {
+		url := fmt.Sprintf("%s/payment/%s", h.server.Config.App.FrontendBaseURL, link.Token)
+		subj := "Your payment link"
+		tmplData := sendgrid.PaymentLinkTemplateData{
+			Recipient:       req.Recipient,
+			Sender:          marina.Name,
+			TermsConditions: h.server.Config.App.TermsConditionsURL(),
+			Name:            req.Name,
+			ReplyName:       req.ReplyName,
+			CustomMessage:   req.CustomMessage,
+			PaymentURL:      url,
+			InvoiceID:       req.InvoiceID,
+			Amount:          req.Amount,
+		}
+		if _, _, err := h.server.SendGrid.SendPaymentLinkEmail([]string{req.Email}, subj, tmplData); err != nil {
+			h.server.Logger.Zap.Error("Failed to send payment link email", zap.Error(err))
+		}
+	}
+
+	resp := responses.NewPaymentLinkResponse(h.server.Config.App.FrontendBaseURL, link.Token, link.ExpiresAt.Time)
+	return c.JSON(http.StatusOK, resp)
+}
+
 // CreatePaymentSession creates a new payment session
 //
 //	@Summary		Create payment session
@@ -42,6 +132,7 @@ func NewPaymentHandler(server *s.Server) *PaymentHandler {
 //	@Success		200		{object}	responses.PaymentSessionResponse		"Payment session created successfully"
 //	@Failure		400		{object}	responses.Error				"Invalid request"
 //	@Failure		500		{object}	responses.Error				"Internal server error"
+//	@Security		BearerAuth
 //	@Router			/payments/sessions [post]
 func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 	var req requests.CreatePaymentSessionRequest
@@ -53,6 +144,25 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 	if err := c.Validate(&req); err != nil {
 		h.server.Logger.Zap.Error("Payment session request validation failed", zap.Error(err))
 		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
+	}
+
+	// Require either a valid JWT (set by middleware) or a short-lived payment token
+	if c.Get("user") == nil && req.Token == "" {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authorization required: Bearer token or payment token").JSON(c)
+	}
+
+	// If a short-lived token is provided, validate and minimally enrich metadata
+	if req.Token != "" {
+		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(c.Request().Context(), req.Token)
+		if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+		}
+		if req.Metadata == nil {
+			req.Metadata = &map[string]string{}
+		}
+		(*req.Metadata)["CustomerID"] = link.CustomerID
+		(*req.Metadata)["MarinaID"] = link.MarinaID.String()
+		(*req.Metadata)["EntityType"] = "customer"
 	}
 
 	// Convert request to Adyen service request
@@ -73,8 +183,7 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create payment session").JSON(c)
 	}
 
-	// Return the complete Adyen session response directly like the Go example
-	// Don't add clientKey to the session response - pass it separately in frontend
+	// Return the complete Adyen session response directly
 	return c.JSON(http.StatusOK, session)
 }
 
@@ -89,6 +198,7 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 //	@Success		200		{object}	responses.PaymentResultResponse	"Payment result"
 //	@Failure		400		{object}	responses.Error			"Invalid request"
 //	@Failure		500		{object}	responses.Error			"Internal server error"
+//	@Security		BearerAuth
 //	@Router			/payments/details [post]
 func (h *PaymentHandler) HandlePaymentRedirect(c echo.Context) error {
 	var req requests.PaymentDetailsRequest

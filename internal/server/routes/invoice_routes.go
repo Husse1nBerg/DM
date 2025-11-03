@@ -10,11 +10,8 @@ import (
 func RegisterInvoiceRoutes(server *s.Server, base *echo.Group, permissionProtected *echo.Group) {
 	invoiceHandler := h.NewInvoiceHandler(server)
 
-	// Public invoice routes (no authentication required)
-	publicInvoices := base.Group("/invoices")
-	publicInvoices.GET("/customer", invoiceHandler.GetCustomerInvoices)
-
 	// Protected invoice routes (authentication required)
 	protectedInvoices := permissionProtected.Group("/invoices")
 	protectedInvoices.POST("/batch/submit", invoiceHandler.SubmitBatch)
+	protectedInvoices.GET("/customer", invoiceHandler.GetCustomerInvoices)
 }

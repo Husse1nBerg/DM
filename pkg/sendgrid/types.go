@@ -120,3 +120,17 @@ type NotificationTemplateData struct {
 	CustomerName string `json:"customer_name"`
 	HomeURL      string `json:"home_url"`
 }
+
+// PaymentLinkTemplateData contains fields for the payment link template
+// Expected dynamic data keys in SendGrid template
+type PaymentLinkTemplateData struct {
+	Recipient       string `json:"recipient"`
+	Sender          string `json:"sender"`
+	TermsConditions string `json:"terms_conditions"`
+	Name            string `json:"name"`
+	ReplyName       string `json:"reply_name"`
+	CustomMessage   string `json:"custom_message"`
+	PaymentURL      string `json:"payment_url"`
+	InvoiceID       string `json:"invoice_id"`
+	Amount          string `json:"amount"`
+}

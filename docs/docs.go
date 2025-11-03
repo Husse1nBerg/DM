@@ -7632,7 +7632,12 @@ const docTemplate = `{
         },
         "/invoices/customer": {
             "get": {
-                "description": "Retrieves invoices for a specific customer (supports both JWT and token authentication)",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves invoices for a specific customer. If ` + "`" + `token` + "`" + ` is provided, validates the short-lived payment token and uses its customer/marina context. Otherwise, expects authenticated user context.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7664,6 +7669,12 @@ const docTemplate = `{
                         "name": "marinaId",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Short-lived payment token",
+                        "name": "token",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -11252,6 +11263,11 @@ const docTemplate = `{
         },
         "/payments/details": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Handles payment completion redirects from Adyen",
                 "consumes": [
                     "application/json"
@@ -11355,8 +11371,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments/links": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generates a short-lived token tied to a customer and marina to fetch invoices and create sessions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create payment link",
+                "parameters": [
+                    {
+                        "description": "Create payment link request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePaymentLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentLinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments/sessions": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new Adyen payment session for processing payments",
                 "consumes": [
                     "application/json"
@@ -17456,7 +17528,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "amount",
-                "marinaId",
                 "paymentType"
             ],
             "properties": {
@@ -17475,6 +17546,9 @@ const docTemplate = `{
                         "CK",
                         "ACH"
                     ]
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },
@@ -18058,6 +18132,47 @@ const docTemplate = `{
                 "website": {
                     "type": "string",
                     "example": "https://example.com"
+                }
+            }
+        },
+        "requests.CreatePaymentLinkRequest": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "marinaId"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "customMessage": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "invoiceId": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "recipient": {
+                    "type": "string"
+                },
+                "replyName": {
+                    "type": "string"
+                },
+                "ttlMinutes": {
+                    "type": "integer",
+                    "maximum": 1440,
+                    "minimum": 5
                 }
             }
         },
@@ -22698,6 +22813,20 @@ const docTemplate = `{
                 },
                 "totalPrice": {
                     "type": "number"
+                }
+            }
+        },
+        "responses.PaymentLinkResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },

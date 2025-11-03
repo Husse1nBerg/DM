@@ -10,10 +10,6 @@ import (
 func RegisterPaymentTaxRoutes(s *s.Server, base *echo.Group, protected *echo.Group) {
 	paymentTaxHandler := h.NewPaymentTaxHandler(s)
 
-	// Public payment tax routes (no authentication required)
-	publicPaymentTax := base.Group("/payment-tax")
-	publicPaymentTax.POST("/calculate", paymentTaxHandler.CalculateFees)
-
 	// Protected payment tax routes (authentication required)
 	paymentTax := protected.Group("/payment-tax")
 
@@ -24,4 +20,5 @@ func RegisterPaymentTaxRoutes(s *s.Server, base *echo.Group, protected *echo.Gro
 	paymentTax.GET("/:id", paymentTaxHandler.GetPaymentTax)
 	paymentTax.PUT("/:id", paymentTaxHandler.UpdatePaymentTax)
 	paymentTax.DELETE("/:id", paymentTaxHandler.DeletePaymentTax)
+	paymentTax.POST("/calculate", paymentTaxHandler.CalculateFees)
 }

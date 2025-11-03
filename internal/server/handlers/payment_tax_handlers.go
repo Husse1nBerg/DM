@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
@@ -349,6 +350,20 @@ func (h *PaymentTaxHandler) CalculateFees(c echo.Context) error {
 
 	if err := c.Validate(&req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
+	}
+
+	// Allow external token to supply marinaId (same approach as payment sessions)
+	if req.Token != "" {
+		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(c.Request().Context(), req.Token)
+		if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+		}
+		req.MarinaID = link.MarinaID
+	}
+
+	// Ensure we have a marinaId from either body or token
+	if req.MarinaID == uuid.Nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "marinaId or token is required").JSON(c)
 	}
 
 	// Get configuration by marina and payment type

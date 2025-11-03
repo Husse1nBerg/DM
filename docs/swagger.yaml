@@ -1248,9 +1248,10 @@ definitions:
         - CK
         - ACH
         type: string
+      token:
+        type: string
     required:
     - amount
-    - marinaId
     - paymentType
     type: object
   requests.CashReceipt:
@@ -1674,6 +1675,34 @@ definitions:
     required:
     - email
     - name
+    type: object
+  requests.CreatePaymentLinkRequest:
+    properties:
+      amount:
+        type: string
+      customMessage:
+        type: string
+      customerId:
+        type: string
+      email:
+        type: string
+      invoiceId:
+        type: string
+      marinaId:
+        type: string
+      name:
+        type: string
+      recipient:
+        type: string
+      replyName:
+        type: string
+      ttlMinutes:
+        maximum: 1440
+        minimum: 5
+        type: integer
+    required:
+    - customerId
+    - marinaId
     type: object
   requests.CreatePaymentSessionRequest:
     type: object
@@ -4942,6 +4971,15 @@ definitions:
         type: number
       totalPrice:
         type: number
+    type: object
+  responses.PaymentLinkResponse:
+    properties:
+      expiresAt:
+        type: string
+      token:
+        type: string
+      url:
+        type: string
     type: object
   responses.PaymentListResponse:
     properties:
@@ -10655,8 +10693,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves invoices for a specific customer (supports both JWT and
-        token authentication)
+      description: Retrieves invoices for a specific customer. If `token` is provided,
+        validates the short-lived payment token and uses its customer/marina context.
+        Otherwise, expects authenticated user context.
       parameters:
       - description: Customer ID
         in: query
@@ -10673,6 +10712,10 @@ paths:
         name: marinaId
         required: true
         type: string
+      - description: Short-lived payment token
+        in: query
+        name: token
+        type: string
       produces:
       - application/json
       responses:
@@ -10688,6 +10731,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
       summary: Get customer invoices
       tags:
       - Invoices
@@ -13100,6 +13145,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
       summary: Handle payment redirect
       tags:
       - Payments
@@ -13141,6 +13188,39 @@ paths:
       summary: Get payments by entity
       tags:
       - Payments
+  /payments/links:
+    post:
+      consumes:
+      - application/json
+      description: Generates a short-lived token tied to a customer and marina to
+        fetch invoices and create sessions
+      parameters:
+      - description: Create payment link request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePaymentLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentLinkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Create payment link
+      tags:
+      - Payments
   /payments/sessions:
     post:
       consumes:
@@ -13168,6 +13248,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
       summary: Create payment session
       tags:
       - Payments

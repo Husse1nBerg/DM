@@ -33,16 +33,18 @@ func NewInvoiceHandler(server *s.Server) *InvoiceHandler {
 }
 
 // @Summary Get customer invoices
-// @Description Retrieves invoices for a specific customer (supports both JWT and token authentication)
+// @Description Retrieves invoices for a specific customer. If `token` is provided, validates the short-lived payment token and uses its customer/marina context. Otherwise, expects authenticated user context.
 // @Tags Invoices
 // @Accept json
 // @Produce json
 // @Param customerId query string true "Customer ID"
 // @Param invoiceDate query string false "Invoice date (format: YYYY-MM-DD)"
 // @Param marinaId query string true "Marina ID" Format(uuid)
+// @Param token query string false "Short-lived payment token"
 // @Success 200 {object} responses.InvoiceListResponse
 // @Failure 400 {object} responses.Error
 // @Failure 500 {object} responses.Error
+// @Security BearerAuth
 // @Router /invoices/customer [get]
 func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -53,6 +55,20 @@ func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 
 	if err := c.Validate(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// If token is provided, validate and override customer/marina
+	if req.Token != "" {
+		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(ctx, req.Token)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+		}
+		if link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Token expired or revoked").JSON(c)
+		}
+		// Override request values to enforce token scope
+		req.CustomerID = link.CustomerID
+		req.MarinaID = link.MarinaID
 	}
 
 	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), req.MarinaID)

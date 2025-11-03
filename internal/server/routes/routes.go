@@ -71,6 +71,14 @@ func RegisterRoutes(s *s.Server) {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(s.Config.Auth.AccessSecret),
+		Skipper: func(c echo.Context) bool {
+			// Allow unauthenticated access to payment session creation; handler enforces token
+			path := c.Request().URL.Path
+			if path == "/api/v1/payments/sessions" || path == "/api/v1/payment-tax/calculate" {
+				return true
+			}
+			return false
+		},
 		ErrorHandler: func(c echo.Context, err error) error {
 			s.Logger.Zap.Error("JWT validation failed", zap.Error(err))
 			return responses.NewErrorResponse(http.StatusUnauthorized, "Token validation failed").JSON(c)

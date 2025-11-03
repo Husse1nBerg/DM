@@ -12,18 +12,17 @@ func RegisterPaymentRoutes(s *s.Server, base *echo.Group, protected *echo.Group)
 
 	// Public payment routes (no authentication required)
 	publicPayments := base.Group("/payments")
-	publicPayments.POST("/sessions", paymentHandler.CreatePaymentSession)
+
 	publicPayments.POST("/webhooks", paymentHandler.ProcessWebhook)
 
 	// Protected payment routes (authentication required)
 	payments := protected.Group("/payments")
 
-	// Adyen payment flow
-	payments.POST("/details", paymentHandler.HandlePaymentRedirect)
-
-	// Payment data retrieval
 	payments.GET("", paymentHandler.ListPayments)
 	payments.GET("/:id", paymentHandler.GetPaymentByID)
 	payments.GET("/entity", paymentHandler.GetPaymentsByEntity)
 	payments.GET("/stats", paymentHandler.GetPaymentStats)
+	payments.POST("/sessions", paymentHandler.CreatePaymentSession)
+	payments.POST("/links", paymentHandler.CreatePaymentLink)
+	payments.POST("/details", paymentHandler.HandlePaymentRedirect)
 }
