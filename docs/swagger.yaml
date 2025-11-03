@@ -2627,8 +2627,17 @@ definitions:
     type: object
   requests.UpdateEsignSubmissionSignerRequest:
     properties:
+      customMessage:
+        example: Instructions for recipients
+        type: string
       declinedReason:
         example: Document needs revision
+        type: string
+      replyName:
+        example: Marina Manager
+        type: string
+      replyTo:
+        example: marina@example.com
         type: string
       status:
         enum:
@@ -13691,7 +13700,10 @@ paths:
     put:
       consumes:
       - application/json
-      description: Updates a signer's status in an e-signature submission
+      description: Updates a signer's status in an e-signature submission. When status
+        is "signed", an email notification will be sent to the next signer. Optional
+        customMessage, replyName, and replyTo fields can be provided to customize
+        the email sent to the next signer.
       parameters:
       - description: Signer ID
         format: uuid

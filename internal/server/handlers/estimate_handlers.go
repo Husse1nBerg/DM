@@ -1,19 +1,24 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
+	"github.com/dockworks/dm-web-backend/internal/guard"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
+	"github.com/dockworks/dm-web-backend/pkg/notifications"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 )
 
@@ -646,6 +651,164 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 			zap.Error(err),
 			zap.String("estimateId", req.EstId))
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	// Check if any operations were approved and create notifications for internal marina staff
+	operationsApproved := false
+	approvedCount := 0
+	var approvedTotalAmount float64
+	
+	if len(req.OperationCodes) > 0 {
+		// Check if any operation codes have approved: true
+		for _, opCode := range req.OperationCodes {
+			if opCode.Approved {
+				operationsApproved = true
+				approvedCount++
+				// Sum up the estimated charges for approved operations
+				approvedTotalAmount += float64(opCode.EstimatedParts + opCode.EstimatedLabor + opCode.EstimatedEquipment + opCode.EstimatedSublet + opCode.EstimatedFreight + opCode.EstimatedMiscSupply + opCode.EstimatedMileage + opCode.EstimatedBillCodes)
+			}
+		}
+	}
+
+	// If operations were approved, create notifications for internal marina staff
+	if operationsApproved {
+		go func() {
+			// Use a background context with timeout to avoid blocking the response
+			notifCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			// Get estimate details for notification data
+			estimateDetail, err := h.server.DME.EstimateRetrieve(notifCtx, req.EstId, true, orgID, *systemID)
+			customerName := req.CustId // Fallback to customer ID
+			var totalEstimateAmount float64
+			
+			if err == nil && estimateDetail != nil {
+				if estimateDetail.CustomerName != "" {
+					customerName = estimateDetail.CustomerName
+				}
+				// Calculate total from estimate detail
+				if len(estimateDetail.Operations) > 0 {
+					for _, op := range estimateDetail.Operations {
+						totalEstimateAmount += float64(op.TotalCharges)
+					}
+				}
+			} else {
+				// Fallback: use approved operations total
+				totalEstimateAmount = approvedTotalAmount
+			}
+
+			// Get all internal marina users (exclude customer users)
+			isCustomer := false
+			internalUsers, err := h.server.DB.Queries().GetUsersByMarina(notifCtx, db.GetUsersByMarinaParams{
+				MarinaID:   user.MarinaID,
+				IsCustomer: &isCustomer,
+			})
+			
+			if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to get internal marina users for notification",
+					zap.Error(err),
+					zap.String("estimateId", req.EstId),
+					zap.String("marinaId", user.MarinaID.String()))
+				return
+			}
+
+			// Initialize notification service
+			notificationService := notifications.NewNotificationService(
+				h.server.DB.Queries(),
+				h.server.Redis,
+				h.server.Logger,
+				h.server.SendGrid,
+				h.server.Config,
+			)
+
+			// Initialize permission service to check user permissions
+			permissionService, err := guard.NewPermissionService(h.server.DB.Queries())
+			if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to initialize permission service for notifications",
+					zap.Error(err))
+				return
+			}
+
+			// Filter users by permissions and send notifications
+			var notificationRequests []notifications.SmartNotificationRequest
+			marinaIDStr := user.MarinaID.String()
+
+			for _, internalUser := range internalUsers {
+				// Check if user is active
+				if internalUser.IsActive == nil || !*internalUser.IsActive {
+					continue
+				}
+
+				// Check if user has EstimatesRead or WorkOrdersRead permission
+				hasEstimatesRead, err := permissionService.CanRead(notifCtx, internalUser.ID.String(), marinaIDStr, "estimates")
+				if err != nil {
+					h.server.Logger.DesugarZap.Warn("Failed to check estimates.read permission",
+						zap.Error(err),
+						zap.String("userId", internalUser.ID.String()))
+					continue
+				}
+
+				hasWorkOrdersRead, err := permissionService.CanRead(notifCtx, internalUser.ID.String(), marinaIDStr, "work_orders")
+				if err != nil {
+					h.server.Logger.DesugarZap.Warn("Failed to check work_orders.read permission",
+						zap.Error(err),
+						zap.String("userId", internalUser.ID.String()))
+					continue
+				}
+
+				// User must have at least one of these permissions
+				if !hasEstimatesRead && !hasWorkOrdersRead {
+					continue
+				}
+
+				// Prepare notification data
+				notificationData := map[string]interface{}{
+					"estimateId":           req.EstId,
+					"customerName":         customerName,
+					"approvedOperationsCount": approvedCount,
+					"approvedOperationsAmount": approvedTotalAmount,
+					"totalEstimateAmount":  totalEstimateAmount,
+					"approvalTimestamp":    time.Now().Format(time.RFC3339),
+					"link":                 fmt.Sprintf("/service/estimates/%s", req.EstId),
+				}
+
+				notificationReq := notifications.SmartNotificationRequest{
+					UserID:         internalUser.ID,
+					OrganizationID: orgID,
+					MarinaID:       user.MarinaID,
+					Type:           "estimate_approved",
+					Title:          "Estimate Approved",
+					Content:        fmt.Sprintf("Customer %s has approved %d operation(s) for Estimate #%s", customerName, approvedCount, req.EstId),
+					Data:           notificationData,
+					Priority:       nil, // Use default priority
+				}
+
+				notificationRequests = append(notificationRequests, notificationReq)
+			}
+
+			// Send bulk notifications
+			if len(notificationRequests) > 0 {
+				results, err := notificationService.SendBulkSmartNotifications(notifCtx, notificationRequests)
+				if err != nil {
+					h.server.Logger.DesugarZap.Error("Failed to send bulk approval notifications",
+						zap.Error(err),
+						zap.String("estimateId", req.EstId),
+						zap.Int("recipientCount", len(notificationRequests)))
+				} else {
+					successCount := 0
+					for _, result := range results {
+						if result.SystemDelivered || result.EmailDelivered {
+							successCount++
+						}
+					}
+					h.server.Logger.DesugarZap.Info("Estimate approval notifications sent",
+						zap.String("estimateId", req.EstId),
+						zap.Int("totalRecipients", len(notificationRequests)),
+						zap.Int("successfulNotifications", successCount),
+						zap.Int("approvedOperationsCount", approvedCount))
+				}
+			}
+		}()
 	}
 
 	response := responses.ConvertEstimateUpdate(dmeResponse)

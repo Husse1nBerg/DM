@@ -129,7 +129,8 @@ SELECT
     es.document_id,
     es.blob_url,
     es.customer_id,
-    es.is_multiple_signature
+    es.is_multiple_signature,
+    es.custom_message
 FROM esign_submission_signers ess
 JOIN esign_submissions es ON ess.submission_id = es.id
 WHERE ess.submission_id = $1
