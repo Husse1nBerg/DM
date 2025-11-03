@@ -37,3 +37,63 @@ jobs:
             --service ${{ secrets.ECS_BETA_SERVICE }} \
             --force-new-deployment \
             --output json
+
+          aws ecs wait services-stable \
+            --cluster ${{ secrets.ECS_BETA_CLUSTER }} \
+            --services ${{ secrets.ECS_BETA_SERVICE }}
+
+
+      - name: Notify via Power Automate Flow
+        if: always()
+        run: |
+          # Determine deployment status
+          STATUS="✅ SUCCESS"
+          if [ "${{ job.status }}" != "success" ]; then
+            STATUS="❌ FAILED"
+          fi
+
+          # Send POST to Power Automate flow with a simple card
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "type": "message",
+              "attachments": [
+                {
+                  "contentType": "application/vnd.microsoft.card.adaptive",
+                  "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.4",
+                    "body": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Deployment '"$STATUS"'",
+                        "weight": "Bolder",
+                        "size": "Medium"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Branch: '"${GITHUB_REF#refs/heads/}"'",
+                        "wrap": true
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Commit: '"${GITHUB_SHA}"'",
+                        "wrap": true
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Environment: BETA",
+                        "wrap": true
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Service: '"${{ secrets.ECS_BETA_SERVICE }}"'",
+                        "wrap": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }' \
+            "${{ secrets.POWER_AUTOMATE_URL }}"

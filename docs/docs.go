@@ -11998,7 +11998,7 @@ const docTemplate = `{
         },
         "/public/esign/submissions/signers/{id}": {
             "put": {
-                "description": "Updates a signer's status in an e-signature submission",
+                "description": "Updates a signer's status in an e-signature submission. When status is \"signed\", an email notification will be sent to the next signer. Optional customMessage, replyName, and replyTo fields can be provided to customize the email sent to the next signer.",
                 "consumes": [
                     "application/json"
                 ],
@@ -19417,9 +19417,21 @@ const docTemplate = `{
                 "status"
             ],
             "properties": {
+                "customMessage": {
+                    "type": "string",
+                    "example": "Instructions for recipients"
+                },
                 "declinedReason": {
                     "type": "string",
                     "example": "Document needs revision"
+                },
+                "replyName": {
+                    "type": "string",
+                    "example": "Marina Manager"
+                },
+                "replyTo": {
+                    "type": "string",
+                    "example": "marina@example.com"
                 },
                 "status": {
                     "type": "string",
