@@ -315,6 +315,42 @@ func (c *Client) SendPasswordResetEmail(to []string, subject string, data Passwo
 	return taskID, resultChan, nil
 }
 
+// SendPaymentLinkEmail sends a payment link email using the payment_link template
+func (c *Client) SendPaymentLinkEmail(to []string, subject string, data PaymentLinkTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+	templateID, ok := c.config.TemplatesMap["payment_link"]
+	if !ok {
+		return uuid.Nil, nil, errors.New("payment link template not found in configuration")
+	}
+
+	// Convert strongly typed data to a map matching SendGrid dynamic keys
+	templateData := map[string]interface{}{
+		"recipient":        data.Recipient,
+		"sender":           data.Sender,
+		"terms_conditions": data.TermsConditions,
+		"name":             data.Name,
+		"reply_name":       data.ReplyName,
+		"custom_message":   data.CustomMessage,
+		"payment_url":      data.PaymentURL,
+		"invoice_id":       data.InvoiceID,
+		"amount":           data.Amount,
+	}
+
+	email := &TemplateEmail{
+		Subject: subject,
+		EmailData: EmailData{
+			To:        to,
+			Subject:   subject,
+			FromEmail: c.config.FromEmail,
+			FromName:  c.config.FromName,
+		},
+		TemplateID:   templateID,
+		TemplateData: templateData,
+	}
+
+	taskID, resultChan := c.SendTemplateEmail(email)
+	return taskID, resultChan, nil
+}
+
 // SendMessageEmail sends a message email using the message template
 func (c *Client) SendMessageEmail(to []string, subject string, data MessageTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
 	templateID, ok := c.config.TemplatesMap["message"]

@@ -71,6 +71,14 @@ func RegisterRoutes(s *s.Server) {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(s.Config.Auth.AccessSecret),
+		Skipper: func(c echo.Context) bool {
+			// Allow unauthenticated access to payment session creation; handler enforces token
+			path := c.Request().URL.Path
+			if path == "/api/v1/payments/sessions" || path == "/api/v1/payment-tax/calculate" {
+				return true
+			}
+			return false
+		},
 		ErrorHandler: func(c echo.Context, err error) error {
 			s.Logger.Zap.Error("JWT validation failed", zap.Error(err))
 			return responses.NewErrorResponse(http.StatusUnauthorized, "Token validation failed").JSON(c)
@@ -159,7 +167,7 @@ func RegisterRoutes(s *s.Server) {
 	RegisterScheduleRoutes(s, permissionProtected)
 
 	// Invoice routes
-	RegisterInvoiceRoutes(s, permissionProtected)
+	RegisterInvoiceRoutes(s, base, permissionProtected)
 
 	// Message routes
 	RegisterMessageRoutes(s, permissionProtected)
@@ -191,12 +199,9 @@ func RegisterRoutes(s *s.Server) {
 	// Inventory routes
 	RegisterInventoryRoutes(s, base, permissionProtected)
 
-	// Payment routes (protected)
-	RegisterPaymentRoutes(s, permissionProtected)
-
-	// Payment webhook routes (public)
-	RegisterPaymentWebhookRoutes(s, base)
+	// Payment routes (public and protected)
+	RegisterPaymentRoutes(s, base, permissionProtected)
 
 	// Payment tax configuration routes
-	RegisterPaymentTaxRoutes(s, permissionProtected)
+	RegisterPaymentTaxRoutes(s, base, permissionProtected)
 }

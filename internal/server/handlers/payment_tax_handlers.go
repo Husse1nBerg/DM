@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
 	"github.com/dockworks/dm-web-backend/internal/responses"
 	s "github.com/dockworks/dm-web-backend/internal/server"
+	"github.com/dockworks/dm-web-backend/pkg/errors"
 	"github.com/dockworks/dm-web-backend/pkg/token"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -349,17 +352,38 @@ func (h *PaymentTaxHandler) CalculateFees(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
 	}
 
+	// Allow external token to supply marinaId (same approach as payment sessions)
+	if req.Token != "" {
+		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(c.Request().Context(), req.Token)
+		if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+		}
+		req.MarinaID = link.MarinaID
+	}
+
+	// Ensure we have a marinaId from either body or token
+	if req.MarinaID == uuid.Nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "marinaId or token is required").JSON(c)
+	}
+
 	// Get configuration by marina and payment type
 	config, err := h.server.DB.Queries().GetTaxConfigurationByMarinaAndPaymentType(c.Request().Context(), db.GetTaxConfigurationByMarinaAndPaymentTypeParams{
 		MarinaID:    req.MarinaID,
 		PaymentType: req.PaymentType,
 	})
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			h.server.Logger.Zap.Error("Payment tax configuration not found",
+				zap.String("marinaId", req.MarinaID.String()),
+				zap.String("paymentType", req.PaymentType),
+				zap.Error(errors.PaymentTaxConfigurationNotFound))
+			return responses.NewErrorResponse(http.StatusNotFound, errors.PaymentTaxConfigurationNotFound.Error()).JSON(c)
+		}
 		h.server.Logger.Zap.Error("Failed to get configuration",
 			zap.String("marinaId", req.MarinaID.String()),
 			zap.String("paymentType", req.PaymentType),
 			zap.Error(err))
-		return responses.NewErrorResponse(http.StatusNotFound, "Payment tax configuration not found for this marina and payment type").JSON(c)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve payment tax configuration").JSON(c)
 	}
 
 	// Helper function to round to 2 decimal places

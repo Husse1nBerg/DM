@@ -14,6 +14,7 @@ type CreatePaymentSessionRequest struct {
 	ShopperIP   string              `json:"shopper_ip,omitempty"`
 	LineItems   []checkout.LineItem `json:"line_items,omitempty"`
 	Metadata    *map[string]string  `json:"metadata,omitempty"`
+	Token       string              `json:"token,omitempty"` // Optional short-lived payment token
 }
 
 // PaymentDetailsRequest represents the request to handle payment details
@@ -30,6 +31,54 @@ func (r *CreatePaymentSessionRequest) Validate(validate *validator.Validate) err
 
 // Validate validates the PaymentDetailsRequest
 func (r *PaymentDetailsRequest) Validate(validate *validator.Validate) error {
+	return validate.Struct(r)
+}
+
+// CreatePaymentLinkRequest represents a request to generate a short-lived payment link
+type CreatePaymentLinkRequest struct {
+	MarinaID      string `json:"marinaId" validate:"required,uuid4"`
+	CustomerID    string `json:"customerId" validate:"required"`
+	TTLMinutes    int    `json:"ttlMinutes" validate:"omitempty,min=5,max=1440"`
+	Email         string `json:"email" validate:"omitempty,email"`
+	Recipient     string `json:"recipient" validate:"omitempty"`
+	Name          string `json:"name" validate:"omitempty"`
+	ReplyName     string `json:"replyName" validate:"omitempty"`
+	CustomMessage string `json:"customMessage" validate:"omitempty"`
+	InvoiceID     string `json:"invoiceId" validate:"omitempty"`
+	Amount        string `json:"amount" validate:"omitempty"`
+}
+
+// (SendPaymentLinkEmailRequest removed; use CreatePaymentLinkRequest with optional email fields)
+
+// Validate validates the CreatePaymentLinkRequest
+func (r *CreatePaymentLinkRequest) Validate(validate *validator.Validate) error {
+	return validate.Struct(r)
+}
+
+// TokenInvoicesRequest represents a request to fetch invoices using a token
+type TokenInvoicesRequest struct {
+	Token string `query:"token" validate:"required"`
+}
+
+// Validate validates the TokenInvoicesRequest
+func (r *TokenInvoicesRequest) Validate(validate *validator.Validate) error {
+	return validate.Struct(r)
+}
+
+// CreatePaymentSessionWithTokenRequest represents creating an Adyen session using a token
+type CreatePaymentSessionWithTokenRequest struct {
+	Token       string              `json:"token" validate:"required"`
+	Amount      int64               `json:"amount" validate:"required,min=1"`
+	Currency    string              `json:"currency" validate:"required,len=3"`
+	CountryCode string              `json:"country_code" validate:"required,len=2"`
+	ReturnURL   string              `json:"return_url" validate:"required,url"`
+	ShopperIP   string              `json:"shopper_ip,omitempty"`
+	LineItems   []checkout.LineItem `json:"line_items,omitempty"`
+	Metadata    *map[string]string  `json:"metadata,omitempty"`
+}
+
+// Validate validates the CreatePaymentSessionWithTokenRequest
+func (r *CreatePaymentSessionWithTokenRequest) Validate(validate *validator.Validate) error {
 	return validate.Struct(r)
 }
 

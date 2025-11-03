@@ -45,9 +45,10 @@ type ListPaymentTaxRequest struct {
 
 // CalculateFeeRequest represents the request to calculate fees for an amount
 type CalculateFeeRequest struct {
-	MarinaID    uuid.UUID `json:"marinaId" validate:"required,uuid"`
+	MarinaID    uuid.UUID `json:"marinaId" validate:"omitempty,uuid"`
 	PaymentType string    `json:"paymentType" validate:"required,oneof=CC DB CK ACH"`
 	Amount      float64   `json:"amount" validate:"required,min=0"`
+	Token       string    `json:"token" validate:"omitempty"`
 }
 
 // Validate validates the CreatePaymentTaxRequest

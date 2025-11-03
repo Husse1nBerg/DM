@@ -407,6 +407,21 @@ type Payment struct {
 	UpdatedAt           pgtype.Timestamptz
 }
 
+type PaymentLink struct {
+	ID             uuid.UUID
+	Token          string
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	CustomerID     string
+	Scope          string
+	ExpiresAt      pgtype.Timestamptz
+	Used           bool
+	Revoked        bool
+	CreatedAt      pgtype.Timestamptz
+	UsedAt         pgtype.Timestamptz
+	RevokedAt      pgtype.Timestamptz
+}
+
 type Role struct {
 	ID             uuid.UUID
 	Name           string

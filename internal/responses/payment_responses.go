@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/adyen/adyen-go-api-library/v14/src/checkout"
@@ -104,6 +105,21 @@ type PaymentStatsResponse struct {
 	TotalCompletedAmount string `json:"totalCompletedAmount"`
 	StartDate            string `json:"startDate,omitempty"`
 	EndDate              string `json:"endDate,omitempty"`
+}
+
+// PaymentLinkResponse represents the response for a generated payment link
+type PaymentLinkResponse struct {
+	Token     string `json:"token"`
+	URL       string `json:"url"`
+	ExpiresAt string `json:"expiresAt"`
+}
+
+func NewPaymentLinkResponse(frontendBaseURL, token string, expiresAt time.Time) PaymentLinkResponse {
+	return PaymentLinkResponse{
+		Token:     token,
+		URL:       fmt.Sprintf("%s/payment/%s", frontendBaseURL, token),
+		ExpiresAt: expiresAt.Format(time.RFC3339),
+	}
 }
 
 // ConvertPaymentToResponse converts a db.Payment to PaymentResponse

@@ -7,11 +7,11 @@ import (
 )
 
 // RegisterInvoiceRoutes registers all invoice-related routes
-func RegisterInvoiceRoutes(server *s.Server, permissionProtected *echo.Group) {
+func RegisterInvoiceRoutes(server *s.Server, base *echo.Group, permissionProtected *echo.Group) {
 	invoiceHandler := h.NewInvoiceHandler(server)
 
-	// Invoice routes
-	invoices := permissionProtected.Group("/invoices")
-	invoices.GET("/customer", invoiceHandler.GetCustomerInvoices)
-	invoices.POST("/batch/submit", invoiceHandler.SubmitBatch)
+	// Protected invoice routes (authentication required)
+	protectedInvoices := permissionProtected.Group("/invoices")
+	protectedInvoices.POST("/batch/submit", invoiceHandler.SubmitBatch)
+	protectedInvoices.GET("/customer", invoiceHandler.GetCustomerInvoices)
 }
