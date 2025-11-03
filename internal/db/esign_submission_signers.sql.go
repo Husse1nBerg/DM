@@ -160,7 +160,8 @@ SELECT
     es.document_id,
     es.blob_url,
     es.customer_id,
-    es.is_multiple_signature
+    es.is_multiple_signature,
+    es.custom_message
 FROM esign_submission_signers ess
 JOIN esign_submissions es ON ess.submission_id = es.id
 WHERE ess.submission_id = $1
@@ -188,6 +189,7 @@ type GetEsignSubmissionSignersWithSubmissionDetailsRow struct {
 	BlobUrl             string
 	CustomerID          *string
 	IsMultipleSignature bool
+	CustomMessage       *string
 }
 
 func (q *Queries) GetEsignSubmissionSignersWithSubmissionDetails(ctx context.Context, submissionID uuid.UUID) ([]GetEsignSubmissionSignersWithSubmissionDetailsRow, error) {
@@ -218,6 +220,7 @@ func (q *Queries) GetEsignSubmissionSignersWithSubmissionDetails(ctx context.Con
 			&i.BlobUrl,
 			&i.CustomerID,
 			&i.IsMultipleSignature,
+			&i.CustomMessage,
 		); err != nil {
 			return nil, err
 		}

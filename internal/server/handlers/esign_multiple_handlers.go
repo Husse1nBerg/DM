@@ -475,6 +475,47 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusNotFound, "Signer not found").JSON(c)
 	}
 
+	// If signer signed, persist customMessage and replyTo to submission if provided
+	// This ensures subsequent signers can use these values even if not provided in their requests
+	if req.Status == "signed" && (req.CustomMessage != nil || req.ReplyTo != nil) {
+		// Get existing submission to preserve other fields
+		existingSubmission, err := h.server.DB.Queries().GetEsignSubmissionByID(c.Request().Context(), signer.SubmissionID)
+		if err == nil {
+			// Update submission with customMessage and/or replyTo if provided
+			customMessage := existingSubmission.CustomMessage
+			if req.CustomMessage != nil && *req.CustomMessage != "" {
+				customMessage = req.CustomMessage
+			}
+
+			replyTo := existingSubmission.ReplyTo
+			if req.ReplyTo != nil && *req.ReplyTo != "" {
+				replyTo = req.ReplyTo
+			}
+
+			// Update submission asynchronously to avoid blocking the response
+			go func() {
+				_, updateErr := h.server.DB.Queries().UpdateEsignSubmission(context.Background(), db.UpdateEsignSubmissionParams{
+					ID:                 signer.SubmissionID,
+					Status:             existingSubmission.Status,
+					BlobUrl:            existingSubmission.BlobUrl,
+					BlobMetadata:       existingSubmission.BlobMetadata,
+					CustomerID:         existingSubmission.CustomerID,
+					Email:              existingSubmission.Email,
+					Name:               existingSubmission.Name,
+					AttachmentRequired: existingSubmission.AttachmentRequired,
+					ReplyTo:            replyTo,
+					CustomMessage:      customMessage,
+					CustomerName:       existingSubmission.CustomerName,
+				})
+				if updateErr != nil {
+					h.server.Logger.Zap.Errorw("Error updating submission with customMessage/replyTo",
+						"submission_id", signer.SubmissionID,
+						"error", updateErr)
+				}
+			}()
+		}
+	}
+
 	// If signer signed, check if we need to send email to next signer
 	if req.Status == "signed" {
 		go h.processNextSigner(context.Background(), signer.SubmissionID, req.CustomMessage, req.ReplyName, req.ReplyTo)
