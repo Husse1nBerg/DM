@@ -27,6 +27,7 @@ type HTMLEmail struct {
 	PlainText   string // Plain text version of the email
 	Subject     string // Subject of the email
 	ReplyTo     string // Reply to email address
+	ReplyName   string // Reply to name
 }
 
 // TemplateEmail contains data for sending an email using a SendGrid template
@@ -35,6 +36,7 @@ type TemplateEmail struct {
 	TemplateID   string                 // SendGrid template ID
 	TemplateData map[string]interface{} // Dynamic template data
 	ReplyTo      string                 // Reply to email address
+	ReplyName    string                 // Reply to name
 	Subject      string                 // Subject of the email
 }
 
