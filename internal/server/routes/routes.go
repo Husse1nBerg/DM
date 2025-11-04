@@ -72,9 +72,13 @@ func RegisterRoutes(s *s.Server) {
 		},
 		SigningKey: []byte(s.Config.Auth.AccessSecret),
 		Skipper: func(c echo.Context) bool {
-			// Allow unauthenticated access to payment session creation; handler enforces token
+			// Allow bearer or payment token access to specific endpoints
 			path := c.Request().URL.Path
 			if path == "/api/v1/payments/sessions" || path == "/api/v1/payment-tax/calculate" {
+				auth := c.Request().Header.Get("Authorization")
+				if strings.HasPrefix(auth, "Bearer ") && len(auth) > len("Bearer ") {
+					return false
+				}
 				return true
 			}
 			return false
