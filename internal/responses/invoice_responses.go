@@ -28,3 +28,8 @@ func ConvertCustomerInvoiceInquiryList(invoices []dme.CustomerInvoiceInquiry) *C
 
 // swag:response InvoiceListResponse
 type SwagInvoiceListResponse = InvoiceListResponse
+
+// NextReferenceResponse represents the next AR reference number
+type NextReferenceResponse struct {
+	ReferenceNumber string `json:"referenceNumber"`
+}

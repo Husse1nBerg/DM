@@ -9,3 +9,8 @@ type GetCustomerInvoicesRequest struct {
 	MarinaID    uuid.UUID `query:"marinaId" validate:"required"`
 	Token       string    `query:"token"` // Optional: short-lived payment token
 }
+
+// GetNextReferenceRequest represents a request to get next AR reference number for a customer
+type GetNextReferenceRequest struct {
+	CustomerID string `query:"customerId" validate:"required"`
+}

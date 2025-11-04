@@ -7960,6 +7960,55 @@
                 }
             }
         },
+        "/invoices/next-reference": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the next available AR reference number for a given customer from DME",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Get next AR reference number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NextReferenceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/marina-usage-history/all": {
             "get": {
                 "description": "Retrieves all marina usage history records, optionally filtered by one or more marinaIds and date range",
@@ -22829,6 +22878,14 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.MessageResponse"
+                }
+            }
+        },
+        "responses.NextReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "referenceNumber": {
+                    "type": "string"
                 }
             }
         },

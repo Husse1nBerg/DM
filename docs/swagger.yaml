@@ -4735,6 +4735,11 @@ definitions:
       data:
         $ref: '#/definitions/responses.MessageResponse'
     type: object
+  responses.NextReferenceResponse:
+    properties:
+      referenceNumber:
+        type: string
+    type: object
   responses.NotesMessagesPlanResponse:
     description: Notes and messages plan data including limits and pricing
     properties:
@@ -11282,6 +11287,38 @@ paths:
       security:
       - BearerAuth: []
       summary: Get customer invoices
+      tags:
+      - Invoices
+  /invoices/next-reference:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the next available AR reference number for a given customer
+        from DME
+      parameters:
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.NextReferenceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get next AR reference number
       tags:
       - Invoices
   /marina-usage-history/{marinaId}/date-range:

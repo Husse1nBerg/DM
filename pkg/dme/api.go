@@ -2413,3 +2413,34 @@ func (c *Client) RetrieveVendor(ctx context.Context, vendorID string, organizati
 
 	return &result, nil
 }
+
+// NextReferenceNumber retrieves the next AR reference number for a customer
+func (c *Client) NextReferenceNumber(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) (string, error) {
+	// The DME endpoint returns the next available AR reference number for a given customer
+	endpoint := fmt.Sprintf("/AR/NextReferenceNumber?CustomerId=%s", customerID)
+
+	// Decode into a generic map to be resilient to response shape differences
+	var result map[string]interface{}
+	if err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil); err != nil {
+		return "", fmt.Errorf("failed to retrieve next reference number: %w", err)
+	}
+
+	// Try common keys
+	keys := []string{"referenceNumber", "ReferenceNumber", "reference", "Reference"}
+	for _, k := range keys {
+		if v, ok := result[k]; ok {
+			if s, ok := v.(string); ok && s != "" {
+				return s, nil
+			}
+		}
+	}
+
+	// If the API returned a bare string, attempt to handle that as well
+	if v, ok := result["value"]; ok {
+		if s, ok := v.(string); ok && s != "" {
+			return s, nil
+		}
+	}
+
+	return "", fmt.Errorf("reference number not found in response")
+}
