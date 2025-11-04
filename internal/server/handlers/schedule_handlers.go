@@ -81,7 +81,7 @@ func (h *ScheduleHandler) RetrieveSchedule(c echo.Context) error {
 
 	// If dmeResponse is nil (empty response from API), return empty result
 	if dmeResponse == nil {
-		emptyResponse := make(map[string]interface{})
+		var emptyResponse interface{} = make(map[string]interface{})
 		response := responses.ConvertScheduleResponse(&emptyResponse)
 		return c.JSON(http.StatusOK, response)
 	}
@@ -147,7 +147,7 @@ func (h *ScheduleHandler) RetrieveScheduleForManager(c echo.Context) error {
 
 	// If dmeResponse is nil (empty response from API), return empty result
 	if dmeResponse == nil {
-		emptyResponse := make(map[string]interface{})
+		var emptyResponse interface{} = make(map[string]interface{})
 		response := responses.ConvertScheduleResponse(&emptyResponse)
 		return c.JSON(http.StatusOK, response)
 	}
@@ -213,7 +213,7 @@ func (h *ScheduleHandler) RetrieveScheduleForTech(c echo.Context) error {
 
 	// If dmeResponse is nil (empty response from API), return empty result
 	if dmeResponse == nil {
-		emptyResponse := make(map[string]interface{})
+		var emptyResponse interface{} = make(map[string]interface{})
 		response := responses.ConvertScheduleResponse(&emptyResponse)
 		return c.JSON(http.StatusOK, response)
 	}
@@ -279,7 +279,7 @@ func (h *ScheduleHandler) RetrieveScheduleForWorkOrder(c echo.Context) error {
 
 	// If dmeResponse is nil (empty response from API), return empty result
 	if dmeResponse == nil {
-		emptyResponse := make(map[string]interface{})
+		var emptyResponse interface{} = make(map[string]interface{})
 		response := responses.ConvertScheduleResponse(&emptyResponse)
 		return c.JSON(http.StatusOK, response)
 	}
@@ -343,7 +343,7 @@ func (h *ScheduleHandler) RetrieveWorkOrderSchedule(c echo.Context) error {
 
 	// If dmeResponse is nil (empty response from API), return empty result
 	if dmeResponse == nil {
-		emptyResponse := make(map[string]interface{})
+		var emptyResponse interface{} = make(map[string]interface{})
 		response := responses.ConvertScheduleResponse(&emptyResponse)
 		return c.JSON(http.StatusOK, response)
 	}
@@ -409,7 +409,7 @@ func (h *ScheduleHandler) RetrieveOperationSchedule(c echo.Context) error {
 
 	// If dmeResponse is nil (empty response from API), return empty result
 	if dmeResponse == nil {
-		emptyResponse := make(map[string]interface{})
+		var emptyResponse interface{} = make(map[string]interface{})
 		response := responses.ConvertScheduleResponse(&emptyResponse)
 		return c.JSON(http.StatusOK, response)
 	}
