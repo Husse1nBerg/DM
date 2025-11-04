@@ -79,6 +79,13 @@ func (h *ScheduleHandler) RetrieveSchedule(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		emptyResponse := make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -136,6 +143,13 @@ func (h *ScheduleHandler) RetrieveScheduleForManager(c echo.Context) error {
 			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for manager: "+err.Error()).JSON(c)
+	}
+
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		emptyResponse := make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -197,6 +211,13 @@ func (h *ScheduleHandler) RetrieveScheduleForTech(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for tech: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		emptyResponse := make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -256,6 +277,13 @@ func (h *ScheduleHandler) RetrieveScheduleForWorkOrder(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for work order: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		emptyResponse := make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -311,6 +339,13 @@ func (h *ScheduleHandler) RetrieveWorkOrderSchedule(c echo.Context) error {
 			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve work order schedule: "+err.Error()).JSON(c)
+	}
+
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		emptyResponse := make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -372,6 +407,13 @@ func (h *ScheduleHandler) RetrieveOperationSchedule(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve operation schedule: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		emptyResponse := make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -424,14 +466,12 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 	}
 
 	// Convert request to map for DME API
-	// DME API expects the payload wrapped in a "scheduleUpdate" field
+	// DME API expects the ServiceScheduleUpdate object directly (NOT wrapped)
 	payload := map[string]interface{}{
-		"scheduleUpdate": map[string]interface{}{
-			"locationCode": req.LocationCode,
-			"clerkId":      req.ClerkID,
-			"sessionId":    req.SessionID,
-			"appointments": appointmentsInterface,
-		},
+		"locationCode": req.LocationCode,
+		"clerkId":      req.ClerkID,
+		"sessionId":    req.SessionID,
+		"appointments": appointmentsInterface,
 	}
 
 	// Debug: Log the payload being sent
@@ -503,14 +543,12 @@ func (h *ScheduleHandler) ResolveMergeConflict(c echo.Context) error {
 	}
 
 	// Convert request to map for DME API
-	// DME API expects the payload wrapped in a field
+	// DME API expects the ServiceScheduleUpdate object directly (NOT wrapped)
 	payload := map[string]interface{}{
-		"scheduleUpdate": map[string]interface{}{
-			"locationCode": req.LocationCode,
-			"clerkId":      req.ClerkID,
-			"sessionId":    req.SessionID,
-			"appointments": req.Appointments,
-		},
+		"locationCode": req.LocationCode,
+		"clerkId":      req.ClerkID,
+		"sessionId":    req.SessionID,
+		"appointments": req.Appointments,
 	}
 
 	dmeResponse, err := h.server.DME.ResolveMergeConflict(ctx, payload, orgID, *systemID)
