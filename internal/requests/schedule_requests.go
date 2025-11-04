@@ -48,7 +48,7 @@ type ScheduleOperationScheduleRequest struct {
 
 // ScheduleAppointmentUpdate represents an appointment update item
 type ScheduleAppointmentUpdate struct {
-	ID              string  `json:"id" validate:"required"`
+	ID              string  `json:"id"` // ID can be empty for new appointments - DME API will generate it
 	TechID          string  `json:"techId" validate:"required"`
 	WorkOrderID     string  `json:"workOrderId" validate:"required"`
 	Opcode          string  `json:"opcode" validate:"required"`

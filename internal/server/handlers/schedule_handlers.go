@@ -417,14 +417,17 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 	}
 
 	// Convert request to map for DME API
-	scheduleUpdate := map[string]interface{}{
-		"locationCode": req.LocationCode,
-		"clerkId":      req.ClerkID,
-		"sessionId":    req.SessionID,
-		"appointments": req.Appointments,
+	// DME API expects the payload wrapped in a "scheduleUpdate" field
+	payload := map[string]interface{}{
+		"scheduleUpdate": map[string]interface{}{
+			"locationCode": req.LocationCode,
+			"clerkId":      req.ClerkID,
+			"sessionId":    req.SessionID,
+			"appointments": req.Appointments,
+		},
 	}
 
-	dmeResponse, err := h.server.DME.UpdateSchedule(ctx, scheduleUpdate, orgID, *systemID)
+	dmeResponse, err := h.server.DME.UpdateSchedule(ctx, payload, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to update schedule",
 			zap.String("locationCode", req.LocationCode),
@@ -480,14 +483,17 @@ func (h *ScheduleHandler) ResolveMergeConflict(c echo.Context) error {
 	}
 
 	// Convert request to map for DME API
-	conflictResolution := map[string]interface{}{
-		"locationCode": req.LocationCode,
-		"clerkId":      req.ClerkID,
-		"sessionId":    req.SessionID,
-		"appointments": req.Appointments,
+	// DME API expects the payload wrapped in a field
+	payload := map[string]interface{}{
+		"scheduleUpdate": map[string]interface{}{
+			"locationCode": req.LocationCode,
+			"clerkId":      req.ClerkID,
+			"sessionId":    req.SessionID,
+			"appointments": req.Appointments,
+		},
 	}
 
-	dmeResponse, err := h.server.DME.ResolveMergeConflict(ctx, conflictResolution, orgID, *systemID)
+	dmeResponse, err := h.server.DME.ResolveMergeConflict(ctx, payload, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to resolve merge conflict",
 			zap.String("locationCode", req.LocationCode),
