@@ -11,11 +11,12 @@ INSERT INTO esign_submissions (
     name,
     attachment_required,
     reply_to,
+    reply_name,
     custom_message,
     is_multiple_signature,
     customer_name
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
 ) RETURNING *;
 
 -- name: GetEsignSubmissionByID :one
@@ -70,8 +71,9 @@ SET
     name = $7,
     attachment_required = $8,
     reply_to = $9,
-    custom_message = $10,
-    customer_name = $11,
+    reply_name = $10,
+    custom_message = $11,
+    customer_name = $12,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
     AND deleted_at IS NULL

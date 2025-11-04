@@ -186,7 +186,7 @@ func (c *Client) sendHTMLEmailSync(email *HTMLEmail) error {
 	message.Subject = email.Subject
 
 	if email.ReplyTo != "" {
-		message.SetReplyTo(mail.NewEmail("", email.ReplyTo))
+		message.SetReplyTo(mail.NewEmail(email.ReplyName, email.ReplyTo))
 	}
 
 	// Add content
@@ -224,7 +224,7 @@ func (c *Client) sendTemplateEmailSync(email *TemplateEmail) error {
 
 	message.SetTemplateID(email.TemplateID)
 	if email.ReplyTo != "" {
-		message.SetReplyTo(mail.NewEmail("", email.ReplyTo))
+		message.SetReplyTo(mail.NewEmail(email.ReplyName, email.ReplyTo))
 	}
 
 	// Add recipients and template data
@@ -532,6 +532,7 @@ func (c *Client) SendESignSubmissionEmail(to []string, subject string, data ESig
 			FromName:  c.config.FromName,
 		},
 		ReplyTo:      data.ReplyTo,
+		ReplyName:    data.ReplyName,
 		TemplateID:   templateID,
 		TemplateData: templateData,
 	}

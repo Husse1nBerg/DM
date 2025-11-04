@@ -1154,6 +1154,7 @@ func (h *EsignHandler) CreateEsignSubmission(c echo.Context) error {
 		Name:                req.Name,
 		AttachmentRequired:  req.AttachmentRequired,
 		ReplyTo:             req.ReplyTo,
+		ReplyName:           req.ReplyName,
 		CustomMessage:       req.CustomMessage,
 		IsMultipleSignature: false, // Single signature submission
 		CustomerName:        customerName,
@@ -1422,6 +1423,9 @@ func (h *EsignHandler) UpdateEsignSubmission(c echo.Context) error {
 		Email:              existingSubmission.Email,
 		Name:               namePtr,
 		AttachmentRequired: attachmentRequiredPtr,
+		ReplyTo:            existingSubmission.ReplyTo,
+		ReplyName:          existingSubmission.ReplyName,
+		CustomMessage:      existingSubmission.CustomMessage,
 		CustomerName:       customerName,
 	})
 	if err != nil {
@@ -1885,6 +1889,10 @@ func (h *EsignHandler) UpdateEsignSubmissionPublic(c echo.Context) error {
 		Email:              existingSubmission.Email,
 		Name:               &name,
 		AttachmentRequired: &attachmentRequiredBool,
+		ReplyTo:            existingSubmission.ReplyTo,
+		ReplyName:          existingSubmission.ReplyName,
+		CustomMessage:      existingSubmission.CustomMessage,
+		CustomerName:       existingSubmission.CustomerName,
 	})
 
 	if err != nil {

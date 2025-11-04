@@ -131,29 +131,22 @@ func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.
 		return
 	}
 
-	// Create email data for the next signer
-	// Use provided values from request, otherwise fall back to submission values
+	// Use submission's stored values (these come from the original creation)
 	var replyToValue string
-	if replyTo != nil && *replyTo != "" {
-		replyToValue = *replyTo
-	} else if submission.ReplyTo != nil && *submission.ReplyTo != "" {
+	if submission.ReplyTo != nil && *submission.ReplyTo != "" {
 		replyToValue = *submission.ReplyTo
 	} else {
 		replyToValue = marina.Email
 	}
 
 	var customMessageValue string
-	if customMessage != nil && *customMessage != "" {
-		customMessageValue = *customMessage
-	} else if submission.CustomMessage != nil && *submission.CustomMessage != "" {
+	if submission.CustomMessage != nil {
 		customMessageValue = *submission.CustomMessage
-	} else {
-		customMessageValue = ""
 	}
 
 	var replyNameValue string
-	if replyName != nil && *replyName != "" {
-		replyNameValue = *replyName
+	if submission.ReplyName != nil {
+		replyNameValue = *submission.ReplyName
 	}
 
 	// Include marina logo if available
@@ -326,6 +319,7 @@ func (h *EsignHandler) CreateMultipleEsignSubmission(c echo.Context) error {
 		Name:                req.Name,
 		AttachmentRequired:  req.AttachmentRequired,
 		ReplyTo:             req.ReplyTo,
+		ReplyName:           req.ReplyName,
 		CustomMessage:       req.CustomMessage,
 		IsMultipleSignature: true,
 		CustomerName:        customerName,
@@ -475,13 +469,29 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusNotFound, "Signer not found").JSON(c)
 	}
 
-	// If signer signed, persist customMessage and replyTo to submission if provided
+	// If signer signed, check if we need to send email to next signer
+	if req.Status == "signed" {
+		go func() {
+			// Read fresh submission from DB to get latest reply info
+			submission, err := h.server.DB.Queries().GetEsignSubmissionByID(context.Background(), signer.SubmissionID)
+			if err != nil {
+				h.server.Logger.Zap.Errorw("Error getting submission for next signer",
+					"submission_id", signer.SubmissionID,
+					"error", err)
+				return
+			}
+			// Use submission's stored values directly
+			h.processNextSigner(context.Background(), signer.SubmissionID, submission.CustomMessage, submission.ReplyName, submission.ReplyTo)
+		}()
+	}
+
+	// If signer signed, persist customMessage, replyTo, and replyName to submission if provided
 	// This ensures subsequent signers can use these values even if not provided in their requests
-	if req.Status == "signed" && (req.CustomMessage != nil || req.ReplyTo != nil) {
+	if req.Status == "signed" && (req.CustomMessage != nil || req.ReplyTo != nil || req.ReplyName != nil) {
 		// Get existing submission to preserve other fields
 		existingSubmission, err := h.server.DB.Queries().GetEsignSubmissionByID(c.Request().Context(), signer.SubmissionID)
 		if err == nil {
-			// Update submission with customMessage and/or replyTo if provided
+			// Update submission with customMessage, replyTo, and/or replyName if provided
 			customMessage := existingSubmission.CustomMessage
 			if req.CustomMessage != nil && *req.CustomMessage != "" {
 				customMessage = req.CustomMessage
@@ -490,6 +500,11 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 			replyTo := existingSubmission.ReplyTo
 			if req.ReplyTo != nil && *req.ReplyTo != "" {
 				replyTo = req.ReplyTo
+			}
+
+			replyName := existingSubmission.ReplyName
+			if req.ReplyName != nil && *req.ReplyName != "" {
+				replyName = req.ReplyName
 			}
 
 			// Update submission asynchronously to avoid blocking the response
@@ -504,21 +519,17 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 					Name:               existingSubmission.Name,
 					AttachmentRequired: existingSubmission.AttachmentRequired,
 					ReplyTo:            replyTo,
+					ReplyName:          replyName,
 					CustomMessage:      customMessage,
 					CustomerName:       existingSubmission.CustomerName,
 				})
 				if updateErr != nil {
-					h.server.Logger.Zap.Errorw("Error updating submission with customMessage/replyTo",
+					h.server.Logger.Zap.Errorw("Error updating submission with customMessage/replyTo/replyName",
 						"submission_id", signer.SubmissionID,
 						"error", updateErr)
 				}
 			}()
 		}
-	}
-
-	// If signer signed, check if we need to send email to next signer
-	if req.Status == "signed" {
-		go h.processNextSigner(context.Background(), signer.SubmissionID, req.CustomMessage, req.ReplyName, req.ReplyTo)
 	}
 
 	return responses.NewEsignSubmissionSignerResponseSuccess(signer).JSON(c)
