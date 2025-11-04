@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -416,6 +417,12 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
+	// Convert appointments to []interface{} to ensure proper JSON marshaling
+	appointmentsInterface := make([]interface{}, len(req.Appointments))
+	for i, appt := range req.Appointments {
+		appointmentsInterface[i] = appt
+	}
+
 	// Convert request to map for DME API
 	// DME API expects the payload wrapped in a "scheduleUpdate" field
 	payload := map[string]interface{}{
@@ -423,9 +430,22 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 			"locationCode": req.LocationCode,
 			"clerkId":      req.ClerkID,
 			"sessionId":    req.SessionID,
-			"appointments": req.Appointments,
+			"appointments": appointmentsInterface,
 		},
 	}
+
+	// Debug: Log the payload being sent
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to marshal payload for logging", zap.Error(err))
+	}
+	h.server.Logger.DesugarZap.Info("==================== SCHEDULE UPDATE PAYLOAD ====================")
+	h.server.Logger.DesugarZap.Info("Sending schedule update to DME",
+		zap.String("payload", string(payloadJSON)),
+		zap.String("clerkId", req.ClerkID),
+		zap.String("locationCode", req.LocationCode),
+		zap.Int("appointments_count", len(req.Appointments)))
+	h.server.Logger.DesugarZap.Info("===============================================================")
 
 	dmeResponse, err := h.server.DME.UpdateSchedule(ctx, payload, orgID, *systemID)
 	if err != nil {
