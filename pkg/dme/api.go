@@ -2444,3 +2444,24 @@ func (c *Client) NextReferenceNumber(ctx context.Context, customerID string, org
 
 	return "", fmt.Errorf("reference number not found in response")
 }
+
+// RetrievePayTypes retrieves available pay types from DME
+func (c *Client) RetrievePayTypes(ctx context.Context, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/General/PayTypes/RetrievePayTypes"
+
+	if err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	); err != nil {
+		return nil, fmt.Errorf("failed to retrieve pay types: %w", err)
+	}
+
+	return &result, nil
+}

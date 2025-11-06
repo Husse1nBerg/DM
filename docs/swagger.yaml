@@ -1487,6 +1487,8 @@ definitions:
     - organizationId
     - systemId
     type: object
+  requests.CreateDrystackDepositSessionRequest:
+    type: object
   requests.CreateEsignSubmissionRequest:
     properties:
       attachmentRequired:
@@ -13738,6 +13740,38 @@ paths:
       summary: Create Boat Sale Deposit session
       tags:
       - Payments
+  /payments/deposits/drystack/session:
+    post:
+      consumes:
+      - application/json
+      description: Creates an Adyen payment session embedding BatchData for automatic
+        DME posting via webhook
+      parameters:
+      - description: Drystack Deposit payment session request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateDrystackDepositSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Adyen session created successfully
+          schema: {}
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Create Drystack Deposit session
+      tags:
+      - Payments
   /payments/details:
     post:
       consumes:
@@ -13839,6 +13873,26 @@ paths:
       security:
       - BearerAuth: []
       summary: Create payment link
+      tags:
+      - Payments
+  /payments/paytypes:
+    get:
+      consumes:
+      - application/json
+      description: Fetches the list of PayTypes from DME for the user's current marina/system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of pay types
+          schema: {}
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Retrieve DME Pay Types
       tags:
       - Payments
   /payments/sessions:

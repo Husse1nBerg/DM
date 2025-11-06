@@ -252,7 +252,7 @@ func (h *PaymentHandler) CreateBoatSaleDepositSession(c echo.Context) error {
 			{
 				CustomerID:             req.CustomerID,
 				ReferenceNum:           paymentReference,
-				PayType:                "CC", // default to credit card; actual payment method is reflected in Adyen additionalData
+				PayType:                "ctp", // default to credit card; actual payment method is reflected in Adyen additionalData
 				TotalPayment:           amountFloat,
 				StatementDesc:          statementDesc,
 				CCAuthCode:             "",
@@ -318,6 +318,162 @@ func (h *PaymentHandler) CreateBoatSaleDepositSession(c echo.Context) error {
 	session, err := h.server.PaymentService.CreateCheckoutSession(context.Background(), adyenReq)
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to create boat sale deposit session", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create payment session").JSON(c)
+	}
+
+	// Return the complete Adyen session response directly
+	return c.JSON(http.StatusOK, session)
+}
+
+// CreateDrystackDepositSession creates a new payment session for a Drystack Deposit
+//
+//	@Summary		Create Drystack Deposit session
+//	@Description	Creates an Adyen payment session embedding BatchData for automatic DME posting via webhook
+//	@Tags			Payments
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body	requests.CreateDrystackDepositSessionRequest	true	"Drystack Deposit payment session request"
+//	@Success		200		{object}	interface{}	"Adyen session created successfully"
+//	@Failure		400		{object}	responses.Error		"Invalid request"
+//	@Failure		500		{object}	responses.Error		"Internal server error"
+//	@Security		BearerAuth
+//	@Router			/payments/deposits/drystack/session [post]
+func (h *PaymentHandler) CreateDrystackDepositSession(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	var req requests.CreateDrystackDepositSessionRequest
+	if err := c.Bind(&req); err != nil {
+		h.server.Logger.Zap.Error("Failed to bind drystack deposit session request", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		h.server.Logger.Zap.Error("Drystack deposit session request validation failed", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
+	}
+
+	// Require either a valid JWT (set by middleware) or a short-lived payment token
+	if c.Get("user") == nil && req.Token == "" {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authorization required: Bearer token or payment token").JSON(c)
+	}
+
+	// Validate marina and retrieve organization/system context
+	marinaID, err := uuid.Parse(req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marinaId").JSON(c)
+	}
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to get marina", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
+	}
+	if marina.SystemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Get next reference number from DME
+	refNum, err := h.server.DME.NextReferenceNumber(ctx, req.CustomerID, marina.OrganizationID, *marina.SystemID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to retrieve next reference number", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve next reference number").JSON(c)
+	}
+	paymentReference := fmt.Sprintf("CTP-%s", refNum)
+
+	// Build SubmitBatchRequest to embed as metadata for webhook-driven DME post
+	amountFloat := float64(req.Amount) / 100.0
+	// Prefer agreement number in description when provided; otherwise use boat reference
+	statementDesc := "Drystack Deposit"
+	if req.AgreementNum != "" {
+		statementDesc = fmt.Sprintf("Drystack Deposit : %s", req.AgreementNum)
+	} else if req.BoatID != "" {
+		statementDesc = fmt.Sprintf("Drystack Deposit : Boat %s", req.BoatID)
+	}
+
+	batchReq := requests.SubmitBatchRequest{
+		LocationCode: req.LocationCode,
+		PostBatch:    true,
+		CashReceipts: []requests.CashReceipt{
+			{
+				CustomerID:             req.CustomerID,
+				ReferenceNum:           paymentReference,
+				PayType:                "ctp", // default to credit card; actual payment method is reflected in Adyen additionalData
+				TotalPayment:           amountFloat,
+				StatementDesc:          statementDesc,
+				CCAuthCode:             "",
+				CCTransactionID:        "",
+				CCTransactionTimeStamp: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
+				CCSurcharge:            0,
+				CCSurchargeTax:         0,
+				CCSurchargeTaxSchema:   "",
+				CCSurchargeTaxIds:      []string{},
+				InvPayments: []requests.InvPayment{
+					{
+						InvoiceID: func() string {
+							if req.AgreementNum != "" {
+								return req.AgreementNum
+							}
+							return req.BoatID
+						}(),
+						LocationCode: req.LocationCode,
+						DepositType:  "SD", // Drystack deposit maps to SD per DMPay config
+						PaymentAmt:   amountFloat,
+						Description:  statementDesc,
+						CustomerID:   req.CustomerID,
+					},
+				},
+			},
+		},
+	}
+
+	// Prepare metadata
+	metadata := map[string]string{
+		"MarinaID":   req.MarinaID,
+		"EntityType": "customer",
+		"EntityID":   req.CustomerID,
+		"BoatID":     req.BoatID,
+	}
+	if req.AgreementNum != "" {
+		metadata["AgreementNum"] = req.AgreementNum
+	}
+	if req.Year != "" {
+		metadata["Year"] = req.Year
+	}
+
+	// Serialize batch request as JSON for metadata.BatchData
+	if batchJSON, err := json.Marshal(batchReq); err == nil {
+		metadata["BatchData"] = string(batchJSON)
+	} else {
+		h.server.Logger.Zap.Error("Failed to serialize batch request for metadata", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to prepare payment metadata").JSON(c)
+	}
+
+	// If short-lived token is provided, minimally enrich metadata with token context
+	if req.Token != "" {
+		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(c.Request().Context(), req.Token)
+		if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+		}
+		metadata["CustomerID"] = link.CustomerID
+		metadata["MarinaID"] = link.MarinaID.String()
+		if _, ok := metadata["EntityType"]; !ok {
+			metadata["EntityType"] = "customer"
+		}
+	}
+
+	// Create Adyen checkout session
+	adyenReq := adyen.CreateCheckoutSessionRequest{
+		Amount:      req.Amount,
+		Currency:    req.Currency,
+		CountryCode: req.CountryCode,
+		ReturnURL:   req.ReturnURL,
+		ShopperIP:   req.ShopperIP,
+		LineItems:   req.LineItems,
+		Metadata:    &metadata,
+	}
+
+	session, err := h.server.PaymentService.CreateCheckoutSession(context.Background(), adyenReq)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to create drystack deposit session", zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create payment session").JSON(c)
 	}
 
@@ -1164,4 +1320,45 @@ func (h *PaymentHandler) GetPaymentStats(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
+}
+
+// GetPayTypes retrieves available pay types from DME
+//
+//	@Summary		Retrieve DME Pay Types
+//	@Description	Fetches the list of PayTypes from DME for the user's current marina/system
+//	@Tags			Payments
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	interface{}	"List of pay types"
+//	@Failure		500	{object}	responses.Error	"Internal server error"
+//	@Security		BearerAuth
+//	@Router			/payments/paytypes [get]
+func (h *PaymentHandler) GetPayTypes(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	// Get user and marina info
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	user, err := h.server.DB.Queries().GetUserByID(ctx, claims.ID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user").JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to get marina", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
+	}
+	if marina.SystemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Call DME
+	result, err := h.server.DME.RetrievePayTypes(ctx, marina.OrganizationID, *marina.SystemID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to retrieve pay types", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve pay types").JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, result)
 }

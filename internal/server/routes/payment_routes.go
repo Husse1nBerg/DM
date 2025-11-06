@@ -24,6 +24,8 @@ func RegisterPaymentRoutes(s *s.Server, base *echo.Group, protected *echo.Group)
 	payments.GET("/stats", paymentHandler.GetPaymentStats)
 	payments.POST("/sessions", paymentHandler.CreatePaymentSession)
 	payments.POST("/deposits/boat-sale/session", paymentHandler.CreateBoatSaleDepositSession)
+	payments.POST("/deposits/drystack/session", paymentHandler.CreateDrystackDepositSession)
 	payments.POST("/links", paymentHandler.CreatePaymentLink)
 	payments.POST("/details", paymentHandler.HandlePaymentRedirect)
+	payments.GET("/paytypes", paymentHandler.GetPayTypes)
 }

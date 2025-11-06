@@ -11628,6 +11628,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments/deposits/drystack/session": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates an Adyen payment session embedding BatchData for automatic DME posting via webhook",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create Drystack Deposit session",
+                "parameters": [
+                    {
+                        "description": "Drystack Deposit payment session request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateDrystackDepositSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Adyen session created successfully",
+                        "schema": {}
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments/details": {
             "post": {
                 "security": [
@@ -11782,6 +11831,38 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/paytypes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetches the list of PayTypes from DME for the user's current marina/system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Retrieve DME Pay Types",
+                "responses": {
+                    "200": {
+                        "description": "List of pay types",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -18335,6 +18416,9 @@ const docTemplate = `{
                     "example": "SYS123456"
                 }
             }
+        },
+        "requests.CreateDrystackDepositSessionRequest": {
+            "type": "object"
         },
         "requests.CreateEsignSubmissionRequest": {
             "type": "object",
