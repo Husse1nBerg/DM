@@ -8,7 +8,7 @@ import (
 
 // NotificationPreferenceRequest represents a request for notification preferences
 type NotificationPreferenceRequest struct {
-	NotificationType string `json:"notificationType" validate:"required,oneof=message invite system alert document esign payment" example:"message"`
+	NotificationType string `json:"notificationType" validate:"required,oneof=message invite system alert document esign payment service" example:"message"`
 	Enabled          *bool  `json:"enabled" example:"true"`
 	DeliveryMethod   string `json:"deliveryMethod" validate:"required,oneof=system email all" example:"system"`
 }

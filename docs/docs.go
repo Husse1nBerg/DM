@@ -10117,7 +10117,8 @@ const docTemplate = `{
                             "alert",
                             "esign",
                             "document",
-                            "payment"
+                            "payment",
+                            "service"
                         ],
                         "type": "string",
                         "description": "Filter by notification type",
@@ -18261,6 +18262,16 @@ const docTemplate = `{
                     "type": "string",
                     "example": "customer@example.com"
                 },
+                "estimateId": {
+                    "description": "Optional estimate ID for PDF attachment",
+                    "type": "string",
+                    "example": "EST123"
+                },
+                "estimatePdfUrl": {
+                    "description": "Optional estimate PDF URL",
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/estimates/est123.pdf"
+                },
                 "name": {
                     "type": "string",
                     "example": "Customer Agreement"
@@ -18426,6 +18437,16 @@ const docTemplate = `{
                 "documentId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "estimateId": {
+                    "description": "Optional estimate ID for PDF attachment",
+                    "type": "string",
+                    "example": "EST123"
+                },
+                "estimatePdfUrl": {
+                    "description": "Optional estimate PDF URL",
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/estimates/est123.pdf"
                 },
                 "name": {
                     "type": "string",
@@ -19270,7 +19291,8 @@ const docTemplate = `{
                         "alert",
                         "document",
                         "esign",
-                        "payment"
+                        "payment",
+                        "service"
                     ],
                     "example": "message"
                 }

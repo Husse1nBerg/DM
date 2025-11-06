@@ -30,6 +30,15 @@ type HTMLEmail struct {
 	ReplyName   string // Reply to name
 }
 
+// Attachment represents an email attachment
+type Attachment struct {
+	Content     []byte // File content
+	Filename    string // Filename for the attachment
+	Type        string // MIME type (e.g., "application/pdf")
+	Disposition string // Content disposition (default: "attachment")
+	ContentID   string // Content ID for inline attachments (optional)
+}
+
 // TemplateEmail contains data for sending an email using a SendGrid template
 type TemplateEmail struct {
 	EmailData
@@ -38,6 +47,7 @@ type TemplateEmail struct {
 	ReplyTo      string                 // Reply to email address
 	ReplyName    string                 // Reply to name
 	Subject      string                 // Subject of the email
+	Attachments  []Attachment           // Email attachments
 }
 
 // WelcomeTemplateData contains specific fields for the welcome email template

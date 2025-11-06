@@ -1,6 +1,7 @@
 package sendgrid
 
 import (
+	"encoding/base64"
 	"errors"
 	"time"
 
@@ -239,6 +240,27 @@ func (c *Client) sendTemplateEmailSync(email *TemplateEmail) error {
 	}
 
 	message.AddPersonalizations(personalization)
+
+	// Add attachments if any
+	if len(email.Attachments) > 0 {
+		for _, att := range email.Attachments {
+			attachment := mail.NewAttachment()
+			// SendGrid requires base64 encoded content
+			encodedContent := base64.StdEncoding.EncodeToString(att.Content)
+			attachment.SetContent(encodedContent)
+			attachment.SetType(att.Type)
+			attachment.SetFilename(att.Filename)
+			if att.Disposition != "" {
+				attachment.SetDisposition(att.Disposition)
+			} else {
+				attachment.SetDisposition("attachment")
+			}
+			if att.ContentID != "" {
+				attachment.SetContentID(att.ContentID)
+			}
+			message.AddAttachment(attachment)
+		}
+	}
 
 	// Send the email
 	response, err := c.client.Send(message)
@@ -505,7 +527,7 @@ func (c *Client) SendAssignedToMarinaEmail(to []string, subject string, data Ass
 }
 
 // SendESignSubmissionEmail sends a message email using the message template
-func (c *Client) SendESignSubmissionEmail(to []string, subject string, data ESignSubmissionTemplateData) (uuid.UUID, <-chan EmailStatus, error) {
+func (c *Client) SendESignSubmissionEmail(to []string, subject string, data ESignSubmissionTemplateData, attachments ...Attachment) (uuid.UUID, <-chan EmailStatus, error) {
 	templateID, ok := c.config.TemplatesMap["esign_submission"]
 	if !ok {
 		return uuid.Nil, nil, errors.New("esign submission template not found in configuration")
@@ -535,6 +557,7 @@ func (c *Client) SendESignSubmissionEmail(to []string, subject string, data ESig
 		ReplyName:    data.ReplyName,
 		TemplateID:   templateID,
 		TemplateData: templateData,
+		Attachments:  attachments,
 	}
 
 	taskID, resultChan := c.SendTemplateEmail(email)
