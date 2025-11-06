@@ -1344,6 +1344,8 @@ definitions:
         example: 123 Main St
         type: string
     type: object
+  requests.CreateBoatSaleDepositSessionRequest:
+    type: object
   requests.CreateContactRequest:
     properties:
       description:
@@ -13702,6 +13704,38 @@ paths:
       security:
       - BearerAuth: []
       summary: Get payment by ID
+      tags:
+      - Payments
+  /payments/deposits/boat-sale/session:
+    post:
+      consumes:
+      - application/json
+      description: Creates an Adyen payment session embedding BatchData for automatic
+        DME posting via webhook
+      parameters:
+      - description: Boat Sale Deposit payment session request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateBoatSaleDepositSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Adyen session created successfully
+          schema: {}
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Create Boat Sale Deposit session
       tags:
       - Payments
   /payments/details:

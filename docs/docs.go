@@ -11579,6 +11579,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments/deposits/boat-sale/session": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates an Adyen payment session embedding BatchData for automatic DME posting via webhook",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create Boat Sale Deposit session",
+                "parameters": [
+                    {
+                        "description": "Boat Sale Deposit payment session request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateBoatSaleDepositSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Adyen session created successfully",
+                        "schema": {}
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments/details": {
             "post": {
                 "security": [
@@ -18087,6 +18136,9 @@ const docTemplate = `{
                     "example": "123 Main St"
                 }
             }
+        },
+        "requests.CreateBoatSaleDepositSessionRequest": {
+            "type": "object"
         },
         "requests.CreateContactRequest": {
             "type": "object",
