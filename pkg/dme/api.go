@@ -765,13 +765,24 @@ func (c *Client) RetrieveWorkOrderOperations(ctx context.Context, page int, page
 }
 
 // RetrieveAllWorkOrderOperations retrieves all operation codes (not filtered by USE.ONLINE)
-func (c *Client) RetrieveAllWorkOrderOperations(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*OperationsListResponse, error) {
+func (c *Client) RetrieveAllWorkOrderOperations(ctx context.Context, page int, pageSize int, opCode string, categoryCode string, desc string, organizationID uuid.UUID, systemID string) (*OperationsListResponse, error) {
 	var result OperationsListResponse
 	endpoint := "/Service/WorkOrders/RetrieveAllOperations"
 
-	payload := PaginationRequest{
-		Page:     page,
-		PageSize: pageSize,
+	payload := map[string]interface{}{
+		"page":     page,
+		"pageSize": pageSize,
+	}
+
+	// Add optional filter parameters if provided
+	if opCode != "" {
+		payload["opCode"] = opCode
+	}
+	if categoryCode != "" {
+		payload["categoryCode"] = categoryCode
+	}
+	if desc != "" {
+		payload["desc"] = desc
 	}
 
 	err := c.DoJSONRequest(
@@ -789,6 +800,32 @@ func (c *Client) RetrieveAllWorkOrderOperations(ctx context.Context, page int, p
 	}
 
 	return &result, nil
+}
+
+// SearchAllOperations searches for operation codes by search string
+func (c *Client) SearchAllOperations(ctx context.Context, searchString string, directHit bool, organizationID uuid.UUID, systemID string) ([]map[string]interface{}, error) {
+	var result []map[string]interface{}
+	endpoint := "/Service/WorkOrders/RetrieveAllOperations/Search"
+
+	params := make(map[string]string)
+	params["SearchString"] = searchString
+	params["DirectHit"] = fmt.Sprintf("%t", directHit)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search operations: %w", err)
+	}
+
+	return result, nil
 }
 
 // RetrieveCompletedWorkOrders retrieves work orders completed on a specific date
@@ -1008,6 +1045,72 @@ func (c *Client) SubmitWorkOrderTimeEntry(ctx context.Context, timeEntry map[str
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to submit work order time entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitWorkOrderSubletEntry submits a sublet entry for a work order
+func (c *Client) SubmitWorkOrderSubletEntry(ctx context.Context, subletEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/WorkOrders/SubmitSubletEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		subletEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit work order sublet entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitEstimateSubletEntry submits a sublet entry for an estimate
+func (c *Client) SubmitEstimateSubletEntry(ctx context.Context, subletEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Estimates/SubmitSubletEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		subletEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit estimate sublet entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitEstimatePartEntry submits a part entry for an estimate
+func (c *Client) SubmitEstimatePartEntry(ctx context.Context, partEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Estimates/SubmitPartEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		partEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit estimate part entry: %w", err)
 	}
 
 	return &result, nil

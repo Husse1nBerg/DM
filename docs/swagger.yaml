@@ -2341,6 +2341,12 @@ definitions:
     type: object
   requests.RetrieveAllOperationsRequest:
     properties:
+      categoryCode:
+        type: string
+      desc:
+        type: string
+      opCode:
+        type: string
       page:
         minimum: 0
         type: integer
@@ -2383,6 +2389,8 @@ definitions:
       estHours:
         type: number
       id:
+        description: ID can be empty for new appointments - DME API will generate
+          it
         type: string
       isDeleted:
         type: boolean
@@ -2405,7 +2413,6 @@ definitions:
     required:
     - apptDate
     - endTime
-    - id
     - locationCode
     - opcode
     - startTime
@@ -2447,6 +2454,15 @@ definitions:
     - clerkId
     - locationCode
     - sessionId
+    type: object
+  requests.SearchAllOperationsRequest:
+    properties:
+      directHit:
+        type: boolean
+      searchString:
+        type: string
+    required:
+    - searchString
     type: object
   requests.SendHTMLEmailRequest:
     description: Send HTML email request payload
@@ -2537,6 +2553,97 @@ definitions:
     - cashReceipts
     - locationCode
     - postBatch
+    type: object
+  requests.SubmitEstimatePartEntryRequest:
+    properties:
+      description:
+        type: string
+      estimateId:
+        type: string
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partNumber:
+        type: string
+      quantity:
+        minimum: 0.01
+        type: number
+      unitPrice:
+        type: number
+    required:
+    - estimateId
+    - opCode
+    - partNumber
+    - quantity
+    type: object
+  requests.SubmitEstimateSubletEntryRequest:
+    properties:
+      department:
+        type: string
+      description:
+        type: string
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      subletDiscount:
+        type: number
+      subletLaborDiscount:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
+        type: string
+    required:
+    - opCode
+    - purchaseDate
+    - vendorId
+    - workOrderId
+    type: object
+  requests.SubmitWorkOrderSubletEntryRequest:
+    properties:
+      department:
+        type: string
+      description:
+        type: string
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      subletDiscount:
+        type: number
+      subletLaborDiscount:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
+        type: string
+    required:
+    - opCode
+    - purchaseDate
+    - vendorId
+    - workOrderId
     type: object
   requests.UpdateAddressRequest:
     properties:
@@ -5305,6 +5412,22 @@ definitions:
     properties:
       data: {}
     type: object
+  responses.SearchAllOperationsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.SearchOperationResult'
+        type: array
+    type: object
+  responses.SearchOperationResult:
+    properties:
+      categoryCode:
+        type: string
+      desc:
+        type: string
+      opcode:
+        type: string
+    type: object
   responses.ServiceOPCategoryCodesResponse:
     properties:
       currentPage:
@@ -5427,6 +5550,140 @@ definitions:
         type: string
       userLimit:
         example: Unlimited
+        type: string
+    type: object
+  responses.SubmitEstimatePartEntryResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      result:
+        type: string
+    type: object
+  responses.SubmitEstimateSubletEntryResponse:
+    properties:
+      billToAddress1:
+        type: string
+      billToAddress2:
+        type: string
+      billToAddress3:
+        type: string
+      billToAddress4:
+        type: string
+      billToAddress5:
+        type: string
+      billToAddress6:
+        type: string
+      billToName:
+        type: string
+      description:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      shipToAddress1:
+        type: string
+      shipToAddress2:
+        type: string
+      shipToAddress3:
+        type: string
+      shipToAddress4:
+        type: string
+      shipToAddress5:
+        type: string
+      shipToAddress6:
+        type: string
+      shipToName:
+        type: string
+      spid:
+        type: string
+      subletEntryId:
+        type: string
+      success:
+        type: boolean
+      totalCost:
+        type: number
+      totalPrice:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
+        type: string
+    type: object
+  responses.SubmitSubletEntryResponse:
+    properties:
+      billToAddress1:
+        type: string
+      billToAddress2:
+        type: string
+      billToAddress3:
+        type: string
+      billToAddress4:
+        type: string
+      billToAddress5:
+        type: string
+      billToAddress6:
+        type: string
+      billToName:
+        type: string
+      description:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      shipToAddress1:
+        type: string
+      shipToAddress2:
+        type: string
+      shipToAddress3:
+        type: string
+      shipToAddress4:
+        type: string
+      shipToAddress5:
+        type: string
+      shipToAddress6:
+        type: string
+      shipToName:
+        type: string
+      spid:
+        type: string
+      subletEntryId:
+        type: string
+      success:
+        type: boolean
+      totalCost:
+        type: number
+      totalPrice:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
         type: string
     type: object
   responses.UnreadCountResponse:
@@ -9444,6 +9701,36 @@ paths:
       summary: Delete estimate operation
       tags:
       - Estimates
+  /estimates/part:
+    post:
+      consumes:
+      - application/json
+      description: Submits a part entry for an estimate
+      parameters:
+      - description: Part entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitEstimatePartEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitEstimatePartEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit estimate part entry
+      tags:
+      - Estimates
   /estimates/retrieve:
     get:
       consumes:
@@ -9542,6 +9829,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search estimates
+      tags:
+      - Estimates
+  /estimates/sublet:
+    post:
+      consumes:
+      - application/json
+      description: Submits a sublet entry for an estimate
+      parameters:
+      - description: Sublet entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitEstimateSubletEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitEstimateSubletEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit estimate sublet entry
       tags:
       - Estimates
   /estimates/sublets:
@@ -15728,6 +16045,36 @@ paths:
       summary: Retrieve all work order operations
       tags:
       - WorkOrders
+  /work-orders/operations/search:
+    post:
+      consumes:
+      - application/json
+      description: Searches for operation codes by search string
+      parameters:
+      - description: Search parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SearchAllOperationsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SearchAllOperationsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search all work order operations
+      tags:
+      - WorkOrders
   /work-orders/retrieve:
     get:
       consumes:
@@ -15819,6 +16166,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search work orders
+      tags:
+      - WorkOrders
+  /work-orders/sublet:
+    post:
+      consumes:
+      - application/json
+      description: Submits a sublet entry for a work order
+      parameters:
+      - description: Sublet entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitWorkOrderSubletEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitSubletEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit work order sublet entry
       tags:
       - WorkOrders
   /work-orders/sublets:

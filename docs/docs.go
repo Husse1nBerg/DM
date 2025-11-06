@@ -5690,6 +5690,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/estimates/part": {
+            "post": {
+                "description": "Submits a part entry for an estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Submit estimate part entry",
+                "parameters": [
+                    {
+                        "description": "Part entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitEstimatePartEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitEstimatePartEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/estimates/retrieve": {
             "get": {
                 "description": "Retrieves a single estimate with detail or summary information",
@@ -5824,6 +5870,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.EstimateSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/sublet": {
+            "post": {
+                "description": "Submits a sublet entry for an estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Submit estimate sublet entry",
+                "parameters": [
+                    {
+                        "description": "Sublet entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitEstimateSubletEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitEstimateSubletEntryResponse"
                         }
                     },
                     "400": {
@@ -15293,6 +15385,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/operations/search": {
+            "post": {
+                "description": "Searches for operation codes by search string",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Search all work order operations",
+                "parameters": [
+                    {
+                        "description": "Search parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SearchAllOperationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SearchAllOperationsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/retrieve": {
             "get": {
                 "description": "Retrieves a work order by its ID",
@@ -15417,6 +15555,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.WorkOrderSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/sublet": {
+            "post": {
+                "description": "Submits a sublet entry for a work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Submit work order sublet entry",
+                "parameters": [
+                    {
+                        "description": "Sublet entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitWorkOrderSubletEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitSubletEntryResponse"
                         }
                     },
                     "400": {
@@ -19089,6 +19273,15 @@ const docTemplate = `{
                 "pageSize"
             ],
             "properties": {
+                "categoryCode": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
                 "page": {
                     "type": "integer",
                     "minimum": 0
@@ -19134,7 +19327,6 @@ const docTemplate = `{
             "required": [
                 "apptDate",
                 "endTime",
-                "id",
                 "locationCode",
                 "opcode",
                 "startTime",
@@ -19156,6 +19348,7 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "id": {
+                    "description": "ID can be empty for new appointments - DME API will generate it",
                     "type": "string"
                 },
                 "isDeleted": {
@@ -19235,6 +19428,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sessionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.SearchAllOperationsRequest": {
+            "type": "object",
+            "required": [
+                "searchString"
+            ],
+            "properties": {
+                "directHit": {
+                    "type": "boolean"
+                },
+                "searchString": {
                     "type": "string"
                 }
             }
@@ -19363,6 +19570,139 @@ const docTemplate = `{
                 },
                 "postBatch": {
                     "type": "boolean"
+                }
+            }
+        },
+        "requests.SubmitEstimatePartEntryRequest": {
+            "type": "object",
+            "required": [
+                "estimateId",
+                "opCode",
+                "partNumber",
+                "quantity"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "estimateId": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "number",
+                    "minimum": 0.01
+                },
+                "unitPrice": {
+                    "type": "number"
+                }
+            }
+        },
+        "requests.SubmitEstimateSubletEntryRequest": {
+            "type": "object",
+            "required": [
+                "opCode",
+                "purchaseDate",
+                "vendorId",
+                "workOrderId"
+            ],
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "subletDiscount": {
+                    "type": "number"
+                },
+                "subletLaborDiscount": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.SubmitWorkOrderSubletEntryRequest": {
+            "type": "object",
+            "required": [
+                "opCode",
+                "purchaseDate",
+                "vendorId",
+                "workOrderId"
+            ],
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "subletDiscount": {
+                    "type": "number"
+                },
+                "subletLaborDiscount": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
                 }
             }
         },
@@ -23315,6 +23655,31 @@ const docTemplate = `{
                 "data": {}
             }
         },
+        "responses.SearchAllOperationsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.SearchOperationResult"
+                    }
+                }
+            }
+        },
+        "responses.SearchOperationResult": {
+            "type": "object",
+            "properties": {
+                "categoryCode": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.ServiceOPCategoryCodesResponse": {
             "type": "object",
             "properties": {
@@ -23496,6 +23861,208 @@ const docTemplate = `{
                 "userLimit": {
                     "type": "string",
                     "example": "Unlimited"
+                }
+            }
+        },
+        "responses.SubmitEstimatePartEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SubmitEstimateSubletEntryResponse": {
+            "type": "object",
+            "properties": {
+                "billToAddress1": {
+                    "type": "string"
+                },
+                "billToAddress2": {
+                    "type": "string"
+                },
+                "billToAddress3": {
+                    "type": "string"
+                },
+                "billToAddress4": {
+                    "type": "string"
+                },
+                "billToAddress5": {
+                    "type": "string"
+                },
+                "billToAddress6": {
+                    "type": "string"
+                },
+                "billToName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "shipToAddress1": {
+                    "type": "string"
+                },
+                "shipToAddress2": {
+                    "type": "string"
+                },
+                "shipToAddress3": {
+                    "type": "string"
+                },
+                "shipToAddress4": {
+                    "type": "string"
+                },
+                "shipToAddress5": {
+                    "type": "string"
+                },
+                "shipToAddress6": {
+                    "type": "string"
+                },
+                "shipToName": {
+                    "type": "string"
+                },
+                "spid": {
+                    "type": "string"
+                },
+                "subletEntryId": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "totalPrice": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SubmitSubletEntryResponse": {
+            "type": "object",
+            "properties": {
+                "billToAddress1": {
+                    "type": "string"
+                },
+                "billToAddress2": {
+                    "type": "string"
+                },
+                "billToAddress3": {
+                    "type": "string"
+                },
+                "billToAddress4": {
+                    "type": "string"
+                },
+                "billToAddress5": {
+                    "type": "string"
+                },
+                "billToAddress6": {
+                    "type": "string"
+                },
+                "billToName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "shipToAddress1": {
+                    "type": "string"
+                },
+                "shipToAddress2": {
+                    "type": "string"
+                },
+                "shipToAddress3": {
+                    "type": "string"
+                },
+                "shipToAddress4": {
+                    "type": "string"
+                },
+                "shipToAddress5": {
+                    "type": "string"
+                },
+                "shipToAddress6": {
+                    "type": "string"
+                },
+                "shipToName": {
+                    "type": "string"
+                },
+                "spid": {
+                    "type": "string"
+                },
+                "subletEntryId": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "totalPrice": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
                 }
             }
         },

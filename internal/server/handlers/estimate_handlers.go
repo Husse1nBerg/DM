@@ -814,3 +814,135 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 	response := responses.ConvertEstimateUpdate(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary Submit estimate sublet entry
+// @Description Submits a sublet entry for an estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param request body requests.SubmitEstimateSubletEntryRequest true "Sublet entry data"
+// @Success 200 {object} responses.SubmitEstimateSubletEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/sublet [post]
+func (h *EstimateHandler) SubmitEstimateSubletEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SubmitEstimateSubletEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	subletEntry := map[string]interface{}{
+		"workOrderId":         req.WorkOrderId,
+		"opCode":              req.OpCode,
+		"vendorId":            req.VendorId,
+		"purchaseDate":        req.PurchaseDate,
+		"partsPrice":          req.PartsPrice,
+		"partsCost":           req.PartsCost,
+		"laborPrice":          req.LaborPrice,
+		"laborCost":           req.LaborCost,
+		"description":         req.Description,
+		"subletDiscount":      req.SubletDiscount,
+		"subletLaborDiscount": req.SubletLaborDiscount,
+		"locationCode":        req.LocationCode,
+		"department":          req.Department,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitEstimateSubletEntry(ctx, subletEntry, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit estimate sublet entry",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimateSubmitSubletResult(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit estimate part entry
+// @Description Submits a part entry for an estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param request body requests.SubmitEstimatePartEntryRequest true "Part entry data"
+// @Success 200 {object} responses.SubmitEstimatePartEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/part [post]
+func (h *EstimateHandler) SubmitEstimatePartEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SubmitEstimatePartEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	partEntry := map[string]interface{}{
+		"estimateId":   req.EstimateId,
+		"opCode":       req.OpCode,
+		"partNumber":   req.PartNumber,
+		"quantity":     req.Quantity,
+		"unitPrice":    req.UnitPrice,
+		"description":  req.Description,
+		"locationCode": req.LocationCode,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitEstimatePartEntry(ctx, partEntry, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit estimate part entry",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimateSubmitPartResult(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}

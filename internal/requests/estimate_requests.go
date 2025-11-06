@@ -82,3 +82,31 @@ type EstimateRetrieveListRequest struct {
 	Page           int      `json:"page" validate:"required,min=0"`
 	PageSize       int      `json:"pageSize" validate:"required,min=1,max=100"`
 }
+
+// SubmitEstimateSubletEntryRequest represents a request to submit a sublet entry for an estimate
+type SubmitEstimateSubletEntryRequest struct {
+	WorkOrderId         string  `json:"workOrderId" validate:"required"`
+	OpCode              string  `json:"opCode" validate:"required"`
+	VendorId            string  `json:"vendorId" validate:"required"`
+	PurchaseDate        string  `json:"purchaseDate" validate:"required"`
+	PartsPrice          float64 `json:"partsPrice"`
+	PartsCost           float64 `json:"partsCost"`
+	LaborPrice          float64 `json:"laborPrice"`
+	LaborCost           float64 `json:"laborCost"`
+	Description         string  `json:"description,omitempty"`
+	SubletDiscount      float64 `json:"subletDiscount"`
+	SubletLaborDiscount float64 `json:"subletLaborDiscount"`
+	LocationCode        string  `json:"locationCode,omitempty"`
+	Department          string  `json:"department,omitempty"`
+}
+
+// SubmitEstimatePartEntryRequest represents a request to submit a part entry for an estimate
+type SubmitEstimatePartEntryRequest struct {
+	EstimateId   string  `json:"estimateId" validate:"required"`
+	OpCode       string  `json:"opCode" validate:"required"`
+	PartNumber   string  `json:"partNumber" validate:"required"`
+	Quantity     float64 `json:"quantity" validate:"required,min=0.01"`
+	UnitPrice    float64 `json:"unitPrice"`
+	Description  string  `json:"description,omitempty"`
+	LocationCode string  `json:"locationCode,omitempty"`
+}

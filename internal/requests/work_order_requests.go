@@ -160,8 +160,34 @@ type WorkOrderListTimeEntryRequest struct {
 	PageSize int    `query:"pageSize" validate:"required,min=1,max=100"`
 }
 
-// RetrieveAllOperationsRequest represents a request to retrieve all operation codes with pagination
+// RetrieveAllOperationsRequest represents a request to retrieve all operation codes with pagination and filters
 type RetrieveAllOperationsRequest struct {
-	Page     int `json:"page" validate:"required,min=0"`
-	PageSize int `json:"pageSize" validate:"required,min=1,max=1000"`
+	Page         int    `json:"page" validate:"required,min=0"`
+	PageSize     int    `json:"pageSize" validate:"required,min=1,max=1000"`
+	OpCode       string `json:"opCode,omitempty"`
+	CategoryCode string `json:"categoryCode,omitempty"`
+	Desc         string `json:"desc,omitempty"`
+}
+
+// SearchAllOperationsRequest represents a request to search for operation codes
+type SearchAllOperationsRequest struct {
+	SearchString string `json:"searchString" validate:"required"`
+	DirectHit    bool   `json:"directHit"`
+}
+
+// SubmitWorkOrderSubletEntryRequest represents a request to submit a sublet entry for a work order
+type SubmitWorkOrderSubletEntryRequest struct {
+	WorkOrderId         string  `json:"workOrderId" validate:"required"`
+	OpCode              string  `json:"opCode" validate:"required"`
+	VendorId            string  `json:"vendorId" validate:"required"`
+	PurchaseDate        string  `json:"purchaseDate" validate:"required"`
+	PartsPrice          float64 `json:"partsPrice"`
+	PartsCost           float64 `json:"partsCost"`
+	LaborPrice          float64 `json:"laborPrice"`
+	LaborCost           float64 `json:"laborCost"`
+	Description         string  `json:"description,omitempty"`
+	SubletDiscount      float64 `json:"subletDiscount"`
+	SubletLaborDiscount float64 `json:"subletLaborDiscount"`
+	LocationCode        string  `json:"locationCode,omitempty"`
+	Department          string  `json:"department,omitempty"`
 }

@@ -664,7 +664,7 @@ func (h *WorkOrderHandler) RetrieveAllWorkOrderOperations(c echo.Context) error 
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveAllWorkOrderOperations(ctx, req.Page, req.PageSize, orgID, *systemID)
+	dmeResponse, err := h.server.DME.RetrieveAllWorkOrderOperations(ctx, req.Page, req.PageSize, req.OpCode, req.CategoryCode, req.Desc, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve all work order operations",
 			zap.Error(err))
@@ -672,6 +672,127 @@ func (h *WorkOrderHandler) RetrieveAllWorkOrderOperations(c echo.Context) error 
 	}
 
 	response := responses.ConvertWorkOrderAllOperations(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Search all work order operations
+// @Description Searches for operation codes by search string
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param request body requests.SearchAllOperationsRequest true "Search parameters"
+// @Success 200 {object} responses.SearchAllOperationsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/operations/search [post]
+func (h *WorkOrderHandler) SearchAllWorkOrderOperations(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SearchAllOperationsRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.SearchAllOperations(ctx, req.SearchString, req.DirectHit, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to search operations",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertSearchOperations(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit work order sublet entry
+// @Description Submits a sublet entry for a work order
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param request body requests.SubmitWorkOrderSubletEntryRequest true "Sublet entry data"
+// @Success 200 {object} responses.SubmitSubletEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/sublet [post]
+func (h *WorkOrderHandler) SubmitWorkOrderSubletEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SubmitWorkOrderSubletEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	subletEntry := map[string]interface{}{
+		"workOrderId":         req.WorkOrderId,
+		"opCode":              req.OpCode,
+		"vendorId":            req.VendorId,
+		"purchaseDate":        req.PurchaseDate,
+		"partsPrice":          req.PartsPrice,
+		"partsCost":           req.PartsCost,
+		"laborPrice":          req.LaborPrice,
+		"laborCost":           req.LaborCost,
+		"description":         req.Description,
+		"subletDiscount":      req.SubletDiscount,
+		"subletLaborDiscount": req.SubletLaborDiscount,
+		"locationCode":        req.LocationCode,
+		"department":          req.Department,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitWorkOrderSubletEntry(ctx, subletEntry, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit work order sublet entry",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertSubmitSubletResult(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
