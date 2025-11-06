@@ -1485,8 +1485,6 @@ definitions:
     - organizationId
     - systemId
     type: object
-  requests.CreateDrystackDepositSessionRequest:
-    type: object
   requests.CreateEsignSubmissionRequest:
     properties:
       attachmentRequired:
@@ -13704,38 +13702,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Get payment by ID
-      tags:
-      - Payments
-  /payments/deposits/drystack/session:
-    post:
-      consumes:
-      - application/json
-      description: Creates an Adyen payment session embedding BatchData for automatic
-        DME posting via webhook
-      parameters:
-      - description: Drystack Deposit payment session request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateDrystackDepositSessionRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Adyen session created successfully
-          schema: {}
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/responses.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/responses.Error'
-      security:
-      - BearerAuth: []
-      summary: Create Drystack Deposit session
       tags:
       - Payments
   /payments/details:
