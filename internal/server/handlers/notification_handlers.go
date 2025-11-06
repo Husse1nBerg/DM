@@ -88,7 +88,7 @@ func (h *NotificationHandler) CreateNotificationHandler(c echo.Context) error {
 //	@Param			unreadOnly	query		bool	false	"Show only unread notifications (legacy)"	default(false)
 //	@Param			search		query		string	false	"Global search across title and content"
 //	@Param			read		query		bool	false	"Filter by read status (true/false)"
-//	@Param			type		query		string	false	"Filter by notification type" Enums(message, invite, system, alert, esign, document, payment)
+//	@Param			type		query		string	false	"Filter by notification type" Enums(message, invite, system, alert, esign, document, payment, service)
 //	@Param			sortBy		query		string	false	"Sort field" Enums(type, read, created_at, title) default(priority+created_at)
 //	@Param			sortOrder	query		string	false	"Sort direction" Enums(asc, desc) default(desc)
 //	@Success		200			{object}	responses.NotificationListResponse "Paginated list of notifications"

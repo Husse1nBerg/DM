@@ -1502,6 +1502,14 @@ definitions:
       email:
         example: customer@example.com
         type: string
+      estimateId:
+        description: Optional estimate ID for PDF attachment
+        example: EST123
+        type: string
+      estimatePdfUrl:
+        description: Optional estimate PDF URL
+        example: https://s3.amazonaws.com/bucket/estimates/est123.pdf
+        type: string
       name:
         example: Customer Agreement
         type: string
@@ -1623,6 +1631,14 @@ definitions:
         type: string
       documentId:
         example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      estimateId:
+        description: Optional estimate ID for PDF attachment
+        example: EST123
+        type: string
+      estimatePdfUrl:
+        description: Optional estimate PDF URL
+        example: https://s3.amazonaws.com/bucket/estimates/est123.pdf
         type: string
       name:
         example: Multi-Signature Agreement
@@ -2220,6 +2236,7 @@ definitions:
         - document
         - esign
         - payment
+        - service
         example: message
         type: string
     required:
@@ -12625,6 +12642,7 @@ paths:
         - esign
         - document
         - payment
+        - service
         in: query
         name: type
         type: string
