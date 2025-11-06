@@ -447,6 +447,19 @@ func (h *PaymentHandler) processNotification(notification interface{}) {
 						} else {
 							statementDesc = "Drystack Deposit"
 						}
+					case "KD":
+						// Key Deposit typically ties to a boat; use BoatID as InvoiceId
+						if boatID != "" {
+							invoiceID = boatID
+						}
+						// Description preference: AgreementNum if provided, else BoatID
+						if agreementNum != "" {
+							statementDesc = fmt.Sprintf("Key Deposit : %s", agreementNum)
+						} else if boatID != "" {
+							statementDesc = fmt.Sprintf("Key Deposit : Boat %s", boatID)
+						} else {
+							statementDesc = "Key Deposit"
+						}
 					default:
 						if agreementNum != "" {
 							statementDesc = fmt.Sprintf("Deposit : %s", agreementNum)
