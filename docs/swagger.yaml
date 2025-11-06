@@ -5809,6 +5809,97 @@ definitions:
         example: invalid_value
         type: string
     type: object
+  responses.VendorDTO:
+    properties:
+      accountNumber:
+        type: string
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      city:
+        type: string
+      contactName:
+        type: string
+      country:
+        type: string
+      emailAddress:
+        type: string
+      fax:
+        type: string
+      paymentAddress1:
+        type: string
+      paymentAddress2:
+        type: string
+      paymentAddress3:
+        type: string
+      paymentCity:
+        type: string
+      paymentContactName:
+        type: string
+      paymentCountry:
+        type: string
+      paymentFax:
+        type: string
+      paymentName:
+        type: string
+      paymentPhone:
+        type: string
+      paymentPostalCode:
+        type: string
+      paymentState:
+        type: string
+      phone:
+        type: string
+      postalCode:
+        type: string
+      state:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
+  responses.VendorListResponse:
+    properties:
+      count:
+        type: integer
+      vendors:
+        items:
+          $ref: '#/definitions/responses.VendorDTO'
+        type: array
+    type: object
+  responses.VendorResponse:
+    properties:
+      vendor:
+        $ref: '#/definitions/responses.VendorDTO'
+    type: object
+  responses.VendorSearchResponse:
+    properties:
+      count:
+        type: integer
+      vendors:
+        items:
+          $ref: '#/definitions/responses.VendorSearchResultDTO'
+        type: array
+    type: object
+  responses.VendorSearchResultDTO:
+    properties:
+      accountNumber:
+        type: string
+      contactName:
+        type: string
+      emailAddress:
+        type: string
+      phone:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
   responses.VesselGalleryItemResponse:
     description: Vessel gallery item data including image URL, description, and main
       image flag
@@ -6777,6 +6868,123 @@ paths:
       summary: Test task operations
       tags:
       - test
+  /api/v1/vendors:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific vendor by ID from the DME API
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Vendor ID
+        in: query
+        name: vendorId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VendorResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a vendor
+      tags:
+      - Vendors
+  /api/v1/vendors/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all vendors from the DME API
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VendorListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List all vendors
+      tags:
+      - Vendors
+  /api/v1/vendors/search:
+    get:
+      consumes:
+      - application/json
+      description: Search for vendors based on search criteria
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Search string (vendor name, phone, email, etc.)
+        in: query
+        name: searchString
+        required: true
+        type: string
+      - description: Only return result if exactly one match is found
+        in: query
+        name: directHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VendorSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search vendors
+      tags:
+      - Vendors
   /auth/login:
     post:
       consumes:

@@ -2334,3 +2334,82 @@ type BatchSubmissionResponse struct {
 	TotalAmount  float64   `json:"totalAmount"`
 	ReceiptCount int       `json:"receiptCount"`
 }
+
+// -----
+// Vendor API
+// -----
+
+// ListVendors retrieves a list of all vendors
+func (c *Client) ListVendors(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Vendor, error) {
+	var result []Vendor
+	endpoint := "/Vendors/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vendors: %w", err)
+	}
+
+	return result, nil
+}
+
+// SearchVendors searches for vendors based on search string
+func (c *Client) SearchVendors(ctx context.Context, searchString string, directHit bool, organizationID uuid.UUID, systemID string) ([]VendorSearchResult, error) {
+	var result []VendorSearchResult
+	endpoint := "/Vendors/Search"
+
+	params := map[string]string{
+		"SearchString": searchString,
+		"DirectHit":    fmt.Sprintf("%t", directHit),
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search vendors: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveVendor retrieves a single vendor by ID
+func (c *Client) RetrieveVendor(ctx context.Context, vendorID string, organizationID uuid.UUID, systemID string) (*Vendor, error) {
+	var result Vendor
+	endpoint := "/Vendors/RetrieveVendor"
+
+	params := map[string]string{
+		"VendorId": vendorID,
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve vendor: %w", err)
+	}
+
+	return &result, nil
+}

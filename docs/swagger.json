@@ -1200,6 +1200,182 @@
                 }
             }
         },
+        "/api/v1/vendors": {
+            "get": {
+                "description": "Retrieves a specific vendor by ID from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vendors"
+                ],
+                "summary": "Retrieve a vendor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Vendor ID",
+                        "name": "vendorId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VendorResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vendors/list": {
+            "get": {
+                "description": "Retrieves a list of all vendors from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vendors"
+                ],
+                "summary": "List all vendors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VendorListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vendors/search": {
+            "get": {
+                "description": "Search for vendors based on search criteria",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vendors"
+                ],
+                "summary": "Search vendors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search string (vendor name, phone, email, etc.)",
+                        "name": "searchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only return result if exactly one match is found",
+                        "name": "directHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VendorSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Perform user login",
@@ -24227,6 +24403,145 @@
                 "value": {
                     "type": "string",
                     "example": "invalid_value"
+                }
+            }
+        },
+        "responses.VendorDTO": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "contactName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emailAddress": {
+                    "type": "string"
+                },
+                "fax": {
+                    "type": "string"
+                },
+                "paymentAddress1": {
+                    "type": "string"
+                },
+                "paymentAddress2": {
+                    "type": "string"
+                },
+                "paymentAddress3": {
+                    "type": "string"
+                },
+                "paymentCity": {
+                    "type": "string"
+                },
+                "paymentContactName": {
+                    "type": "string"
+                },
+                "paymentCountry": {
+                    "type": "string"
+                },
+                "paymentFax": {
+                    "type": "string"
+                },
+                "paymentName": {
+                    "type": "string"
+                },
+                "paymentPhone": {
+                    "type": "string"
+                },
+                "paymentPostalCode": {
+                    "type": "string"
+                },
+                "paymentState": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "postalCode": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.VendorListResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "vendors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.VendorDTO"
+                    }
+                }
+            }
+        },
+        "responses.VendorResponse": {
+            "type": "object",
+            "properties": {
+                "vendor": {
+                    "$ref": "#/definitions/responses.VendorDTO"
+                }
+            }
+        },
+        "responses.VendorSearchResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "vendors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.VendorSearchResultDTO"
+                    }
+                }
+            }
+        },
+        "responses.VendorSearchResultDTO": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "contactName": {
+                    "type": "string"
+                },
+                "emailAddress": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
                 }
             }
         },
