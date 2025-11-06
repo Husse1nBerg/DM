@@ -277,7 +277,7 @@ func (h *EstimateHandler) ListEstimateSublets(c echo.Context) error {
 	for _, sublet := range dmeResponse {
 		genericResponse = append(genericResponse, sublet)
 	}
-	
+
 	response := responses.ConvertEstimateSublets(genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -437,7 +437,7 @@ func (h *EstimateHandler) RetrieveEstimatesList(c echo.Context) error {
 		"page":     req.Page,
 		"pageSize": req.PageSize,
 	}
-	
+
 	// Add optional fields if provided
 	if req.Status != "" {
 		listRequestData["status"] = req.Status
@@ -539,6 +539,160 @@ func (h *EstimateHandler) CreateEstimate(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
+	// Check if estimate has any approved operations
+	hasApprovedOperations := false
+	if len(req.OperationCodes) > 0 {
+		for _, opCode := range req.OperationCodes {
+			if opCode.Approved {
+				hasApprovedOperations = true
+				break
+			}
+		}
+	}
+
+	estimateID := ""
+	if dmeResponse != nil {
+		estimateID = dmeResponse.ID
+	}
+	h.server.Logger.DesugarZap.Info("Estimate creation notification check",
+		zap.String("estimateId", estimateID),
+		zap.Bool("hasApprovedOperations", hasApprovedOperations),
+		zap.Int("operationCodesCount", len(req.OperationCodes)),
+		zap.String("customerId", req.CustId))
+
+	// If NOT approved, send notification to customer users
+	if !hasApprovedOperations && dmeResponse != nil && dmeResponse.ID != "" {
+		go func() {
+			// Use a background context with timeout to avoid blocking the response
+			notifCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			// Get customer users for this estimate
+			customerID := &req.CustId
+			customerUsers, err := h.server.DB.Queries().GetMarinaCustomerUsersByCustomerID(notifCtx, db.GetMarinaCustomerUsersByCustomerIDParams{
+				MarinaID:   user.MarinaID,
+				CustomerID: customerID,
+			})
+
+			if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to get customer users for notification",
+					zap.Error(err),
+					zap.String("estimateId", dmeResponse.ID),
+					zap.String("customerId", req.CustId),
+					zap.String("marinaId", user.MarinaID.String()))
+				return
+			}
+
+			if len(customerUsers) == 0 {
+				h.server.Logger.DesugarZap.Warn("No customer users found for estimate notification",
+					zap.String("estimateId", dmeResponse.ID),
+					zap.String("customerId", req.CustId),
+					zap.String("marinaId", user.MarinaID.String()))
+				return
+			}
+
+			h.server.Logger.DesugarZap.Info("Found customer users for estimate notification",
+				zap.String("estimateId", dmeResponse.ID),
+				zap.String("customerId", req.CustId),
+				zap.Int("customerUsersCount", len(customerUsers)))
+
+			// Initialize notification service
+			notificationService := notifications.NewNotificationService(
+				h.server.DB.Queries(),
+				h.server.Redis,
+				h.server.Logger,
+				h.server.SendGrid,
+				h.server.Config,
+			)
+
+			// Get estimate details for notification
+			estimateDetail, err := h.server.DME.EstimateRetrieve(notifCtx, dmeResponse.ID, false, orgID, *systemID)
+			estimateTitle := req.Title
+			if err == nil && estimateDetail != nil && estimateDetail.Title != "" {
+				estimateTitle = estimateDetail.Title
+			}
+
+			// Prepare notification requests
+			var notificationRequests []notifications.SmartNotificationRequest
+
+			for _, customerUser := range customerUsers {
+				// Check if user is active
+				if customerUser.IsActive == nil || !*customerUser.IsActive {
+					continue
+				}
+
+				// Ensure customer user has "service" notification preference
+				// Check if preference exists, if not create it with defaults
+				_, err := h.server.DB.Queries().GetNotificationPreference(notifCtx, db.GetNotificationPreferenceParams{
+					UserID:           customerUser.ID,
+					NotificationType: "service",
+				})
+				if err != nil {
+					// Preference doesn't exist, create it with defaults for customer users
+					enabled := true
+					deliveryMethod := "all"
+					_, createErr := h.server.DB.Queries().CreateNotificationPreference(notifCtx, db.CreateNotificationPreferenceParams{
+						UserID:           customerUser.ID,
+						NotificationType: "service",
+						Enabled:          &enabled,
+						DeliveryMethod:   &deliveryMethod,
+					})
+					if createErr != nil {
+						h.server.Logger.DesugarZap.Warn("Failed to create service notification preference for customer user",
+							zap.String("user_id", customerUser.ID.String()),
+							zap.Error(createErr))
+						// Continue anyway - preference might exist now or will be created later
+					} else {
+						h.server.Logger.DesugarZap.Debug("Created service notification preference for customer user",
+							zap.String("user_id", customerUser.ID.String()))
+					}
+				}
+
+				// Prepare notification data
+				notificationData := map[string]interface{}{
+					"estimateId": dmeResponse.ID,
+					"title":      estimateTitle,
+					"link":       fmt.Sprintf("/customerPortal/estimates/%s", dmeResponse.ID),
+				}
+
+				notificationReq := notifications.SmartNotificationRequest{
+					UserID:         customerUser.ID,
+					OrganizationID: orgID,
+					MarinaID:       user.MarinaID,
+					Type:           "service",
+					Title:          "New Estimate Requires Approval",
+					Content:        fmt.Sprintf("A new estimate has been created and requires your approval: %s", estimateTitle),
+					Data:           notificationData,
+					Priority:       nil, // Use default priority
+				}
+
+				notificationRequests = append(notificationRequests, notificationReq)
+			}
+
+			// Send bulk notifications
+			if len(notificationRequests) > 0 {
+				results, err := notificationService.SendBulkSmartNotifications(notifCtx, notificationRequests)
+				if err != nil {
+					h.server.Logger.DesugarZap.Error("Failed to send bulk customer notifications",
+						zap.Error(err),
+						zap.String("estimateId", dmeResponse.ID),
+						zap.Int("recipientCount", len(notificationRequests)))
+				} else {
+					successCount := 0
+					for _, result := range results {
+						if result.SystemDelivered || result.EmailDelivered {
+							successCount++
+						}
+					}
+					h.server.Logger.DesugarZap.Info("Estimate creation notifications sent to customers",
+						zap.String("estimateId", dmeResponse.ID),
+						zap.Int("totalRecipients", len(notificationRequests)),
+						zap.Int("successfulNotifications", successCount))
+				}
+			}
+		}()
+	}
+
 	response := responses.ConvertEstimateUpdate(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -592,7 +746,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		for _, att := range req.Attachments {
 			attachmentsForDME = append(attachmentsForDME, att.Attachment)
 		}
-		
+
 		// Update public status in dme_attachment_metadata for each attachment
 		for _, att := range req.Attachments {
 			if att.S3Path == "" {
@@ -639,7 +793,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		"title":           req.Title,
 		"operationCodes":  req.OperationCodes,
 	}
-	
+
 	// Add attachments to estimate data if provided
 	if len(attachmentsForDME) > 0 {
 		estimateData["attachments"] = attachmentsForDME
@@ -657,7 +811,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 	operationsApproved := false
 	approvedCount := 0
 	var approvedTotalAmount float64
-	
+
 	if len(req.OperationCodes) > 0 {
 		// Check if any operation codes have approved: true
 		for _, opCode := range req.OperationCodes {
@@ -681,7 +835,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 			estimateDetail, err := h.server.DME.EstimateRetrieve(notifCtx, req.EstId, true, orgID, *systemID)
 			customerName := req.CustId // Fallback to customer ID
 			var totalEstimateAmount float64
-			
+
 			if err == nil && estimateDetail != nil {
 				if estimateDetail.CustomerName != "" {
 					customerName = estimateDetail.CustomerName
@@ -703,7 +857,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 				MarinaID:   user.MarinaID,
 				IsCustomer: &isCustomer,
 			})
-			
+
 			if err != nil {
 				h.server.Logger.DesugarZap.Error("Failed to get internal marina users for notification",
 					zap.Error(err),
@@ -761,22 +915,49 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 					continue
 				}
 
+				// Ensure internal user has "service" notification preference
+				// Check if preference exists, if not create it with defaults
+				_, err = h.server.DB.Queries().GetNotificationPreference(notifCtx, db.GetNotificationPreferenceParams{
+					UserID:           internalUser.ID,
+					NotificationType: "service",
+				})
+				if err != nil {
+					// Preference doesn't exist, create it with defaults for internal users
+					enabled := true
+					deliveryMethod := "all"
+					_, createErr := h.server.DB.Queries().CreateNotificationPreference(notifCtx, db.CreateNotificationPreferenceParams{
+						UserID:           internalUser.ID,
+						NotificationType: "service",
+						Enabled:          &enabled,
+						DeliveryMethod:   &deliveryMethod,
+					})
+					if createErr != nil {
+						h.server.Logger.DesugarZap.Warn("Failed to create service notification preference for internal user",
+							zap.String("user_id", internalUser.ID.String()),
+							zap.Error(createErr))
+						// Continue anyway - preference might exist now or will be created later
+					} else {
+						h.server.Logger.DesugarZap.Debug("Created service notification preference for internal user",
+							zap.String("user_id", internalUser.ID.String()))
+					}
+				}
+
 				// Prepare notification data
 				notificationData := map[string]interface{}{
-					"estimateId":           req.EstId,
-					"customerName":         customerName,
-					"approvedOperationsCount": approvedCount,
+					"estimateId":               req.EstId,
+					"customerName":             customerName,
+					"approvedOperationsCount":  approvedCount,
 					"approvedOperationsAmount": approvedTotalAmount,
-					"totalEstimateAmount":  totalEstimateAmount,
-					"approvalTimestamp":    time.Now().Format(time.RFC3339),
-					"link":                 fmt.Sprintf("/service/estimates/%s", req.EstId),
+					"totalEstimateAmount":      totalEstimateAmount,
+					"approvalTimestamp":        time.Now().Format(time.RFC3339),
+					"link":                     fmt.Sprintf("/service/estimates/%s", req.EstId),
 				}
 
 				notificationReq := notifications.SmartNotificationRequest{
 					UserID:         internalUser.ID,
 					OrganizationID: orgID,
 					MarinaID:       user.MarinaID,
-					Type:           "estimate_approved",
+					Type:           "service",
 					Title:          "Estimate Approved",
 					Content:        fmt.Sprintf("Customer %s has approved %d operation(s) for Estimate #%s", customerName, approvedCount, req.EstId),
 					Data:           notificationData,

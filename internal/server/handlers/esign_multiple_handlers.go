@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -74,8 +75,51 @@ func (h *EsignHandler) sendEmailsToSignersSequentially(submission db.EsignSubmis
 	to := []string{firstSigner.Email}
 	subject := "New e-signature submission"
 
+	// Prepare attachments (estimate PDF if provided)
+	var attachments []sendgrid.Attachment
+	if req.EstimatePDFURL != nil && *req.EstimatePDFURL != "" {
+		// Download estimate PDF from URL
+		resp, err := http.Get(*req.EstimatePDFURL)
+		if err != nil {
+			h.server.Logger.Zap.Warnw("Failed to download estimate PDF for attachment",
+				"estimate_pdf_url", *req.EstimatePDFURL,
+				"error", err)
+		} else {
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				pdfBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					h.server.Logger.Zap.Warnw("Failed to read estimate PDF content",
+						"estimate_pdf_url", *req.EstimatePDFURL,
+						"error", err)
+					pdfBytes = nil
+				}
+				if len(pdfBytes) > 0 {
+					estimateID := "estimate"
+					if req.EstimateID != nil && *req.EstimateID != "" {
+						estimateID = *req.EstimateID
+					}
+					attachments = append(attachments, sendgrid.Attachment{
+						Content:     pdfBytes,
+						Filename:    fmt.Sprintf("estimate-%s.pdf", estimateID),
+						Type:        "application/pdf",
+						Disposition: "attachment",
+					})
+					h.server.Logger.Zap.Infow("Estimate PDF attached to e-sign email",
+						"estimate_id", estimateID,
+						"submission_id", submission.ID.String(),
+						"size_bytes", len(pdfBytes))
+				}
+			} else {
+				h.server.Logger.Zap.Warnw("Failed to download estimate PDF - non-200 status",
+					"estimate_pdf_url", *req.EstimatePDFURL,
+					"status_code", resp.StatusCode)
+			}
+		}
+	}
+
 	// Send email asynchronously
-	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email)
+	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email, attachments...)
 	if err != nil {
 		return fmt.Errorf("failed to send email to first signer: %w", err)
 	}
@@ -180,8 +224,13 @@ func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.
 	to := []string{nextSigner.Email}
 	subject := "E-signature document ready for your signature"
 
+	// Note: For multiple signers, we don't have access to the original request here
+	// Attachments would need to be stored with the submission or retrieved from document metadata
+	// For now, we'll send without attachments for subsequent signers
+	var attachments []sendgrid.Attachment
+
 	// Send email asynchronously
-	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email)
+	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email, attachments...)
 	if err != nil {
 		h.server.Logger.Zap.Errorw("Failed to send email to next signer",
 			"submission_id", submissionID,

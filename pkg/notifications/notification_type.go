@@ -10,6 +10,7 @@ const (
 	NotificationTypeDocument NotificationType = "document"
 	NotificationTypeESign    NotificationType = "esign"
 	NotificationTypePayment  NotificationType = "payment"
+	NotificationTypeService  NotificationType = "service"
 )
 
 func (n NotificationType) String() string {
@@ -23,5 +24,6 @@ func (n NotificationType) IsValid() bool {
 		// n == NotificationTypeAlert ||
 		n == NotificationTypeDocument ||
 		n == NotificationTypeESign ||
-		n == NotificationTypePayment
+		n == NotificationTypePayment ||
+		n == NotificationTypeService
 }
