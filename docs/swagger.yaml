@@ -4268,6 +4268,11 @@ definitions:
           $ref: '#/definitions/dme.InvoiceDetailed'
         type: array
     type: object
+  responses.InvoiceResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.InvoiceDetailed'
+    type: object
   responses.LocationListResponse:
     description: List of business locations from DME API
     properties:
@@ -11294,6 +11299,60 @@ paths:
       security:
       - BearerAuth: []
       summary: Get customer invoices
+      tags:
+      - Invoices
+  /invoices/customer/invoice:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific invoice for a customer. If `token` is provided,
+        validates the short-lived payment token and uses its customer/marina context;
+        otherwise expects authenticated user with `customerId` and `marinaId`.
+      parameters:
+      - description: Invoice ID
+        in: query
+        name: invoiceId
+        required: true
+        type: string
+      - description: Customer ID (required without token)
+        in: query
+        name: customerId
+        type: string
+      - description: Marina ID (UUID, required without token)
+        format: uuid
+        in: query
+        name: marinaId
+        type: string
+      - description: Short-lived payment token
+        in: query
+        name: token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.InvoiceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get specific customer invoice
       tags:
       - Invoices
   /invoices/next-reference:

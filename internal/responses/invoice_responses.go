@@ -12,6 +12,11 @@ type CustomerInvoiceInquiryListResponse struct {
 	Data []dme.CustomerInvoiceInquiry `json:"data"`
 }
 
+// InvoiceResponse represents a single detailed invoice
+type InvoiceResponse struct {
+	Data dme.InvoiceDetailed `json:"data"`
+}
+
 // ConvertInvoiceList converts a slice of DME InvoiceDetailed to InvoiceListResponse
 func ConvertInvoiceList(invoices []dme.InvoiceDetailed) *InvoiceListResponse {
 	return &InvoiceListResponse{

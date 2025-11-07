@@ -512,15 +512,15 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 // -----
 
 // RetrieveInvoices retrieves invoices by IDs
-// func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) ([]InvoiceDetailed, error) {
-// 	var result []InvoiceDetailed
-// 	endpoint := "/AR/RetrieveInvoices"
-// 	err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, invoiceIDs, &result, organizationID, systemID, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to retrieve invoices: %w", err)
-// 	}
-// 	return result, nil
-// }
+func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) ([]InvoiceDetailed, error) {
+	var result []InvoiceDetailed
+	endpoint := "/AR/RetrieveInvoices"
+	err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, invoiceIDs, &result, organizationID, systemID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve invoices: %w", err)
+	}
+	return result, nil
+}
 
 // RetrieveCustomerInvoices retrieves invoices for a customer
 func (c *Client) RetrieveCustomerInvoices(ctx context.Context, customerID string, invoiceDate string, organizationID uuid.UUID, systemID string) ([]CustomerInvoiceInquiry, error) {
