@@ -422,8 +422,28 @@ func (h *PaymentHandler) processNotification(notification interface{}) {
 					}
 					paymentReference := fmt.Sprintf("CTP-%s", refNum)
 
+					// Normalize deposit type (support portal shorthand -> DME codes)
+					switch depositType {
+					case "BS":
+						depositType = "BSD"
+					case "SL", "SS", "TR", "WS", "BD", "DS":
+						depositType = "SD"
+					case "SO":
+						depositType = "SOD"
+					case "WO", "WI":
+						depositType = "WOD"
+					case "WD", "WL":
+						depositType = "WLD"
+					case "QU", "MD":
+						depositType = "UNK"
+					}
+
 					// Determine statement description and invoice id based on deposit type
 					boatID, _ := additionalData["metadata.BoatID"].(string)
+					workOrderID, _ := additionalData["metadata.WorkOrderID"].(string)
+					reservationID, _ := additionalData["metadata.ReservationID"].(string)
+					waitListID, _ := additionalData["metadata.WaitListID"].(string)
+					specialOrderID, _ := additionalData["metadata.SpecialOrderID"].(string)
 					statementDesc := "Deposit"
 					invoiceID := ""
 					switch depositType {
@@ -459,6 +479,38 @@ func (h *PaymentHandler) processNotification(notification interface{}) {
 							statementDesc = fmt.Sprintf("Key Deposit : Boat %s", boatID)
 						} else {
 							statementDesc = "Key Deposit"
+						}
+					case "RD":
+						// Reservation deposit expects ReservationID
+						if reservationID != "" {
+							invoiceID = reservationID
+							statementDesc = fmt.Sprintf("Reservation Deposit : %s", reservationID)
+						} else {
+							statementDesc = "Reservation Deposit"
+						}
+					case "SOD":
+						// Special order deposit expects SpecialOrderID
+						if specialOrderID != "" {
+							invoiceID = specialOrderID
+							statementDesc = fmt.Sprintf("Special Order Deposit : %s", specialOrderID)
+						} else {
+							statementDesc = "Special Order Deposit"
+						}
+					case "WLD":
+						// Wait list deposit expects WaitListID
+						if waitListID != "" {
+							invoiceID = waitListID
+							statementDesc = fmt.Sprintf("Wait List Deposit : %s", waitListID)
+						} else {
+							statementDesc = "Wait List Deposit"
+						}
+					case "WOD":
+						// Work order deposit expects WorkOrderID
+						if workOrderID != "" {
+							invoiceID = workOrderID
+							statementDesc = fmt.Sprintf("Work Order Deposit : %s", workOrderID)
+						} else {
+							statementDesc = "Work Order Deposit"
 						}
 					default:
 						if agreementNum != "" {
