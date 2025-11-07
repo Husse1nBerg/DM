@@ -1713,7 +1713,7 @@ definitions:
       replyName:
         type: string
       ttlMinutes:
-        maximum: 1440
+        maximum: 4320
         minimum: 5
         type: integer
     required:
@@ -5271,6 +5271,13 @@ definitions:
       surchargeType:
         type: string
       updatedAt:
+        type: string
+    type: object
+  responses.PaymentTokenValidationResponse:
+    properties:
+      customerId:
+        type: string
+      marinaId:
         type: string
     type: object
   responses.PurchaseOrderLineResponse:
@@ -13805,6 +13812,36 @@ paths:
       security:
       - BearerAuth: []
       summary: Create payment link
+      tags:
+      - Payments
+  /payments/links/validate:
+    get:
+      consumes:
+      - application/json
+      description: Validates a short-lived payment token and returns customer and
+        marina identifiers if valid
+      parameters:
+      - description: Payment token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentTokenValidationResponse'
+        "401":
+          description: Invalid or expired token
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Validate payment token
       tags:
       - Payments
   /payments/paytypes:

@@ -68,7 +68,7 @@ func (h *PaymentHandler) CreatePaymentLink(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
 	}
 
-	ttl := time.Duration(60) * time.Minute
+	ttl := 72 * time.Hour
 	if req.TTLMinutes > 0 {
 		ttl = time.Duration(req.TTLMinutes) * time.Minute
 	}
@@ -119,6 +119,39 @@ func (h *PaymentHandler) CreatePaymentLink(c echo.Context) error {
 
 	resp := responses.NewPaymentLinkResponse(h.server.Config.App.FrontendBaseURL, link.Token, link.ExpiresAt.Time)
 	return c.JSON(http.StatusOK, resp)
+}
+
+// ValidatePaymentToken validates a payment token and returns minimal context
+//
+//	@Summary		Validate payment token
+//	@Description	Validates a short-lived payment token and returns customer and marina identifiers if valid
+//	@Tags			Payments
+//	@Accept			json
+//	@Produce		json
+//	@Param			token	query	string	true	"Payment token"
+//	@Success		200		{object}	responses.PaymentTokenValidationResponse
+//	@Failure		401		{object}	responses.Error	"Invalid or expired token"
+//	@Failure		500		{object}	responses.Error	"Internal server error"
+//	@Router			/payments/links/validate [get]
+func (h *PaymentHandler) ValidatePaymentToken(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.ValidatePaymentTokenRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
+	}
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
+	}
+
+	link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(ctx, req.Token)
+	if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, responses.PaymentTokenValidationResponse{
+		CustomerID: link.CustomerID,
+		MarinaID:   link.MarinaID.String(),
+	})
 }
 
 // CreatePaymentSession creates a new payment session

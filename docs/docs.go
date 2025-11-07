@@ -11740,6 +11740,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments/links/validate": {
+            "get": {
+                "description": "Validates a short-lived payment token and returns customer and marina identifiers if valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Validate payment token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTokenValidationResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments/paytypes": {
             "get": {
                 "security": [
@@ -18633,7 +18677,7 @@ const docTemplate = `{
                 },
                 "ttlMinutes": {
                     "type": "integer",
-                    "maximum": 1440,
+                    "maximum": 4320,
                     "minimum": 5
                 }
             }
@@ -23700,6 +23744,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentTokenValidationResponse": {
+            "type": "object",
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "marinaId": {
                     "type": "string"
                 }
             }

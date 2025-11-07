@@ -38,7 +38,7 @@ func (r *PaymentDetailsRequest) Validate(validate *validator.Validate) error {
 type CreatePaymentLinkRequest struct {
 	MarinaID      string `json:"marinaId" validate:"required,uuid4"`
 	CustomerID    string `json:"customerId" validate:"required"`
-	TTLMinutes    int    `json:"ttlMinutes" validate:"omitempty,min=5,max=1440"`
+	TTLMinutes    int    `json:"ttlMinutes" validate:"omitempty,min=5,max=4320"`
 	Email         string `json:"email" validate:"omitempty,email"`
 	Recipient     string `json:"recipient" validate:"omitempty"`
 	Name          string `json:"name" validate:"omitempty"`
@@ -62,6 +62,16 @@ type TokenInvoicesRequest struct {
 
 // Validate validates the TokenInvoicesRequest
 func (r *TokenInvoicesRequest) Validate(validate *validator.Validate) error {
+	return validate.Struct(r)
+}
+
+// ValidatePaymentTokenRequest represents a request to validate a payment token
+type ValidatePaymentTokenRequest struct {
+	Token string `query:"token" validate:"required"`
+}
+
+// Validate validates the ValidatePaymentTokenRequest
+func (r *ValidatePaymentTokenRequest) Validate(validate *validator.Validate) error {
 	return validate.Struct(r)
 }
 
