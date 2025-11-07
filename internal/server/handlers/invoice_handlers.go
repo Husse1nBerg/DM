@@ -18,6 +18,7 @@ import (
 	// "github.com/dockworks/dm-web-backend/pkg/adyen"
 	"github.com/dockworks/dm-web-backend/pkg/dme"
 	"github.com/dockworks/dm-web-backend/pkg/token"
+	"github.com/google/uuid"
 )
 
 // InvoiceHandler handles invoice-related requests
@@ -57,6 +58,11 @@ func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
 	}
 
+	// Require either a valid JWT (set by middleware) or a short-lived payment token
+	if c.Get("user") == nil && req.Token == "" {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authorization required: Bearer token or payment token").JSON(c)
+	}
+
 	// If token is provided, validate and override customer/marina
 	if req.Token != "" {
 		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(ctx, req.Token)
@@ -69,6 +75,11 @@ func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 		// Override request values to enforce token scope
 		req.CustomerID = link.CustomerID
 		req.MarinaID = link.MarinaID
+	} else {
+		// No token: ensure required query params are present
+		if req.CustomerID == "" || req.MarinaID == uuid.Nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "customerId and marinaId are required when no token is provided").JSON(c)
+		}
 	}
 
 	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), req.MarinaID)
