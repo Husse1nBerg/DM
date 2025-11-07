@@ -110,6 +110,92 @@ func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// GetCustomerInvoice godoc
+//
+//	@Summary		Get specific customer invoice
+//	@Description	Retrieves a specific invoice for a customer. If `token` is provided, validates the short-lived payment token and uses its customer/marina context; otherwise expects authenticated user with `customerId` and `marinaId`.
+//	@Tags			Invoices
+//	@Accept			json
+//	@Produce		json
+//	@Param			invoiceId	query	string	true	"Invoice ID"
+//	@Param			customerId	query	string	false	"Customer ID (required without token)"
+//	@Param			marinaId	query	string	false	"Marina ID (UUID, required without token)" Format(uuid)
+//	@Param			token		query	string	false	"Short-lived payment token"
+//	@Success		200		{object}	responses.InvoiceResponse
+//	@Failure		400		{object}	responses.Error
+//	@Failure		401		{object}	responses.Error
+//	@Failure		404		{object}	responses.Error
+//	@Failure		500		{object}	responses.Error
+//	@Security		BearerAuth
+//	@Router			/invoices/customer/invoice [get]
+func (h *InvoiceHandler) GetCustomerInvoice(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.GetCustomerInvoiceRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Require either a valid JWT (set by middleware) or a short-lived payment token
+	if c.Get("user") == nil && req.Token == "" {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authorization required: Bearer token or payment token").JSON(c)
+	}
+
+	// Resolve context
+	if req.Token != "" {
+		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(ctx, req.Token)
+		if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+		}
+		req.CustomerID = link.CustomerID
+		req.MarinaID = link.MarinaID
+	} else {
+		if req.CustomerID == "" {
+			return responses.NewErrorResponse(http.StatusBadRequest, "customerId is required when no token is provided").JSON(c)
+		}
+		// If marinaId is not provided, derive it from the authenticated user context
+		if req.MarinaID == uuid.Nil {
+			userToken := c.Get("user").(*jwt.Token)
+			claims := userToken.Claims.(*token.JwtCustomClaims)
+			user, err := h.server.DB.Queries().GetUserByID(ctx, claims.ID)
+			if err != nil {
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user").JSON(c)
+			}
+			req.MarinaID = user.MarinaID
+		}
+	}
+
+	// Load marina/org/system
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, req.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+	if marina.SystemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Retrieve invoice by ID
+	invoices, err := h.server.DME.RetrieveInvoices(ctx, []string{req.InvoiceID}, marina.OrganizationID, *marina.SystemID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to retrieve invoice", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve invoice").JSON(c)
+	}
+	if len(invoices) == 0 {
+		return responses.NewErrorResponse(http.StatusNotFound, "Invoice not found").JSON(c)
+	}
+
+	inv := invoices[0]
+	// Ensure the invoice belongs to the resolved customer
+	if inv.CustomerID != req.CustomerID {
+		return responses.NewErrorResponse(http.StatusForbidden, "Access denied").JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, responses.InvoiceResponse{Data: inv})
+}
+
 // GetNextReference godoc
 // @Summary Get next AR reference number
 // @Description Retrieves the next available AR reference number for a given customer from DME

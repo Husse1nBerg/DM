@@ -14,3 +14,11 @@ type GetCustomerInvoicesRequest struct {
 type GetNextReferenceRequest struct {
 	CustomerID string `query:"customerId" validate:"required"`
 }
+
+// GetCustomerInvoiceRequest represents a request to get a specific customer invoice
+type GetCustomerInvoiceRequest struct {
+	InvoiceID  string    `query:"invoiceId" validate:"required"`
+	CustomerID string    `query:"customerId" validate:"omitempty"`
+	MarinaID   uuid.UUID `query:"marinaId" validate:"omitempty"`
+	Token      string    `query:"token" validate:"omitempty"`
+}
