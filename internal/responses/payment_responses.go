@@ -122,6 +122,12 @@ func NewPaymentLinkResponse(frontendBaseURL, token string, expiresAt time.Time) 
 	}
 }
 
+// PaymentTokenValidationResponse represents the response for a valid token check
+type PaymentTokenValidationResponse struct {
+	CustomerID string `json:"customerId"`
+	MarinaID   string `json:"marinaId"`
+}
+
 // ConvertPaymentToResponse converts a db.Payment to PaymentResponse
 func ConvertPaymentToResponse(payment db.Payment) PaymentResponse {
 	// Convert CreatedAt timestamp

@@ -68,7 +68,7 @@ func (h *PaymentHandler) CreatePaymentLink(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
 	}
 
-	ttl := time.Duration(60) * time.Minute
+	ttl := 72 * time.Hour
 	if req.TTLMinutes > 0 {
 		ttl = time.Duration(req.TTLMinutes) * time.Minute
 	}
@@ -119,6 +119,39 @@ func (h *PaymentHandler) CreatePaymentLink(c echo.Context) error {
 
 	resp := responses.NewPaymentLinkResponse(h.server.Config.App.FrontendBaseURL, link.Token, link.ExpiresAt.Time)
 	return c.JSON(http.StatusOK, resp)
+}
+
+// ValidatePaymentToken validates a payment token and returns minimal context
+//
+//	@Summary		Validate payment token
+//	@Description	Validates a short-lived payment token and returns customer and marina identifiers if valid
+//	@Tags			Payments
+//	@Accept			json
+//	@Produce		json
+//	@Param			token	query	string	true	"Payment token"
+//	@Success		200		{object}	responses.PaymentTokenValidationResponse
+//	@Failure		401		{object}	responses.Error	"Invalid or expired token"
+//	@Failure		500		{object}	responses.Error	"Internal server error"
+//	@Router			/payments/links/validate [get]
+func (h *PaymentHandler) ValidatePaymentToken(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.ValidatePaymentTokenRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request format").JSON(c)
+	}
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Validation failed").JSON(c)
+	}
+
+	link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(ctx, req.Token)
+	if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, responses.PaymentTokenValidationResponse{
+		CustomerID: link.CustomerID,
+		MarinaID:   link.MarinaID.String(),
+	})
 }
 
 // CreatePaymentSession creates a new payment session
@@ -372,6 +405,217 @@ func (h *PaymentHandler) processNotification(notification interface{}) {
 						} else {
 							h.server.Logger.Zap.Warn("Payment not successful, skipping DME submission",
 								zap.String("success", success))
+						}
+					}
+				} else {
+					// Generic path: Construct batch data from metadata when BatchData is not provided
+					// Validate required metadata
+					if marinaIDStr == "" {
+						h.server.Logger.Zap.Error("Missing MarinaID in metadata for generic batch construction")
+						return
+					}
+					marinaID, err := uuid.Parse(marinaIDStr)
+					if err != nil {
+						h.server.Logger.Zap.Error("Invalid MarinaID in metadata", zap.Error(err))
+						return
+					}
+					marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
+					if err != nil {
+						h.server.Logger.Zap.Error("Failed to get marina", zap.Error(err))
+						return
+					}
+
+					// Extract additional needed metadata
+					customerID, _ := additionalData["metadata.CustomerID"].(string)
+					locationCode, _ := additionalData["metadata.LocationCode"].(string)
+					depositType, _ := additionalData["metadata.DepositType"].(string)
+					agreementNum, _ := additionalData["metadata.AgreementNum"].(string)
+
+					if customerID == "" || locationCode == "" {
+						h.server.Logger.Zap.Error("Missing CustomerID or LocationCode in metadata for generic batch construction")
+						return
+					}
+
+					// Compute amount (minor units to float)
+					amountFloat := 0.0
+					if amountMap, ok := notifMap["amount"].(map[string]interface{}); ok {
+						switch v := amountMap["value"].(type) {
+						case float64:
+							amountFloat = v / 100.0
+						case int:
+							amountFloat = float64(v) / 100.0
+						}
+					}
+
+					// Get next reference number
+					refNum, err := h.server.DME.NextReferenceNumber(ctx, customerID, marina.OrganizationID, *marina.SystemID)
+					if err != nil {
+						h.server.Logger.Zap.Error("Failed to retrieve next reference number", zap.Error(err))
+						return
+					}
+					paymentReference := fmt.Sprintf("CTP-%s", refNum)
+
+					// Normalize deposit type (support portal shorthand -> DME codes)
+					switch depositType {
+					case "BS":
+						depositType = "BSD"
+					case "SL", "SS", "TR", "WS", "BD", "DS":
+						depositType = "SD"
+					case "SO":
+						depositType = "SOD"
+					case "WO", "WI":
+						depositType = "WOD"
+					case "WD", "WL":
+						depositType = "WLD"
+					case "QU", "MD":
+						depositType = "UNK"
+					}
+
+					// Determine statement description and invoice id based on deposit type
+					boatID, _ := additionalData["metadata.BoatID"].(string)
+					workOrderID, _ := additionalData["metadata.WorkOrderID"].(string)
+					reservationID, _ := additionalData["metadata.ReservationID"].(string)
+					waitListID, _ := additionalData["metadata.WaitListID"].(string)
+					specialOrderID, _ := additionalData["metadata.SpecialOrderID"].(string)
+					statementDesc := "Deposit"
+					invoiceID := ""
+					switch depositType {
+					case "BSD":
+						if entityID != "" {
+							statementDesc = fmt.Sprintf("Boat Sale Deposit : %s", entityID)
+						} else {
+							statementDesc = "Boat Sale Deposit"
+						}
+						invoiceID = entityID
+					case "SD":
+						// Drystack requires BoatId as the InvoiceId in the DME payload
+						if boatID != "" {
+							invoiceID = boatID
+						}
+						// Build description preference
+						if agreementNum != "" {
+							statementDesc = fmt.Sprintf("Drystack Deposit : %s", agreementNum)
+						} else if boatID != "" {
+							statementDesc = fmt.Sprintf("Drystack Deposit : Boat %s", boatID)
+						} else {
+							statementDesc = "Drystack Deposit"
+						}
+					case "KD":
+						// Key Deposit typically ties to a boat; use BoatID as InvoiceId
+						if boatID != "" {
+							invoiceID = boatID
+						}
+						// Description preference: AgreementNum if provided, else BoatID
+						if agreementNum != "" {
+							statementDesc = fmt.Sprintf("Key Deposit : %s", agreementNum)
+						} else if boatID != "" {
+							statementDesc = fmt.Sprintf("Key Deposit : Boat %s", boatID)
+						} else {
+							statementDesc = "Key Deposit"
+						}
+					case "RD":
+						// Reservation deposit expects ReservationID
+						if reservationID != "" {
+							invoiceID = reservationID
+							statementDesc = fmt.Sprintf("Reservation Deposit : %s", reservationID)
+						} else {
+							statementDesc = "Reservation Deposit"
+						}
+					case "SOD":
+						// Special order deposit expects SpecialOrderID
+						if specialOrderID != "" {
+							invoiceID = specialOrderID
+							statementDesc = fmt.Sprintf("Special Order Deposit : %s", specialOrderID)
+						} else {
+							statementDesc = "Special Order Deposit"
+						}
+					case "WLD":
+						// Wait list deposit expects WaitListID
+						if waitListID != "" {
+							invoiceID = waitListID
+							statementDesc = fmt.Sprintf("Wait List Deposit : %s", waitListID)
+						} else {
+							statementDesc = "Wait List Deposit"
+						}
+					case "WOD":
+						// Work order deposit expects WorkOrderID
+						if workOrderID != "" {
+							invoiceID = workOrderID
+							statementDesc = fmt.Sprintf("Work Order Deposit : %s", workOrderID)
+						} else {
+							statementDesc = "Work Order Deposit"
+						}
+					default:
+						if agreementNum != "" {
+							statementDesc = fmt.Sprintf("Deposit : %s", agreementNum)
+						} else if entityID != "" {
+							statementDesc = fmt.Sprintf("Deposit : %s", entityID)
+						}
+						if agreementNum != "" {
+							invoiceID = agreementNum
+						} else {
+							invoiceID = entityID
+						}
+					}
+
+					// Determine PayType: default to "ctp" (CTP Online Payments), allow override via metadata.PayType
+					payType := "ctp"
+					if mdPayType, ok := additionalData["metadata.PayType"].(string); ok && mdPayType != "" {
+						payType = mdPayType
+					}
+
+					// Build batch data
+					batchData := requests.SubmitBatchRequest{
+						LocationCode: locationCode,
+						PostBatch:    true,
+						CashReceipts: []requests.CashReceipt{
+							{
+								CustomerID:             customerID,
+								ReferenceNum:           paymentReference,
+								PayType:                payType,
+								TotalPayment:           amountFloat,
+								StatementDesc:          statementDesc,
+								CCAuthCode:             "",
+								CCTransactionID:        "",
+								CCTransactionTimeStamp: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
+								CCSurcharge:            0,
+								CCSurchargeTax:         0,
+								CCSurchargeTaxSchema:   "",
+								CCSurchargeTaxIds:      []string{},
+								InvPayments: []requests.InvPayment{
+									{
+										InvoiceID:    invoiceID,
+										LocationCode: locationCode,
+										DepositType:  depositType,
+										PaymentAmt:   amountFloat,
+										Description:  statementDesc,
+										CustomerID:   customerID,
+									},
+								},
+							},
+						},
+					}
+
+					// Check success and submit like the BatchData path
+					if eventCode, ok := notifMap["eventCode"].(string); ok && eventCode == "AUTHORISATION" {
+						if success, ok := notifMap["success"].(string); ok && success == "true" {
+							paymentRecord, err := h.createPaymentRecord(ctx, notifMap, additionalData, batchData, marinaID, marina.OrganizationID, sessionID, entityType, entityID)
+							if err != nil {
+								h.server.Logger.Zap.Error("Failed to create payment record", zap.Error(err))
+							}
+							metadataForDME := map[string]interface{}{
+								"MarinaID": marinaIDStr,
+							}
+							if err := h.submitBatchToDME(batchData, metadataForDME, paymentRecord); err != nil {
+								h.server.Logger.Zap.Error("Failed to submit batch to DME", zap.Error(err))
+								if paymentRecord != nil {
+									h.updatePaymentFailed(ctx, paymentRecord.ID, err.Error())
+								}
+							} else {
+								h.server.Logger.Zap.Info("Successfully submitted batch to DME (generic)",
+									zap.String("reference", batchData.CashReceipts[0].ReferenceNum),
+									zap.Int("receipt_count", len(batchData.CashReceipts)))
+							}
 						}
 					}
 				}
@@ -1026,4 +1270,45 @@ func (h *PaymentHandler) GetPaymentStats(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
+}
+
+// GetPayTypes retrieves available pay types from DME
+//
+//	@Summary		Retrieve DME Pay Types
+//	@Description	Fetches the list of PayTypes from DME for the user's current marina/system
+//	@Tags			Payments
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	interface{}	"List of pay types"
+//	@Failure		500	{object}	responses.Error	"Internal server error"
+//	@Security		BearerAuth
+//	@Router			/payments/paytypes [get]
+func (h *PaymentHandler) GetPayTypes(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	// Get user and marina info
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	user, err := h.server.DB.Queries().GetUserByID(ctx, claims.ID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user").JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to get marina", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
+	}
+	if marina.SystemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Call DME
+	result, err := h.server.DME.RetrievePayTypes(ctx, marina.OrganizationID, *marina.SystemID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to retrieve pay types", zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve pay types").JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, result)
 }

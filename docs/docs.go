@@ -7967,6 +7967,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/invoices/next-reference": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the next available AR reference number for a given customer from DME",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Get next AR reference number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NextReferenceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/marina-usage-history/all": {
             "get": {
                 "description": "Retrieves all marina usage history records, optionally filtered by one or more marinaIds and date range",
@@ -11684,6 +11733,82 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/links/validate": {
+            "get": {
+                "description": "Validates a short-lived payment token and returns customer and marina identifiers if valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Validate payment token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTokenValidationResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/paytypes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetches the list of PayTypes from DME for the user's current marina/system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Retrieve DME Pay Types",
+                "responses": {
+                    "200": {
+                        "description": "List of pay types",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -18552,7 +18677,7 @@ const docTemplate = `{
                 },
                 "ttlMinutes": {
                     "type": "integer",
-                    "maximum": 1440,
+                    "maximum": 4320,
                     "minimum": 5
                 }
             }
@@ -22839,6 +22964,14 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.NextReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "referenceNumber": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.NotesMessagesPlanResponse": {
             "description": "Notes and messages plan data including limits and pricing",
             "type": "object",
@@ -23611,6 +23744,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentTokenValidationResponse": {
+            "type": "object",
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "marinaId": {
                     "type": "string"
                 }
             }

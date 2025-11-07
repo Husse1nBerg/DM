@@ -14,6 +14,7 @@ func RegisterPaymentRoutes(s *s.Server, base *echo.Group, protected *echo.Group)
 	publicPayments := base.Group("/payments")
 
 	publicPayments.POST("/webhooks", paymentHandler.ProcessWebhook)
+	publicPayments.GET("/links/validate", paymentHandler.ValidatePaymentToken)
 
 	// Protected payment routes (authentication required)
 	payments := protected.Group("/payments")
@@ -25,4 +26,5 @@ func RegisterPaymentRoutes(s *s.Server, base *echo.Group, protected *echo.Group)
 	payments.POST("/sessions", paymentHandler.CreatePaymentSession)
 	payments.POST("/links", paymentHandler.CreatePaymentLink)
 	payments.POST("/details", paymentHandler.HandlePaymentRedirect)
+	payments.GET("/paytypes", paymentHandler.GetPayTypes)
 }

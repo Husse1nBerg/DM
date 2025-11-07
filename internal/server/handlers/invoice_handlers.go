@@ -99,6 +99,59 @@ func (h *InvoiceHandler) GetCustomerInvoices(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// GetNextReference godoc
+// @Summary Get next AR reference number
+// @Description Retrieves the next available AR reference number for a given customer from DME
+// @Tags Invoices
+// @Accept json
+// @Produce json
+// @Param customerId query string true "Customer ID"
+// @Success 200 {object} responses.NextReferenceResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Security BearerAuth
+// @Router /invoices/next-reference [get]
+func (h *InvoiceHandler) GetNextReference(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	var req requests.GetNextReferenceRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid request").JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+	}
+
+	// Get user and marina info
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	user, err := h.server.DB.Queries().GetUserByID(ctx, claims.ID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user").JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
+	}
+
+	if marina.SystemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	ref, err := h.server.DME.NextReferenceNumber(ctx, req.CustomerID, marina.OrganizationID, *marina.SystemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve next reference number",
+			zap.Error(err),
+			zap.String("customer_id", req.CustomerID),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve next reference number").JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, responses.NextReferenceResponse{ReferenceNumber: ref})
+}
+
 // SubmitBatch godoc
 // @Summary Submit a batch of payments
 // @Description Submits a batch of cash receipts to DME for processing
