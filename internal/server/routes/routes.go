@@ -74,7 +74,7 @@ func RegisterRoutes(s *s.Server) {
 		Skipper: func(c echo.Context) bool {
 			// Allow bearer or payment token access to specific endpoints
 			path := c.Request().URL.Path
-			if path == "/api/v1/payments/sessions" || path == "/api/v1/payment-tax/calculate" || path == "/api/v1/invoices/customer" || path == "/api/v1/invoices/customer/invoice" {
+			if path == "/api/v1/payments/sessions" || path == "/api/v1/payment-tax/calculate" || path == "/api/v1/invoices/customer" || path == "/api/v1/invoices/customer/invoice" || path == "/api/v1/invoices/next-reference" {
 				auth := c.Request().Header.Get("Authorization")
 				if strings.HasPrefix(auth, "Bearer ") && len(auth) > len("Bearer ") {
 					return false

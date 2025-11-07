@@ -12,7 +12,8 @@ type GetCustomerInvoicesRequest struct {
 
 // GetNextReferenceRequest represents a request to get next AR reference number for a customer
 type GetNextReferenceRequest struct {
-	CustomerID string `query:"customerId" validate:"required"`
+	CustomerID string `query:"customerId" validate:"omitempty"`
+	Token      string `query:"token" validate:"omitempty"`
 }
 
 // GetCustomerInvoiceRequest represents a request to get a specific customer invoice

@@ -220,15 +220,38 @@ func (h *InvoiceHandler) GetNextReference(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
 	}
 
-	// Get user and marina info
-	userToken := c.Get("user").(*jwt.Token)
-	claims := userToken.Claims.(*token.JwtCustomClaims)
-	user, err := h.server.DB.Queries().GetUserByID(ctx, claims.ID)
-	if err != nil {
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user").JSON(c)
+	// Require either a valid JWT or a short-lived payment token
+	if c.Get("user") == nil && req.Token == "" {
+		return responses.NewErrorResponse(http.StatusUnauthorized, "Authorization required: Bearer token or payment token").JSON(c)
 	}
 
-	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	var customerID string
+	var marinaID uuid.UUID
+
+	if req.Token != "" {
+		// Token path: validate token and derive customer/marina
+		link, err := h.server.DB.Queries().GetValidPaymentLinkByToken(ctx, req.Token)
+		if err != nil || link.ExpiresAt.Time.Before(time.Now()) || link.Revoked {
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Invalid or expired token").JSON(c)
+		}
+		customerID = link.CustomerID
+		marinaID = link.MarinaID
+	} else {
+		// Bearer path: require customerId and use user's marina
+		if req.CustomerID == "" {
+			return responses.NewErrorResponse(http.StatusBadRequest, "customerId is required when no token is provided").JSON(c)
+		}
+		customerID = req.CustomerID
+		userToken := c.Get("user").(*jwt.Token)
+		claims := userToken.Claims.(*token.JwtCustomClaims)
+		user, err := h.server.DB.Queries().GetUserByID(ctx, claims.ID)
+		if err != nil {
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user").JSON(c)
+		}
+		marinaID = user.MarinaID
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, marinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina").JSON(c)
 	}
@@ -237,11 +260,11 @@ func (h *InvoiceHandler) GetNextReference(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
 	}
 
-	ref, err := h.server.DME.NextReferenceNumber(ctx, req.CustomerID, marina.OrganizationID, *marina.SystemID)
+	ref, err := h.server.DME.NextReferenceNumber(ctx, customerID, marina.OrganizationID, *marina.SystemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve next reference number",
 			zap.Error(err),
-			zap.String("customer_id", req.CustomerID),
+			zap.String("customer_id", customerID),
 		)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve next reference number").JSON(c)
 	}

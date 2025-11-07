@@ -13,10 +13,10 @@ func RegisterInvoiceRoutes(server *s.Server, base *echo.Group, protected *echo.G
 	// Protected invoice routes (authentication required)
 	protectedInvoices := permissionProtected.Group("/invoices")
 	protectedInvoices.POST("/batch/submit", invoiceHandler.SubmitBatch)
-	protectedInvoices.GET("/next-reference", invoiceHandler.GetNextReference)
 
 	// Authorization-flexible: allow Bearer or payment token
 	invoices := protected.Group("/invoices")
 	invoices.GET("/customer", invoiceHandler.GetCustomerInvoices)
 	invoices.GET("/customer/invoice", invoiceHandler.GetCustomerInvoice)
+	invoices.GET("/next-reference", invoiceHandler.GetNextReference)
 }
