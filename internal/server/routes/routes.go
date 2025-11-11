@@ -206,6 +206,9 @@ func RegisterRoutes(s *s.Server) {
 	// Inventory routes
 	RegisterInventoryRoutes(s, base, permissionProtected)
 
+	// Unit Sales routes
+	RegisterUnitSalesRoutes(s, permissionProtected)
+
 	// Payment routes (public and protected)
 	RegisterPaymentRoutes(s, base, permissionProtected)
 

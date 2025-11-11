@@ -1207,6 +1207,94 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/unit-sales/customer-contracts": {
+            "get": {
+                "description": "Retrieves contracts for a specific customer from DME UnitSales API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UnitSales"
+                ],
+                "summary": "Retrieve customer contracts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerContractsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/unit-sales/customer-quotes": {
+            "get": {
+                "description": "Retrieves quotes for a specific customer from DME UnitSales API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UnitSales"
+                ],
+                "summary": "Retrieve customer quotes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerQuotesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/vendors": {
             "get": {
                 "description": "Retrieves a specific vendor by ID from the DME API",
@@ -16488,6 +16576,142 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.BoatModelInfo": {
+            "type": "object",
+            "properties": {
+                "beam": {
+                    "type": "string"
+                },
+                "bridgeClearance": {
+                    "type": "string"
+                },
+                "cabinHeadroom": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "deadRise": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "freightCost": {
+                    "type": "number"
+                },
+                "fuelCapacity": {
+                    "type": "string"
+                },
+                "hullMaterial": {
+                    "type": "string"
+                },
+                "hullType": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "string"
+                },
+                "lengthOverall": {
+                    "type": "string"
+                },
+                "listPrice": {
+                    "type": "number"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelNumber": {
+                    "type": "string"
+                },
+                "modelType": {
+                    "type": "string"
+                },
+                "motorRating": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatModelOption"
+                    }
+                },
+                "pack": {
+                    "type": "number"
+                },
+                "prepCost": {
+                    "type": "number"
+                },
+                "price1": {
+                    "type": "number"
+                },
+                "price2": {
+                    "type": "number"
+                },
+                "price3": {
+                    "type": "number"
+                },
+                "price4": {
+                    "type": "number"
+                },
+                "price5": {
+                    "type": "number"
+                },
+                "riggingcost": {
+                    "type": "number"
+                },
+                "sleepCapacity": {
+                    "type": "string"
+                },
+                "unitCost": {
+                    "type": "number"
+                },
+                "vendorName": {
+                    "type": "string"
+                },
+                "wasteCapacity": {
+                    "type": "string"
+                },
+                "waterCapacity": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatModelOption": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "groupCode": {
+                    "type": "string"
+                },
+                "modelCount": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelType": {
+                    "type": "string"
+                },
+                "optionCode": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.BoatSearch": {
             "type": "object",
             "properties": {
@@ -16857,6 +17081,87 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerContract": {
+            "type": "object",
+            "properties": {
+                "balanceDue": {
+                    "type": "number"
+                },
+                "boats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.UnitBoat"
+                    }
+                },
+                "contractId": {
+                    "type": "string"
+                },
+                "contractTotal": {
+                    "type": "number"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "isQuote": {
+                    "type": "boolean"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {}
+                },
+                "name": {
+                    "type": "string"
+                },
+                "otherUnits": {
+                    "type": "array",
+                    "items": {}
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "salesDate": {
+                    "type": "string"
+                },
+                "salesLocation": {
+                    "type": "string"
+                },
+                "salesMan": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "thirdPartyIdentifier": {
+                    "type": "string"
+                },
+                "totalDeposits": {
+                    "type": "number"
+                },
+                "totalPrices": {
+                    "type": "number"
+                },
+                "tradeItems": {
+                    "type": "array",
+                    "items": {}
+                },
+                "trailers": {
+                    "type": "array",
+                    "items": {}
+                },
+                "writtenDate": {
                     "type": "string"
                 }
             }
@@ -17393,6 +17698,120 @@ const docTemplate = `{
                 },
                 "width": {
                     "type": "string"
+                }
+            }
+        },
+        "dme.UnitBoat": {
+            "type": "object",
+            "properties": {
+                "accessories": {
+                    "type": "array",
+                    "items": {}
+                },
+                "boatModelInfo": {
+                    "$ref": "#/definitions/dme.BoatModelInfo"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "currentPhysicalLoc": {
+                    "type": "string"
+                },
+                "customInfo": {
+                    "type": "array",
+                    "items": {}
+                },
+                "description": {
+                    "type": "string"
+                },
+                "freightCost": {
+                    "type": "number"
+                },
+                "freightPrice": {
+                    "type": "number"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ignitionKeyNum": {
+                    "type": "string"
+                },
+                "listPrice": {
+                    "type": "number"
+                },
+                "manufacturedDate": {
+                    "type": "string"
+                },
+                "optionCost": {
+                    "type": "number"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {}
+                },
+                "pack": {
+                    "type": "number"
+                },
+                "prepCost": {
+                    "type": "number"
+                },
+                "prepPrice": {
+                    "type": "number"
+                },
+                "previousOwners": {
+                    "type": "array",
+                    "items": {}
+                },
+                "price1": {
+                    "type": "number"
+                },
+                "price2": {
+                    "type": "number"
+                },
+                "price3": {
+                    "type": "number"
+                },
+                "price4": {
+                    "type": "number"
+                },
+                "price5": {
+                    "type": "number"
+                },
+                "receivedDate": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "riggingCost": {
+                    "type": "number"
+                },
+                "riggingPrice": {
+                    "type": "number"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "stockNumber": {
+                    "type": "string"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "unitCost": {
+                    "type": "number"
                 }
             }
         },
@@ -21346,6 +21765,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.CustomerContractsResponse": {
+            "type": "object",
+            "properties": {
+                "contracts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerContract"
+                    }
+                }
+            }
+        },
         "responses.CustomerListMinimalResponse": {
             "type": "object",
             "properties": {
@@ -21397,6 +21827,17 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "responses.CustomerQuotesResponse": {
+            "type": "object",
+            "properties": {
+                "quotes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerContract"
+                    }
                 }
             }
         },

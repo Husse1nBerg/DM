@@ -166,6 +166,96 @@ definitions:
       slip:
         $ref: '#/definitions/dme.Slip'
     type: object
+  dme.BoatModelInfo:
+    properties:
+      beam:
+        type: string
+      bridgeClearance:
+        type: string
+      cabinHeadroom:
+        type: string
+      class:
+        type: string
+      deadRise:
+        type: string
+      desc:
+        type: string
+      draft:
+        type: string
+      freightCost:
+        type: number
+      fuelCapacity:
+        type: string
+      hullMaterial:
+        type: string
+      hullType:
+        type: string
+      length:
+        type: string
+      lengthOverall:
+        type: string
+      listPrice:
+        type: number
+      modelId:
+        type: string
+      modelNumber:
+        type: string
+      modelType:
+        type: string
+      motorRating:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/dme.BoatModelOption'
+        type: array
+      pack:
+        type: number
+      prepCost:
+        type: number
+      price1:
+        type: number
+      price2:
+        type: number
+      price3:
+        type: number
+      price4:
+        type: number
+      price5:
+        type: number
+      riggingcost:
+        type: number
+      sleepCapacity:
+        type: string
+      unitCost:
+        type: number
+      vendorName:
+        type: string
+      wasteCapacity:
+        type: string
+      waterCapacity:
+        type: string
+      weight:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.BoatModelOption:
+    properties:
+      desc:
+        type: string
+      groupCode:
+        type: string
+      modelCount:
+        type: string
+      modelId:
+        type: string
+      modelType:
+        type: string
+      optionCode:
+        type: string
+      price:
+        type: string
+    type: object
   dme.BoatSearch:
     properties:
       arrivalDate:
@@ -411,6 +501,61 @@ definitions:
       workPhone:
         type: string
       zip:
+        type: string
+    type: object
+  dme.CustomerContract:
+    properties:
+      balanceDue:
+        type: number
+      boats:
+        items:
+          $ref: '#/definitions/dme.UnitBoat'
+        type: array
+      contractId:
+        type: string
+      contractTotal:
+        type: number
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      customerId:
+        type: string
+      isQuote:
+        type: boolean
+      locationCode:
+        type: string
+      motors:
+        items: {}
+        type: array
+      name:
+        type: string
+      otherUnits:
+        items: {}
+        type: array
+      prospectId:
+        type: string
+      salesDate:
+        type: string
+      salesLocation:
+        type: string
+      salesMan:
+        type: string
+      taxSchema:
+        type: string
+      thirdPartyIdentifier:
+        type: string
+      totalDeposits:
+        type: number
+      totalPrices:
+        type: number
+      tradeItems:
+        items: {}
+        type: array
+      trailers:
+        items: {}
+        type: array
+      writtenDate:
         type: string
     type: object
   dme.CustomerMinimal:
@@ -765,6 +910,83 @@ definitions:
         type: boolean
       width:
         type: string
+    type: object
+  dme.UnitBoat:
+    properties:
+      accessories:
+        items: {}
+        type: array
+      boatModelInfo:
+        $ref: '#/definitions/dme.BoatModelInfo'
+      color:
+        type: string
+      comments:
+        type: string
+      currentPhysicalLoc:
+        type: string
+      customInfo:
+        items: {}
+        type: array
+      description:
+        type: string
+      freightCost:
+        type: number
+      freightPrice:
+        type: number
+      hin:
+        type: string
+      id:
+        type: string
+      ignitionKeyNum:
+        type: string
+      listPrice:
+        type: number
+      manufacturedDate:
+        type: string
+      optionCost:
+        type: number
+      options:
+        items: {}
+        type: array
+      pack:
+        type: number
+      prepCost:
+        type: number
+      prepPrice:
+        type: number
+      previousOwners:
+        items: {}
+        type: array
+      price1:
+        type: number
+      price2:
+        type: number
+      price3:
+        type: number
+      price4:
+        type: number
+      price5:
+        type: number
+      receivedDate:
+        type: string
+      registration:
+        type: string
+      riggingCost:
+        type: number
+      riggingPrice:
+        type: number
+      serialNumber:
+        type: string
+      status:
+        type: string
+      stockNumber:
+        type: string
+      totalCost:
+        type: number
+      type:
+        type: string
+      unitCost:
+        type: number
     type: object
   dme.WaitListEntry:
     properties:
@@ -3531,6 +3753,13 @@ definitions:
         example: "2023-01-01T00:00:00Z"
         type: string
     type: object
+  responses.CustomerContractsResponse:
+    properties:
+      contracts:
+        items:
+          $ref: '#/definitions/dme.CustomerContract'
+        type: array
+    type: object
   responses.CustomerListMinimalResponse:
     properties:
       currentPage:
@@ -3568,6 +3797,13 @@ definitions:
       total:
         example: 100
         type: integer
+    type: object
+  responses.CustomerQuotesResponse:
+    properties:
+      quotes:
+        items:
+          $ref: '#/definitions/dme.CustomerContract'
+        type: array
     type: object
   responses.CustomerResponse:
     properties:
@@ -6902,6 +7138,65 @@ paths:
       summary: Test task operations
       tags:
       - test
+  /api/v1/unit-sales/customer-contracts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves contracts for a specific customer from DME UnitSales
+        API
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerContractsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer contracts
+      tags:
+      - UnitSales
+  /api/v1/unit-sales/customer-quotes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves quotes for a specific customer from DME UnitSales API
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerQuotesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer quotes
+      tags:
+      - UnitSales
   /api/v1/vendors:
     get:
       consumes:

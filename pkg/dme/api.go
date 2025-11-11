@@ -36,6 +36,28 @@ func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, sy
 	return result, nil
 }
 
+// RetrieveCustomerQuotes retrieves customer quotes for Unit Sales module
+func (c *Client) RetrieveCustomerQuotes(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
+	var result []CustomerContract
+	endpoint := fmt.Sprintf("/UnitSales/RetrieveCustomerQuotes?CustomerId=%s", customerID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customer quotes: %w", err)
+	}
+
+	return result, nil
+}
+
 // ListClerks retrieves a list of system clerks (users)
 func (c *Client) ListClerks(ctx context.Context, organizationID uuid.UUID, systemID string, includeInactive bool) ([]Clerk, error) {
 	var result []Clerk
@@ -174,6 +196,28 @@ func (c *Client) CustomersListShort(ctx context.Context, page int, pageSize int,
 	}
 
 	return &result, nil
+}
+
+// RetrieveCustomerContracts retrieves customer contracts for Unit Sales module
+func (c *Client) RetrieveCustomerContracts(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
+	var result []CustomerContract
+	endpoint := fmt.Sprintf("/UnitSales/RetrieveCustomerContracts?CustomerId=%s", customerID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customer contracts: %w", err)
+	}
+
+	return result, nil
 }
 
 // UpdateCustomer updates a customer
