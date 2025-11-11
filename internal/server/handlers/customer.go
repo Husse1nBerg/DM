@@ -906,7 +906,7 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 	}
 
 	// Generate username if not provided
-	username := utils.GenerateUsername(req.FirstName)
+	username := utils.GenerateUsername(email)
 
 	// Check if the username is already taken
 	_, err = queries.GetUserByUsername(ctx, username)
