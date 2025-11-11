@@ -98,10 +98,9 @@ func GetFullESignURL(esignPath *string) *string {
 	return esignService.GetFullDocumentURL(esignPath)
 }
 
-func GenerateUsername(firstName string) string {
-	// Generate a random string of 6 characters
-	randomString := uuid.New().String()[:6]
-	return strings.ToLower(firstName + randomString)
+func GenerateUsername(email string) string {
+	// Use the email as the username (lowercase)
+	return strings.ToLower(email)
 }
 
 func LowerCase(s string) string {

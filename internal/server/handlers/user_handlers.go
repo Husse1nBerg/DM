@@ -225,7 +225,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	}
 	username := req.Username
 	if username == "" {
-		username = utils.GenerateUsername(req.FirstName)
+		username = utils.GenerateUsername(email)
 	}
 
 	// Check if the username is already taken
@@ -1793,7 +1793,7 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	}
 	username := req.Username
 	if username == "" {
-		username = utils.GenerateUsername(req.FirstName)
+		username = utils.GenerateUsername(email)
 	}
 
 	// Check if the username is already taken
@@ -2052,7 +2052,7 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 	}
 	username := req.Username
 	if username == "" {
-		username = utils.GenerateUsername(req.FirstName)
+		username = utils.GenerateUsername(email)
 	}
 
 	// Check if the username is already taken
