@@ -176,6 +176,28 @@ func (c *Client) CustomersListShort(ctx context.Context, page int, pageSize int,
 	return &result, nil
 }
 
+// RetrieveCustomerContracts retrieves customer contracts for Unit Sales module
+func (c *Client) RetrieveCustomerContracts(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
+	var result []CustomerContract
+	endpoint := fmt.Sprintf("/UnitSales/RetrieveCustomerContracts?CustomerId=%s", customerID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customer contracts: %w", err)
+	}
+
+	return result, nil
+}
+
 // UpdateCustomer updates a customer
 func (c *Client) CustomerUpdate(ctx context.Context, payload interface{}, organizationID uuid.UUID, systemID string) (*Customer, error) {
 	var result CustomerCreateUpdateResponse
