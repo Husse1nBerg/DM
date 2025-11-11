@@ -10,3 +10,12 @@ type CustomerContractsResponse struct {
 func NewCustomerContractsResponse(contracts []dme.CustomerContract) CustomerContractsResponse {
 	return CustomerContractsResponse{Contracts: contracts}
 }
+
+// CustomerQuotesResponse represents the quotes returned for a customer
+type CustomerQuotesResponse struct {
+	Quotes []dme.CustomerContract `json:"quotes"`
+}
+
+func NewCustomerQuotesResponse(quotes []dme.CustomerContract) CustomerQuotesResponse {
+	return CustomerQuotesResponse{Quotes: quotes}
+}

@@ -12,4 +12,5 @@ func RegisterUnitSalesRoutes(server *s.Server, permissionProtected *echo.Group) 
 
 	unitSales := permissionProtected.Group("/unit-sales")
 	unitSales.GET("/customer-contracts", unitSalesHandler.RetrieveCustomerContractsHandler)
+	unitSales.GET("/customer-quotes", unitSalesHandler.RetrieveCustomerQuotesHandler)
 }

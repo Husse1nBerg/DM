@@ -3798,6 +3798,13 @@ definitions:
         example: 100
         type: integer
     type: object
+  responses.CustomerQuotesResponse:
+    properties:
+      quotes:
+        items:
+          $ref: '#/definitions/dme.CustomerContract'
+        type: array
+    type: object
   responses.CustomerResponse:
     properties:
       data:
@@ -7159,6 +7166,35 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve customer contracts
+      tags:
+      - UnitSales
+  /api/v1/unit-sales/customer-quotes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves quotes for a specific customer from DME UnitSales API
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerQuotesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer quotes
       tags:
       - UnitSales
   /api/v1/vendors:

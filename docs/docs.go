@@ -1251,6 +1251,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/unit-sales/customer-quotes": {
+            "get": {
+                "description": "Retrieves quotes for a specific customer from DME UnitSales API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UnitSales"
+                ],
+                "summary": "Retrieve customer quotes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerQuotesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/vendors": {
             "get": {
                 "description": "Retrieves a specific vendor by ID from the DME API",
@@ -21783,6 +21827,17 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "responses.CustomerQuotesResponse": {
+            "type": "object",
+            "properties": {
+                "quotes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerContract"
+                    }
                 }
             }
         },
