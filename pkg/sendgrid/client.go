@@ -319,6 +319,7 @@ func (c *Client) SendPasswordResetEmail(to []string, subject string, data Passwo
 		"user_name":        data.UserName,
 		"reset_url":        data.ResetURL,
 		"terms_conditions": data.TermsConditions,
+		"logo":             data.Logo,
 	}
 
 	email := &TemplateEmail{
@@ -355,6 +356,7 @@ func (c *Client) SendPaymentLinkEmail(to []string, subject string, data PaymentL
 		"payment_url":      data.PaymentURL,
 		"invoice_id":       data.InvoiceID,
 		"amount":           data.Amount,
+		"logo":             data.Logo,
 	}
 
 	email := &TemplateEmail{
@@ -387,6 +389,7 @@ func (c *Client) SendMessageEmail(to []string, subject string, data MessageTempl
 		"sender":           data.Sender,
 		"home_url":         data.HomeURL,
 		"terms_conditions": data.TermsConditions,
+		"logo":             data.Logo,
 	}
 
 	email := &TemplateEmail{
@@ -419,6 +422,7 @@ func (c *Client) SendExternalMessageEmail(to []string, subject string, data Exte
 		"sender":           data.Sender,
 		"reply_to":         data.ReplyTo,
 		"terms_conditions": data.TermsConditions,
+		"logo":             data.Logo,
 	}
 
 	email := &TemplateEmail{
@@ -450,6 +454,7 @@ func (c *Client) SendInviteEmail(to []string, subject string, data InviteTemplat
 		"user_name":        data.UserName,
 		"invite_url":       data.InviteURL,
 		"terms_conditions": data.TermsConditions,
+		"logo":             data.Logo,
 	}
 
 	email := &TemplateEmail{
@@ -480,6 +485,7 @@ func (c *Client) SendInviteCustomerEmail(to []string, subject string, data Invit
 		"user_name":        data.UserName,
 		"invite_url":       data.InviteURL,
 		"terms_conditions": data.TermsConditions,
+		"logo":             data.Logo,
 	}
 
 	email := &TemplateEmail{
@@ -575,6 +581,7 @@ func (c *Client) SendNotificationEmail(to []string, subject string, data Notific
 		"type":          data.Type,
 		"customer_name": data.CustomerName,
 		"home_url":      data.HomeURL,
+		"logo":          data.Logo,
 	}
 
 	email := &TemplateEmail{

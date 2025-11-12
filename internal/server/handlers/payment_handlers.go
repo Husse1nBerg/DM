@@ -101,6 +101,16 @@ func (h *PaymentHandler) CreatePaymentLink(c echo.Context) error {
 	if req.Email != "" {
 		url := fmt.Sprintf("%s/payment/%s", h.server.Config.App.FrontendBaseURL, link.Token)
 		subj := "Your payment link"
+		
+		// Include marina logo if available
+		var logo string
+		if marina.Image != nil && *marina.Image != "" {
+			fullURL := utils.GetFullImageURL(marina.Image)
+			if fullURL != nil {
+				logo = *fullURL
+			}
+		}
+		
 		tmplData := sendgrid.PaymentLinkTemplateData{
 			Recipient:       req.Recipient,
 			Sender:          marina.Name,
@@ -111,6 +121,7 @@ func (h *PaymentHandler) CreatePaymentLink(c echo.Context) error {
 			PaymentURL:      url,
 			InvoiceID:       req.InvoiceID,
 			Amount:          req.Amount,
+			Logo:            logo,
 		}
 		if _, _, err := h.server.SendGrid.SendPaymentLinkEmail([]string{req.Email}, subj, tmplData); err != nil {
 			h.server.Logger.Zap.Error("Failed to send payment link email", zap.Error(err))

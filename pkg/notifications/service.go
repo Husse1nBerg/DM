@@ -770,6 +770,7 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 					Type:         req.Type,
 					CustomerName: "DockMaster", // Default fallback
 					HomeURL:      s.Config.App.FrontendBaseURL,
+					Logo:         "", // No logo available without user/marina info
 				}
 
 				subject := req.Title
@@ -816,6 +817,21 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 					"error", err)
 				// Continue without organization info
 			}
+			
+			// Get marina for logo
+			var logo string
+			marina, err := s.db.GetMarinaByID(ctx, user.MarinaID)
+			if err != nil {
+				s.logger.Zap.Warnw("Failed to get marina for notification email",
+					"userID", req.UserID,
+					"marinaID", user.MarinaID,
+					"error", err)
+			} else if marina.Image != nil && *marina.Image != "" {
+				fullURL := utils.GetFullImageURL(marina.Image)
+				if fullURL != nil {
+					logo = *fullURL
+				}
+			}
 
 			// Send email using SendGrid
 			emailData := sendgrid.NotificationTemplateData{
@@ -828,6 +844,7 @@ func (s *NotificationService) sendDefaultNotification(ctx context.Context, req S
 					return "DockMaster" // Default fallback
 				}(),
 				HomeURL: s.Config.App.FrontendBaseURL,
+				Logo:    logo,
 			}
 
 			// Use provided email data if available, otherwise use user's email
@@ -945,6 +962,21 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 			"error", err)
 		// Continue without organization info - use default fallback
 	}
+	
+	// Get marina for logo
+	var logo string
+	marina, err := s.db.GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get marina for notification email",
+			"userID", req.UserID,
+			"marinaID", user.MarinaID,
+			"error", err)
+	} else if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
 
 	// Send email using SendGrid
 	emailData := sendgrid.NotificationTemplateData{
@@ -957,6 +989,7 @@ func (s *NotificationService) sendEmailNotification(ctx context.Context, req Sma
 			return "DockMaster" // Default fallback
 		}(),
 		HomeURL: s.Config.App.FrontendBaseURL,
+		Logo:    logo,
 	}
 
 	// Use provided email data if available, otherwise use user's email
@@ -1056,6 +1089,21 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 			"error", err)
 		// Continue without organization info - use empty string for customer name
 	}
+	
+	// Get marina for logo
+	var logo string
+	marina, err := s.db.GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		s.logger.Zap.Warnw("Failed to get marina for multi-channel notification email",
+			"userID", req.UserID,
+			"marinaID", user.MarinaID,
+			"error", err)
+	} else if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
 
 	// Send email using SendGrid
 	emailData := sendgrid.NotificationTemplateData{
@@ -1068,6 +1116,7 @@ func (s *NotificationService) sendMultiChannelNotification(ctx context.Context, 
 			return "DockMaster" // Default fallback
 		}(),
 		HomeURL: s.Config.App.FrontendBaseURL,
+		Logo:    logo,
 	}
 
 	// Use provided email data if available, otherwise use user's email

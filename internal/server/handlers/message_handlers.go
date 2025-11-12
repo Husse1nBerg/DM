@@ -413,6 +413,22 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		allowEmail = true // Default to allowing if check fails
 	}
 
+	// Get marina to get organization ID and logo
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if err != nil {
+		logger.Zap.Warnw("Failed to get marina", "marina_id", req.MarinaID, "error", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+	}
+	
+	// Include marina logo if available
+	var logo string
+	if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
+	
 	if !allowEmail {
 		logger.Zap.Infow("Skipping email send due to recipient preferences",
 			"recipient", req.Contact, "marina_id", req.MarinaID)
@@ -433,6 +449,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Recipient: req.Recipient,
 		Sender:    req.Sender,
 		HomeURL:   cfg.App.HomeURL(),
+		Logo:      logo,
 	}
 	to := []string{req.Contact}
 	subject := "Message from " + req.Sender
@@ -463,13 +480,6 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 			}
 		}
 		marinaUsers = activeUsers
-
-		// Get marina to get organization ID
-		marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
-		if err != nil {
-			logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
-		}
 
 		// Debug: Log notification preferences for each marina user
 		for _, user := range marinaUsers {
@@ -688,6 +698,22 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		} else {
 			var taskID uuid.UUID
 			var resultChan <-chan sendgrid.EmailStatus
+			
+			// Get marina for logo
+			marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+			if err != nil {
+				logger.Zap.Warnw("Failed to get marina", "marina_id", req.MarinaID, "error", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+			}
+			
+			// Include marina logo if available
+			var logo string
+			if marina.Image != nil && *marina.Image != "" {
+				fullURL := utils.GetFullImageURL(marina.Image)
+				if fullURL != nil {
+					logo = *fullURL
+				}
+			}
 
 			// Create email data
 			email := sendgrid.MessageTemplateData{
@@ -695,6 +721,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				Recipient: req.Recipient,
 				Sender:    req.Sender,
 				HomeURL:   cfg.App.HomeURL(),
+				Logo:      logo,
 			}
 			to := []string{req.Contact}
 			subject := "Message from " + req.Sender
