@@ -1911,9 +1911,9 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 	)
 	
 	// Fetch marina for logo
-	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
-	if err != nil {
-		logger.Zap.Error("Error fetching marina by ID", err)
+	marina, marinaErr := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if marinaErr != nil {
+		logger.Zap.Error("Error fetching marina by ID", marinaErr)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 	
@@ -2190,9 +2190,9 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 	)
 	
 	// Fetch marina for logo
-	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
-	if err != nil {
-		logger.Zap.Error("Error fetching marina by ID", err)
+	marina, marinaErr := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if marinaErr != nil {
+		logger.Zap.Error("Error fetching marina by ID", marinaErr)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 	
