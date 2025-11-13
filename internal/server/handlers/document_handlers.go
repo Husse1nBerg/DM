@@ -269,15 +269,15 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 		ctx := context.Background()
 
 		if marina.SystemID == nil {
-			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME boat update (document)")
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME customer update (document)")
 			return
 		}
 		orgID := marina.OrganizationID
 		systemID := *marina.SystemID
 
-		dmeBoat, err := h.server.DME.RetrieveBoatByID(ctx, entityID, orgID, systemID)
+		dmeCustomer, err := h.server.DME.CustomerRetrieve(ctx, entityID, orgID, systemID)
 		if err != nil {
-			h.server.Logger.Zap.Error("[DME API] Error retrieving boat from DME for attachment update (document)", err)
+			h.server.Logger.Zap.Error("[DME API] Error retrieving customer from DME for attachment update (document)", err)
 			return
 		}
 
@@ -291,56 +291,54 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 			FromDMWeb:   utils.Pointer(true),
 		}
 
-		updatedAttachments := dmeBoat.Attachments
+		updatedAttachments := dmeCustomer.Attachments
 		if updatedAttachments == nil {
 			updatedAttachments = []dme.Attachment{}
 		}
 		updatedAttachments = append(updatedAttachments, newAttachment)
 
-		boatUpdate := &dme.BoatUpdate{
-			ID:                   dmeBoat.ID,
-			Name:                 dmeBoat.Name,
-			Registration:         dmeBoat.Registration,
-			Year:                 dmeBoat.Year,
-			Make:                 dmeBoat.Make,
-			Model:                dmeBoat.Model,
-			HIN:                  dmeBoat.HIN,
-			LOA:                  dmeBoat.LOA,
-			LWL:                  dmeBoat.LWL,
-			Draft:                dmeBoat.Draft,
-			Beam:                 dmeBoat.Beam,
-			Height:               dmeBoat.Height,
-			Color:                dmeBoat.Color,
-			TrailerMake:          dmeBoat.TrailerMake,
-			TrailerModel:         dmeBoat.TrailerModel,
-			TrailerSerial:        dmeBoat.TrailerSerial,
-			TrailerRegistration:  dmeBoat.TrailerRegistration,
-			TrailerLocation:      dmeBoat.TrailerLocation,
-			SummerSlip:           dmeBoat.SummerSlip,
-			WinterSlip:           dmeBoat.WinterSlip,
-			InsuranceCompany:     dmeBoat.InsuranceCompany,
-			InsuranceExpDate:     dmeBoat.InsuranceExpDate,
-			SlipID:               dmeBoat.SlipID,
-			Slip:                 dmeBoat.Slip,
-			Motors:               dmeBoat.Motors,
-			DoNotLaunch:          dmeBoat.DoNotLaunch,
-			BillingCodes:         dmeBoat.BillingCodes,
-			BoatDescriptionCodes: dmeBoat.BoatDescriptionCodes,
-			CustomInformation:    dmeBoat.CustomInformation,
-			OperationsHistory:    dmeBoat.OperationsHistory,
-			IntegrationID:        dmeBoat.IntegrationID,
-			OwnerIntegrationID:   dmeBoat.OwnerIntegrationID,
-			LastModified:         dmeBoat.LastModified,
-			Comments:             dmeBoat.Comments,
-			Attachments:          updatedAttachments,
+		customerUpdate := &dme.CustomerUpdate{
+			ID:                        dmeCustomer.ID,
+			Name:                      dmeCustomer.Name,
+			FirstName:                 dmeCustomer.FirstName,
+			LastName:                  dmeCustomer.LastName,
+			Email:                     dmeCustomer.Email,
+			Address1:                  dmeCustomer.Address1,
+			Address2:                  dmeCustomer.Address2,
+			Address3:                  dmeCustomer.Address3,
+			City:                      dmeCustomer.City,
+			State:                     dmeCustomer.State,
+			Zip:                       dmeCustomer.Zip,
+			Country:                   dmeCustomer.Country,
+			Phone:                     dmeCustomer.Phone,
+			AltFirstName:              dmeCustomer.AltFirstName,
+			AltLastName:               dmeCustomer.AltLastName,
+			AltAddress1:               dmeCustomer.AltAddress1,
+			AltAddress2:               dmeCustomer.AltAddress2,
+			AltAddress3:               dmeCustomer.AltAddress3,
+			AltCity:                   dmeCustomer.AltCity,
+			AltState:                  dmeCustomer.AltState,
+			AltZip:                    dmeCustomer.AltZip,
+			AltCountry:                dmeCustomer.AltCountry,
+			AltPhone:                  dmeCustomer.AltPhone,
+			UseAltAddress:             dmeCustomer.UseAltAddress,
+			WorkPhone:                 dmeCustomer.WorkPhone,
+			CellPhone:                 dmeCustomer.CellPhone,
+			EmergencyContact:          dmeCustomer.EmergencyContact,
+			EmergencyPhone:            dmeCustomer.EmergencyPhone,
+			CompanyName:               dmeCustomer.CompanyName,
+			ShipmentMethod:            dmeCustomer.ShipmentMethod,
+			ShipmentMethodDescription: dmeCustomer.ShipmentMethodDescription,
+			CustomInformation:         dmeCustomer.CustomInformation,
+			Attachments:               updatedAttachments,
 		}
 
-		_, err = h.server.DME.UpdateBoat(ctx, boatUpdate, orgID, systemID)
+		_, err = h.server.DME.CustomerUpdate(ctx, customerUpdate, orgID, systemID)
 		if err != nil {
-			h.server.Logger.Zap.Error("[DME API] Error updating boat attachments in DME (document)", err)
+			h.server.Logger.Zap.Error("[DME API] Error updating customer attachments in DME (document)", err)
 		} else {
-			h.server.Logger.Zap.Info("[DME API] Successfully updated DME boat with document attachment",
-				"boatID", entityID,
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME customer with document attachment",
+				"customerID", entityID,
 				"fileName", header.Filename,
 				"documentID", doc.ID.String())
 		}
