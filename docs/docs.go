@@ -2614,6 +2614,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/customers/retrieve-customers": {
+            "get": {
+                "description": "Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Retrieve customers with filters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records modified on or after this date. Format MM-DD-YYYY",
+                        "name": "LastModifiedDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records with a matching primary email address",
+                        "name": "EmailAddress",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dme.Customer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/customers/search": {
             "get": {
                 "description": "Searches for customers based on search string",
@@ -16411,6 +16463,9 @@ const docTemplate = `{
         "dme.Boat": {
             "type": "object",
             "properties": {
+                "access": {
+                    "type": "string"
+                },
                 "attachments": {
                     "type": "array",
                     "items": {
@@ -16438,6 +16493,12 @@ const docTemplate = `{
                 "comments": {
                     "type": "string"
                 },
+                "contractEndDate": {
+                    "type": "string"
+                },
+                "contractStartDate": {
+                    "type": "string"
+                },
                 "customInformation": {
                     "type": "array",
                     "items": {
@@ -16449,6 +16510,18 @@ const docTemplate = `{
                 },
                 "draft": {
                     "type": "string"
+                },
+                "drives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Drive"
+                    }
+                },
+                "generators": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Generator"
+                    }
                 },
                 "height": {
                     "type": "string"
@@ -16529,6 +16602,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "trailerSerial": {
+                    "type": "string"
+                },
+                "transomCondition": {
+                    "type": "string"
+                },
+                "transomHeight": {
+                    "type": "string"
+                },
+                "transomMaterial": {
+                    "type": "string"
+                },
+                "transomType": {
+                    "type": "string"
+                },
+                "transomTypeDesc": {
                     "type": "string"
                 },
                 "winterSlip": {
@@ -16735,6 +16823,9 @@ const docTemplate = `{
         "dme.BoatUpdate": {
             "type": "object",
             "properties": {
+                "access": {
+                    "type": "string"
+                },
                 "attachments": {
                     "type": "array",
                     "items": {
@@ -16762,6 +16853,12 @@ const docTemplate = `{
                 "comments": {
                     "type": "string"
                 },
+                "contractEndDate": {
+                    "type": "string"
+                },
+                "contractStartDate": {
+                    "type": "string"
+                },
                 "customInformation": {
                     "type": "array",
                     "items": {
@@ -16773,6 +16870,18 @@ const docTemplate = `{
                 },
                 "draft": {
                     "type": "string"
+                },
+                "drives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Drive"
+                    }
+                },
+                "generators": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Generator"
+                    }
                 },
                 "height": {
                     "type": "string"
@@ -16850,6 +16959,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "trailerSerial": {
+                    "type": "string"
+                },
+                "transomCondition": {
+                    "type": "string"
+                },
+                "transomHeight": {
+                    "type": "string"
+                },
+                "transomMaterial": {
+                    "type": "string"
+                },
+                "transomType": {
+                    "type": "string"
+                },
+                "transomTypeDesc": {
                     "type": "string"
                 },
                 "winterSlip": {
@@ -17384,6 +17508,79 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.Drive": {
+            "type": "object",
+            "properties": {
+                "condition": {
+                    "type": "string"
+                },
+                "conditionDesc": {
+                    "type": "string"
+                },
+                "gearRatio": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "typeDesc": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Generator": {
+            "type": "object",
+            "properties": {
+                "condition": {
+                    "type": "string"
+                },
+                "conditionDesc": {
+                    "type": "string"
+                },
+                "fuelType": {
+                    "type": "string"
+                },
+                "fuelTypeDesc": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "integer"
+                },
+                "kilowatts": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.Installment": {
             "type": "object",
             "properties": {
@@ -17442,11 +17639,26 @@ const docTemplate = `{
         "dme.Motor": {
             "type": "object",
             "properties": {
+                "condition": {
+                    "type": "string"
+                },
+                "conditionDesc": {
+                    "type": "string"
+                },
                 "drive": {
+                    "type": "string"
+                },
+                "fuelType": {
+                    "type": "string"
+                },
+                "fuelTypeDesc": {
                     "type": "string"
                 },
                 "hours": {
                     "type": "number"
+                },
+                "hp": {
+                    "type": "integer"
                 },
                 "make": {
                     "type": "string"
@@ -17464,6 +17676,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transomId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "typeDesc": {
                     "type": "string"
                 },
                 "year": {

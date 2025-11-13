@@ -143,3 +143,9 @@ type CustomerUpdateRequest struct {
 	Attachments               []AttachmentWithPublic  `json:"attachments"`
 	Inactive                  *bool                   `json:"inactive"`
 }
+
+// CustomerRetrieveListRequest represents a request to retrieve multiple customers with filters
+type CustomerRetrieveListRequest struct {
+	LastModifiedDate string `query:"LastModifiedDate"` // Optional: Format MM-DD-YYYY
+	EmailAddress     string `query:"EmailAddress"`     // Optional: Retrieves records with matching primary email
+}

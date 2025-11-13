@@ -57,6 +57,8 @@ definitions:
     type: object
   dme.Boat:
     properties:
+      access:
+        type: string
       attachments:
         items:
           $ref: '#/definitions/dme.Attachment'
@@ -75,6 +77,10 @@ definitions:
         type: string
       comments:
         type: string
+      contractEndDate:
+        type: string
+      contractStartDate:
+        type: string
       customInformation:
         items:
           $ref: '#/definitions/dme.CustomInformation'
@@ -83,6 +89,14 @@ definitions:
         type: boolean
       draft:
         type: string
+      drives:
+        items:
+          $ref: '#/definitions/dme.Drive'
+        type: array
+      generators:
+        items:
+          $ref: '#/definitions/dme.Generator'
+        type: array
       height:
         type: string
       hin:
@@ -136,6 +150,16 @@ definitions:
       trailerRegistration:
         type: string
       trailerSerial:
+        type: string
+      transomCondition:
+        type: string
+      transomHeight:
+        type: string
+      transomMaterial:
+        type: string
+      transomType:
+        type: string
+      transomTypeDesc:
         type: string
       winterSlip:
         type: string
@@ -271,6 +295,8 @@ definitions:
     type: object
   dme.BoatUpdate:
     properties:
+      access:
+        type: string
       attachments:
         items:
           $ref: '#/definitions/dme.Attachment'
@@ -289,6 +315,10 @@ definitions:
         type: string
       comments:
         type: string
+      contractEndDate:
+        type: string
+      contractStartDate:
+        type: string
       customInformation:
         items:
           $ref: '#/definitions/dme.CustomInformation'
@@ -297,6 +327,14 @@ definitions:
         type: boolean
       draft:
         type: string
+      drives:
+        items:
+          $ref: '#/definitions/dme.Drive'
+        type: array
+      generators:
+        items:
+          $ref: '#/definitions/dme.Generator'
+        type: array
       height:
         type: string
       hin:
@@ -348,6 +386,16 @@ definitions:
       trailerRegistration:
         type: string
       trailerSerial:
+        type: string
+      transomCondition:
+        type: string
+      transomHeight:
+        type: string
+      transomMaterial:
+        type: string
+      transomType:
+        type: string
+      transomTypeDesc:
         type: string
       winterSlip:
         type: string
@@ -702,6 +750,54 @@ definitions:
       zip:
         type: string
     type: object
+  dme.Drive:
+    properties:
+      condition:
+        type: string
+      conditionDesc:
+        type: string
+      gearRatio:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      number:
+        type: integer
+      serial:
+        type: string
+      type:
+        type: string
+      typeDesc:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.Generator:
+    properties:
+      condition:
+        type: string
+      conditionDesc:
+        type: string
+      fuelType:
+        type: string
+      fuelTypeDesc:
+        type: string
+      hours:
+        type: integer
+      kilowatts:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      number:
+        type: integer
+      serial:
+        type: string
+      year:
+        type: string
+    type: object
   dme.Installment:
     properties:
       amount:
@@ -740,10 +836,20 @@ definitions:
     type: object
   dme.Motor:
     properties:
+      condition:
+        type: string
+      conditionDesc:
+        type: string
       drive:
+        type: string
+      fuelType:
+        type: string
+      fuelTypeDesc:
         type: string
       hours:
         type: number
+      hp:
+        type: integer
       make:
         type: string
       model:
@@ -755,6 +861,10 @@ definitions:
       size:
         type: string
       transomId:
+        type: string
+      type:
+        type: string
+      typeDesc:
         type: string
       year:
         type: string
@@ -8063,6 +8173,42 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve customer by ID
+      tags:
+      - Customers
+  /customers/retrieve-customers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of customers with optional filters (LastModifiedDate,
+        EmailAddress)
+      parameters:
+      - description: 'Optional: Retrieves records modified on or after this date.
+          Format MM-DD-YYYY'
+        in: query
+        name: LastModifiedDate
+        type: string
+      - description: 'Optional: Retrieves records with a matching primary email address'
+        in: query
+        name: EmailAddress
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dme.Customer'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customers with filters
       tags:
       - Customers
   /customers/search:

@@ -551,6 +551,57 @@ func (h *CustomerHandler) ListCustomersShortByPage(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// @Summary Retrieve customers with filters
+// @Description Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress)
+// @Tags Customers
+// @Accept json
+// @Produce json
+// @Param LastModifiedDate query string false "Optional: Retrieves records modified on or after this date. Format MM-DD-YYYY"
+// @Param EmailAddress query string false "Optional: Retrieves records with a matching primary email address"
+// @Success 200 {array} dme.Customer
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /customers/retrieve-customers [get]
+func (h *CustomerHandler) RetrieveCustomers(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.CustomerRetrieveListRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveCustomersFiltered(ctx, req.LastModifiedDate, req.EmailAddress, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve customers with filters",
+			zap.Error(err),
+			zap.String("lastModifiedDate", req.LastModifiedDate),
+			zap.String("emailAddress", req.EmailAddress))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, dmeResponse)
+}
+
 // @Summary Create customer
 // @Description Creates a new customer
 // @Tags Customers

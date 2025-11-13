@@ -277,15 +277,51 @@ type BoatListMinimal struct {
 
 // Motor represents motor information
 type Motor struct {
-	Number    int     `json:"number"`
-	Year      string  `json:"year"`
-	Make      string  `json:"make"`
-	Model     string  `json:"model"`
-	Serial    string  `json:"serial"`
-	TransomID string  `json:"transomId"`
-	Drive     string  `json:"drive"`
-	Size      string  `json:"size"`
-	Hours     float64 `json:"hours"`
+	Number        int     `json:"number"`
+	Year          string  `json:"year"`
+	Make          string  `json:"make"`
+	Model         string  `json:"model"`
+	Serial        string  `json:"serial"`
+	TransomID     string  `json:"transomId"`
+	Drive         string  `json:"drive"`
+	Size          string  `json:"size"`
+	Hours         float64 `json:"hours"`
+	HP            int     `json:"hp"`
+	FuelType      string  `json:"fuelType"`
+	FuelTypeDesc  string  `json:"fuelTypeDesc"`
+	Condition     string  `json:"condition"`
+	ConditionDesc string  `json:"conditionDesc"`
+	Type          string  `json:"type"`
+	TypeDesc      string  `json:"typeDesc"`
+}
+
+// Drive represents drive information
+type Drive struct {
+	Number        int    `json:"number"`
+	Year          string `json:"year"`
+	Make          string `json:"make"`
+	Model         string `json:"model"`
+	Serial        string `json:"serial"`
+	Type          string `json:"type"`
+	TypeDesc      string `json:"typeDesc"`
+	GearRatio     string `json:"gearRatio"`
+	Condition     string `json:"condition"`
+	ConditionDesc string `json:"conditionDesc"`
+}
+
+// Generator represents generator information
+type Generator struct {
+	Number        int    `json:"number"`
+	Year          string `json:"year"`
+	Make          string `json:"make"`
+	Model         string `json:"model"`
+	Serial        string `json:"serial"`
+	Kilowatts     string `json:"kilowatts"`
+	Hours         int    `json:"hours"`
+	FuelType      string `json:"fuelType"`
+	FuelTypeDesc  string `json:"fuelTypeDesc"`
+	Condition     string `json:"condition"`
+	ConditionDesc string `json:"conditionDesc"`
 }
 
 // Rate represents rate information
@@ -351,6 +387,8 @@ type Slip struct {
 type Boat struct {
 	DoNotLaunch          bool                  `json:"doNotLaunch"`
 	Motors               []Motor               `json:"motors"`
+	Drives               []Drive               `json:"drives"`
+	Generators           []Generator           `json:"generators"`
 	BillingCodes         []BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
 	CustomInformation    []CustomInformation   `json:"customInformation"`
@@ -382,6 +420,14 @@ type Boat struct {
 	InsuranceCompany     string                `json:"insuranceCompany"`
 	InsuranceExpDate     string                `json:"insuranceExpDate"`
 	Comments             string                `json:"comments"`
+	ContractStartDate    string                `json:"contractStartDate"`
+	ContractEndDate      string                `json:"contractEndDate"`
+	TransomType          string                `json:"transomType"`
+	TransomTypeDesc      string                `json:"transomTypeDesc"`
+	TransomHeight        string                `json:"transomHeight"`
+	TransomMaterial      string                `json:"transomMaterial"`
+	TransomCondition     string                `json:"transomCondition"`
+	Access               string                `json:"access"`
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
 	Attachments          []Attachment          `json:"attachments"`
@@ -414,6 +460,8 @@ type BoatUpdate struct {
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
 	Motors               []Motor               `json:"motors"`
+	Drives               []Drive               `json:"drives"`
+	Generators           []Generator           `json:"generators"`
 	DoNotLaunch          bool                  `json:"doNotLaunch"`
 	BillingCodes         []BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
@@ -423,6 +471,14 @@ type BoatUpdate struct {
 	OwnerIntegrationID   string                `json:"ownerIntegrationId"`
 	LastModified         string                `json:"lastModified"`
 	Comments             string                `json:"comments"`
+	ContractStartDate    string                `json:"contractStartDate"`
+	ContractEndDate      string                `json:"contractEndDate"`
+	TransomType          string                `json:"transomType"`
+	TransomTypeDesc      string                `json:"transomTypeDesc"`
+	TransomHeight        string                `json:"transomHeight"`
+	TransomMaterial      string                `json:"transomMaterial"`
+	TransomCondition     string                `json:"transomCondition"`
+	Access               string                `json:"access"`
 	Attachments          []Attachment          `json:"attachments"`
 }
 
@@ -453,6 +509,8 @@ type BoatCreate struct {
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
 	Motors               []Motor               `json:"motors"`
+	Drives               []Drive               `json:"drives"`
+	Generators           []Generator           `json:"generators"`
 	DoNotLaunch          bool                  `json:"doNotLaunch"`
 	BillingCodes         []BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
@@ -462,6 +520,14 @@ type BoatCreate struct {
 	OwnerIntegrationID   string                `json:"ownerIntegrationId"`
 	LastModified         string                `json:"lastModified"`
 	Comments             string                `json:"comments"`
+	ContractStartDate    string                `json:"contractStartDate"`
+	ContractEndDate      string                `json:"contractEndDate"`
+	TransomType          string                `json:"transomType"`
+	TransomTypeDesc      string                `json:"transomTypeDesc"`
+	TransomHeight        string                `json:"transomHeight"`
+	TransomMaterial      string                `json:"transomMaterial"`
+	TransomCondition     string                `json:"transomCondition"`
+	Access               string                `json:"access"`
 	Attachments          []Attachment          `json:"attachments"`
 }
 

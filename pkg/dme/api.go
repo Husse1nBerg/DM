@@ -198,6 +198,44 @@ func (c *Client) CustomersListShort(ctx context.Context, page int, pageSize int,
 	return &result, nil
 }
 
+// RetrieveCustomersFiltered retrieves a list of customers with optional filters
+func (c *Client) RetrieveCustomersFiltered(ctx context.Context, lastModifiedDate string, emailAddress string, organizationID uuid.UUID, systemID string) ([]Customer, error) {
+	var result []Customer
+
+	// Build endpoint with optional query parameters
+	endpoint := "/Customers/RetrieveCustomers?"
+	params := []string{}
+	
+	if lastModifiedDate != "" {
+		params = append(params, fmt.Sprintf("LastModifiedDate=%s", lastModifiedDate))
+	}
+	
+	if emailAddress != "" {
+		params = append(params, fmt.Sprintf("EmailAddress=%s", emailAddress))
+	}
+	
+	// Join parameters with &
+	if len(params) > 0 {
+		endpoint += strings.Join(params, "&")
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customers with filters: %w", err)
+	}
+
+	return result, nil
+}
+
 // RetrieveCustomerContracts retrieves customer contracts for Unit Sales module
 func (c *Client) RetrieveCustomerContracts(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
 	var result []CustomerContract
