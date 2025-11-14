@@ -825,6 +825,8 @@ func (h *DocumentHandler) BoatUploadDocument(c echo.Context) error {
 			SlipID:               dmeBoat.SlipID,
 			Slip:                 dmeBoat.Slip,
 			Motors:               dmeBoat.Motors,
+			Drives:               dmeBoat.Drives,
+			Generators:           dmeBoat.Generators,
 			DoNotLaunch:          dmeBoat.DoNotLaunch,
 			BillingCodes:         dmeBoat.BillingCodes,
 			BoatDescriptionCodes: dmeBoat.BoatDescriptionCodes,
