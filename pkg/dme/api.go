@@ -205,15 +205,15 @@ func (c *Client) RetrieveCustomersFiltered(ctx context.Context, lastModifiedDate
 	// Build endpoint with optional query parameters
 	endpoint := "/Customers/RetrieveCustomers?"
 	params := []string{}
-	
+
 	if lastModifiedDate != "" {
 		params = append(params, fmt.Sprintf("LastModifiedDate=%s", lastModifiedDate))
 	}
-	
+
 	if emailAddress != "" {
 		params = append(params, fmt.Sprintf("EmailAddress=%s", emailAddress))
 	}
-	
+
 	// Join parameters with &
 	if len(params) > 0 {
 		endpoint += strings.Join(params, "&")
@@ -509,6 +509,13 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	// Initialize all array fields if they are null
 	if boat.Motors == nil {
 		boat.Motors = []Motor{}
+	}
+	// Ensure Drives and Generators are present to satisfy DME validation
+	if boat.Drives == nil {
+		boat.Drives = []Drive{}
+	}
+	if boat.Generators == nil {
+		boat.Generators = []Generator{}
 	}
 
 	if boat.BoatDescriptionCodes == nil {
