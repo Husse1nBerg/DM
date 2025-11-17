@@ -173,6 +173,21 @@ definitions:
       description:
         type: string
     type: object
+  dme.BoatList:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/dme.Boat'
+        type: array
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      pageSize:
+        type: integer
+    type: object
   dme.BoatMinimal:
     properties:
       id:
@@ -1486,6 +1501,8 @@ definitions:
     type: object
   requests.BoatCreateRequest:
     properties:
+      access:
+        type: string
       attachments:
         items:
           $ref: '#/definitions/dme.Attachment'
@@ -1504,6 +1521,10 @@ definitions:
         type: string
       comments:
         type: string
+      contractEndDate:
+        type: string
+      contractStartDate:
+        type: string
       customInformation:
         items:
           $ref: '#/definitions/dme.CustomInformation'
@@ -1512,6 +1533,14 @@ definitions:
         type: boolean
       draft:
         type: string
+      drives:
+        items:
+          $ref: '#/definitions/dme.Drive'
+        type: array
+      generators:
+        items:
+          $ref: '#/definitions/dme.Generator'
+        type: array
       height:
         type: string
       hin:
@@ -1532,6 +1561,10 @@ definitions:
         type: string
       model:
         type: string
+      motors:
+        items:
+          $ref: '#/definitions/dme.Motor'
+        type: array
       name:
         type: string
       operationsHistory:
@@ -1557,6 +1590,16 @@ definitions:
       trailerRegistration:
         type: string
       trailerSerial:
+        type: string
+      transomCondition:
+        type: string
+      transomHeight:
+        type: string
+      transomMaterial:
+        type: string
+      transomType:
+        type: string
+      transomTypeDesc:
         type: string
       winterSlip:
         type: string
@@ -7598,6 +7641,52 @@ paths:
       summary: List boats by page
       tags:
       - Boats
+  /boats/list-new-or-changed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves boats created or changed after a specific date with pagination
+      parameters:
+      - description: Date/Time to query from (URL encoded)
+        in: query
+        name: LastUpdate
+        required: true
+        type: string
+      - description: Current page being requested
+        in: query
+        minimum: 1
+        name: Page
+        required: true
+        type: integer
+      - description: Number of records per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: PageSize
+        required: true
+        type: integer
+      - description: 'Optional: Name of list for paged data'
+        in: query
+        name: ListName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dme.BoatList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List boats new or changed
+      tags:
+      - Boats
   /boats/retrieve:
     get:
       consumes:
@@ -7625,6 +7714,46 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve boat by ID
+      tags:
+      - Boats
+  /boats/retrieve-boats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves boats with optional filters (CustomerId, LastUpdateDate,
+        HasInsurance)
+      parameters:
+      - description: 'Optional: Retrieves boats for a particular customer'
+        in: query
+        name: CustomerId
+        type: string
+      - description: 'Optional: Retrieve boats modified on or after this date'
+        in: query
+        name: LastUpdateDate
+        type: string
+      - default: false
+        description: 'Optional: Filter by insurance status'
+        in: query
+        name: HasInsurance
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dme.Boat'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boats with filters
       tags:
       - Boats
   /boats/search:

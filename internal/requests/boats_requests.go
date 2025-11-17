@@ -46,6 +46,9 @@ type BoatCreateRequest struct {
 	InsuranceCompany     string                    `json:"insuranceCompany"`
 	InsuranceExpDate     string                    `json:"insuranceExpDate"`
 	SlipID               string                    `json:"slipId"`
+	Motors               []dme.Motor               `json:"motors"`
+	Drives               []dme.Drive               `json:"drives"`
+	Generators           []dme.Generator           `json:"generators"`
 	DoNotLaunch          bool                      `json:"doNotLaunch"`
 	BillingCodes         []dme.BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []dme.BoatDescriptionCode `json:"boatDescriptionCodes"`
@@ -55,6 +58,14 @@ type BoatCreateRequest struct {
 	OwnerIntegrationID   string                    `json:"ownerIntegrationId"`
 	LastModified         string                    `json:"lastModified"`
 	Comments             string                    `json:"comments"`
+	ContractStartDate    string                    `json:"contractStartDate"`
+	ContractEndDate      string                    `json:"contractEndDate"`
+	TransomType          string                    `json:"transomType"`
+	TransomTypeDesc      string                    `json:"transomTypeDesc"`
+	TransomHeight        string                    `json:"transomHeight"`
+	TransomMaterial      string                    `json:"transomMaterial"`
+	TransomCondition     string                    `json:"transomCondition"`
+	Access               string                    `json:"access"`
 	Attachments          []dme.Attachment          `json:"attachments"`
 }
 
@@ -83,6 +94,9 @@ type BoatUpdateRequest struct {
 	InsuranceCompany     string                    `json:"insuranceCompany"`
 	InsuranceExpDate     string                    `json:"insuranceExpDate"`
 	SlipID               string                    `json:"slipId"`
+	Motors               []dme.Motor               `json:"motors"`
+	Drives               []dme.Drive               `json:"drives"`
+	Generators           []dme.Generator           `json:"generators"`
 	DoNotLaunch          bool                      `json:"doNotLaunch"`
 	BillingCodes         []dme.BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []dme.BoatDescriptionCode `json:"boatDescriptionCodes"`
@@ -92,7 +106,29 @@ type BoatUpdateRequest struct {
 	OwnerIntegrationID   string                    `json:"ownerIntegrationId"`
 	LastModified         string                    `json:"lastModified"`
 	Comments             string                    `json:"comments"`
-	Motors               []dme.Motor               `json:"motors"`
+	ContractStartDate    string                    `json:"contractStartDate"`
+	ContractEndDate      string                    `json:"contractEndDate"`
+	TransomType          string                    `json:"transomType"`
+	TransomTypeDesc      string                    `json:"transomTypeDesc"`
+	TransomHeight        string                    `json:"transomHeight"`
+	TransomMaterial      string                    `json:"transomMaterial"`
+	TransomCondition     string                    `json:"transomCondition"`
+	Access               string                    `json:"access"`
 	Slip                 dme.Slip                  `json:"slip"`
 	Attachments          []AttachmentWithPublic    `json:"attachments"`
+}
+
+// BoatListNewOrChangedRequest represents a request to list boats created or changed after a date
+type BoatListNewOrChangedRequest struct {
+	LastUpdate string `query:"LastUpdate" validate:"required"` // Date/Time to query from (URL encoded)
+	Page       int    `query:"Page" validate:"required,min=1"`
+	PageSize   int    `query:"PageSize" validate:"required,min=1,max=100"`
+	ListName   string `query:"ListName"` // Optional name of list for paged data
+}
+
+// BoatRetrieveListRequest represents a request to retrieve boats with optional filters
+type BoatRetrieveListRequest struct {
+	CustomerID     string `query:"CustomerId"`     // Optional: Retrieves boats for a particular customer
+	LastUpdateDate string `query:"LastUpdateDate"` // Optional: Retrieve boats modified on or after this date
+	HasInsurance   bool   `query:"HasInsurance"`   // Optional: Filter by insurance status
 }

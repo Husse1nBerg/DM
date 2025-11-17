@@ -13,7 +13,9 @@ func RegisterBoatRoutes(server *s.Server, permissionProtected *echo.Group) {
 	// Boat routes
 	boats := permissionProtected.Group("/boats")
 	boats.GET("/list", boatHandler.ListBoatsByPage)
+	boats.GET("/list-new-or-changed", boatHandler.ListBoatsNewOrChanged)
 	boats.GET("/retrieve", boatHandler.RetrieveBoat)
+	boats.GET("/retrieve-boats", boatHandler.RetrieveBoats)
 	boats.GET("/customer", boatHandler.RetrieveBoatsForCustomer)
 	boats.GET("/search", boatHandler.SearchBoats)
 	boats.POST("/update", boatHandler.UpdateBoat)

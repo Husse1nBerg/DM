@@ -254,6 +254,7 @@ type BoatList struct {
 	CurrentPage int    `json:"currentPage"`
 	MaxPages    int    `json:"maxPages"`
 	PageSize    int    `json:"pageSize"`
+	ListName    string `json:"listName"`
 }
 
 // BoatMinimal represents a minimal boat information set for list by page

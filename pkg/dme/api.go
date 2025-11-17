@@ -431,6 +431,75 @@ func (c *Client) SearchBoats(ctx context.Context, searchTerm string, directHit b
 	return result, nil
 }
 
+// BoatsListNewOrChanged retrieves boats created or changed after a specific date with pagination
+func (c *Client) BoatsListNewOrChanged(ctx context.Context, lastUpdate string, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*BoatList, error) {
+	var result BoatList
+
+	// Build endpoint with query parameters
+	endpoint := fmt.Sprintf("/Boats/ListNewOrChanged?LastUpdate=%s&Page=%d&PageSize=%d", lastUpdate, page, pageSize)
+	if listName != "" {
+		endpoint += fmt.Sprintf("&ListName=%s", listName)
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list new or changed boats: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveBoatsFiltered retrieves boats with optional filters
+func (c *Client) RetrieveBoatsFiltered(ctx context.Context, customerID string, lastUpdateDate string, hasInsurance bool, organizationID uuid.UUID, systemID string) ([]Boat, error) {
+	var result []Boat
+
+	// Build endpoint with optional query parameters
+	endpoint := "/Boats/RetrieveBoats?"
+	params := []string{}
+
+	if customerID != "" {
+		params = append(params, fmt.Sprintf("CustomerId=%s", customerID))
+	}
+
+	if lastUpdateDate != "" {
+		params = append(params, fmt.Sprintf("LastUpdateDate=%s", lastUpdateDate))
+	}
+
+	if hasInsurance {
+		params = append(params, "HasInsurance=true")
+	}
+
+	// Join parameters with &
+	if len(params) > 0 {
+		endpoint += strings.Join(params, "&")
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve boats with filters: %w", err)
+	}
+
+	return result, nil
+}
+
 // UpdateBoat updates a boat
 func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationID uuid.UUID, systemID string) (*Boat, error) {
 	var result BoatCreateUpdateResponse

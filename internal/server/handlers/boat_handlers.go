@@ -649,3 +649,114 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 	response := responses.ConvertBoat(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary List boats new or changed
+// @Description Retrieves boats created or changed after a specific date with pagination
+// @Tags Boats
+// @Accept json
+// @Produce json
+// @Param LastUpdate query string true "Date/Time to query from (URL encoded)"
+// @Param Page query int true "Current page being requested" minimum(1)
+// @Param PageSize query int true "Number of records per page" minimum(1) maximum(100)
+// @Param ListName query string false "Optional: Name of list for paged data"
+// @Success 200 {object} dme.BoatList
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /boats/list-new-or-changed [get]
+func (h *BoatHandler) ListBoatsNewOrChanged(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.BoatListNewOrChangedRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.BoatsListNewOrChanged(ctx, req.LastUpdate, req.Page, req.PageSize, req.ListName, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to list new or changed boats",
+			zap.Error(err),
+			zap.String("lastUpdate", req.LastUpdate),
+			zap.Int("page", req.Page),
+			zap.Int("pageSize", req.PageSize))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, dmeResponse)
+}
+
+// @Summary Retrieve boats with filters
+// @Description Retrieves boats with optional filters (CustomerId, LastUpdateDate, HasInsurance)
+// @Tags Boats
+// @Accept json
+// @Produce json
+// @Param CustomerId query string false "Optional: Retrieves boats for a particular customer"
+// @Param LastUpdateDate query string false "Optional: Retrieve boats modified on or after this date"
+// @Param HasInsurance query boolean false "Optional: Filter by insurance status" default(false)
+// @Success 200 {array} dme.Boat
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /boats/retrieve-boats [get]
+func (h *BoatHandler) RetrieveBoats(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.BoatRetrieveListRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveBoatsFiltered(ctx, req.CustomerID, req.LastUpdateDate, req.HasInsurance, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve boats with filters",
+			zap.Error(err),
+			zap.String("customerId", req.CustomerID),
+			zap.String("lastUpdateDate", req.LastUpdateDate),
+			zap.Bool("hasInsurance", req.HasInsurance))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, dmeResponse)
+}

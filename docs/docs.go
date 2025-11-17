@@ -1733,6 +1733,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/boats/list-new-or-changed": {
+            "get": {
+                "description": "Retrieves boats created or changed after a specific date with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "List boats new or changed",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date/Time to query from (URL encoded)",
+                        "name": "LastUpdate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Current page being requested",
+                        "name": "Page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Number of records per page",
+                        "name": "PageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Name of list for paged data",
+                        "name": "ListName",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dme.BoatList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/boats/retrieve": {
             "get": {
                 "description": "Retrieves a boat by its ID",
@@ -1760,6 +1827,65 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.BoatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boats/retrieve-boats": {
+            "get": {
+                "description": "Retrieves boats with optional filters (CustomerId, LastUpdateDate, HasInsurance)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "Retrieve boats with filters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves boats for a particular customer",
+                        "name": "CustomerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieve boats modified on or after this date",
+                        "name": "LastUpdateDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Optional: Filter by insurance status",
+                        "name": "HasInsurance",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dme.Boat"
+                            }
                         }
                     },
                     "400": {
@@ -16638,6 +16764,29 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.BoatList": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Boat"
+                    }
+                },
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
+            }
+        },
         "dme.BoatMinimal": {
             "type": "object",
             "properties": {
@@ -18611,6 +18760,9 @@ const docTemplate = `{
                 "ownerId"
             ],
             "properties": {
+                "access": {
+                    "type": "string"
+                },
                 "attachments": {
                     "type": "array",
                     "items": {
@@ -18638,6 +18790,12 @@ const docTemplate = `{
                 "comments": {
                     "type": "string"
                 },
+                "contractEndDate": {
+                    "type": "string"
+                },
+                "contractStartDate": {
+                    "type": "string"
+                },
                 "customInformation": {
                     "type": "array",
                     "items": {
@@ -18649,6 +18807,18 @@ const docTemplate = `{
                 },
                 "draft": {
                     "type": "string"
+                },
+                "drives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Drive"
+                    }
+                },
+                "generators": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Generator"
+                    }
                 },
                 "height": {
                     "type": "string"
@@ -18679,6 +18849,12 @@ const docTemplate = `{
                 },
                 "model": {
                     "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Motor"
+                    }
                 },
                 "name": {
                     "type": "string"
@@ -18717,6 +18893,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "trailerSerial": {
+                    "type": "string"
+                },
+                "transomCondition": {
+                    "type": "string"
+                },
+                "transomHeight": {
+                    "type": "string"
+                },
+                "transomMaterial": {
+                    "type": "string"
+                },
+                "transomType": {
+                    "type": "string"
+                },
+                "transomTypeDesc": {
                     "type": "string"
                 },
                 "winterSlip": {
