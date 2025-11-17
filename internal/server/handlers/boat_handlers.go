@@ -441,6 +441,27 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 	if reqStruct.LastModified != "" {
 		existingBoat.LastModified = reqStruct.LastModified
 	}
+	if reqStruct.ContractStartDate != "" {
+		existingBoat.ContractStartDate = reqStruct.ContractStartDate
+	}
+	if reqStruct.ContractEndDate != "" {
+		existingBoat.ContractEndDate = reqStruct.ContractEndDate
+	}
+	if reqStruct.TransomType != "" {
+		existingBoat.TransomType = reqStruct.TransomType
+	}
+	if reqStruct.TransomHeight != "" {
+		existingBoat.TransomHeight = reqStruct.TransomHeight
+	}
+	if reqStruct.TransomMaterial != "" {
+		existingBoat.TransomMaterial = reqStruct.TransomMaterial
+	}
+	if reqStruct.TransomCondition != "" {
+		existingBoat.TransomCondition = reqStruct.TransomCondition
+	}
+	if reqStruct.Access != "" {
+		existingBoat.Access = reqStruct.Access
+	}
 	if reqStruct.Attachments != nil {
 		// Convert []AttachmentWithPublic to []dme.Attachment
 		attachments := make([]dme.Attachment, 0, len(reqStruct.Attachments))
@@ -480,6 +501,12 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 	existingBoat.DoNotLaunch = reqStruct.DoNotLaunch
 	if reqStruct.Motors != nil {
 		existingBoat.Motors = reqStruct.Motors
+	}
+	if reqStruct.Drives != nil {
+		existingBoat.Drives = reqStruct.Drives
+	}
+	if reqStruct.Generators != nil {
+		existingBoat.Generators = reqStruct.Generators
 	}
 	// BillingCodes are intentionally set to empty array to clear existing billing configuration
 	existingBoat.BillingCodes = []dme.BillingCode{}
@@ -531,6 +558,8 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 		SlipID:               existingBoat.SlipID,
 		Slip:                 existingBoat.Slip,
 		Motors:               existingBoat.Motors,
+		Drives:               existingBoat.Drives,
+		Generators:           existingBoat.Generators,
 		DoNotLaunch:          existingBoat.DoNotLaunch,
 		BillingCodes:         existingBoat.BillingCodes,
 		BoatDescriptionCodes: existingBoat.BoatDescriptionCodes,
@@ -540,6 +569,14 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 		OwnerIntegrationID:   existingBoat.OwnerIntegrationID,
 		LastModified:         existingBoat.LastModified,
 		Comments:             existingBoat.Comments,
+		ContractStartDate:    existingBoat.ContractStartDate,
+		ContractEndDate:      existingBoat.ContractEndDate,
+		TransomType:          existingBoat.TransomType,
+		TransomTypeDesc:      existingBoat.TransomTypeDesc,
+		TransomHeight:        existingBoat.TransomHeight,
+		TransomMaterial:      existingBoat.TransomMaterial,
+		TransomCondition:     existingBoat.TransomCondition,
+		Access:               existingBoat.Access,
 		Attachments:          existingBoat.Attachments,
 	}
 	dmeResponse, err := h.server.DME.UpdateBoat(ctx, &boatUpdate, orgID, *systemID)
