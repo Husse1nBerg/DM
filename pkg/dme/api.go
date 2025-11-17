@@ -536,14 +536,12 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	// Initialize Slip if it's nil
 	if boat.Slip == (Slip{}) {
 		boat.Slip = Slip{
-			LastModifedDate: time.Now().Format("2000-01-01T00:00:00"),
+			LastModifedDate: time.Now().Format("2006-01-02T15:04:05"),
 		}
 	}
 
 	// Set LastModified if empty
-	if boat.LastModified == "" {
-		boat.LastModified = time.Now().Format("2000-01-01T00:00:00")
-	}
+	boat.LastModified = time.Now().Format("2006-01-02T15:04:05")
 
 	err := c.DoJSONRequest(
 		ctx,

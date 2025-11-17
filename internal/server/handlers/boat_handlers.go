@@ -363,104 +363,104 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 
 	// Overlay the incoming changes onto the existing boat
 	// Only update fields that are present in the request
-	if reqStruct.Name != "" {
-		existingBoat.Name = reqStruct.Name
+	if reqStruct.Name != nil {
+		existingBoat.Name = *reqStruct.Name
 	}
-	if reqStruct.Registration != "" {
-		existingBoat.Registration = reqStruct.Registration
+	if reqStruct.Registration != nil {
+		existingBoat.Registration = *reqStruct.Registration
 	}
-	if reqStruct.Year != "" {
-		existingBoat.Year = reqStruct.Year
+	if reqStruct.Year != nil {
+		existingBoat.Year = *reqStruct.Year
 	}
-	if reqStruct.Make != "" {
-		existingBoat.Make = reqStruct.Make
+	if reqStruct.Make != nil {
+		existingBoat.Make = *reqStruct.Make
 	}
-	if reqStruct.Model != "" {
-		existingBoat.Model = reqStruct.Model
+	if reqStruct.Model != nil {
+		existingBoat.Model = *reqStruct.Model
 	}
-	if reqStruct.HIN != "" {
-		existingBoat.HIN = reqStruct.HIN
+	if reqStruct.HIN != nil {
+		existingBoat.HIN = *reqStruct.HIN
 	}
-	if reqStruct.LOA != "" {
-		existingBoat.LOA = reqStruct.LOA
+	if reqStruct.LOA != nil {
+		existingBoat.LOA = *reqStruct.LOA
 	}
-	if reqStruct.LWL != "" {
-		existingBoat.LWL = reqStruct.LWL
+	if reqStruct.LWL != nil {
+		existingBoat.LWL = *reqStruct.LWL
 	}
-	if reqStruct.Draft != "" {
-		existingBoat.Draft = reqStruct.Draft
+	if reqStruct.Draft != nil {
+		existingBoat.Draft = *reqStruct.Draft
 	}
-	if reqStruct.Beam != "" {
-		existingBoat.Beam = reqStruct.Beam
+	if reqStruct.Beam != nil {
+		existingBoat.Beam = *reqStruct.Beam
 	}
-	if reqStruct.Height != "" {
-		existingBoat.Height = reqStruct.Height
+	if reqStruct.Height != nil {
+		existingBoat.Height = *reqStruct.Height
 	}
-	if reqStruct.Color != "" {
-		existingBoat.Color = reqStruct.Color
+	if reqStruct.Color != nil {
+		existingBoat.Color = *reqStruct.Color
 	}
-	if reqStruct.TrailerMake != "" {
-		existingBoat.TrailerMake = reqStruct.TrailerMake
+	if reqStruct.TrailerMake != nil {
+		existingBoat.TrailerMake = *reqStruct.TrailerMake
 	}
-	if reqStruct.TrailerModel != "" {
-		existingBoat.TrailerModel = reqStruct.TrailerModel
+	if reqStruct.TrailerModel != nil {
+		existingBoat.TrailerModel = *reqStruct.TrailerModel
 	}
-	if reqStruct.TrailerSerial != "" {
-		existingBoat.TrailerSerial = reqStruct.TrailerSerial
+	if reqStruct.TrailerSerial != nil {
+		existingBoat.TrailerSerial = *reqStruct.TrailerSerial
 	}
-	if reqStruct.TrailerRegistration != "" {
-		existingBoat.TrailerRegistration = reqStruct.TrailerRegistration
+	if reqStruct.TrailerRegistration != nil {
+		existingBoat.TrailerRegistration = *reqStruct.TrailerRegistration
 	}
-	if reqStruct.TrailerLocation != "" {
-		existingBoat.TrailerLocation = reqStruct.TrailerLocation
+	if reqStruct.TrailerLocation != nil {
+		existingBoat.TrailerLocation = *reqStruct.TrailerLocation
 	}
-	if reqStruct.SummerSlip != "" {
-		existingBoat.SummerSlip = reqStruct.SummerSlip
+	if reqStruct.SummerSlip != nil {
+		existingBoat.SummerSlip = *reqStruct.SummerSlip
 	}
-	if reqStruct.WinterSlip != "" {
-		existingBoat.WinterSlip = reqStruct.WinterSlip
+	if reqStruct.WinterSlip != nil {
+		existingBoat.WinterSlip = *reqStruct.WinterSlip
 	}
-	if reqStruct.InsuranceCompany != "" {
-		existingBoat.InsuranceCompany = reqStruct.InsuranceCompany
+	if reqStruct.InsuranceCompany != nil {
+		existingBoat.InsuranceCompany = *reqStruct.InsuranceCompany
 	}
-	if reqStruct.InsuranceExpDate != "" {
-		existingBoat.InsuranceExpDate = reqStruct.InsuranceExpDate
+	if reqStruct.InsuranceExpDate != nil {
+		existingBoat.InsuranceExpDate = *reqStruct.InsuranceExpDate
 	}
-	if reqStruct.SlipID != "" {
-		existingBoat.SlipID = reqStruct.SlipID
+	if reqStruct.SlipID != nil {
+		existingBoat.SlipID = *reqStruct.SlipID
 	}
-	if reqStruct.Comments != "" {
-		existingBoat.Comments = reqStruct.Comments
+	if reqStruct.Comments != nil {
+		existingBoat.Comments = *reqStruct.Comments
 	}
-	if reqStruct.IntegrationID != "" {
-		existingBoat.IntegrationID = reqStruct.IntegrationID
+	if reqStruct.IntegrationID != nil {
+		existingBoat.IntegrationID = *reqStruct.IntegrationID
 	}
-	if reqStruct.OwnerIntegrationID != "" {
-		existingBoat.OwnerIntegrationID = reqStruct.OwnerIntegrationID
+	if reqStruct.OwnerIntegrationID != nil {
+		existingBoat.OwnerIntegrationID = *reqStruct.OwnerIntegrationID
 	}
-	if reqStruct.LastModified != "" {
-		existingBoat.LastModified = reqStruct.LastModified
+	if reqStruct.LastModified != nil {
+		existingBoat.LastModified = *reqStruct.LastModified
 	}
-	if reqStruct.ContractStartDate != "" {
-		existingBoat.ContractStartDate = reqStruct.ContractStartDate
+	if reqStruct.ContractStartDate != nil {
+		existingBoat.ContractStartDate = *reqStruct.ContractStartDate
 	}
-	if reqStruct.ContractEndDate != "" {
-		existingBoat.ContractEndDate = reqStruct.ContractEndDate
+	if reqStruct.ContractEndDate != nil {
+		existingBoat.ContractEndDate = *reqStruct.ContractEndDate
 	}
-	if reqStruct.TransomType != "" {
-		existingBoat.TransomType = reqStruct.TransomType
+	if reqStruct.TransomType != nil {
+		existingBoat.TransomType = *reqStruct.TransomType
 	}
-	if reqStruct.TransomHeight != "" {
-		existingBoat.TransomHeight = reqStruct.TransomHeight
+	if reqStruct.TransomHeight != nil {
+		existingBoat.TransomHeight = *reqStruct.TransomHeight
 	}
-	if reqStruct.TransomMaterial != "" {
-		existingBoat.TransomMaterial = reqStruct.TransomMaterial
+	if reqStruct.TransomMaterial != nil {
+		existingBoat.TransomMaterial = *reqStruct.TransomMaterial
 	}
-	if reqStruct.TransomCondition != "" {
-		existingBoat.TransomCondition = reqStruct.TransomCondition
+	if reqStruct.TransomCondition != nil {
+		existingBoat.TransomCondition = *reqStruct.TransomCondition
 	}
-	if reqStruct.Access != "" {
-		existingBoat.Access = reqStruct.Access
+	if reqStruct.Access != nil {
+		existingBoat.Access = *reqStruct.Access
 	}
 	if reqStruct.Attachments != nil {
 		// Convert []AttachmentWithPublic to []dme.Attachment
@@ -498,7 +498,7 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 			}
 		}
 	}
-	existingBoat.DoNotLaunch = reqStruct.DoNotLaunch
+	existingBoat.DoNotLaunch = *reqStruct.DoNotLaunch
 	if reqStruct.Motors != nil {
 		existingBoat.Motors = reqStruct.Motors
 	}
