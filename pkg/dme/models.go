@@ -278,22 +278,22 @@ type BoatListMinimal struct {
 
 // Motor represents motor information
 type Motor struct {
-	Number        int     `json:"number"`
-	Year          string  `json:"year"`
-	Make          string  `json:"make"`
-	Model         string  `json:"model"`
-	Serial        string  `json:"serial"`
-	TransomID     string  `json:"transomId"`
-	Drive         string  `json:"drive"`
-	Size          string  `json:"size"`
-	Hours         float64 `json:"hours"`
-	HP            int     `json:"hp"`
-	FuelType      string  `json:"fuelType"`
-	FuelTypeDesc  string  `json:"fuelTypeDesc"`
-	Condition     string  `json:"condition"`
-	ConditionDesc string  `json:"conditionDesc"`
-	Type          string  `json:"type"`
-	TypeDesc      string  `json:"typeDesc"`
+	Number        int      `json:"number"`
+	Year          string   `json:"year"`
+	Make          string   `json:"make"`
+	Model         string   `json:"model"`
+	Serial        string   `json:"serial"`
+	TransomID     string   `json:"transomId"`
+	Drive         string   `json:"drive"`
+	Size          string   `json:"size"`
+	Hours         *float64 `json:"hours,omitempty"`
+	HP            int      `json:"hp"`
+	FuelType      string   `json:"fuelType"`
+	FuelTypeDesc  string   `json:"fuelTypeDesc"`
+	Condition     string   `json:"condition"`
+	ConditionDesc string   `json:"conditionDesc"`
+	Type          string   `json:"type"`
+	TypeDesc      string   `json:"typeDesc"`
 }
 
 // Drive represents drive information
@@ -318,7 +318,7 @@ type Generator struct {
 	Model         string `json:"model"`
 	Serial        string `json:"serial"`
 	Kilowatts     string `json:"kilowatts"`
-	Hours         int    `json:"hours"`
+	Hours         *int   `json:"hours,omitempty"`
 	FuelType      string `json:"fuelType"`
 	FuelTypeDesc  string `json:"fuelTypeDesc"`
 	Condition     string `json:"condition"`

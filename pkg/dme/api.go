@@ -568,9 +568,15 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
 
-	// Initialize empty arrays if nil
+	// Initialize empty arrays if nil to satisfy DME validation
 	if boat.Motors == nil {
 		boat.Motors = []Motor{}
+	}
+	if boat.Drives == nil {
+		boat.Drives = []Drive{}
+	}
+	if boat.Generators == nil {
+		boat.Generators = []Generator{}
 	}
 
 	if boat.BoatDescriptionCodes == nil {
