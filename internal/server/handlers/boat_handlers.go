@@ -498,7 +498,9 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 			}
 		}
 	}
-	existingBoat.DoNotLaunch = *reqStruct.DoNotLaunch
+	if reqStruct.DoNotLaunch != nil {
+		existingBoat.DoNotLaunch = *reqStruct.DoNotLaunch
+	}
 	if reqStruct.Motors != nil {
 		existingBoat.Motors = reqStruct.Motors
 	}
