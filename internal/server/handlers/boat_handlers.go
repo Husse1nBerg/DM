@@ -664,6 +664,9 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 		InsuranceCompany:     req.InsuranceCompany,
 		InsuranceExpDate:     req.InsuranceExpDate,
 		SlipID:               req.SlipID,
+		Motors:               req.Motors,
+		Drives:               req.Drives,
+		Generators:           req.Generators,
 		DoNotLaunch:          req.DoNotLaunch,
 		BillingCodes:         req.BillingCodes,
 		BoatDescriptionCodes: req.BoatDescriptionCodes,
@@ -673,6 +676,15 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 		OwnerIntegrationID:   req.OwnerIntegrationID,
 		LastModified:         req.LastModified,
 		Comments:             req.Comments,
+		ContractStartDate:    req.ContractStartDate,
+		ContractEndDate:      req.ContractEndDate,
+		TransomType:          req.TransomType,
+		TransomTypeDesc:      req.TransomTypeDesc,
+		TransomHeight:        req.TransomHeight,
+		TransomMaterial:      req.TransomMaterial,
+		TransomCondition:     req.TransomCondition,
+		Access:               req.Access,
+		Attachments:          req.Attachments,
 	}
 
 	dmeResponse, err := h.server.DME.CreateBoat(ctx, boat, orgID, *systemID)
