@@ -130,28 +130,23 @@ func (h *DocumentHandler) updateStorageUsage(ctx echo.Context, marinaID uuid.UUI
 //	@Security		ApiKeyAuth
 //	@Router			/documents/customer [post]
 func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
-	// Parse marina ID from form
-	marinaIDStr := c.FormValue("marinaId")
-	marinaID, err := uuid.Parse(marinaIDStr)
+	// Parse and validate upload parameters
+	marinaID, entityID, file, header, err := utils.ParseUploadParams(c)
 	if err != nil {
-		h.server.Logger.Zap.Error("Error parsing marina ID", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
-	}
-
-	entityType := "customer"
-	entityID := c.FormValue("entityId")
-
-	if entityID == "" {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Entity ID is required").JSON(c)
-	}
-
-	// Get file from form
-	file, header, err := c.Request().FormFile("file")
-	if err != nil {
-		h.server.Logger.Zap.Error("Error getting file", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, "File is required").JSON(c)
+		switch err {
+		case utils.ErrInvalidMarinaID:
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
+		case utils.ErrMissingEntityID:
+			return responses.NewErrorResponse(http.StatusBadRequest, "Entity ID is required").JSON(c)
+		case utils.ErrMissingFile:
+			return responses.NewErrorResponse(http.StatusBadRequest, "File is required").JSON(c)
+		default:
+			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+		}
 	}
 	defer file.Close()
+
+	entityType := "customer"
 
 	// Check storage limit before upload
 	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
@@ -193,12 +188,10 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 	response := responses.NewDocumentResponseSuccess(doc)
 	response.Code = http.StatusCreated
 
-	// Get current user to check if they are a customer
+	// Get current user and marina info for subsequent async operations
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
-	userID := claims.ID
 
-	// Get marina information for both notification and DME operations
 	ctx, cancel := context.WithTimeout(c.Request().Context(), 10*time.Second)
 	defer cancel()
 
@@ -208,142 +201,9 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
 	}
 
-	// Only send notifications if the current user is a customer
-	if claims.IsCustomer == nil || *claims.IsCustomer {
-		// Create notification for marina staff about new customer document
-		marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
-			MarinaID:   marinaID,
-			IsCustomer: utils.Pointer(false), // Get marina staff, not customers
-		})
-		if err != nil {
-			h.server.Logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", marinaID, "error", err)
-		} else {
-			// Create notifications for marina staff using smart notification system
-			// Use background context with timeout for notification operations
-			// Timeout calculation: 37 users × 5.5 seconds = ~3.4 minutes, so we use 5 minutes for safety
-			go func() {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-				defer cancel()
-
-				emailData := &notifications.EmailNotificationData{
-					To:      []string{}, // No specific email recipients for document notifications
-					Subject: "New Customer Document Uploaded",
-				}
-
-				results, err := h.notificationService.CreateBulkDocumentNotifications(
-					ctx,
-					marinaUsers,
-					marina.OrganizationID,
-					marinaID,
-					header.Filename, // Document filename
-					entityID,        // Customer ID
-					emailData,
-				)
-				if err != nil {
-					h.server.Logger.Zap.Warnw("Failed to create bulk document notifications", "error", err)
-				} else {
-					// Log notification results
-					for _, result := range results {
-						if len(result.Errors) > 0 {
-							h.server.Logger.Zap.Warnw("Document notification delivery had errors",
-								"user_id", result.UserID,
-								"errors", result.Errors)
-						} else {
-							h.server.Logger.Zap.Infow("Document notification delivered successfully",
-								"user_id", result.UserID,
-								"system", result.SystemDelivered,
-								"email", result.EmailDelivered)
-						}
-					}
-				}
-			}()
-		}
-	} else {
-		h.server.Logger.Zap.Infow("Skipping notifications - document uploaded by customer user",
-			"user_id", userID,
-			"is_customer", *claims.IsCustomer,
-			"document_id", doc.ID)
-	}
-
-	// --- DME Attachment Insert (Async, e-sign/gallery style) ---
-	go func() {
-		ctx := context.Background()
-
-		if marina.SystemID == nil {
-			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME customer update (document)")
-			return
-		}
-		orgID := marina.OrganizationID
-		systemID := *marina.SystemID
-
-		dmeCustomer, err := h.server.DME.CustomerRetrieve(ctx, entityID, orgID, systemID)
-		if err != nil {
-			h.server.Logger.Zap.Error("[DME API] Error retrieving customer from DME for attachment update (document)", err)
-			return
-		}
-
-		fileType := header.Header.Get("Content-Type")
-		datetime := time.Now().Format("2006-01-02 15:04:05")
-		newAttachment := dme.Attachment{
-			FileName:    header.Filename,
-			Description: fmt.Sprintf("Document attachment %s", datetime),
-			S3Path:      filePath,
-			FileType:    utils.Pointer(fileType),
-			FromDMWeb:   utils.Pointer(true),
-		}
-
-		updatedAttachments := dmeCustomer.Attachments
-		if updatedAttachments == nil {
-			updatedAttachments = []dme.Attachment{}
-		}
-		updatedAttachments = append(updatedAttachments, newAttachment)
-
-		customerUpdate := &dme.CustomerUpdate{
-			ID:                        dmeCustomer.ID,
-			Name:                      dmeCustomer.Name,
-			FirstName:                 dmeCustomer.FirstName,
-			LastName:                  dmeCustomer.LastName,
-			Email:                     dmeCustomer.Email,
-			Address1:                  dmeCustomer.Address1,
-			Address2:                  dmeCustomer.Address2,
-			Address3:                  dmeCustomer.Address3,
-			City:                      dmeCustomer.City,
-			State:                     dmeCustomer.State,
-			Zip:                       dmeCustomer.Zip,
-			Country:                   dmeCustomer.Country,
-			Phone:                     dmeCustomer.Phone,
-			AltFirstName:              dmeCustomer.AltFirstName,
-			AltLastName:               dmeCustomer.AltLastName,
-			AltAddress1:               dmeCustomer.AltAddress1,
-			AltAddress2:               dmeCustomer.AltAddress2,
-			AltAddress3:               dmeCustomer.AltAddress3,
-			AltCity:                   dmeCustomer.AltCity,
-			AltState:                  dmeCustomer.AltState,
-			AltZip:                    dmeCustomer.AltZip,
-			AltCountry:                dmeCustomer.AltCountry,
-			AltPhone:                  dmeCustomer.AltPhone,
-			UseAltAddress:             dmeCustomer.UseAltAddress,
-			WorkPhone:                 dmeCustomer.WorkPhone,
-			CellPhone:                 dmeCustomer.CellPhone,
-			EmergencyContact:          dmeCustomer.EmergencyContact,
-			EmergencyPhone:            dmeCustomer.EmergencyPhone,
-			CompanyName:               dmeCustomer.CompanyName,
-			ShipmentMethod:            dmeCustomer.ShipmentMethod,
-			ShipmentMethodDescription: dmeCustomer.ShipmentMethodDescription,
-			CustomInformation:         dmeCustomer.CustomInformation,
-			Attachments:               updatedAttachments,
-		}
-
-		_, err = h.server.DME.CustomerUpdate(ctx, customerUpdate, orgID, systemID)
-		if err != nil {
-			h.server.Logger.Zap.Error("[DME API] Error updating customer attachments in DME (document)", err)
-		} else {
-			h.server.Logger.Zap.Info("[DME API] Successfully updated DME customer with document attachment",
-				"customerID", entityID,
-				"fileName", header.Filename,
-				"documentID", doc.ID.String())
-		}
-	}()
+	// Async notifications for staff and DME attachment update
+	h.handleCustomerDocumentNotifications(ctx, marina, marinaID, entityID, header.Filename, claims, doc.ID)
+	h.handleDMECustomerAttachmentUpdate(ctx, marina, entityID, filePath, header, doc.ID)
 
 	return response.JSON(c)
 }
@@ -364,28 +224,23 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 //	@Failure		500			{object}	responses.BaseResponse
 //	@Router			/public/documents/customer [post]
 func (h *DocumentHandler) CustomerUploadDocumentPublic(c echo.Context) error {
-	// Parse marina ID from form
-	marinaIDStr := c.FormValue("marinaId")
-	marinaID, err := uuid.Parse(marinaIDStr)
+	// Parse and validate upload parameters
+	marinaID, entityID, file, header, err := utils.ParseUploadParams(c)
 	if err != nil {
-		h.server.Logger.Zap.Error("Error parsing marina ID", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
-	}
-
-	entityType := "customer"
-	entityID := c.FormValue("entityId")
-
-	if entityID == "" {
-		return responses.NewErrorResponse(http.StatusBadRequest, "Entity ID is required").JSON(c)
-	}
-
-	// Get file from form
-	file, header, err := c.Request().FormFile("file")
-	if err != nil {
-		h.server.Logger.Zap.Error("Error getting file", err)
-		return responses.NewErrorResponse(http.StatusBadRequest, "File is required").JSON(c)
+		switch err {
+		case utils.ErrInvalidMarinaID:
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid marina ID format").JSON(c)
+		case utils.ErrMissingEntityID:
+			return responses.NewErrorResponse(http.StatusBadRequest, "Entity ID is required").JSON(c)
+		case utils.ErrMissingFile:
+			return responses.NewErrorResponse(http.StatusBadRequest, "File is required").JSON(c)
+		default:
+			return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
+		}
 	}
 	defer file.Close()
+
+	entityType := "customer"
 
 	// Check storage limit before upload
 	// if err := h.checkStorageLimit(c, marinaID, header.Size); err != nil {
@@ -611,27 +466,8 @@ func (h *DocumentHandler) CustomerGetDocumentsByEntityPublic(c echo.Context) err
 
 // parseBoatUploadParams parses and validates boat upload form parameters
 func (h *DocumentHandler) parseBoatUploadParams(c echo.Context) (uuid.UUID, string, multipart.File, *multipart.FileHeader, error) {
-	// Parse marina ID from form
-	marinaIDStr := c.FormValue("marinaId")
-	marinaID, err := uuid.Parse(marinaIDStr)
-	if err != nil {
-		h.server.Logger.Zap.Error("Error parsing marina ID", err)
-		return uuid.Nil, "", nil, nil, fmt.Errorf("invalid marina ID format")
-	}
-
-	entityID := c.FormValue("entityId")
-	if entityID == "" {
-		return uuid.Nil, "", nil, nil, fmt.Errorf("entity ID is required")
-	}
-
-	// Get file from form
-	file, header, err := c.Request().FormFile("file")
-	if err != nil {
-		h.server.Logger.Zap.Error("Error getting file", err)
-		return uuid.Nil, "", nil, nil, fmt.Errorf("file is required")
-	}
-
-	return marinaID, entityID, file, header, nil
+	// Deprecated: kept for compatibility if referenced elsewhere.
+	return utils.ParseUploadParams(c)
 }
 
 // determineUserVisibility determines user type and document visibility settings
@@ -709,8 +545,7 @@ func (h *DocumentHandler) handleBoatDocumentNotifications(ctx context.Context, m
 
 // handleDMEBoatAttachmentUpdate handles DME boat attachment update asynchronously
 func (h *DocumentHandler) handleDMEBoatAttachmentUpdate(ctx context.Context, marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, docID uuid.UUID) {
-	go func() {
-		ctx := context.Background()
+	go func(ctx context.Context) {
 
 		if marina.SystemID == nil {
 			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME boat update (document)")
@@ -787,6 +622,145 @@ func (h *DocumentHandler) handleDMEBoatAttachmentUpdate(ctx context.Context, mar
 		} else {
 			h.server.Logger.Zap.Info("[DME API] Successfully updated DME boat with document attachment",
 				"boatID", entityID,
+				"fileName", header.Filename,
+				"documentID", docID.String())
+		}
+	}(ctx)
+}
+
+// handleCustomerDocumentNotifications handles customer document notification logic asynchronously
+func (h *DocumentHandler) handleCustomerDocumentNotifications(ctx context.Context, marina db.Marina, marinaID uuid.UUID, entityID string, filename string, claims *token.JwtCustomClaims, docID uuid.UUID) {
+	// Only send notifications if the current user is a customer
+	if claims.IsCustomer == nil || *claims.IsCustomer {
+		marinaUsers, err := h.server.DB.Queries().GetUsersByMarina(ctx, db.GetUsersByMarinaParams{
+			MarinaID:   marinaID,
+			IsCustomer: utils.Pointer(false),
+		})
+		if err != nil {
+			h.server.Logger.Zap.Warnw("Failed to get marina users for notification", "marina_id", marinaID, "error", err)
+			return
+		}
+
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+
+			emailData := &notifications.EmailNotificationData{
+				To:      []string{},
+				Subject: "New Customer Document Uploaded",
+			}
+
+			results, err := h.notificationService.CreateBulkDocumentNotifications(
+				ctx,
+				marinaUsers,
+				marina.OrganizationID,
+				marinaID,
+				filename,
+				entityID,
+				emailData,
+			)
+			if err != nil {
+				h.server.Logger.Zap.Warnw("Failed to create bulk document notifications", "error", err)
+				return
+			}
+
+			for _, result := range results {
+				if len(result.Errors) > 0 {
+					h.server.Logger.Zap.Warnw("Document notification delivery had errors",
+						"user_id", result.UserID,
+						"errors", result.Errors)
+				} else {
+					h.server.Logger.Zap.Infow("Document notification delivered successfully",
+						"user_id", result.UserID,
+						"system", result.SystemDelivered,
+						"email", result.EmailDelivered)
+				}
+			}
+		}()
+	} else {
+		h.server.Logger.Zap.Infow("Skipping notifications - document uploaded by customer user",
+			"user_id", claims.ID,
+			"is_customer", *claims.IsCustomer,
+			"document_id", docID)
+	}
+}
+
+// handleDMECustomerAttachmentUpdate handles DME customer attachment update asynchronously
+func (h *DocumentHandler) handleDMECustomerAttachmentUpdate(ctx context.Context, marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, docID uuid.UUID) {
+	go func() {
+		// Use a background context to avoid cancellation after HTTP request finishes
+		ctx := context.Background()
+		if marina.SystemID == nil {
+			h.server.Logger.Zap.Warn("[DME API] Marina has no system ID, skipping DME customer update (document)")
+			return
+		}
+		orgID := marina.OrganizationID
+		systemID := *marina.SystemID
+
+		dmeCustomer, err := h.server.DME.CustomerRetrieve(ctx, entityID, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error retrieving customer from DME for attachment update (document)", err)
+			return
+		}
+
+		fileType := header.Header.Get("Content-Type")
+		datetime := time.Now().Format("2006-01-02 15:04:05")
+		newAttachment := dme.Attachment{
+			FileName:    header.Filename,
+			Description: fmt.Sprintf("Document attachment %s", datetime),
+			S3Path:      filePath,
+			FileType:    utils.Pointer(fileType),
+			FromDMWeb:   utils.Pointer(true),
+		}
+
+		updatedAttachments := dmeCustomer.Attachments
+		if updatedAttachments == nil {
+			updatedAttachments = []dme.Attachment{}
+		}
+		updatedAttachments = append(updatedAttachments, newAttachment)
+
+		customerUpdate := &dme.CustomerUpdate{
+			ID:                        dmeCustomer.ID,
+			Name:                      dmeCustomer.Name,
+			FirstName:                 dmeCustomer.FirstName,
+			LastName:                  dmeCustomer.LastName,
+			Email:                     dmeCustomer.Email,
+			Address1:                  dmeCustomer.Address1,
+			Address2:                  dmeCustomer.Address2,
+			Address3:                  dmeCustomer.Address3,
+			City:                      dmeCustomer.City,
+			State:                     dmeCustomer.State,
+			Zip:                       dmeCustomer.Zip,
+			Country:                   dmeCustomer.Country,
+			Phone:                     dmeCustomer.Phone,
+			AltFirstName:              dmeCustomer.AltFirstName,
+			AltLastName:               dmeCustomer.AltLastName,
+			AltAddress1:               dmeCustomer.AltAddress1,
+			AltAddress2:               dmeCustomer.AltAddress2,
+			AltAddress3:               dmeCustomer.AltAddress3,
+			AltCity:                   dmeCustomer.AltCity,
+			AltState:                  dmeCustomer.AltState,
+			AltZip:                    dmeCustomer.AltZip,
+			AltCountry:                dmeCustomer.AltCountry,
+			AltPhone:                  dmeCustomer.AltPhone,
+			UseAltAddress:             dmeCustomer.UseAltAddress,
+			WorkPhone:                 dmeCustomer.WorkPhone,
+			CellPhone:                 dmeCustomer.CellPhone,
+			EmergencyContact:          dmeCustomer.EmergencyContact,
+			EmergencyPhone:            dmeCustomer.EmergencyPhone,
+			CompanyName:               dmeCustomer.CompanyName,
+			ShipmentMethod:            dmeCustomer.ShipmentMethod,
+			ShipmentMethodDescription: dmeCustomer.ShipmentMethodDescription,
+			CustomInformation:         dmeCustomer.CustomInformation,
+			Attachments:               updatedAttachments,
+		}
+
+		_, err = h.server.DME.CustomerUpdate(ctx, customerUpdate, orgID, systemID)
+		if err != nil {
+			h.server.Logger.Zap.Error("[DME API] Error updating customer attachments in DME (document)", err)
+		} else {
+			h.server.Logger.Zap.Info("[DME API] Successfully updated DME customer with document attachment",
+				"customerID", entityID,
 				"fileName", header.Filename,
 				"documentID", docID.String())
 		}
