@@ -543,6 +543,7 @@ type BoatSearch struct {
 	OwnerName     string `json:"ownerName"`
 	ArrivalDate   string `json:"arrivalDate"`
 	DepartureDate string `json:"departureDate"`
+	HIN           string `json:"hin"`
 }
 
 //
