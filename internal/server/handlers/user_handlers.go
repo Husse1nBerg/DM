@@ -208,6 +208,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		assignUserToMarina := db.AssignUserToMarinaParams{
 			UserID:   userByEmail.ID,
 			MarinaID: req.MarinaID,
+			RoleID:   req.RoleID,
 		}
 		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
 		if err != nil {
@@ -279,6 +280,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	assignUserToMarina := db.AssignUserToMarinaParams{
 		UserID:   user.ID,
 		MarinaID: req.MarinaID,
+		RoleID:   req.RoleID,
 	}
 
 	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)

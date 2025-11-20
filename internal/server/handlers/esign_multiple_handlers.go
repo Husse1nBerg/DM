@@ -148,7 +148,7 @@ func (h *EsignHandler) sendEmailsToSignersSequentially(submission db.EsignSubmis
 }
 
 // processNextSigner processes the next signer in the sequence when a signer completes signing
-func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.UUID, customMessage *string, replyName *string, replyTo *string) {
+func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.UUID) {
 	// Get the next signer in order
 	nextSigner, err := h.server.DB.Queries().GetNextSignerForSubmission(ctx, submissionID)
 	if err != nil {
@@ -521,16 +521,8 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 	// If signer signed, check if we need to send email to next signer
 	if req.Status == "signed" {
 		go func() {
-			// Read fresh submission from DB to get latest reply info
-			submission, err := h.server.DB.Queries().GetEsignSubmissionByID(context.Background(), signer.SubmissionID)
-			if err != nil {
-				h.server.Logger.Zap.Errorw("Error getting submission for next signer",
-					"submission_id", signer.SubmissionID,
-					"error", err)
-				return
-			}
 			// Use submission's stored values directly
-			h.processNextSigner(context.Background(), signer.SubmissionID, submission.CustomMessage, submission.ReplyName, submission.ReplyTo)
+			h.processNextSigner(context.Background(), signer.SubmissionID)
 		}()
 	}
 
