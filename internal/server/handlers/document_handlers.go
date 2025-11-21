@@ -203,7 +203,7 @@ func (h *DocumentHandler) CustomerUploadDocument(c echo.Context) error {
 
 	// Async notifications for staff and DME attachment update
 	h.handleCustomerDocumentNotifications(ctx, marina, marinaID, entityID, header.Filename, claims, doc.ID)
-	h.handleDMECustomerAttachmentUpdate(ctx, marina, entityID, filePath, header, doc.ID)
+	h.handleDMECustomerAttachmentUpdate(marina, entityID, filePath, header, doc.ID)
 
 	return response.JSON(c)
 }
@@ -686,7 +686,7 @@ func (h *DocumentHandler) handleCustomerDocumentNotifications(ctx context.Contex
 }
 
 // handleDMECustomerAttachmentUpdate handles DME customer attachment update asynchronously
-func (h *DocumentHandler) handleDMECustomerAttachmentUpdate(ctx context.Context, marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, docID uuid.UUID) {
+func (h *DocumentHandler) handleDMECustomerAttachmentUpdate(marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, docID uuid.UUID) {
 	go func() {
 		// Use a background context to avoid cancellation after HTTP request finishes
 		ctx := context.Background()
