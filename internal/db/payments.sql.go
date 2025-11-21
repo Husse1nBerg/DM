@@ -42,6 +42,58 @@ func (q *Queries) CountPaymentsByStatus(ctx context.Context, arg CountPaymentsBy
 	return count, err
 }
 
+const countPaymentsWithFilters = `-- name: CountPaymentsWithFilters :one
+SELECT COUNT(*)
+FROM payments
+WHERE marina_id = $1
+  AND (
+    $2 = '' OR
+    reference_number ILIKE '%' || $2 || '%' OR
+    adyen_psp_reference ILIKE '%' || $2 || '%' OR
+    customer_id ILIKE '%' || $2 || '%' OR
+    COALESCE(payment_method, '') ILIKE '%' || $2 || '%'
+  )
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR customer_id = $4)
+  AND ($5 = '' OR entity_type = $5)
+  AND ($6 = '' OR entity_id = $6)
+  AND ($7 = '' OR payment_method = $7)
+  AND ($8 = '' OR currency = $8)
+  AND ($9::timestamptz IS NULL OR payment_date >= $9::timestamptz)
+  AND ($10::timestamptz IS NULL OR payment_date <= $10::timestamptz)
+`
+
+type CountPaymentsWithFiltersParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Column7  interface{}
+	Column8  interface{}
+	Column9  pgtype.Timestamptz
+	Column10 pgtype.Timestamptz
+}
+
+func (q *Queries) CountPaymentsWithFilters(ctx context.Context, arg CountPaymentsWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countPaymentsWithFilters,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createPayment = `-- name: CreatePayment :one
 INSERT INTO payments (
     marina_id,
@@ -549,6 +601,252 @@ func (q *Queries) ListPaymentsByStatus(ctx context.Context, arg ListPaymentsBySt
 	rows, err := q.db.Query(ctx, listPaymentsByStatus,
 		arg.MarinaID,
 		arg.Status,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Payment
+	for rows.Next() {
+		var i Payment
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.OrganizationID,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Amount,
+			&i.Currency,
+			&i.PaymentMethod,
+			&i.ReferenceNumber,
+			&i.Status,
+			&i.AuthorizationStatus,
+			&i.BatchStatus,
+			&i.AdyenPspReference,
+			&i.AdyenSessionID,
+			&i.BatchID,
+			&i.BatchPaymentID,
+			&i.PaymentDate,
+			&i.AuthorizedAt,
+			&i.CompletedAt,
+			&i.FailedAt,
+			&i.CustomerID,
+			&i.LocationCode,
+			&i.TransactionID,
+			&i.AuthCode,
+			&i.AdyenWebhookPayload,
+			&i.DmeBatchRequest,
+			&i.DmeBatchResponse,
+			&i.ErrorMessage,
+			&i.ErrorCode,
+			&i.InternalNotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPaymentsFilteredSortedAsc = `-- name: ListPaymentsFilteredSortedAsc :many
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload
+FROM payments
+WHERE marina_id = $1
+  AND (
+    $2 = '' OR
+    reference_number ILIKE '%' || $2 || '%' OR
+    adyen_psp_reference ILIKE '%' || $2 || '%' OR
+    customer_id ILIKE '%' || $2 || '%' OR
+    COALESCE(payment_method, '') ILIKE '%' || $2 || '%'
+  )
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR customer_id = $4)
+  AND ($5 = '' OR entity_type = $5)
+  AND ($6 = '' OR entity_id = $6)
+  AND ($7 = '' OR payment_method = $7)
+  AND ($8 = '' OR currency = $8)
+  AND ($9::timestamptz IS NULL OR payment_date >= $9::timestamptz)
+  AND ($10::timestamptz IS NULL OR payment_date <= $10::timestamptz)
+ORDER BY
+  (CASE WHEN $11 = 'reference_number' THEN reference_number END) ASC,
+  (CASE WHEN $11 = 'payment_method' THEN payment_method END) ASC,
+  (CASE WHEN $11 = 'currency' THEN currency END) ASC,
+  (CASE WHEN $11 = 'payment_date' THEN payment_date END) ASC,
+  (CASE WHEN $11 = 'created_at' THEN created_at END) ASC,
+  (CASE WHEN $11 = 'amount' THEN amount END) ASC,
+  (CASE WHEN $11 = 'status' THEN
+    CASE status
+      WHEN 'pending' THEN 1
+      WHEN 'authorized' THEN 2
+      WHEN 'completed' THEN 3
+      WHEN 'failed' THEN 4
+      ELSE 5
+    END
+  END) ASC
+LIMIT $12 OFFSET $13
+`
+
+type ListPaymentsFilteredSortedAscParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Column7  interface{}
+	Column8  interface{}
+	Column9  pgtype.Timestamptz
+	Column10 pgtype.Timestamptz
+	Column11 interface{}
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListPaymentsFilteredSortedAsc(ctx context.Context, arg ListPaymentsFilteredSortedAscParams) ([]Payment, error) {
+	rows, err := q.db.Query(ctx, listPaymentsFilteredSortedAsc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
+		arg.Column11,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Payment
+	for rows.Next() {
+		var i Payment
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.OrganizationID,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Amount,
+			&i.Currency,
+			&i.PaymentMethod,
+			&i.ReferenceNumber,
+			&i.Status,
+			&i.AuthorizationStatus,
+			&i.BatchStatus,
+			&i.AdyenPspReference,
+			&i.AdyenSessionID,
+			&i.BatchID,
+			&i.BatchPaymentID,
+			&i.PaymentDate,
+			&i.AuthorizedAt,
+			&i.CompletedAt,
+			&i.FailedAt,
+			&i.CustomerID,
+			&i.LocationCode,
+			&i.TransactionID,
+			&i.AuthCode,
+			&i.AdyenWebhookPayload,
+			&i.DmeBatchRequest,
+			&i.DmeBatchResponse,
+			&i.ErrorMessage,
+			&i.ErrorCode,
+			&i.InternalNotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPaymentsFilteredSortedDesc = `-- name: ListPaymentsFilteredSortedDesc :many
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload
+FROM payments
+WHERE marina_id = $1
+  AND (
+    $2 = '' OR
+    reference_number ILIKE '%' || $2 || '%' OR
+    adyen_psp_reference ILIKE '%' || $2 || '%' OR
+    customer_id ILIKE '%' || $2 || '%' OR
+    COALESCE(payment_method, '') ILIKE '%' || $2 || '%'
+  )
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR customer_id = $4)
+  AND ($5 = '' OR entity_type = $5)
+  AND ($6 = '' OR entity_id = $6)
+  AND ($7 = '' OR payment_method = $7)
+  AND ($8 = '' OR currency = $8)
+  AND ($9::timestamptz IS NULL OR payment_date >= $9::timestamptz)
+  AND ($10::timestamptz IS NULL OR payment_date <= $10::timestamptz)
+ORDER BY
+  (CASE WHEN $11 = 'reference_number' THEN reference_number END) DESC,
+  (CASE WHEN $11 = 'payment_method' THEN payment_method END) DESC,
+  (CASE WHEN $11 = 'currency' THEN currency END) DESC,
+  (CASE WHEN $11 = 'payment_date' THEN payment_date END) DESC,
+  (CASE WHEN $11 = 'created_at' THEN created_at END) DESC,
+  (CASE WHEN $11 = 'amount' THEN amount END) DESC,
+  (CASE WHEN $11 = 'status' THEN
+    CASE status
+      WHEN 'pending' THEN 1
+      WHEN 'authorized' THEN 2
+      WHEN 'completed' THEN 3
+      WHEN 'failed' THEN 4
+      ELSE 5
+    END
+  END) DESC
+LIMIT $12 OFFSET $13
+`
+
+type ListPaymentsFilteredSortedDescParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Column7  interface{}
+	Column8  interface{}
+	Column9  pgtype.Timestamptz
+	Column10 pgtype.Timestamptz
+	Column11 interface{}
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListPaymentsFilteredSortedDesc(ctx context.Context, arg ListPaymentsFilteredSortedDescParams) ([]Payment, error) {
+	rows, err := q.db.Query(ctx, listPaymentsFilteredSortedDesc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
+		arg.Column11,
 		arg.Limit,
 		arg.Offset,
 	)
