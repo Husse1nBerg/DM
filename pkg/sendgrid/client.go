@@ -390,6 +390,7 @@ func (c *Client) SendMessageEmail(to []string, subject string, data MessageTempl
 		"home_url":         data.HomeURL,
 		"terms_conditions": data.TermsConditions,
 		"logo":             data.Logo,
+		"subject":          subject,
 	}
 
 	email := &TemplateEmail{
@@ -582,6 +583,7 @@ func (c *Client) SendNotificationEmail(to []string, subject string, data Notific
 		"customer_name": data.CustomerName,
 		"home_url":      data.HomeURL,
 		"logo":          data.Logo,
+		"subject":       subject,
 	}
 
 	email := &TemplateEmail{
