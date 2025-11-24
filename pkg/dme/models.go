@@ -94,7 +94,6 @@ type Customer struct {
 	LastModified                string              `json:"lastModified"`
 	Inactive                    bool                `json:"inactive"`
 	AllowTransactions           bool                `json:"allowTransactions"`
-	BillingCodes                []BillingCode       `json:"billingCodes"`
 	CategoryCodes               []CategoryCode      `json:"categoryCodes"`
 	Boats                       []Boat              `json:"boats"`
 	Invoices                    []InvoiceDetailed   `json:"invoices"`
