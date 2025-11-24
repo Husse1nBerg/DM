@@ -23880,6 +23880,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "sent"
                 },
+                "subject": {
+                    "type": "string",
+                    "example": "Important Update"
+                },
                 "type": {
                     "type": "string",
                     "example": "email"

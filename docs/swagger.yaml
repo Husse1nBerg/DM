@@ -5121,6 +5121,9 @@ definitions:
       status:
         example: sent
         type: string
+      subject:
+        example: Important Update
+        type: string
       type:
         example: email
         type: string
