@@ -19431,6 +19431,9 @@ const docTemplate = `{
                 "sender": {
                     "type": "string"
                 },
+                "subject": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "enum": [

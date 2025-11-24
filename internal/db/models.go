@@ -297,6 +297,7 @@ type Message struct {
 	Contact    string
 	Status     string
 	Pinned     bool
+	Subject    pgtype.Text
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
 	DeletedAt  pgtype.Timestamp

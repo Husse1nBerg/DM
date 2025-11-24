@@ -14,6 +14,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/telgorithm"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
@@ -373,6 +374,12 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
 	// }
 
+	// Determine subject
+	subject := req.Subject
+	if subject == "" {
+		subject = "Message from " + req.Sender
+	}
+
 	// Create the message
 	params := db.CreateMessageParams{
 		MarinaID:   req.MarinaID,
@@ -385,6 +392,10 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Contact:    req.Contact,
 		Status:     "pending",
 		Pinned:     req.Pinned,
+		Subject: pgtype.Text{
+			String: subject,
+			Valid:  true,
+		},
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
@@ -452,10 +463,10 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Logo:      logo,
 	}
 	to := []string{req.Contact}
-	subject := "Message from " + req.Sender
+	emailSubject := subject
 
 	// Send email asynchronously
-	taskID, resultChan, err := h.server.SendGrid.SendMessageEmail(to, subject, email)
+	taskID, resultChan, err := h.server.SendGrid.SendMessageEmail(to, emailSubject, email)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -592,6 +603,13 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	} else {
 		direction = "to_customer"
 	}
+
+	// Determine subject
+	subjectText := req.Subject
+	if subjectText == "" {
+		subjectText = "Message from " + req.Sender
+	}
+
 	// Create the message
 	params := db.CreateMessageParams{
 		MarinaID:   req.MarinaID,
@@ -604,6 +622,10 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		Contact:    req.Contact,
 		Status:     "pending",
 		Pinned:     req.Pinned,
+		Subject: pgtype.Text{
+			String: subjectText,
+			Valid:  true,
+		},
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
@@ -724,10 +746,10 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 				Logo:      logo,
 			}
 			to := []string{req.Contact}
-			subject := "Message from " + req.Sender
+			emailSubject := subjectText
 
 			// Send email asynchronously
-			taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
+			taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, emailSubject, email)
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 			}
