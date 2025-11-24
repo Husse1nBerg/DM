@@ -94,6 +94,7 @@ type Customer struct {
 	LastModified                string              `json:"lastModified"`
 	Inactive                    bool                `json:"inactive"`
 	AllowTransactions           bool                `json:"allowTransactions"`
+	BillingCodes                []BillingCode       `json:"billingCodes"`
 	CategoryCodes               []CategoryCode      `json:"categoryCodes"`
 	Boats                       []Boat              `json:"boats"`
 	Invoices                    []InvoiceDetailed   `json:"invoices"`
@@ -115,6 +116,7 @@ type Customer struct {
 	ShipmentMethodDescription   string              `json:"shipmentMethodDescription"`
 	NoCcSurcharge               bool                `json:"noCcSurcharge"`
 	CustomInformation           []CustomInformation `json:"customInformation"`
+	BillingCodes                []BillingCode       `json:"billingCodes"`
 	WaitListEntries             []WaitListEntry     `json:"waitListEntries"`
 	Attachments                 []Attachment        `json:"attachments"`
 }
