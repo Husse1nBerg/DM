@@ -1,17 +1,18 @@
 package handlers
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-
-	"encoding/json"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
 	"github.com/dockworks/dm-web-backend/internal/requests"
@@ -552,7 +553,7 @@ func (h *CustomerHandler) ListCustomersShortByPage(c echo.Context) error {
 }
 
 // @Summary Retrieve customers with filters
-// @Description Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress)
+// @Description Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress). This endpoint may take longer for large customer databases with esignature category codes.
 // @Tags Customers
 // @Accept json
 // @Produce json
@@ -563,7 +564,12 @@ func (h *CustomerHandler) ListCustomersShortByPage(c echo.Context) error {
 // @Failure 500 {object} responses.Error
 // @Router /customers/retrieve-customers [get]
 func (h *CustomerHandler) RetrieveCustomers(c echo.Context) error {
-	ctx := c.Request().Context()
+	// Use extended context timeout for large customer databases
+	// This endpoint can take longer when retrieving all customers with category codes
+	// We skip the global 30s timeout middleware and apply 5 minutes here instead
+	ctx, cancel := context.WithTimeout(c.Request().Context(), 5*time.Minute)
+	defer cancel()
+	
 	req := new(requests.CustomerRetrieveListRequest)
 	if err := c.Bind(req); err != nil {
 		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
@@ -572,12 +578,12 @@ func (h *CustomerHandler) RetrieveCustomers(c echo.Context) error {
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(*token.JwtCustomClaims)
 	userID := claims.ID
-	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
 	}
 
-	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
 	}

@@ -40,6 +40,11 @@ func RegisterRoutes(s *s.Server) {
 	s.Echo.Use(middleware.Recover())
 	s.Echo.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Timeout: 30 * time.Second,
+		Skipper: func(c echo.Context) bool {
+			// Skip timeout middleware for long-running endpoints
+			path := c.Request().URL.Path
+			return path == "/api/v1/customers/retrieve-customers"
+		},
 	}))
 	s.Echo.Use(middleware.BodyDumpWithConfig(middleware.BodyDumpConfig{
 		Skipper: func(c echo.Context) bool {

@@ -8320,7 +8320,8 @@ paths:
       consumes:
       - application/json
       description: Retrieves a list of customers with optional filters (LastModifiedDate,
-        EmailAddress)
+        EmailAddress). This endpoint may take longer for large customer databases
+        with esignature category codes.
       parameters:
       - description: 'Optional: Retrieves records modified on or after this date.
           Format MM-DD-YYYY'
