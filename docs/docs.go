@@ -2742,7 +2742,7 @@ const docTemplate = `{
         },
         "/customers/retrieve-customers": {
             "get": {
-                "description": "Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress). This endpoint may take longer for large customer databases with esignature category codes.",
+                "description": "Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress)",
                 "consumes": [
                     "application/json"
                 ],

@@ -199,7 +199,6 @@ func (c *Client) CustomersListShort(ctx context.Context, page int, pageSize int,
 }
 
 // RetrieveCustomersFiltered retrieves a list of customers with optional filters
-// This endpoint can take a long time for large customer databases, so we use an extended timeout
 func (c *Client) RetrieveCustomersFiltered(ctx context.Context, lastModifiedDate string, emailAddress string, organizationID uuid.UUID, systemID string) ([]Customer, error) {
 	var result []Customer
 
@@ -220,8 +219,7 @@ func (c *Client) RetrieveCustomersFiltered(ctx context.Context, lastModifiedDate
 		endpoint += strings.Join(params, "&")
 	}
 
-	// Use extended timeout of 5 minutes for large customer databases with esignature category codes
-	err := c.DoJSONRequestWithTimeout(
+	err := c.DoJSONRequest(
 		ctx,
 		http.MethodGet,
 		endpoint,
@@ -230,7 +228,6 @@ func (c *Client) RetrieveCustomersFiltered(ctx context.Context, lastModifiedDate
 		organizationID,
 		systemID,
 		nil,
-		5*time.Minute, // Extended timeout for large customer databases
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve customers with filters: %w", err)
