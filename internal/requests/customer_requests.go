@@ -149,3 +149,12 @@ type CustomerRetrieveListRequest struct {
 	LastModifiedDate string `query:"LastModifiedDate"` // Optional: Format MM-DD-YYYY
 	EmailAddress     string `query:"EmailAddress"`     // Optional: Retrieves records with matching primary email
 }
+
+// CustomerRetrievePaginatedRequest represents a request to retrieve customers with category codes in a paginated format
+type CustomerRetrievePaginatedRequest struct {
+	Page             int    `query:"Page" validate:"required,min=1"`        // Current page (1-based), required
+	PageSize         int    `query:"PageSize" validate:"required,min=1,max=500"` // Items per page, required
+	ListName         string `query:"ListName"`                              // Optional: Cached list name for subsequent pages
+	LastModifiedDate string `query:"LastModifiedDate"`                      // Optional: Format MM-DD-YYYY
+	EmailAddress     string `query:"EmailAddress"`                          // Optional: Retrieves records with matching primary email
+}

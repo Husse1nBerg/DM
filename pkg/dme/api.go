@@ -236,6 +236,43 @@ func (c *Client) RetrieveCustomersFiltered(ctx context.Context, lastModifiedDate
 	return result, nil
 }
 
+// RetrieveCustomersPaginated retrieves customers with category codes in a paginated format
+// Used for esignature and mass notification features
+func (c *Client) RetrieveCustomersPaginated(ctx context.Context, page, pageSize int, listName, lastModifiedDate, emailAddress string, organizationID uuid.UUID, systemID string) (*CustomerWithCategoryCodesPage, error) {
+	var result CustomerWithCategoryCodesPage
+
+	// Build endpoint with query parameters
+	endpoint := fmt.Sprintf("/Customers/RetrieveCustomersPaginated?Page=%d&PageSize=%d", page, pageSize)
+
+	if listName != "" {
+		endpoint += fmt.Sprintf("&ListName=%s", listName)
+	}
+
+	if lastModifiedDate != "" {
+		endpoint += fmt.Sprintf("&LastModifiedDate=%s", lastModifiedDate)
+	}
+
+	if emailAddress != "" {
+		endpoint += fmt.Sprintf("&EmailAddress=%s", emailAddress)
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customers paginated: %w", err)
+	}
+
+	return &result, nil
+}
+
 // RetrieveCustomerContracts retrieves customer contracts for Unit Sales module
 func (c *Client) RetrieveCustomerContracts(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
 	var result []CustomerContract

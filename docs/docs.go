@@ -2792,6 +2792,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/customers/retrieve-customers-paginated": {
+            "get": {
+                "description": "Retrieves customers with category codes in a paginated format. Optimized for esignature and mass notification features.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Retrieve customers paginated with category codes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Current page (1-based)",
+                        "name": "Page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (max 500)",
+                        "name": "PageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cached list name for subsequent page requests",
+                        "name": "ListName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records modified on or after this date. Format MM-DD-YYYY",
+                        "name": "LastModifiedDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records with a matching primary email address",
+                        "name": "EmailAddress",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dme.CustomerWithCategoryCodesPage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/customers/search": {
             "get": {
                 "description": "Searches for customers based on search string",
@@ -17485,6 +17554,29 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.CustomerMinimalWithCategoryCodes": {
+            "type": "object",
+            "properties": {
+                "categoryCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CategoryCode"
+                    }
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.CustomerSearch": {
             "type": "object",
             "properties": {
@@ -17647,6 +17739,29 @@ const docTemplate = `{
                 },
                 "zip": {
                     "type": "string"
+                }
+            }
+        },
+        "dme.CustomerWithCategoryCodesPage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerMinimalWithCategoryCodes"
+                    }
+                },
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
                 }
             }
         },

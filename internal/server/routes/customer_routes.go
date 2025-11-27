@@ -19,6 +19,7 @@ func RegisterCustomerRoutes(server *s.Server, base *echo.Group, permissionProtec
 	customers.GET("/list-short", customerHandler.ListCustomersShortByPage)
 	customers.GET("/retrieve", customerHandler.RetrieveCustomer)
 	customers.GET("/retrieve-customers", customerHandler.RetrieveCustomers)
+	customers.GET("/retrieve-customers-paginated", customerHandler.RetrieveCustomersPaginated)
 	customers.GET("/search", customerHandler.SearchCustomers)
 	customers.POST("/update", customerHandler.UpdateCustomer)
 	customers.POST("/create", customerHandler.CreateCustomer)

@@ -244,6 +244,25 @@ type CustomerListMinimal struct {
 	PageSize    int               `json:"pageSize"`
 }
 
+// CustomerMinimalWithCategoryCodes represents minimal customer info with category codes
+// Used for esignature and mass notification features
+type CustomerMinimalWithCategoryCodes struct {
+	ID            string         `json:"id"`
+	Name          string         `json:"name"`
+	Email         string         `json:"email"`
+	Inactive      bool           `json:"inactive"`
+	CategoryCodes []CategoryCode `json:"categoryCodes"`
+}
+
+// CustomerWithCategoryCodesPage represents a paginated list of customers with category codes
+type CustomerWithCategoryCodesPage struct {
+	Content     []CustomerMinimalWithCategoryCodes `json:"content"`
+	CurrentPage int                                `json:"currentPage"`
+	MaxPages    int                                `json:"maxPages"`
+	PageSize    int                                `json:"pageSize"`
+	ListName    string                             `json:"listName"`
+}
+
 //
 // BOAT MODELS
 //
