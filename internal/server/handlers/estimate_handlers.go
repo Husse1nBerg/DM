@@ -1198,7 +1198,7 @@ func (h *EstimateHandler) RetrieveEstimateParts(c echo.Context) error {
 	}
 
 	// Extract operation codes from estimate
-	var allParts []dme.EstimateDetailPartEntry
+	var allParts []dme.WorkOrderDetailPartEntry
 	if estimate.Operations != nil {
 		for _, operation := range estimate.Operations {
 			if operation.Opcode == "" {

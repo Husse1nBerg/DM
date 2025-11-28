@@ -1433,7 +1433,7 @@ func (h *WorkOrderHandler) RetrieveWorkOrderLaborDetail(c echo.Context) error {
 	}
 
 	// No opcode specified - fetch work order details to get all operations
-	workOrder, err := h.server.DME.RetrieveWorkOrderInformation(ctx, req.WorkOrderId, true, orgID, *systemID)
+	workOrder, err := h.server.DME.WorkOrderRetrieve(ctx, req.WorkOrderId, true, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve work order details",
 			zap.Error(err),
@@ -1522,7 +1522,7 @@ func (h *WorkOrderHandler) RetrieveWorkOrderParts(c echo.Context) error {
 	}
 
 	// No opcode specified - fetch work order details to get all operations
-	workOrder, err := h.server.DME.RetrieveWorkOrderInformation(ctx, req.WorkOrderId, true, orgID, *systemID)
+	workOrder, err := h.server.DME.WorkOrderRetrieve(ctx, req.WorkOrderId, true, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve work order details",
 			zap.Error(err),
