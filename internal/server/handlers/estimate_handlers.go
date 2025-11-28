@@ -1174,15 +1174,50 @@ func (h *EstimateHandler) RetrieveEstimateParts(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveEstimateParts(ctx, req.EstimatesId, req.Opcode, orgID, *systemID)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate parts",
-			zap.Error(err),
-			zap.String("estimateId", req.EstimatesId))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	// If a specific opcode is provided, fetch parts for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveEstimateParts(ctx, req.EstimatesId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve estimate parts",
+				zap.Error(err),
+				zap.String("estimateId", req.EstimatesId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertEstimateParts(dmeResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
-	response := responses.ConvertEstimateParts(dmeResponse)
+	// No opcode specified - fetch estimate details to get all operations
+	estimate, err := h.server.DME.EstimateRetrieve(ctx, req.EstimatesId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate details",
+			zap.Error(err),
+			zap.String("estimateId", req.EstimatesId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve estimate details").JSON(c)
+	}
+
+	// Extract operation codes from estimate
+	var allParts []dme.EstimateDetailPartEntry
+	if estimate.Operations != nil {
+		for _, operation := range estimate.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+			
+			parts, err := h.server.DME.RetrieveEstimateParts(ctx, req.EstimatesId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve parts for operation",
+					zap.Error(err),
+					zap.String("estimateId", req.EstimatesId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allParts = append(allParts, parts...)
+		}
+	}
+
+	response := responses.ConvertEstimateParts(allParts)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -1228,15 +1263,50 @@ func (h *EstimateHandler) RetrieveEstimateLabor(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveEstimateLabor(ctx, req.EstimatesId, req.Opcode, orgID, *systemID)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate labor",
-			zap.Error(err),
-			zap.String("estimateId", req.EstimatesId))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	// If a specific opcode is provided, fetch labor for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveEstimateLabor(ctx, req.EstimatesId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve estimate labor",
+				zap.Error(err),
+				zap.String("estimateId", req.EstimatesId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertEstimateLabor(dmeResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
-	response := responses.ConvertEstimateLabor(dmeResponse)
+	// No opcode specified - fetch estimate details to get all operations
+	estimate, err := h.server.DME.EstimateRetrieve(ctx, req.EstimatesId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate details",
+			zap.Error(err),
+			zap.String("estimateId", req.EstimatesId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve estimate details").JSON(c)
+	}
+
+	// Extract operation codes from estimate
+	var allLabor []dme.LaborEntry
+	if estimate.Operations != nil {
+		for _, operation := range estimate.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+			
+			labor, err := h.server.DME.RetrieveEstimateLabor(ctx, req.EstimatesId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve labor for operation",
+					zap.Error(err),
+					zap.String("estimateId", req.EstimatesId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allLabor = append(allLabor, labor...)
+		}
+	}
+
+	response := responses.ConvertEstimateLabor(allLabor)
 	return c.JSON(http.StatusOK, response)
 }
 

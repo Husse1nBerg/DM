@@ -1418,15 +1418,50 @@ func (h *WorkOrderHandler) RetrieveWorkOrderLaborDetail(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveWorkOrderLaborDetail(ctx, req.WorkOrderId, req.Opcode, orgID, *systemID)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to retrieve work order labor detail",
-			zap.Error(err),
-			zap.String("workOrderId", req.WorkOrderId))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	// If a specific opcode is provided, fetch labor for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveWorkOrderLaborDetail(ctx, req.WorkOrderId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve work order labor detail",
+				zap.Error(err),
+				zap.String("workOrderId", req.WorkOrderId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertWorkOrderLaborDetail(dmeResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
-	response := responses.ConvertWorkOrderLaborDetail(dmeResponse)
+	// No opcode specified - fetch work order details to get all operations
+	workOrder, err := h.server.DME.RetrieveWorkOrderInformation(ctx, req.WorkOrderId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order details",
+			zap.Error(err),
+			zap.String("workOrderId", req.WorkOrderId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve work order details").JSON(c)
+	}
+
+	// Extract operation codes from work order
+	var allLabor []dme.LaborEntry
+	if workOrder.Operations != nil {
+		for _, operation := range workOrder.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+			
+			labor, err := h.server.DME.RetrieveWorkOrderLaborDetail(ctx, req.WorkOrderId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve labor for operation",
+					zap.Error(err),
+					zap.String("workOrderId", req.WorkOrderId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allLabor = append(allLabor, labor...)
+		}
+	}
+
+	response := responses.ConvertWorkOrderLaborDetail(allLabor)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -1472,14 +1507,49 @@ func (h *WorkOrderHandler) RetrieveWorkOrderParts(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveWorkOrderParts(ctx, req.WorkOrderId, req.Opcode, orgID, *systemID)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to retrieve work order parts",
-			zap.Error(err),
-			zap.String("workOrderId", req.WorkOrderId))
-		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	// If a specific opcode is provided, fetch parts for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveWorkOrderParts(ctx, req.WorkOrderId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve work order parts",
+				zap.Error(err),
+				zap.String("workOrderId", req.WorkOrderId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertWorkOrderParts(dmeResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
-	response := responses.ConvertWorkOrderParts(dmeResponse)
+	// No opcode specified - fetch work order details to get all operations
+	workOrder, err := h.server.DME.RetrieveWorkOrderInformation(ctx, req.WorkOrderId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order details",
+			zap.Error(err),
+			zap.String("workOrderId", req.WorkOrderId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve work order details").JSON(c)
+	}
+
+	// Extract operation codes from work order
+	var allParts []dme.WorkOrderDetailPartEntry
+	if workOrder.Operations != nil {
+		for _, operation := range workOrder.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+			
+			parts, err := h.server.DME.RetrieveWorkOrderParts(ctx, req.WorkOrderId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve parts for operation",
+					zap.Error(err),
+					zap.String("workOrderId", req.WorkOrderId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allParts = append(allParts, parts...)
+		}
+	}
+
+	response := responses.ConvertWorkOrderParts(allParts)
 	return c.JSON(http.StatusOK, response)
 }
