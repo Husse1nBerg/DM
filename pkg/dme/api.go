@@ -1110,7 +1110,11 @@ func (c *Client) RetrieveWorkOrderParts(ctx context.Context, workOrderID string,
 
 	params := map[string]string{
 		"WorkOrderId": workOrderID,
-		"OpCode":      opcode, // DME API requires this parameter even if empty
+	}
+
+	// Only add OpCode if provided
+	if opcode != "" {
+		params["OpCode"] = opcode
 	}
 
 	endpoint := "/Service/WorkOrders/RetrieveParts"
@@ -1498,7 +1502,11 @@ func (c *Client) RetrieveEstimateParts(ctx context.Context, estimateID string, o
 
 	params := map[string]string{
 		"EstimatesId": estimateID,
-		"OpCode":      opcode, // DME API requires this parameter even if empty
+	}
+
+	// Only add OpCode if provided
+	if opcode != "" {
+		params["OpCode"] = opcode
 	}
 
 	endpoint := "/Service/Estimates/RetrieveParts"
@@ -2709,7 +2717,11 @@ func (c *Client) RetrieveEstimateLabor(ctx context.Context, estimateID string, o
 
 	params := map[string]string{
 		"EstimatesId": estimateID,
-		"OpCode":      opcode, // DME API requires this parameter even if empty
+	}
+
+	// Only add OpCode if provided
+	if opcode != "" {
+		params["OpCode"] = opcode
 	}
 
 	endpoint := "/Service/Estimates/RetrieveLabor"
@@ -2737,7 +2749,11 @@ func (c *Client) RetrieveWorkOrderLaborDetail(ctx context.Context, workOrderID s
 
 	params := map[string]string{
 		"WorkOrderId": workOrderID,
-		"OpCode":      opcode, // DME API requires this parameter even if empty
+	}
+
+	// Only add OpCode if provided
+	if opcode != "" {
+		params["OpCode"] = opcode
 	}
 
 	endpoint := "/Service/WorkOrderLaborDetail"
