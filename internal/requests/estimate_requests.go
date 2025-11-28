@@ -110,3 +110,30 @@ type SubmitEstimatePartEntryRequest struct {
 	Description  string  `json:"description,omitempty"`
 	LocationCode string  `json:"locationCode,omitempty"`
 }
+
+// SubmitEstimateLaborEntryRequest represents a request to submit a labor entry for an estimate
+type SubmitEstimateLaborEntryRequest struct {
+	EstimateId        string  `json:"estimateId" validate:"required"`
+	OpCode            string  `json:"opCode" validate:"required"`
+	TechId            string  `json:"techId" validate:"required"`
+	Date              string  `json:"date" validate:"required"`
+	StartTime         string  `json:"startTime,omitempty"`
+	StopTime          string  `json:"stopTime,omitempty"`
+	Hours             float64 `json:"hours,omitempty"`
+	Comments          string  `json:"comments,omitempty"`
+	Department        string  `json:"department,omitempty"`
+	IsApproved        *bool   `json:"isApproved,omitempty"`
+	FlagLaborFinished *bool   `json:"flagLaborFinished,omitempty"`
+}
+
+// RetrieveEstimatePartsRequest represents a request to retrieve parts for an estimate
+type RetrieveEstimatePartsRequest struct {
+	EstimatesId string `query:"estimatesId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
+}
+
+// RetrieveEstimateLaborRequest represents a request to retrieve labor entries for an estimate
+type RetrieveEstimateLaborRequest struct {
+	EstimatesId string `query:"estimatesId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
+}

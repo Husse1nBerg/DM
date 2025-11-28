@@ -285,3 +285,43 @@ func ConvertEstimateSubmitPartResult(dmeResponse *interface{}) *SubmitEstimatePa
 		Message: "Part entry submitted successfully",
 	}
 }
+
+// EstimatePartsResponse represents a list of parts for an estimate
+type EstimatePartsResponse struct {
+	Data []dme.WorkOrderDetailPartEntry `json:"data"`
+}
+
+// ConvertEstimateParts converts DME response to EstimatePartsResponse
+func ConvertEstimateParts(dmeResponse []dme.WorkOrderDetailPartEntry) *EstimatePartsResponse {
+	return &EstimatePartsResponse{
+		Data: dmeResponse,
+	}
+}
+
+// EstimateLaborResponse represents a list of labor entries for an estimate
+type EstimateLaborResponse struct {
+	Data []dme.LaborEntry `json:"data"`
+}
+
+// ConvertEstimateLabor converts DME response to EstimateLaborResponse
+func ConvertEstimateLabor(dmeResponse []dme.LaborEntry) *EstimateLaborResponse {
+	return &EstimateLaborResponse{
+		Data: dmeResponse,
+	}
+}
+
+// SubmitEstimateLaborEntryResponse represents the response from submitting a labor entry for an estimate
+type SubmitEstimateLaborEntryResponse struct {
+	Data    interface{} `json:"data"`
+	Result  string      `json:"result"`
+	Message string      `json:"message"`
+}
+
+// ConvertEstimateSubmitLaborResult converts DME response to SubmitEstimateLaborEntryResponse
+func ConvertEstimateSubmitLaborResult(dmeResponse *interface{}) *SubmitEstimateLaborEntryResponse {
+	return &SubmitEstimateLaborEntryResponse{
+		Data:    *dmeResponse,
+		Result:  "success",
+		Message: "Labor entry submitted successfully",
+	}
+}

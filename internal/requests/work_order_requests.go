@@ -191,3 +191,15 @@ type SubmitWorkOrderSubletEntryRequest struct {
 	LocationCode        string  `json:"locationCode,omitempty"`
 	Department          string  `json:"department,omitempty"`
 }
+
+// RetrieveWorkOrderLaborDetailRequest represents a request to retrieve labor detail for a work order
+type RetrieveWorkOrderLaborDetailRequest struct {
+	WorkOrderId string `query:"workOrderId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
+}
+
+// RetrieveWorkOrderPartsRequest represents a request to retrieve parts for a work order
+type RetrieveWorkOrderPartsRequest struct {
+	WorkOrderId string `query:"workOrderId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
+}

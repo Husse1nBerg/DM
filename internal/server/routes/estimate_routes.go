@@ -22,4 +22,7 @@ func RegisterEstimateRoutes(server *s.Server, permissionProtected *echo.Group) {
 	estimates.POST("/update", estimateHandler.UpdateEstimate)
 	estimates.POST("/sublet", estimateHandler.SubmitEstimateSubletEntry)
 	estimates.POST("/part", estimateHandler.SubmitEstimatePartEntry)
+	estimates.POST("/labor", estimateHandler.SubmitEstimateLaborEntry)
+	estimates.GET("/parts", estimateHandler.RetrieveEstimateParts)
+	estimates.GET("/labor-entries", estimateHandler.RetrieveEstimateLabor)
 }

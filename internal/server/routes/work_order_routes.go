@@ -32,4 +32,6 @@ func RegisterWorkOrderRoutes(server *s.Server, permissionProtected *echo.Group) 
 	workOrders.POST("/submit-time-entry", workOrderHandler.SubmitWorkOrderTimeEntry)
 	workOrders.POST("/sublet", workOrderHandler.SubmitWorkOrderSubletEntry)
 	workOrders.POST("/retrieve-list", workOrderHandler.RetrieveWorkOrdersList)
+	workOrders.GET("/labor-detail", workOrderHandler.RetrieveWorkOrderLaborDetail)
+	workOrders.GET("/parts", workOrderHandler.RetrieveWorkOrderParts)
 } 

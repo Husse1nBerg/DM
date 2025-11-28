@@ -415,3 +415,27 @@ func ConvertSubmitSubletResult(dmeResponse *interface{}) *SubmitSubletEntryRespo
 	
 	return response
 }
+
+// WorkOrderLaborDetailResponse represents a list of labor detail entries for a work order
+type WorkOrderLaborDetailResponse struct {
+	Data []dme.LaborEntry `json:"data"`
+}
+
+// ConvertWorkOrderLaborDetail converts DME response to WorkOrderLaborDetailResponse
+func ConvertWorkOrderLaborDetail(dmeResponse []dme.LaborEntry) *WorkOrderLaborDetailResponse {
+	return &WorkOrderLaborDetailResponse{
+		Data: dmeResponse,
+	}
+}
+
+// WorkOrderPartsResponse represents a list of parts for a work order
+type WorkOrderPartsResponse struct {
+	Data []dme.WorkOrderDetailPartEntry `json:"data"`
+}
+
+// ConvertWorkOrderParts converts DME response to WorkOrderPartsResponse
+func ConvertWorkOrderParts(dmeResponse []dme.WorkOrderDetailPartEntry) *WorkOrderPartsResponse {
+	return &WorkOrderPartsResponse{
+		Data: dmeResponse,
+	}
+}

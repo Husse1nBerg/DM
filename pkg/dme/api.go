@@ -2664,3 +2664,87 @@ func (c *Client) RetrievePayTypes(ctx context.Context, organizationID uuid.UUID,
 
 	return &result, nil
 }
+
+// SubmitEstimateLaborEntry submits a labor entry for an estimate
+func (c *Client) SubmitEstimateLaborEntry(ctx context.Context, laborEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Estimates/SubmitLaborEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		laborEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit estimate labor entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveEstimateLabor retrieves labor entries for an estimate
+func (c *Client) RetrieveEstimateLabor(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]LaborEntry, error) {
+	var result []LaborEntry
+
+	params := map[string]string{
+		"EstimatesId": estimateID,
+	}
+
+	if opcode != "" {
+		params["Opcode"] = opcode
+	}
+
+	endpoint := "/Service/Estimates/RetrieveLabor"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate labor: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveWorkOrderLaborDetail retrieves labor detail for a work order
+func (c *Client) RetrieveWorkOrderLaborDetail(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]LaborEntry, error) {
+	var result []LaborEntry
+
+	params := map[string]string{
+		"WorkOrderId": workOrderID,
+	}
+
+	if opcode != "" {
+		params["Opcode"] = opcode
+	}
+
+	endpoint := "/Service/WorkOrderLaborDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order labor detail: %w", err)
+	}
+
+	return result, nil
+}

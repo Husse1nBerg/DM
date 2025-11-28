@@ -1252,3 +1252,40 @@ type RetrieveInventoryQuery struct {
 	VendorID         string   `json:"vendorId,omitempty"`
 	ItemIds          []string `json:"itemIds,omitempty"`
 }
+
+//
+// LABOR DETAIL MODELS
+//
+
+// LaborEntry represents a labor entry for an estimate or work order
+type LaborEntry struct {
+	TechID            string  `json:"techId"`
+	TechName          string  `json:"techName"`
+	WorkOrderID       string  `json:"workOrderId"`
+	OpCode            string  `json:"opCode"`
+	Department        string  `json:"department"`
+	DepartmentDesc    string  `json:"departmentDesc"`
+	Date              string  `json:"date"`
+	StartTime         string  `json:"startTime"`
+	StopTime          string  `json:"stopTime"`
+	Hours             float64 `json:"hours"`
+	BilledHours       float64 `json:"billedHours"`
+	LaborRate         float64 `json:"laborRate"`
+	LaborPrice        float64 `json:"laborPrice"`
+	LaborCost         float64 `json:"laborCost"`
+	Comments          string  `json:"comments"`
+	IsApproved        bool    `json:"isApproved"`
+	FlagLaborFinished bool    `json:"flagLaborFinished"`
+	UID               string  `json:"uid"`
+}
+
+// WorkOrderLaborDetail represents detailed labor information for a work order
+type WorkOrderLaborDetail struct {
+	WorkOrderID    string       `json:"workOrderId"`
+	OpCode         string       `json:"opCode"`
+	OpDesc         string       `json:"opDesc"`
+	TotalHours     float64      `json:"totalHours"`
+	TotalBilled    float64      `json:"totalBilled"`
+	TotalCost      float64      `json:"totalCost"`
+	LaborEntries   []LaborEntry `json:"laborEntries"`
+}
