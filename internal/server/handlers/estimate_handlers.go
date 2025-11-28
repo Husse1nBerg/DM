@@ -264,8 +264,12 @@ func (h *EstimateHandler) ListEstimateSublets(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	// Pass empty strings for optional parameters
-	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, "", "", "", orgID, *systemID)
+	// Read optional query parameters for filtering
+	estimateID := c.QueryParam("estimateId")
+	opcode := c.QueryParam("opcode")
+	vendorID := c.QueryParam("vendorID")
+
+	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, estimateID, opcode, vendorID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list estimate sublets",
 			zap.Error(err))

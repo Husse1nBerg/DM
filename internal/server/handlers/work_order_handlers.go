@@ -994,8 +994,12 @@ func (h *WorkOrderHandler) ListWorkOrderSublets(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	// Pass empty strings for optional parameters
-	dmeResponse, err := h.server.DME.ListWorkOrderSublets(ctx, "", "", "", orgID, *systemID)
+	// Read optional query parameters for filtering
+	workOrderID := c.QueryParam("workOrderId")
+	opcode := c.QueryParam("opcode")
+	vendorID := c.QueryParam("vendorID")
+
+	dmeResponse, err := h.server.DME.ListWorkOrderSublets(ctx, workOrderID, opcode, vendorID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list work order sublets",
 			zap.Error(err))
