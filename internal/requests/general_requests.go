@@ -16,3 +16,8 @@ type ClerkListRequest struct {
 type LocationListRequest struct {
 	SystemID string `json:"systemId" query:"systemId" validate:"required" example:"SYS001"`
 }
+
+// DepartmentListRequest represents the required parameters to list all departments
+type DepartmentListRequest struct {
+	SystemID string `json:"systemId" query:"systemId" validate:"required" example:"SYS001"`
+}

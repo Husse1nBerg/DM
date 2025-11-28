@@ -881,6 +881,45 @@ definitions:
       unappliedPayment:
         type: boolean
     type: object
+  dme.LaborEntry:
+    properties:
+      billedHours:
+        type: number
+      comments:
+        type: string
+      date:
+        type: string
+      department:
+        type: string
+      departmentDesc:
+        type: string
+      flagLaborFinished:
+        type: boolean
+      hours:
+        type: number
+      isApproved:
+        type: boolean
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      laborRate:
+        type: number
+      opCode:
+        type: string
+      startTime:
+        type: string
+      stopTime:
+        type: string
+      techId:
+        type: string
+      techName:
+        type: string
+      uid:
+        type: string
+      workOrderId:
+        type: string
+    type: object
   dme.Motor:
     properties:
       condition:
@@ -1265,6 +1304,37 @@ definitions:
       totalWOCharges:
         type: number
       type:
+        type: string
+    type: object
+  dme.WorkOrderDetailPartEntry:
+    properties:
+      comments:
+        type: string
+      cost:
+        type: number
+      date:
+        type: string
+      department:
+        type: string
+      description:
+        type: string
+      discount:
+        type: number
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partId:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: number
+      techId:
+        type: string
+      uid:
+        type: string
+      workOrderId:
         type: string
     type: object
   dme.WorkOrderOperation:
@@ -2980,6 +3050,36 @@ definitions:
     - locationCode
     - postBatch
     type: object
+  requests.SubmitEstimateLaborEntryRequest:
+    properties:
+      comments:
+        type: string
+      date:
+        type: string
+      department:
+        type: string
+      estimateId:
+        type: string
+      flagLaborFinished:
+        type: boolean
+      hours:
+        type: number
+      isApproved:
+        type: boolean
+      opCode:
+        type: string
+      startTime:
+        type: string
+      stopTime:
+        type: string
+      techId:
+        type: string
+    required:
+    - date
+    - estimateId
+    - opCode
+    - techId
+    type: object
   requests.SubmitEstimatePartEntryRequest:
     properties:
       description:
@@ -4085,6 +4185,30 @@ definitions:
       data:
         $ref: '#/definitions/responses.DMESysIDResponse'
     type: object
+  responses.DepartmentListResponse:
+    description: List of departments from DME API
+    properties:
+      departments:
+        items:
+          $ref: '#/definitions/responses.DepartmentResponse'
+        type: array
+    type: object
+  responses.DepartmentResponse:
+    description: Department information from DME API
+    properties:
+      description:
+        example: Service Department
+        type: string
+      id:
+        example: DEPT001
+        type: string
+      internalCOS:
+        example: INT001
+        type: string
+      retailCOS:
+        example: RET001
+        type: string
+    type: object
   responses.DocumentPlanResponse:
     description: Document plan data including limits and pricing
     properties:
@@ -4480,6 +4604,13 @@ definitions:
       result:
         type: string
     type: object
+  responses.EstimateLaborResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.LaborEntry'
+        type: array
+    type: object
   responses.EstimateListResponse:
     properties:
       currentPage:
@@ -4498,6 +4629,13 @@ definitions:
       total:
         example: 100
         type: integer
+    type: object
+  responses.EstimatePartsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderDetailPartEntry'
+        type: array
     type: object
   responses.EstimateResponse:
     properties:
@@ -6016,6 +6154,14 @@ definitions:
         example: Unlimited
         type: string
     type: object
+  responses.SubmitEstimateLaborEntryResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      result:
+        type: string
+    type: object
   responses.SubmitEstimatePartEntryResponse:
     properties:
       data: {}
@@ -6450,6 +6596,13 @@ definitions:
         items: {}
         type: array
     type: object
+  responses.WorkOrderLaborDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.LaborEntry'
+        type: array
+    type: object
   responses.WorkOrderListNewOrChangedResponse:
     properties:
       currentPage:
@@ -6502,6 +6655,13 @@ definitions:
         type: string
       result:
         type: string
+    type: object
+  responses.WorkOrderPartsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderDetailPartEntry'
+        type: array
     type: object
   responses.WorkOrderResponse:
     properties:
@@ -6871,6 +7031,39 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: List system clerks (users)
+      tags:
+      - General
+  /api/v1/general/departments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of departments from the DME API
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DepartmentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List departments
       tags:
       - General
   /api/v1/general/locations:
@@ -10602,6 +10795,69 @@ paths:
       summary: Delete estimate operation
       tags:
       - Estimates
+  /estimates/labor:
+    post:
+      consumes:
+      - application/json
+      description: Submits a labor entry for an estimate
+      parameters:
+      - description: Labor entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitEstimateLaborEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitEstimateLaborEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit estimate labor entry
+      tags:
+      - Estimates
+  /estimates/labor-entries:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves labor entries for a specific estimate
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: estimatesId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateLaborResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate labor
+      tags:
+      - Estimates
   /estimates/part:
     post:
       consumes:
@@ -10630,6 +10886,39 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Submit estimate part entry
+      tags:
+      - Estimates
+  /estimates/parts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of part entries for a specific estimate
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: estimatesId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimatePartsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate parts
       tags:
       - Estimates
   /estimates/retrieve:
@@ -16948,6 +17237,39 @@ paths:
       summary: Retrieve work order group descriptions
       tags:
       - WorkOrders
+  /work-orders/labor-detail:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves labor detail entries for a specific work order
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderLaborDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order labor detail
+      tags:
+      - WorkOrders
   /work-orders/list:
     get:
       consumes:
@@ -17108,6 +17430,39 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search all work order operations
+      tags:
+      - WorkOrders
+  /work-orders/parts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves part entries for a specific work order
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderPartsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order parts
       tags:
       - WorkOrders
   /work-orders/retrieve:

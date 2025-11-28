@@ -125,3 +125,39 @@ func NewLocationListResponse(locations []dme.Location) LocationListResponse {
 		Locations: locationResponses,
 	}
 }
+
+// DepartmentResponse represents a department from DME API
+// @Description Department information from DME API
+type DepartmentResponse struct {
+	ID          string `json:"id" example:"DEPT001"`
+	Description string `json:"description" example:"Service Department"`
+	InternalCOS string `json:"internalCOS" example:"INT001"`
+	RetailCOS   string `json:"retailCOS" example:"RET001"`
+}
+
+// DepartmentListResponse represents a list of departments
+// @Description List of departments from DME API
+type DepartmentListResponse struct {
+	Departments []DepartmentResponse `json:"departments"`
+}
+
+// NewDepartmentResponse creates a new DepartmentResponse from a DME Department
+func NewDepartmentResponse(department dme.Department) DepartmentResponse {
+	return DepartmentResponse{
+		ID:          department.ID,
+		Description: department.Description,
+		InternalCOS: department.InternalCOS,
+		RetailCOS:   department.RetailCOS,
+	}
+}
+
+// NewDepartmentListResponse creates a new DepartmentListResponse from a slice of DME Departments
+func NewDepartmentListResponse(departments []dme.Department) DepartmentListResponse {
+	departmentResponses := make([]DepartmentResponse, len(departments))
+	for i, department := range departments {
+		departmentResponses[i] = NewDepartmentResponse(department)
+	}
+	return DepartmentListResponse{
+		Departments: departmentResponses,
+	}
+}

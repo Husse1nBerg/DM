@@ -36,6 +36,28 @@ func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, sy
 	return result, nil
 }
 
+// ListDepartments retrieves a list of departments
+func (c *Client) ListDepartments(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Department, error) {
+	var result []Department
+	endpoint := "/Departments/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list departments: %w", err)
+	}
+
+	return result, nil
+}
+
 // RetrieveCustomerQuotes retrieves customer quotes for Unit Sales module
 func (c *Client) RetrieveCustomerQuotes(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
 	var result []CustomerContract

@@ -787,6 +787,14 @@ type Location struct {
 	DMPayClientID  string `json:"dmPayClientId"`
 }
 
+// Department represents a department in the system
+type Department struct {
+	ID          string `json:"id"`
+	Description string `json:"description"`
+	InternalCOS string `json:"internalCOS"`
+	RetailCOS   string `json:"retailCOS"`
+}
+
 // WorkOrderList represents a paginated list of work orders
 type WorkOrderList struct {
 	Content     []WorkOrder `json:"content"`

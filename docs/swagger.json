@@ -509,6 +509,56 @@
                 }
             }
         },
+        "/api/v1/general/departments": {
+            "get": {
+                "description": "Retrieves a list of departments from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "General"
+                ],
+                "summary": "List departments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DepartmentListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/general/locations": {
             "get": {
                 "description": "Retrieves a list of business locations from the DME API",
@@ -6194,6 +6244,102 @@
                 }
             }
         },
+        "/estimates/labor": {
+            "post": {
+                "description": "Submits a labor entry for an estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Submit estimate labor entry",
+                "parameters": [
+                    {
+                        "description": "Labor entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitEstimateLaborEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitEstimateLaborEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/labor-entries": {
+            "get": {
+                "description": "Retrieves labor entries for a specific estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate labor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "estimatesId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateLaborResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/estimates/part": {
             "post": {
                 "description": "Submits a part entry for an estimate",
@@ -6223,6 +6369,56 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.SubmitEstimatePartEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/parts": {
+            "get": {
+                "description": "Retrieves a list of part entries for a specific estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate parts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "estimatesId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimatePartsResponse"
                         }
                     },
                     "400": {
@@ -15889,6 +16085,56 @@
                 }
             }
         },
+        "/work-orders/labor-detail": {
+            "get": {
+                "description": "Retrieves labor detail entries for a specific work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order labor detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderLaborDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/list": {
             "get": {
                 "description": "Retrieves a paginated list of work orders",
@@ -16114,6 +16360,56 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.SearchAllOperationsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/parts": {
+            "get": {
+                "description": "Retrieves part entries for a specific work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order parts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderPartsResponse"
                         }
                     },
                     "400": {
@@ -17886,6 +18182,65 @@
                 }
             }
         },
+        "dme.LaborEntry": {
+            "type": "object",
+            "properties": {
+                "billedHours": {
+                    "type": "number"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "departmentDesc": {
+                    "type": "string"
+                },
+                "flagLaborFinished": {
+                    "type": "boolean"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "isApproved": {
+                    "type": "boolean"
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "laborRate": {
+                    "type": "number"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "stopTime": {
+                    "type": "string"
+                },
+                "techId": {
+                    "type": "string"
+                },
+                "techName": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.Motor": {
             "type": "object",
             "properties": {
@@ -18463,6 +18818,53 @@
                     "type": "number"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderDetailPartEntry": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partId": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "techId": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                },
+                "workOrderId": {
                     "type": "string"
                 }
             }
@@ -20908,6 +21310,50 @@
                 }
             }
         },
+        "requests.SubmitEstimateLaborEntryRequest": {
+            "type": "object",
+            "required": [
+                "date",
+                "estimateId",
+                "opCode",
+                "techId"
+            ],
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "estimateId": {
+                    "type": "string"
+                },
+                "flagLaborFinished": {
+                    "type": "boolean"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "isApproved": {
+                    "type": "boolean"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "stopTime": {
+                    "type": "string"
+                },
+                "techId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.SubmitEstimatePartEntryRequest": {
             "type": "object",
             "required": [
@@ -22491,6 +22937,40 @@
                 }
             }
         },
+        "responses.DepartmentListResponse": {
+            "description": "List of departments from DME API",
+            "type": "object",
+            "properties": {
+                "departments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.DepartmentResponse"
+                    }
+                }
+            }
+        },
+        "responses.DepartmentResponse": {
+            "description": "Department information from DME API",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Service Department"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "DEPT001"
+                },
+                "internalCOS": {
+                    "type": "string",
+                    "example": "INT001"
+                },
+                "retailCOS": {
+                    "type": "string",
+                    "example": "RET001"
+                }
+            }
+        },
         "responses.DocumentPlanResponse": {
             "description": "Document plan data including limits and pricing",
             "type": "object",
@@ -23036,6 +23516,17 @@
                 }
             }
         },
+        "responses.EstimateLaborResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.LaborEntry"
+                    }
+                }
+            }
+        },
         "responses.EstimateListResponse": {
             "type": "object",
             "properties": {
@@ -23060,6 +23551,17 @@
                 "total": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "responses.EstimatePartsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderDetailPartEntry"
+                    }
                 }
             }
         },
@@ -25258,6 +25760,18 @@
                 }
             }
         },
+        "responses.SubmitEstimateLaborEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.SubmitEstimatePartEntryResponse": {
             "type": "object",
             "properties": {
@@ -25896,6 +26410,17 @@
                 }
             }
         },
+        "responses.WorkOrderLaborDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.LaborEntry"
+                    }
+                }
+            }
+        },
         "responses.WorkOrderListNewOrChangedResponse": {
             "type": "object",
             "properties": {
@@ -25970,6 +26495,17 @@
                 },
                 "result": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.WorkOrderPartsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderDetailPartEntry"
+                    }
                 }
             }
         },

@@ -146,3 +146,42 @@ func (h *GeneralHandler) ListLocationsHandler(c echo.Context) error {
 
 	return responses.NewSuccessResponse(response).JSON(c)
 }
+
+// ListDepartmentsHandler godoc
+// @Summary List departments
+// @Description Retrieves a list of departments from the DME API
+// @Tags General
+// @Accept json
+// @Produce json
+// @Param systemId query string true "System ID"
+// @Success 200 {object} responses.DepartmentListResponse
+// @Failure 400 {object} responses.Error
+// @Failure 401 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /api/v1/general/departments [get]
+func (h *GeneralHandler) ListDepartmentsHandler(c echo.Context) error {
+	// Get user from token
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*token.JwtCustomClaims)
+
+	req := new(requests.DepartmentListRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	// Call DME API to list departments (use organization ID from JWT claims)
+	departments, err := h.server.DME.ListDepartments(c.Request().Context(), claims.OrgId, req.SystemID)
+	if err != nil {
+		h.server.Logger.Zap.Error("Failed to list departments from DME API", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve departments").JSON(c)
+	}
+
+	// Convert to response format
+	response := responses.NewDepartmentListResponse(departments)
+
+	return responses.NewSuccessResponse(response).JSON(c)
+}
