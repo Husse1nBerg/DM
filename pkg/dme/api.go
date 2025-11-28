@@ -1110,11 +1110,7 @@ func (c *Client) RetrieveWorkOrderParts(ctx context.Context, workOrderID string,
 
 	params := map[string]string{
 		"WorkOrderId": workOrderID,
-	}
-
-	// Only add OpCode if provided
-	if opcode != "" {
-		params["OpCode"] = opcode
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
 	}
 
 	endpoint := "/Service/WorkOrders/RetrieveParts"
@@ -1502,11 +1498,7 @@ func (c *Client) RetrieveEstimateParts(ctx context.Context, estimateID string, o
 
 	params := map[string]string{
 		"EstimatesId": estimateID,
-	}
-
-	// Only add OpCode if provided
-	if opcode != "" {
-		params["OpCode"] = opcode
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
 	}
 
 	endpoint := "/Service/Estimates/RetrieveParts"
@@ -2717,11 +2709,7 @@ func (c *Client) RetrieveEstimateLabor(ctx context.Context, estimateID string, o
 
 	params := map[string]string{
 		"EstimatesId": estimateID,
-	}
-
-	// Only add OpCode if provided
-	if opcode != "" {
-		params["OpCode"] = opcode
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
 	}
 
 	endpoint := "/Service/Estimates/RetrieveLabor"
@@ -2749,11 +2737,7 @@ func (c *Client) RetrieveWorkOrderLaborDetail(ctx context.Context, workOrderID s
 
 	params := map[string]string{
 		"WorkOrderId": workOrderID,
-	}
-
-	// Only add OpCode if provided
-	if opcode != "" {
-		params["OpCode"] = opcode
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
 	}
 
 	endpoint := "/Service/WorkOrderLaborDetail"
