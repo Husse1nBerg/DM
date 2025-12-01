@@ -570,18 +570,14 @@ type BoatSearch struct {
 //
 
 // Clerk represents a system user/clerk in the DME system
+// This struct matches the actual DockMaster API response
 type Clerk struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	Email       string `json:"email"`
-	Phone       string `json:"phone"`
-	IsActive    bool   `json:"isActive"`
-	Department  string `json:"department"`
-	Role        string `json:"role"`
-	LastLogin   string `json:"lastLogin"`
-	CreatedDate string `json:"createdDate"`
+	ID                string `json:"id"`
+	Name              string `json:"name"`
+	EmailAddress      string `json:"emailAddress"`
+	GroupEmailAddress string `json:"groupEmailAddress"`
+	InactiveDate      string `json:"inactiveDate"`
+	IsActive          bool   `json:"isActive"`
 }
 
 //

@@ -3875,38 +3875,23 @@ definitions:
   responses.ClerkResponse:
     description: System clerk/user information from DME API
     properties:
-      createdDate:
-        example: "2023-06-01T08:00:00Z"
-        type: string
-      department:
-        example: Service
-        type: string
-      email:
+      emailAddress:
         example: john.doe@marina.com
         type: string
-      firstName:
-        example: John
+      groupEmailAddress:
+        example: service@marina.com
         type: string
       id:
         example: CLERK001
         type: string
+      inactiveDate:
+        example: ""
+        type: string
       isActive:
         example: true
         type: boolean
-      lastLogin:
-        example: "2024-01-15T10:30:00Z"
-        type: string
-      lastName:
-        example: Doe
-        type: string
       name:
         example: John Doe
-        type: string
-      phone:
-        example: "+15551234567"
-        type: string
-      role:
-        example: Technician
         type: string
     type: object
   responses.ConfirmTokenResponse:

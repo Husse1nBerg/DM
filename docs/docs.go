@@ -22503,49 +22503,29 @@ const docTemplate = `{
             "description": "System clerk/user information from DME API",
             "type": "object",
             "properties": {
-                "createdDate": {
-                    "type": "string",
-                    "example": "2023-06-01T08:00:00Z"
-                },
-                "department": {
-                    "type": "string",
-                    "example": "Service"
-                },
-                "email": {
+                "emailAddress": {
                     "type": "string",
                     "example": "john.doe@marina.com"
                 },
-                "firstName": {
+                "groupEmailAddress": {
                     "type": "string",
-                    "example": "John"
+                    "example": "service@marina.com"
                 },
                 "id": {
                     "type": "string",
                     "example": "CLERK001"
                 },
+                "inactiveDate": {
+                    "type": "string",
+                    "example": ""
+                },
                 "isActive": {
                     "type": "boolean",
                     "example": true
                 },
-                "lastLogin": {
-                    "type": "string",
-                    "example": "2024-01-15T10:30:00Z"
-                },
-                "lastName": {
-                    "type": "string",
-                    "example": "Doe"
-                },
                 "name": {
                     "type": "string",
                     "example": "John Doe"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+15551234567"
-                },
-                "role": {
-                    "type": "string",
-                    "example": "Technician"
                 }
             }
         },

@@ -7,17 +7,12 @@ import (
 // ClerkResponse represents a system clerk (user) in the DME system
 // @Description System clerk/user information from DME API
 type ClerkResponse struct {
-	ID          string `json:"id" example:"CLERK001"`
-	Name        string `json:"name" example:"John Doe"`
-	FirstName   string `json:"firstName" example:"John"`
-	LastName    string `json:"lastName" example:"Doe"`
-	Email       string `json:"email" example:"john.doe@marina.com"`
-	Phone       string `json:"phone" example:"+15551234567"`
-	IsActive    bool   `json:"isActive" example:"true"`
-	Department  string `json:"department" example:"Service"`
-	Role        string `json:"role" example:"Technician"`
-	LastLogin   string `json:"lastLogin" example:"2024-01-15T10:30:00Z"`
-	CreatedDate string `json:"createdDate" example:"2023-06-01T08:00:00Z"`
+	ID                string `json:"id" example:"CLERK001"`
+	Name              string `json:"name" example:"John Doe"`
+	EmailAddress      string `json:"emailAddress" example:"john.doe@marina.com"`
+	GroupEmailAddress string `json:"groupEmailAddress" example:"service@marina.com"`
+	InactiveDate      string `json:"inactiveDate" example:""`
+	IsActive          bool   `json:"isActive" example:"true"`
 }
 
 // ClerkListResponse represents a list of system clerks
@@ -62,17 +57,12 @@ type LocationListResponse struct {
 // NewClerkResponse creates a new ClerkResponse from a DME Clerk
 func NewClerkResponse(clerk dme.Clerk) ClerkResponse {
 	return ClerkResponse{
-		ID:          clerk.ID,
-		Name:        clerk.Name,
-		FirstName:   clerk.FirstName,
-		LastName:    clerk.LastName,
-		Email:       clerk.Email,
-		Phone:       clerk.Phone,
-		IsActive:    clerk.IsActive,
-		Department:  clerk.Department,
-		Role:        clerk.Role,
-		LastLogin:   clerk.LastLogin,
-		CreatedDate: clerk.CreatedDate,
+		ID:                clerk.ID,
+		Name:              clerk.Name,
+		EmailAddress:      clerk.EmailAddress,
+		GroupEmailAddress: clerk.GroupEmailAddress,
+		InactiveDate:      clerk.InactiveDate,
+		IsActive:          clerk.IsActive,
 	}
 }
 
