@@ -18,6 +18,7 @@ func RegisterScheduleRoutes(server *s.Server, permissionProtected *echo.Group) {
 	schedule.GET("/retrieve-for-work-order", scheduleHandler.RetrieveScheduleForWorkOrder)
 	schedule.GET("/work-order-schedule", scheduleHandler.RetrieveWorkOrderSchedule)
 	schedule.GET("/operation-schedule", scheduleHandler.RetrieveOperationSchedule)
+	schedule.GET("/labels", scheduleHandler.RetrieveScheduleLabels)
 	schedule.POST("/update", scheduleHandler.UpdateSchedule)
 	schedule.POST("/resolve-merge-conflict", scheduleHandler.ResolveMergeConflict)
 }

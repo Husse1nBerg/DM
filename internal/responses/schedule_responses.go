@@ -1,26 +1,39 @@
 package responses
 
-// ScheduleResponse represents a schedule response with appointments
-type ScheduleResponse struct {
-	Data interface{} `json:"data"`
+import (
+	"github.com/dockworks/dm-web-backend/pkg/dme"
+)
+
+// ScheduleLabelResponse represents a schedule label
+// @Description Schedule label with color and description
+type ScheduleLabelResponse struct {
+	ID          int    `json:"id" example:"0"`
+	Color       string `json:"color" example:"#FF0000"`
+	Description string `json:"description" example:"Urgent"`
 }
 
-// ScheduleUpdateResponse represents the response from a schedule update
-type ScheduleUpdateResponse struct {
-	Data interface{} `json:"data"`
+// ScheduleLabelsResponse represents a list of schedule labels
+// @Description List of schedule labels
+type ScheduleLabelsResponse struct {
+	Labels []ScheduleLabelResponse `json:"labels"`
 }
 
-// ConvertScheduleResponse converts interface{} to ScheduleResponse
-func ConvertScheduleResponse(dmeResponse *interface{}) *ScheduleResponse {
-	return &ScheduleResponse{
-		Data: *dmeResponse,
+// NewScheduleLabelResponse creates a new ScheduleLabelResponse from a DME ScheduleLabel
+func NewScheduleLabelResponse(label dme.ScheduleLabel) ScheduleLabelResponse {
+	return ScheduleLabelResponse{
+		ID:          label.ID,
+		Color:       label.Color,
+		Description: label.Description,
 	}
 }
 
-// ConvertScheduleUpdateResponse converts interface{} to ScheduleUpdateResponse
-func ConvertScheduleUpdateResponse(dmeResponse *interface{}) *ScheduleUpdateResponse {
-	return &ScheduleUpdateResponse{
-		Data: *dmeResponse,
+// NewScheduleLabelsResponse creates a new ScheduleLabelsResponse from a slice of DME ScheduleLabels
+func NewScheduleLabelsResponse(labels []dme.ScheduleLabel) ScheduleLabelsResponse {
+	labelResponses := make([]ScheduleLabelResponse, len(labels))
+	for i, label := range labels {
+		labelResponses[i] = NewScheduleLabelResponse(label)
+	}
+	return ScheduleLabelsResponse{
+		Labels: labelResponses,
 	}
 }
-

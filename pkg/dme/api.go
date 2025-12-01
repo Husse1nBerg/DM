@@ -129,6 +129,28 @@ func (c *Client) RetrieveClerk(ctx context.Context, clerkID string, organization
 	return &result, nil
 }
 
+// RetrieveScheduleLabels retrieves the list of schedule labels configured in the system
+func (c *Client) RetrieveScheduleLabels(ctx context.Context, organizationID uuid.UUID, systemID string) ([]ScheduleLabel, error) {
+	var result []ScheduleLabel
+	endpoint := "/Service/Schedule/Labels"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve schedule labels: %w", err)
+	}
+
+	return result, nil
+}
+
 // -----
 // Customer API
 // -----

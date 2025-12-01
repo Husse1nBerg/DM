@@ -418,6 +418,49 @@ func (h *ScheduleHandler) RetrieveOperationSchedule(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// @Summary Retrieve schedule labels
+// @Description Retrieves the list of schedule labels configured in the system
+// @Tags Schedule
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.ScheduleLabelsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /service/schedule/labels [get]
+func (h *ScheduleHandler) RetrieveScheduleLabels(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	labels, err := h.server.DME.RetrieveScheduleLabels(ctx, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve schedule labels",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule labels: "+err.Error()).JSON(c)
+	}
+
+	response := responses.NewScheduleLabelsResponse(labels)
+	return c.JSON(http.StatusOK, response)
+}
+
 // @Summary Update schedule
 // @Description Updates schedule appointments
 // @Tags Schedule
