@@ -37,3 +37,28 @@ func NewScheduleLabelsResponse(labels []dme.ScheduleLabel) ScheduleLabelsRespons
 		Labels: labelResponses,
 	}
 }
+
+// ScheduleUpdateResponse represents the response from a schedule update operation
+// @Description Schedule update response
+type ScheduleUpdateResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+// ConvertScheduleResponse converts a DME API response to a standardized schedule response
+func ConvertScheduleResponse(dmeResponse interface{}) interface{} {
+	// Pass through the DME API response as-is
+	// The frontend expects the raw structure from the DME API
+	return dmeResponse
+}
+
+// ConvertScheduleUpdateResponse converts a DME schedule update response
+func ConvertScheduleUpdateResponse(dmeResponse interface{}) ScheduleUpdateResponse {
+	// Convert the DME response to a standardized update response
+	return ScheduleUpdateResponse{
+		Success: true,
+		Message: "Schedule updated successfully",
+		Data:    dmeResponse,
+	}
+}
