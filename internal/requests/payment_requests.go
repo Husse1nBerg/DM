@@ -94,7 +94,13 @@ func (r *CreatePaymentSessionWithTokenRequest) Validate(validate *validator.Vali
 
 // ListPaymentsRequest represents the request to list payments with filtering
 type ListPaymentsRequest struct {
-	FilterSortParams
+	Page       int    `query:"page" validate:"required,min=1"`
+	PageSize   int    `query:"pageSize" validate:"required,min=1,max=100"`
+	Status     string `query:"status"`     // Optional: pending, authorized, completed, failed
+	EntityType string `query:"entityType"` // Optional: invoice, boat, customer, etc.
+	EntityID   string `query:"entityId"`   // Optional: ID of the entity
+	StartDate  string `query:"startDate"`  // Optional: YYYY-MM-DD format
+	EndDate    string `query:"endDate"`    // Optional: YYYY-MM-DD format
 }
 
 // GetPaymentRequest represents the request to get a single payment

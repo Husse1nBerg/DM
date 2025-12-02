@@ -1197,21 +1197,23 @@ func (h *PaymentHandler) updatePaymentFailed(ctx context.Context, paymentID uuid
 	}
 }
 
-// ListPayments lists payments with pagination, searching, filtering and sorting
+// ListPayments godoc
 //
 //	@Summary		List payments
-//	@Description	Returns a paginated list of payments. Supports search, flexible filters, and sorting.
+//	@Description	Retrieves a paginated list of payments with optional filtering
 //	@Tags			Payments
 //	@Accept			json
 //	@Produce		json
-//	@Param			page		query		int		false	"Page number"												default(1)		minimum(1)
-//	@Param			pageSize	query		int		false	"Page size"												default(10)		minimum(1) maximum(100)
-//	@Param			search		query		string	false	"Search term (matches reference_number, adyen_psp_reference, customer_id, payment_method)"
-//	@Param			filters		query		object	false	"Filters (e.g. filters[customer_id]=00811&filters[status]=authorized&filters[entity_type]=invoice&filters[entity_id]=904192&filters[payment_method]=amex&filters[currency]=EUR&filters[start_date]=2025-11-01&filters[end_date]=2025-11-21)"
-//	@Param			sortBy		query		string	false	"Sort by field (reference_number, payment_method, currency, payment_date, created_at, amount, status)"	default(created_at)
-//	@Param			sortOrder	query		string	false	"Sort order (asc or desc)"									default(desc)
-//	@Success		200			{object}	responses.PaymentListResponse	"Paginated list of payments"
-//	@Failure		500			{object}	responses.Error					"Server error"
+//	@Param			page		query		int		true	"Page number"	minimum(1)
+//	@Param			pageSize	query		int		true	"Page size"		minimum(1)	maximum(100)
+//	@Param			status		query		string	false	"Filter by status (pending, authorized, completed, failed)"
+//	@Param			entityType	query		string	false	"Filter by entity type (invoice, boat, customer, etc.)"
+//	@Param			entityId	query		string	false	"Filter by entity ID"
+//	@Param			startDate	query		string	false	"Filter by start date (YYYY-MM-DD)"
+//	@Param			endDate		query		string	false	"Filter by end date (YYYY-MM-DD)"
+//	@Success		200			{object}	responses.PaymentListResponse
+//	@Failure		400			{object}	responses.Error
+//	@Failure		500			{object}	responses.Error
 //	@Security		BearerAuth
 //	@Router			/payments [get]
 func (h *PaymentHandler) ListPayments(c echo.Context) error {
@@ -1237,95 +1239,60 @@ func (h *PaymentHandler) ListPayments(c echo.Context) error {
 	offset := int32((req.Page - 1) * req.PageSize)
 	limit := int32(req.PageSize)
 
-	// Users-style filtering and sorting: use filters map + search + sortBy/sortOrder
-	if req.SortBy == "" {
-		req.SortBy = "created_at"
-	}
-	if req.SortOrder == "" {
-		req.SortOrder = "desc"
-	}
-
-	// Read filters like users handler: query param first, then map fallback
-	get := func(q string, m string) string {
-		v := c.QueryParam("filters[" + q + "]")
-		if v != "" {
-			return v
-		}
-		if req.Filters == nil {
-			return ""
-		}
-		return req.Filters[m]
-	}
-
-	status := get("status", "status")
-	customerID := get("customer_id", "customer_id")
-	entityType := get("entity_type", "entity_type")
-	entityID := get("entity_id", "entity_id")
-	paymentMethod := get("payment_method", "payment_method")
-	currency := get("currency", "currency")
-	startDateStr := get("start_date", "start_date")
-	endDateStr := get("end_date", "end_date")
-
-	var startTS, endTS pgtype.Timestamptz
-	if startDateStr != "" {
-		if t, err := time.Parse("2006-01-02", startDateStr); err == nil {
-			startTS.Scan(t)
-		}
-	}
-	if endDateStr != "" {
-		if t, err := time.Parse("2006-01-02", endDateStr); err == nil {
-			endTS.Scan(t)
-		}
-	}
-
 	var payments []db.Payment
 	var total int64
-	if req.SortOrder == "asc" {
-		payments, err = h.server.DB.Queries().ListPaymentsFilteredSortedAsc(ctx, db.ListPaymentsFilteredSortedAscParams{
+
+	// Handle different filtering scenarios
+	if req.EntityType != "" && req.EntityID != "" {
+		// Filter by entity
+		payments, err = h.server.DB.Queries().ListPaymentsByEntity(ctx, db.ListPaymentsByEntityParams{
+			MarinaID:   marinaID,
+			EntityType: &req.EntityType,
+			EntityID:   &req.EntityID,
+		})
+		total = int64(len(payments))
+	} else if req.Status != "" {
+		// Filter by status
+		payments, err = h.server.DB.Queries().ListPaymentsByStatus(ctx, db.ListPaymentsByStatusParams{
 			MarinaID: marinaID,
-			Column2:  req.Search,
-			Column3:  status,
-			Column4:  customerID,
-			Column5:  entityType,
-			Column6:  entityID,
-			Column7:  paymentMethod,
-			Column8:  currency,
-			Column9:  startTS,
-			Column10: endTS,
-			Column11: req.SortBy,
+			Status:   req.Status,
 			Limit:    limit,
 			Offset:   offset,
 		})
+		if err == nil {
+			total, err = h.server.DB.Queries().CountPaymentsByStatus(ctx, db.CountPaymentsByStatusParams{
+				MarinaID: marinaID,
+				Status:   req.Status,
+			})
+		}
+	} else if req.StartDate != "" && req.EndDate != "" {
+		// Filter by date range
+		startDate, err1 := time.Parse("2006-01-02", req.StartDate)
+		endDate, err2 := time.Parse("2006-01-02", req.EndDate)
+		if err1 != nil || err2 != nil {
+			return responses.NewErrorResponse(http.StatusBadRequest, "Invalid date format. Use YYYY-MM-DD").JSON(c)
+		}
+
+		var startTimestamp, endTimestamp pgtype.Timestamptz
+		startTimestamp.Scan(startDate)
+		endTimestamp.Scan(endDate)
+
+		payments, err = h.server.DB.Queries().ListPaymentsByDateRange(ctx, db.ListPaymentsByDateRangeParams{
+			MarinaID:      marinaID,
+			PaymentDate:   startTimestamp,
+			PaymentDate_2: endTimestamp,
+		})
+		total = int64(len(payments))
 	} else {
-		payments, err = h.server.DB.Queries().ListPaymentsFilteredSortedDesc(ctx, db.ListPaymentsFilteredSortedDescParams{
+		// No specific filter, list all
+		payments, err = h.server.DB.Queries().ListPaymentsByMarina(ctx, db.ListPaymentsByMarinaParams{
 			MarinaID: marinaID,
-			Column2:  req.Search,
-			Column3:  status,
-			Column4:  customerID,
-			Column5:  entityType,
-			Column6:  entityID,
-			Column7:  paymentMethod,
-			Column8:  currency,
-			Column9:  startTS,
-			Column10: endTS,
-			Column11: req.SortBy,
 			Limit:    limit,
 			Offset:   offset,
 		})
-	}
-	if err == nil {
-		total, err = h.server.DB.Queries().CountPaymentsWithFilters(ctx, db.CountPaymentsWithFiltersParams{
-			MarinaID: marinaID,
-			Column2:  req.Search,
-			Column3:  status,
-			Column4:  customerID,
-			Column5:  entityType,
-			Column6:  entityID,
-			Column7:  paymentMethod,
-			Column8:  currency,
-			Column9:  startTS,
-			Column10: endTS,
-		})
+		if err == nil {
+			total, err = h.server.DB.Queries().CountPaymentsByMarina(ctx, marinaID)
+		}
 	}
 
 	if err != nil {
@@ -1339,16 +1306,16 @@ func (h *PaymentHandler) ListPayments(c echo.Context) error {
 		paymentResponses = append(paymentResponses, responses.ConvertPaymentToResponse(payment))
 	}
 
-	totalPages := int(total) / int(req.PageSize)
-	if int(total)%int(req.PageSize) > 0 {
+	totalPages := int(total) / req.PageSize
+	if int(total)%req.PageSize > 0 {
 		totalPages++
 	}
 
 	response := responses.PaymentListResponse{
 		Data:       paymentResponses,
 		Total:      total,
-		Page:       int(req.Page),
-		PageSize:   int(req.PageSize),
+		Page:       req.Page,
+		PageSize:   req.PageSize,
 		TotalPages: totalPages,
 	}
 

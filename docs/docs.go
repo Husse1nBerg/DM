@@ -12108,7 +12108,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns a paginated list of payments. Supports search, flexible filters, and sorting.",
+                "description": "Retrieves a paginated list of payments with optional filtering",
                 "consumes": [
                     "application/json"
                 ],
@@ -12123,56 +12123,66 @@ const docTemplate = `{
                     {
                         "minimum": 1,
                         "type": "integer",
-                        "default": 1,
                         "description": "Page number",
                         "name": "page",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
-                        "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, authorized, completed, failed)",
+                        "name": "status",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Search term (matches reference_number, adyen_psp_reference, customer_id, payment_method)",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "object",
-                        "description": "Filters (e.g. filters[customer_id]=00811\u0026filters[status]=authorized\u0026filters[entity_type]=invoice\u0026filters[entity_id]=904192\u0026filters[payment_method]=amex\u0026filters[currency]=EUR\u0026filters[start_date]=2025-11-01\u0026filters[end_date]=2025-11-21)",
-                        "name": "filters",
+                        "description": "Filter by entity type (invoice, boat, customer, etc.)",
+                        "name": "entityType",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "default": "created_at",
-                        "description": "Sort by field (reference_number, payment_method, currency, payment_date, created_at, amount, status)",
-                        "name": "sortBy",
+                        "description": "Filter by entity ID",
+                        "name": "entityId",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "default": "desc",
-                        "description": "Sort order (asc or desc)",
-                        "name": "sortOrder",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "endDate",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Paginated list of payments",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.PaymentListResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -17317,9 +17327,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "departureDate": {
-                    "type": "string"
-                },
-                "hin": {
                     "type": "string"
                 },
                 "ownerName": {
@@ -25070,12 +25077,6 @@ const docTemplate = `{
         "responses.PaymentResponse": {
             "type": "object",
             "properties": {
-                "adyenPaymentPayload": {
-                    "type": "string"
-                },
-                "adyenPaymentResponse": {
-                    "type": "string"
-                },
                 "adyenPspReference": {
                     "type": "string"
                 },
