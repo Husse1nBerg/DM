@@ -778,6 +778,23 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		}
 	}
 
+	// Retrieve current estimate to compare comments
+	// Only include comments in update if they have changed
+	shouldIncludeComments := true
+	currentEstimate, err := h.server.DME.EstimateRetrieve(ctx, req.EstId, false, orgID, *systemID)
+	if err != nil {
+		// Log warning but continue with update (include comments to be safe)
+		h.server.Logger.DesugarZap.Warn("Failed to retrieve current estimate for comment comparison",
+			zap.Error(err),
+			zap.String("estimateId", req.EstId))
+		// Keep shouldIncludeComments as true to include comments if retrieval fails
+	} else {
+		// Compare current comments with incoming comments
+		if currentEstimate.Comments == req.Comments {
+			shouldIncludeComments = false
+		}
+	}
+
 	// Convert request to map for DME API
 	// Note: DME API expects "woId" for estimate ID (estimates are treated as work orders)
 	estimateData := map[string]interface{}{
@@ -788,7 +805,6 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		"boatName":        req.BoatName,
 		"customerPhone":   req.CustomerPhone,
 		"customerEmail":   req.CustomerEmail,
-		"comments":        req.Comments,
 		"locationCode":    req.LocationCode,
 		"estCompDate":     req.EstCompDate,
 		"estStartDate":    req.EstStartDate,
@@ -796,6 +812,11 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
 		"operationCodes":  req.OperationCodes,
+	}
+
+	// Only include comments if they have changed
+	if shouldIncludeComments {
+		estimateData["comments"] = req.Comments
 	}
 
 	// Add attachments to estimate data if provided
@@ -1204,7 +1225,7 @@ func (h *EstimateHandler) RetrieveEstimateParts(c echo.Context) error {
 			if operation.Opcode == "" {
 				continue
 			}
-			
+
 			parts, err := h.server.DME.RetrieveEstimateParts(ctx, req.EstimatesId, operation.Opcode, orgID, *systemID)
 			if err != nil {
 				h.server.Logger.DesugarZap.Warn("Failed to retrieve parts for operation",
@@ -1293,7 +1314,7 @@ func (h *EstimateHandler) RetrieveEstimateLabor(c echo.Context) error {
 			if operation.Opcode == "" {
 				continue
 			}
-			
+
 			labor, err := h.server.DME.RetrieveEstimateLabor(ctx, req.EstimatesId, operation.Opcode, orgID, *systemID)
 			if err != nil {
 				h.server.Logger.DesugarZap.Warn("Failed to retrieve labor for operation",

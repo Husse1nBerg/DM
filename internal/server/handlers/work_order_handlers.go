@@ -480,6 +480,23 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 		}
 	}
 
+	// Retrieve current work order to compare comments
+	// Only include comments in update if they have changed
+	shouldIncludeComments := true
+	currentWorkOrder, err := h.server.DME.WorkOrderRetrieve(ctx, req.WoId, false, orgID, *systemID)
+	if err != nil {
+		// Log warning but continue with update (include comments to be safe)
+		h.server.Logger.DesugarZap.Warn("Failed to retrieve current work order for comment comparison",
+			zap.Error(err),
+			zap.String("workOrderId", req.WoId))
+		// Keep shouldIncludeComments as true to include comments if retrieval fails
+	} else {
+		// Compare current comments with incoming comments
+		if currentWorkOrder.Comments == req.Comments {
+			shouldIncludeComments = false
+		}
+	}
+
 	// Create a map with all the work order data
 	// Directly map all fields without conditionals, just like in CreateWorkOrder
 	workOrderData := map[string]interface{}{
@@ -490,7 +507,6 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 		"boatName":        req.BoatName,
 		"customerPhone":   req.CustomerPhone,
 		"customerEmail":   req.CustomerEmail,
-		"comments":        req.Comments,
 		"locationCode":    req.LocationCode,
 		"estCompDate":     req.EstCompDate,
 		"estStartDate":    req.EstStartDate,
@@ -498,6 +514,11 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
 		"operationCodes":  operationCodes,
+	}
+
+	// Only include comments if they have changed
+	if shouldIncludeComments {
+		workOrderData["comments"] = req.Comments
 	}
 
 	// Add attachments to work order data if provided
