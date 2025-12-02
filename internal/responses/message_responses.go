@@ -57,10 +57,7 @@ func MessageDBToResponse(message db.Message) MessageResponse {
 		updatedAt = &t
 	}
 
-	var subject *string
-	if message.Subject.Valid {
-		subject = &message.Subject.String
-	}
+	subject := message.Subject
 
 	return MessageResponse{
 		ID:         message.ID,

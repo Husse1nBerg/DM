@@ -1028,13 +1028,23 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 	isActive := true
 	isSuperuser := false
 
-	// Create customer user
+	// Hash the password BEFORE creating the user to ensure atomicity
+	passwordHash, err := utils.HashPassword(req.Password)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to hash password",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to process password").JSON(c)
+	}
+
+	// Create customer user with password hash included
 	params := db.CreateCustomerUserParams{
 		Username:            username,
 		FirstName:           req.FirstName,
 		LastName:            req.LastName,
 		Email:               email,
 		Phone:               &req.Phone,
+		PasswordHash:        utils.Pointer(passwordHash),
 		OrganizationID:      orgID,
 		MarinaID:            marinaID,
 		RoleID:              customerRole.ID,
@@ -1058,11 +1068,12 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create user: "+err.Error()).JSON(c)
 	}
 
-	// Assign user to marina
+	// Assign user to marina (RoleID is required for foreign key constraint)
 	assignUserToMarina := db.AssignUserToMarinaParams{
 		UserID:     user.ID,
 		MarinaID:   marinaID,
 		CustomerID: &dmeResponse.ID,
+		RoleID:     customerRole.ID,
 	}
 
 	err = queries.AssignUserToMarina(ctx, assignUserToMarina)
@@ -1084,29 +1095,6 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 			zap.Error(err),
 		)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create customer settings: "+err.Error()).JSON(c)
-	}
-
-	// Hash the password using the utility function from utils
-	passwordHash, err := utils.HashPassword(req.Password)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to hash password",
-			zap.Error(err),
-		)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to process password").JSON(c)
-	}
-
-	// Update the user with the new password
-	userPasswordParams := db.UpdateUserInviteParams{
-		ID:           user.ID,
-		PasswordHash: utils.Pointer(passwordHash),
-	}
-
-	_, err = queries.UpdateUserInvite(ctx, userPasswordParams)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to update user password",
-			zap.Error(err),
-		)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update user password").JSON(c)
 	}
 
 	// Create default notification preferences for the new customer user
