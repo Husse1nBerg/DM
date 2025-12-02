@@ -128,20 +128,3 @@ WHERE marina_id = $1;
 SELECT COUNT(*) FROM payments
 WHERE marina_id = $1
 AND status = $2;
-
--- name: UpdatePaymentAdyenPayloadsByID :one
-UPDATE payments
-SET 
-    adyen_payment_payload = $2,
-    adyen_payment_response = $3,
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = $1
-RETURNING *;
-
--- name: UpdatePaymentReferenceNumberByID :one
-UPDATE payments
-SET 
-    reference_number = $2,
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = $1
-RETURNING *;
