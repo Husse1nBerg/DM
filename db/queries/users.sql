@@ -214,6 +214,7 @@ INSERT INTO users (
         phone,
         title,
         image,
+        password_hash,
         last_login,
         failed_login_attempts,
         locked_until,
@@ -247,7 +248,8 @@ VALUES (
         $17,
         $18,
         $19,
-        $20
+        $20,
+        $21
     )
 RETURNING *;
 -- name: ActivateUser :one

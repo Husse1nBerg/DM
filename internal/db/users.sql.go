@@ -93,6 +93,7 @@ INSERT INTO users (
         phone,
         title,
         image,
+        password_hash,
         last_login,
         failed_login_attempts,
         locked_until,
@@ -126,7 +127,8 @@ VALUES (
         $17,
         $18,
         $19,
-        $20
+        $20,
+        $21
     )
 RETURNING id, username, first_name, last_name, email, email_verified, phone, title, image, password_hash, last_login, failed_login_attempts, locked_until, last_password_reset, organization_id, marina_id, role_id, is_superuser, is_active, created_at, updated_at, deleted_at, customer_id, is_customer, joined_at, user_analytics
 `
@@ -140,6 +142,7 @@ type CreateCustomerUserParams struct {
 	Phone               *string
 	Title               *string
 	Image               *string
+	PasswordHash        *string
 	LastLogin           pgtype.Timestamp
 	FailedLoginAttempts *int32
 	LockedUntil         pgtype.Timestamp
@@ -164,6 +167,7 @@ func (q *Queries) CreateCustomerUser(ctx context.Context, arg CreateCustomerUser
 		arg.Phone,
 		arg.Title,
 		arg.Image,
+		arg.PasswordHash,
 		arg.LastLogin,
 		arg.FailedLoginAttempts,
 		arg.LockedUntil,

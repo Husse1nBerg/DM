@@ -14,7 +14,6 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/telgorithm"
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
@@ -392,10 +391,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Contact:    req.Contact,
 		Status:     "pending",
 		Pinned:     req.Pinned,
-		Subject: pgtype.Text{
-			String: subject,
-			Valid:  true,
-		},
+		Subject:    &subject,
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
@@ -430,7 +426,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		logger.Zap.Warnw("Failed to get marina", "marina_id", req.MarinaID, "error", err)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
 	}
-	
+
 	// Include marina logo if available
 	var logo string
 	if marina.Image != nil && *marina.Image != "" {
@@ -439,7 +435,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 			logo = *fullURL
 		}
 	}
-	
+
 	if !allowEmail {
 		logger.Zap.Infow("Skipping email send due to recipient preferences",
 			"recipient", req.Contact, "marina_id", req.MarinaID)
@@ -622,10 +618,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		Contact:    req.Contact,
 		Status:     "pending",
 		Pinned:     req.Pinned,
-		Subject: pgtype.Text{
-			String: subjectText,
-			Valid:  true,
-		},
+		Subject:    &subjectText,
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
@@ -720,14 +713,14 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		} else {
 			var taskID uuid.UUID
 			var resultChan <-chan sendgrid.EmailStatus
-			
+
 			// Get marina for logo
 			marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
 			if err != nil {
 				logger.Zap.Warnw("Failed to get marina", "marina_id", req.MarinaID, "error", err)
 				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
 			}
-			
+
 			// Include marina logo if available
 			var logo string
 			if marina.Image != nil && *marina.Image != "" {
