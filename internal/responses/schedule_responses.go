@@ -18,6 +18,10 @@ type ScheduleLabelsResponse struct {
 	Labels []ScheduleLabelResponse `json:"labels"`
 }
 
+// ScheduleResponse represents the raw schedule payload returned by DME
+// @Description Raw DME schedule payload; structure varies per endpoint
+type ScheduleResponse map[string]interface{}
+
 // NewScheduleLabelResponse creates a new ScheduleLabelResponse from a DME ScheduleLabel
 func NewScheduleLabelResponse(label dme.ScheduleLabel) ScheduleLabelResponse {
 	return ScheduleLabelResponse{

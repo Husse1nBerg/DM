@@ -14,9 +14,10 @@ INSERT INTO payments (
     customer_id,
     location_code,
     payment_date,
-    internal_notes
+    internal_notes,
+    adyen_payment_payload
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
 ) RETURNING *;
 
 -- name: UpdatePaymentAuthorized :one
@@ -28,7 +29,7 @@ SET
     auth_code = $4,
     transaction_id = $5,
     authorized_at = $6,
-    adyen_webhook_payload = $7,
+    adyen_payment_response = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
@@ -126,7 +127,7 @@ WHERE marina_id = $1
   AND ($8 = '' OR currency = $8)
   AND ($9::timestamptz IS NULL OR payment_date >= $9::timestamptz)
   AND ($10::timestamptz IS NULL OR payment_date <= $10::timestamptz);
-  
+
 -- name: UpdatePaymentCompleted :one
 UPDATE payments
 SET 
@@ -173,6 +174,10 @@ WHERE reference_number = $1;
 -- name: GetPaymentByAdyenPSPReference :one
 SELECT * FROM payments
 WHERE adyen_psp_reference = $1;
+
+-- name: GetPaymentByAdyenSessionID :one
+SELECT * FROM payments
+WHERE adyen_session_id = $1;
 
 -- name: ListPaymentsByMarina :many
 SELECT * FROM payments
@@ -238,4 +243,13 @@ SET
     reference_number = $2,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
+RETURNING *;
+
+-- name: UpdatePaymentAdyenPayloadsByReferenceNumber :one
+UPDATE payments
+SET 
+    adyen_payment_payload = $2,
+    adyen_payment_response = $3,
+    updated_at = CURRENT_TIMESTAMP
+WHERE reference_number = $1
 RETURNING *;

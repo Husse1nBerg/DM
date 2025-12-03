@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,6 +20,7 @@ import (
 	"github.com/dockworks/dm-web-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -231,13 +233,6 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 	func() {
 		defer func() { _ = recover() }()
 		ctx := c.Request().Context()
-		// Marshal the entire session response as the payload
-		sessionBytes, err := json.Marshal(session)
-		if err != nil {
-			h.server.Logger.Zap.Debug("Failed to marshal session for payload persist", zap.Error(err))
-			return
-		}
-		sessionJSON := string(sessionBytes)
 
 		// Determine marina/org/customer context
 		var marinaID uuid.UUID
@@ -276,33 +271,53 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 			return
 		}
 
-		// Avoid duplicates by checking if a payment already exists for this session id used as reference
-		existing, err := h.server.DB.Queries().GetPaymentByReferenceNumber(ctx, session.Id)
-		if err == nil && existing.ID != uuid.Nil {
-			// Update payload only
-			_, _ = h.server.DB.Queries().UpdatePaymentAdyenPayloadsByID(ctx, db.UpdatePaymentAdyenPayloadsByIDParams{
-				ID:                   existing.ID,
-				AdyenPaymentPayload:  &sessionJSON,
-				AdyenPaymentResponse: existing.AdyenPaymentResponse,
-			})
-			return
+		// Extract referenceNum from BatchData in metadata
+		var referenceNum string
+		if req.Metadata != nil {
+			if batchDataStr, ok := (*req.Metadata)["BatchData"]; ok && batchDataStr != "" {
+				var batchData map[string]interface{}
+				if err := json.Unmarshal([]byte(batchDataStr), &batchData); err == nil {
+					if cashReceipts, ok := batchData["cashReceipts"].([]interface{}); ok && len(cashReceipts) > 0 {
+						if receipt, ok := cashReceipts[0].(map[string]interface{}); ok {
+							if refNum, ok := receipt["referenceNum"].(string); ok {
+								referenceNum = refNum
+							}
+						}
+					}
+				}
+			}
 		}
 
-		// Prepare amount (minor units -> major)
+		// If no referenceNum found, use session ID as fallback
+		if referenceNum == "" {
+			referenceNum = session.Id
+		}
+
+		// Convert amount to numeric
 		var amountNumeric pgtype.Numeric
-		amount := float64(req.Amount) / 100.0
-		if err := amountNumeric.Scan(fmt.Sprintf("%.2f", amount)); err != nil {
-			h.server.Logger.Zap.Debug("Failed to scan amount numeric for minimal payment",
-				zap.Error(err))
-			return
+		if req.Amount > 0 {
+			amountFloat := float64(req.Amount) / 100.0 // Convert from minor units
+			if err := amountNumeric.Scan(fmt.Sprintf("%.2f", amountFloat)); err != nil {
+				h.server.Logger.Zap.Debug("Failed to scan amount numeric for minimal payment",
+					zap.Error(err))
+				return
+			}
 		}
 
 		// Payment date
 		paymentDate := pgtype.Timestamptz{}
 		_ = paymentDate.Scan(time.Now())
 
+		// Serialize the request payload to store in adyen_payment_payload
+		requestPayloadBytes, err := json.Marshal(req)
+		if err != nil {
+			h.server.Logger.Zap.Debug("Failed to marshal request payload", zap.Error(err))
+			return
+		}
+		requestPayloadStr := string(requestPayloadBytes)
+
 		// Create minimal pending payment
-		pmt, err := h.server.DB.Queries().CreatePayment(ctx, db.CreatePaymentParams{
+		_, err = h.server.DB.Queries().CreatePayment(ctx, db.CreatePaymentParams{
 			MarinaID:            marinaID,
 			OrganizationID:      orgID,
 			EntityType:          nil,
@@ -310,7 +325,7 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 			Amount:              amountNumeric,
 			Currency:            req.Currency,
 			PaymentMethod:       nil,
-			ReferenceNumber:     session.Id, // linkable by webhook via sessionID
+			ReferenceNumber:     referenceNum,
 			Status:              "pending",
 			AuthorizationStatus: nil,
 			AdyenSessionID:      &session.Id,
@@ -318,17 +333,12 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 			LocationCode:        nil,
 			PaymentDate:         paymentDate,
 			InternalNotes:       nil,
+			AdyenPaymentPayload: &requestPayloadStr,
 		})
 		if err != nil {
 			h.server.Logger.Zap.Debug("Failed to create minimal pending payment", zap.Error(err))
 			return
 		}
-		// Store the payload on the payment
-		_, _ = h.server.DB.Queries().UpdatePaymentAdyenPayloadsByID(ctx, db.UpdatePaymentAdyenPayloadsByIDParams{
-			ID:                   pmt.ID,
-			AdyenPaymentPayload:  &sessionJSON,
-			AdyenPaymentResponse: pmt.AdyenPaymentResponse,
-		})
 	}()
 
 	// Return the complete Adyen session response directly
@@ -374,76 +384,8 @@ func (h *PaymentHandler) HandlePaymentRedirect(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to process payment").JSON(c)
 	}
 
-	// Best-effort: persist raw request/response against the payment by PSP reference (if available)
-	func() {
-		defer func() {
-			_ = recover()
-		}()
-		ctx := c.Request().Context()
-		// Marshal request we sent to Adyen
-		reqBytes, _ := json.Marshal(adyenReq)
-		reqJSON := string(reqBytes)
-		// Marshal response from Adyen
-		resBytes, _ := json.Marshal(result)
-		resJSON := string(resBytes)
-		// Try to extract pspReference from response JSON
-		var resMap map[string]interface{}
-		_ = json.Unmarshal(resBytes, &resMap)
-		pspRef := ""
-		if v, ok := resMap["pspReference"].(string); ok {
-			pspRef = v
-		}
-		// If we have a PSP ref, attempt to find and update the payment
-		if pspRef != "" {
-			pmt, err := h.server.DB.Queries().GetPaymentByAdyenPSPReference(ctx, &pspRef)
-			if err == nil {
-				_, _ = h.server.DB.Queries().UpdatePaymentAdyenPayloadsByID(ctx, db.UpdatePaymentAdyenPayloadsByIDParams{
-					ID:                   pmt.ID,
-					AdyenPaymentPayload:  &reqJSON,
-					AdyenPaymentResponse: &resJSON,
-				})
-			} else {
-				h.server.Logger.Zap.Debug("Payment not found yet for PSP ref to store payloads",
-					zap.String("psp_reference", pspRef),
-					zap.Error(err))
-			}
-		}
-	}()
-
 	// Create response
 	response := responses.NewPaymentResultResponse(result)
-
-	// After redirect, attach cached session payload to the payment if possible
-	func() {
-		defer func() { _ = recover() }()
-		ctx := c.Request().Context()
-		if result != nil && result.PspReference != nil && *result.PspReference != "" {
-			pspRef := *result.PspReference
-			// Find the payment by PSP reference
-			pmt, err := h.server.DB.Queries().GetPaymentByAdyenPSPReference(ctx, &pspRef)
-			if err != nil {
-				h.server.Logger.Zap.Debug("Payment not found by PSP reference during redirect payload attach",
-					zap.String("psp_reference", pspRef),
-					zap.Error(err))
-				return
-			}
-			// If we have the session id, try to fetch cached session JSON
-			if pmt.AdyenSessionID != nil && *pmt.AdyenSessionID != "" {
-				key := "adyen:session:" + *pmt.AdyenSessionID
-				if sessionJSON, err := h.server.Redis.GetCache(ctx, key); err == nil && sessionJSON != "" {
-					// Preserve existing response, only set payload
-					_, _ = h.server.DB.Queries().UpdatePaymentAdyenPayloadsByID(ctx, db.UpdatePaymentAdyenPayloadsByIDParams{
-						ID:                   pmt.ID,
-						AdyenPaymentPayload:  &sessionJSON,
-						AdyenPaymentResponse: pmt.AdyenPaymentResponse,
-					})
-					// Optionally delete cached entry
-					_ = h.server.Redis.DeleteCache(ctx, key)
-				}
-			}
-		}
-	}()
-
 	return responses.NewSuccessResponse(response).JSON(c)
 }
 
@@ -1073,35 +1015,45 @@ func (h *PaymentHandler) createPaymentRecord(ctx context.Context, notifMap map[s
 	authorizedAt := pgtype.Timestamptz{}
 	authorizedAt.Scan(time.Now())
 
-	// Serialize webhook payload
+	// Serialize webhook payload (this is the response from Adyen webhook)
 	webhookJSONBytes, _ := json.Marshal(notifMap)
 	webhookJSON := string(webhookJSONBytes)
 
 	// Get payment method from additionalData
 	paymentMethod, _ := additionalData["paymentMethod"].(string)
 
+	// Get payment if it already exists
+	// First try to find by AdyenSessionID (most reliable link to the payment created in CreatePaymentSession)
 	var payment db.Payment
 	var err error
+	var paymentFound bool
 
-	// If we have a checkout session id, try to find an existing pending payment created at session time
 	if sessionID != "" {
-		if existing, findErr := h.server.DB.Queries().GetPaymentByReferenceNumber(ctx, sessionID); findErr == nil {
-			payment = existing
-			// Update with authorization details
-			payment, err = h.server.DB.Queries().UpdatePaymentAuthorized(ctx, db.UpdatePaymentAuthorizedParams{
-				ID:                  payment.ID,
-				AuthorizationStatus: &authCode,
-				AdyenPspReference:   &pspReference,
-				AuthCode:            &authCode,
-				TransactionID:       &transactionID,
-				AuthorizedAt:        authorizedAt,
-				AdyenWebhookPayload: &webhookJSON,
-			})
+		payment, err = h.server.DB.Queries().GetPaymentByAdyenSessionID(ctx, &sessionID)
+		if err == nil {
+			paymentFound = true
+		} else if !errors.Is(err, pgx.ErrNoRows) {
+			// Other error occurred
+			h.server.Logger.Zap.Error("Failed to get payment by Adyen session ID", zap.Error(err))
+			return nil, fmt.Errorf("failed to get payment by Adyen session ID: %w", err)
 		}
 	}
 
-	// If no existing payment was found/updated, create a new one
-	if payment.ID == uuid.Nil {
+	// If not found by session ID, try by reference number
+	if !paymentFound {
+		payment, err = h.server.DB.Queries().GetPaymentByReferenceNumber(ctx, receipt.ReferenceNum)
+		if err == nil {
+			paymentFound = true
+		} else if errors.Is(err, pgx.ErrNoRows) {
+		} else {
+			// Other error occurred
+			h.server.Logger.Zap.Error("Failed to get payment by reference number", zap.Error(err))
+			return nil, fmt.Errorf("failed to get payment by reference number: %w", err)
+		}
+	}
+
+	// If payment not found by either method, create it
+	if !paymentFound {
 		payment, err = h.server.DB.Queries().CreatePayment(ctx, db.CreatePaymentParams{
 			MarinaID:            marinaID,
 			OrganizationID:      orgID,
@@ -1118,62 +1070,29 @@ func (h *PaymentHandler) createPaymentRecord(ctx context.Context, notifMap map[s
 			LocationCode:        &batchData.LocationCode,
 			PaymentDate:         paymentDate,
 			InternalNotes:       nil,
+			AdyenPaymentPayload: nil, // No request payload available when creating from webhook
 		})
 		if err != nil {
+			h.server.Logger.Zap.Error("Failed to create payment record", zap.Error(err))
 			return nil, fmt.Errorf("failed to create payment record: %w", err)
 		}
-		// Update with authorization details on the newly created payment
-		payment, err = h.server.DB.Queries().UpdatePaymentAuthorized(ctx, db.UpdatePaymentAuthorizedParams{
-			ID:                  payment.ID,
-			AuthorizationStatus: &authCode,
-			AdyenPspReference:   &pspReference,
-			AuthCode:            &authCode,
-			TransactionID:       &transactionID,
-			AuthorizedAt:        authorizedAt,
-			AdyenWebhookPayload: &webhookJSON,
-		})
 	}
+
+	// Update with authorization details
+	payment, err = h.server.DB.Queries().UpdatePaymentAuthorized(ctx, db.UpdatePaymentAuthorizedParams{
+		ID:                   payment.ID,
+		AuthorizationStatus:  &authCode,
+		AdyenPspReference:    &pspReference,
+		AuthCode:             &authCode,
+		TransactionID:        &transactionID,
+		AuthorizedAt:         authorizedAt,
+		AdyenPaymentResponse: &webhookJSON,
+	})
 
 	if err != nil {
 		h.server.Logger.Zap.Error("Failed to update payment authorization details",
 			zap.Error(err))
 		return &payment, nil // Return the payment even if update fails
-	}
-
-	// Also persist webhook payload into adyen_payment_response for easier retrieval
-	func() {
-		defer func() {
-			_ = recover()
-		}()
-		_, _ = h.server.DB.Queries().UpdatePaymentAdyenPayloadsByID(ctx, db.UpdatePaymentAdyenPayloadsByIDParams{
-			ID: payment.ID,
-			// Preserve any existing payload set during session creation
-			AdyenPaymentPayload:  payment.AdyenPaymentPayload,
-			AdyenPaymentResponse: &webhookJSON,
-		})
-	}()
-
-	// If payload is still empty and we have a checkout session ID, try to fetch the cached session payload and attach it
-	if sessionID != "" && (payment.AdyenPaymentPayload == nil || *payment.AdyenPaymentPayload == "") {
-		func() {
-			defer func() { _ = recover() }()
-			key := "adyen:session:" + sessionID
-			ctx := context.Background()
-			sessionJSON, err := h.server.Redis.GetCache(ctx, key)
-			if err == nil && sessionJSON != "" {
-				_, _ = h.server.DB.Queries().UpdatePaymentAdyenPayloadsByID(ctx, db.UpdatePaymentAdyenPayloadsByIDParams{
-					ID:                   payment.ID,
-					AdyenPaymentPayload:  &sessionJSON,
-					AdyenPaymentResponse: &webhookJSON,
-				})
-				// Optionally delete it now to keep cache clean
-				_ = h.server.Redis.DeleteCache(ctx, key)
-			} else if err != nil {
-				h.server.Logger.Zap.Debug("No cached session payload found for checkoutSessionId",
-					zap.String("checkoutSessionId", sessionID),
-					zap.Error(err))
-			}
-		}()
 	}
 
 	return &payment, nil
@@ -1280,6 +1199,7 @@ func (h *PaymentHandler) ListPayments(c echo.Context) error {
 
 	var payments []db.Payment
 	var total int64
+
 	if req.SortOrder == "asc" {
 		payments, err = h.server.DB.Queries().ListPaymentsFilteredSortedAsc(ctx, db.ListPaymentsFilteredSortedAscParams{
 			MarinaID: marinaID,

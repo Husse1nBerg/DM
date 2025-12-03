@@ -168,8 +168,6 @@ func ConvertPaymentToResponse(payment db.Payment) PaymentResponse {
 	if payment.AdyenSessionID != nil {
 		response.AdyenSessionID = payment.AdyenSessionID
 	}
-	// Populate newly added raw payload/response fields if present (requires sqlc generate after migration)
-	// These map to payments.adyen_payment_payload and payments.adyen_payment_response
 	if payment.AdyenPaymentPayload != nil {
 		response.AdyenPaymentPayload = payment.AdyenPaymentPayload
 	}

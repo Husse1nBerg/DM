@@ -110,9 +110,10 @@ INSERT INTO payments (
     customer_id,
     location_code,
     payment_date,
-    internal_notes
+    internal_notes,
+    adyen_payment_payload
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
 ) RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload
 `
 
@@ -132,6 +133,7 @@ type CreatePaymentParams struct {
 	LocationCode        *string
 	PaymentDate         pgtype.Timestamptz
 	InternalNotes       *string
+	AdyenPaymentPayload *string
 }
 
 func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {
@@ -151,6 +153,7 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 		arg.LocationCode,
 		arg.PaymentDate,
 		arg.InternalNotes,
+		arg.AdyenPaymentPayload,
 	)
 	var i Payment
 	err := row.Scan(
@@ -199,6 +202,53 @@ WHERE adyen_psp_reference = $1
 
 func (q *Queries) GetPaymentByAdyenPSPReference(ctx context.Context, adyenPspReference *string) (Payment, error) {
 	row := q.db.QueryRow(ctx, getPaymentByAdyenPSPReference, adyenPspReference)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.OrganizationID,
+		&i.EntityType,
+		&i.EntityID,
+		&i.Amount,
+		&i.Currency,
+		&i.PaymentMethod,
+		&i.ReferenceNumber,
+		&i.Status,
+		&i.AuthorizationStatus,
+		&i.BatchStatus,
+		&i.AdyenPspReference,
+		&i.AdyenSessionID,
+		&i.BatchID,
+		&i.BatchPaymentID,
+		&i.PaymentDate,
+		&i.AuthorizedAt,
+		&i.CompletedAt,
+		&i.FailedAt,
+		&i.CustomerID,
+		&i.LocationCode,
+		&i.TransactionID,
+		&i.AuthCode,
+		&i.AdyenWebhookPayload,
+		&i.DmeBatchRequest,
+		&i.DmeBatchResponse,
+		&i.ErrorMessage,
+		&i.ErrorCode,
+		&i.InternalNotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+	)
+	return i, err
+}
+
+const getPaymentByAdyenSessionID = `-- name: GetPaymentByAdyenSessionID :one
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload FROM payments
+WHERE adyen_session_id = $1
+`
+
+func (q *Queries) GetPaymentByAdyenSessionID(ctx context.Context, adyenSessionID *string) (Payment, error) {
+	row := q.db.QueryRow(ctx, getPaymentByAdyenSessionID, adyenSessionID)
 	var i Payment
 	err := row.Scan(
 		&i.ID,
@@ -961,6 +1011,64 @@ func (q *Queries) UpdatePaymentAdyenPayloadsByID(ctx context.Context, arg Update
 	return i, err
 }
 
+const updatePaymentAdyenPayloadsByReferenceNumber = `-- name: UpdatePaymentAdyenPayloadsByReferenceNumber :one
+UPDATE payments
+SET 
+    adyen_payment_payload = $2,
+    adyen_payment_response = $3,
+    updated_at = CURRENT_TIMESTAMP
+WHERE reference_number = $1
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload
+`
+
+type UpdatePaymentAdyenPayloadsByReferenceNumberParams struct {
+	ReferenceNumber      string
+	AdyenPaymentPayload  *string
+	AdyenPaymentResponse *string
+}
+
+func (q *Queries) UpdatePaymentAdyenPayloadsByReferenceNumber(ctx context.Context, arg UpdatePaymentAdyenPayloadsByReferenceNumberParams) (Payment, error) {
+	row := q.db.QueryRow(ctx, updatePaymentAdyenPayloadsByReferenceNumber, arg.ReferenceNumber, arg.AdyenPaymentPayload, arg.AdyenPaymentResponse)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.OrganizationID,
+		&i.EntityType,
+		&i.EntityID,
+		&i.Amount,
+		&i.Currency,
+		&i.PaymentMethod,
+		&i.ReferenceNumber,
+		&i.Status,
+		&i.AuthorizationStatus,
+		&i.BatchStatus,
+		&i.AdyenPspReference,
+		&i.AdyenSessionID,
+		&i.BatchID,
+		&i.BatchPaymentID,
+		&i.PaymentDate,
+		&i.AuthorizedAt,
+		&i.CompletedAt,
+		&i.FailedAt,
+		&i.CustomerID,
+		&i.LocationCode,
+		&i.TransactionID,
+		&i.AuthCode,
+		&i.AdyenWebhookPayload,
+		&i.DmeBatchRequest,
+		&i.DmeBatchResponse,
+		&i.ErrorMessage,
+		&i.ErrorCode,
+		&i.InternalNotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+	)
+	return i, err
+}
+
 const updatePaymentAuthorized = `-- name: UpdatePaymentAuthorized :one
 UPDATE payments
 SET 
@@ -970,20 +1078,20 @@ SET
     auth_code = $4,
     transaction_id = $5,
     authorized_at = $6,
-    adyen_webhook_payload = $7,
+    adyen_payment_response = $7,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload
 `
 
 type UpdatePaymentAuthorizedParams struct {
-	ID                  uuid.UUID
-	AuthorizationStatus *string
-	AdyenPspReference   *string
-	AuthCode            *string
-	TransactionID       *string
-	AuthorizedAt        pgtype.Timestamptz
-	AdyenWebhookPayload *string
+	ID                   uuid.UUID
+	AuthorizationStatus  *string
+	AdyenPspReference    *string
+	AuthCode             *string
+	TransactionID        *string
+	AuthorizedAt         pgtype.Timestamptz
+	AdyenPaymentResponse *string
 }
 
 func (q *Queries) UpdatePaymentAuthorized(ctx context.Context, arg UpdatePaymentAuthorizedParams) (Payment, error) {
@@ -994,7 +1102,7 @@ func (q *Queries) UpdatePaymentAuthorized(ctx context.Context, arg UpdatePayment
 		arg.AuthCode,
 		arg.TransactionID,
 		arg.AuthorizedAt,
-		arg.AdyenWebhookPayload,
+		arg.AdyenPaymentResponse,
 	)
 	var i Payment
 	err := row.Scan(

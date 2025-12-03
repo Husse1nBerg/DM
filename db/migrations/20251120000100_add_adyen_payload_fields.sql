@@ -11,5 +11,3 @@ ALTER TABLE payments
 	DROP COLUMN IF EXISTS adyen_payment_response,
 	DROP COLUMN IF EXISTS adyen_payment_payload;
 -- +goose StatementEnd
-
-

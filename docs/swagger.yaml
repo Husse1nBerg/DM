@@ -5991,13 +5991,39 @@ definitions:
       task_id:
         type: string
     type: object
-  responses.ScheduleResponse:
+  responses.ScheduleLabelResponse:
+    description: Schedule label with color and description
     properties:
-      data: {}
+      color:
+        example: '#FF0000'
+        type: string
+      description:
+        example: Urgent
+        type: string
+      id:
+        example: 0
+        type: integer
+    type: object
+  responses.ScheduleLabelsResponse:
+    description: List of schedule labels
+    properties:
+      labels:
+        items:
+          $ref: '#/definitions/responses.ScheduleLabelResponse'
+        type: array
+    type: object
+  responses.ScheduleResponse:
+    additionalProperties: true
+    description: Raw DME schedule payload; structure varies per endpoint
     type: object
   responses.ScheduleUpdateResponse:
+    description: Schedule update response
     properties:
       data: {}
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   responses.SearchAllOperationsResponse:
     properties:
@@ -15787,6 +15813,29 @@ paths:
       summary: Retrieve operation descriptions
       tags:
       - Service
+  /service/schedule/labels:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the list of schedule labels configured in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleLabelsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule labels
+      tags:
+      - Schedule
   /service/schedule/operation-schedule:
     get:
       consumes:

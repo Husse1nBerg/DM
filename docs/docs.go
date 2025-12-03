@@ -13914,6 +13914,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/service/schedule/labels": {
+            "get": {
+                "description": "Retrieves the list of schedule labels configured in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule labels",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleLabelsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/service/schedule/operation-schedule": {
             "get": {
                 "description": "Retrieves operation schedule",
@@ -25526,16 +25561,52 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ScheduleResponse": {
+        "responses.ScheduleLabelResponse": {
+            "description": "Schedule label with color and description",
             "type": "object",
             "properties": {
-                "data": {}
+                "color": {
+                    "type": "string",
+                    "example": "#FF0000"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Urgent"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 0
+                }
             }
         },
-        "responses.ScheduleUpdateResponse": {
+        "responses.ScheduleLabelsResponse": {
+            "description": "List of schedule labels",
             "type": "object",
             "properties": {
-                "data": {}
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ScheduleLabelResponse"
+                    }
+                }
+            }
+        },
+        "responses.ScheduleResponse": {
+            "description": "Raw DME schedule payload; structure varies per endpoint",
+            "type": "object",
+            "additionalProperties": true
+        },
+        "responses.ScheduleUpdateResponse": {
+            "description": "Schedule update response",
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
             }
         },
         "responses.SearchAllOperationsResponse": {
