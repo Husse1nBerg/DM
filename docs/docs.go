@@ -25150,6 +25150,12 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string"
                 },
+                "dmeBatchRequest": {
+                    "type": "string"
+                },
+                "dmeBatchResponse": {
+                    "type": "string"
+                },
                 "entityId": {
                     "type": "string"
                 },
