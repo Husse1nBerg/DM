@@ -272,6 +272,8 @@ func main() {
 				"esign_submissions.create": true,
 				"esign_submissions.write":  true,
 				"esign_submissions.delete": true,
+				// Admin module objects
+				"admin.read": true,
 				// Estimates module objects
 				"estimates.read":   true,
 				"estimates.write":  true,
@@ -371,6 +373,8 @@ func main() {
 				"esign_submissions.create": true,
 				"esign_submissions.write":  true,
 				"esign_submissions.delete": true,
+				// Admin module objects
+				"admin.read": true,
 				// Estimates module objects
 				"estimates.read":   true,
 				"estimates.write":  true,
@@ -460,6 +464,8 @@ func main() {
 				"esign_submissions.create": true,
 				"esign_submissions.write":  true,
 				"esign_submissions.delete": false,
+				// Admin module objects
+				"admin.read": true,
 				// Estimates module objects
 				"estimates.read":   true,
 				"estimates.write":  true,
@@ -522,6 +528,8 @@ func main() {
 				"esign_submissions.create": false,
 				"esign_submissions.write":  false,
 				"esign_submissions.delete": false,
+				// Admin module objects
+				"admin.read": true,
 				// Estimates module objects
 				"estimates.read":   true,
 				"estimates.write":  false,
@@ -597,6 +605,8 @@ func main() {
 				"contacts.read":   true,
 				"contacts.write":  false,
 				"contacts.delete": false,
+				// Admin module objects
+				"admin.read": true,
 				// Estimates module objects
 				"estimates.read":   true,
 				"estimates.write":  true,
