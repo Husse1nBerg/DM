@@ -20,7 +20,7 @@ var ModuleObjects = map[string]ModuleConfig{
 		Objects: []string{"customers", "vessels", "messages", "documents", "boat_gallery"},
 	},
 	"serviceManagement": {
-		Objects: []string{"work_orders", "estimates"},
+		Objects: []string{"work_orders", "estimates", "service_management"},
 	},
 	"payments": {
 		Objects: []string{},
