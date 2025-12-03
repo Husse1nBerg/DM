@@ -71,6 +71,8 @@ type PaymentResponse struct {
 	AdyenSessionID       *string    `json:"adyenSessionId,omitempty"`
 	AdyenPaymentPayload  *string    `json:"adyenPaymentPayload,omitempty"`
 	AdyenPaymentResponse *string    `json:"adyenPaymentResponse,omitempty"`
+	DmeBatchRequest      *string    `json:"dmeBatchRequest,omitempty"`
+	DmeBatchResponse     *string    `json:"dmeBatchResponse,omitempty"`
 	BatchID              *string    `json:"batchId,omitempty"`
 	BatchPaymentID       *uuid.UUID `json:"batchPaymentId,omitempty"`
 	PaymentDate          *time.Time `json:"paymentDate,omitempty"`
@@ -173,6 +175,12 @@ func ConvertPaymentToResponse(payment db.Payment) PaymentResponse {
 	}
 	if payment.AdyenPaymentResponse != nil {
 		response.AdyenPaymentResponse = payment.AdyenPaymentResponse
+	}
+	if payment.DmeBatchRequest != nil {
+		response.DmeBatchRequest = payment.DmeBatchRequest
+	}
+	if payment.DmeBatchResponse != nil {
+		response.DmeBatchResponse = payment.DmeBatchResponse
 	}
 	if payment.BatchID != nil {
 		response.BatchID = payment.BatchID
