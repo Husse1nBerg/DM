@@ -375,38 +375,40 @@ type PasswordRecovery struct {
 }
 
 type Payment struct {
-	ID                  uuid.UUID
-	MarinaID            uuid.UUID
-	OrganizationID      uuid.UUID
-	EntityType          *string
-	EntityID            *string
-	Amount              pgtype.Numeric
-	Currency            string
-	PaymentMethod       *string
-	ReferenceNumber     string
-	Status              string
-	AuthorizationStatus *string
-	BatchStatus         *string
-	AdyenPspReference   *string
-	AdyenSessionID      *string
-	BatchID             *string
-	BatchPaymentID      uuid.UUID
-	PaymentDate         pgtype.Timestamptz
-	AuthorizedAt        pgtype.Timestamptz
-	CompletedAt         pgtype.Timestamptz
-	FailedAt            pgtype.Timestamptz
-	CustomerID          *string
-	LocationCode        *string
-	TransactionID       *string
-	AuthCode            *string
-	AdyenWebhookPayload *string
-	DmeBatchRequest     *string
-	DmeBatchResponse    *string
-	ErrorMessage        *string
-	ErrorCode           *string
-	InternalNotes       *string
-	CreatedAt           pgtype.Timestamptz
-	UpdatedAt           pgtype.Timestamptz
+	ID                   uuid.UUID
+	MarinaID             uuid.UUID
+	OrganizationID       uuid.UUID
+	EntityType           *string
+	EntityID             *string
+	Amount               pgtype.Numeric
+	Currency             string
+	PaymentMethod        *string
+	ReferenceNumber      string
+	Status               string
+	AuthorizationStatus  *string
+	BatchStatus          *string
+	AdyenPspReference    *string
+	AdyenSessionID       *string
+	BatchID              *string
+	BatchPaymentID       uuid.UUID
+	PaymentDate          pgtype.Timestamptz
+	AuthorizedAt         pgtype.Timestamptz
+	CompletedAt          pgtype.Timestamptz
+	FailedAt             pgtype.Timestamptz
+	CustomerID           *string
+	LocationCode         *string
+	TransactionID        *string
+	AuthCode             *string
+	AdyenWebhookPayload  *string
+	DmeBatchRequest      *string
+	DmeBatchResponse     *string
+	ErrorMessage         *string
+	ErrorCode            *string
+	InternalNotes        *string
+	CreatedAt            pgtype.Timestamptz
+	UpdatedAt            pgtype.Timestamptz
+	AdyenPaymentResponse *string
+	AdyenPaymentPayload  *string
 }
 
 type PaymentLink struct {

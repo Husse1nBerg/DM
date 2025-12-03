@@ -12108,7 +12108,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves a paginated list of payments with optional filtering",
+                "description": "Returns a paginated list of payments. Supports search, flexible filters, and sorting.",
                 "consumes": [
                     "application/json"
                 ],
@@ -12123,66 +12123,56 @@ const docTemplate = `{
                     {
                         "minimum": 1,
                         "type": "integer",
+                        "default": 1,
                         "description": "Page number",
                         "name": "page",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
+                        "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by status (pending, authorized, completed, failed)",
-                        "name": "status",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by entity type (invoice, boat, customer, etc.)",
-                        "name": "entityType",
+                        "description": "Search term (matches reference_number, adyen_psp_reference, customer_id, payment_method)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Filters (e.g. filters[customer_id]=00811\u0026filters[status]=authorized\u0026filters[entity_type]=invoice\u0026filters[entity_id]=904192\u0026filters[payment_method]=amex\u0026filters[currency]=EUR\u0026filters[start_date]=2025-11-01\u0026filters[end_date]=2025-11-21)",
+                        "name": "filters",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by entity ID",
-                        "name": "entityId",
+                        "default": "created_at",
+                        "description": "Sort by field (reference_number, payment_method, currency, payment_date, created_at, amount, status)",
+                        "name": "sortBy",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by start date (YYYY-MM-DD)",
-                        "name": "startDate",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by end date (YYYY-MM-DD)",
-                        "name": "endDate",
+                        "default": "desc",
+                        "description": "Sort order (asc or desc)",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Paginated list of payments",
                         "schema": {
                             "$ref": "#/definitions/responses.PaymentListResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Server error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -13907,6 +13897,41 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.ServiceOperationDescriptionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/labels": {
+            "get": {
+                "description": "Retrieves the list of schedule labels configured in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule labels",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleLabelsResponse"
                         }
                     },
                     "400": {
@@ -17327,6 +17352,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "departureDate": {
+                    "type": "string"
+                },
+                "hin": {
                     "type": "string"
                 },
                 "ownerName": {
@@ -25077,6 +25105,12 @@ const docTemplate = `{
         "responses.PaymentResponse": {
             "type": "object",
             "properties": {
+                "adyenPaymentPayload": {
+                    "type": "string"
+                },
+                "adyenPaymentResponse": {
+                    "type": "string"
+                },
                 "adyenPspReference": {
                     "type": "string"
                 },
@@ -25527,16 +25561,52 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ScheduleResponse": {
+        "responses.ScheduleLabelResponse": {
+            "description": "Schedule label with color and description",
             "type": "object",
             "properties": {
-                "data": {}
+                "color": {
+                    "type": "string",
+                    "example": "#FF0000"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Urgent"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 0
+                }
             }
         },
-        "responses.ScheduleUpdateResponse": {
+        "responses.ScheduleLabelsResponse": {
+            "description": "List of schedule labels",
             "type": "object",
             "properties": {
-                "data": {}
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ScheduleLabelResponse"
+                    }
+                }
+            }
+        },
+        "responses.ScheduleResponse": {
+            "description": "Raw DME schedule payload; structure varies per endpoint",
+            "type": "object",
+            "additionalProperties": true
+        },
+        "responses.ScheduleUpdateResponse": {
+            "description": "Schedule update response",
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
             }
         },
         "responses.SearchAllOperationsResponse": {

@@ -305,6 +305,8 @@ definitions:
         type: string
       departureDate:
         type: string
+      hin:
+        type: string
       ownerName:
         type: string
     type: object
@@ -5685,6 +5687,10 @@ definitions:
     type: object
   responses.PaymentResponse:
     properties:
+      adyenPaymentPayload:
+        type: string
+      adyenPaymentResponse:
+        type: string
       adyenPspReference:
         type: string
       adyenSessionId:
@@ -5985,13 +5991,39 @@ definitions:
       task_id:
         type: string
     type: object
-  responses.ScheduleResponse:
+  responses.ScheduleLabelResponse:
+    description: Schedule label with color and description
     properties:
-      data: {}
+      color:
+        example: '#FF0000'
+        type: string
+      description:
+        example: Urgent
+        type: string
+      id:
+        example: 0
+        type: integer
+    type: object
+  responses.ScheduleLabelsResponse:
+    description: List of schedule labels
+    properties:
+      labels:
+        items:
+          $ref: '#/definitions/responses.ScheduleLabelResponse'
+        type: array
+    type: object
+  responses.ScheduleResponse:
+    additionalProperties: true
+    description: Raw DME schedule payload; structure varies per endpoint
     type: object
   responses.ScheduleUpdateResponse:
+    description: Schedule update response
     properties:
       data: {}
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   responses.SearchAllOperationsResponse:
     properties:
@@ -14607,54 +14639,51 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves a paginated list of payments with optional filtering
+      description: Returns a paginated list of payments. Supports search, flexible
+        filters, and sorting.
       parameters:
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         minimum: 1
         name: page
-        required: true
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         maximum: 100
         minimum: 1
         name: pageSize
-        required: true
         type: integer
-      - description: Filter by status (pending, authorized, completed, failed)
+      - description: Search term (matches reference_number, adyen_psp_reference, customer_id,
+          payment_method)
         in: query
-        name: status
+        name: search
         type: string
-      - description: Filter by entity type (invoice, boat, customer, etc.)
+      - description: Filters (e.g. filters[customer_id]=00811&filters[status]=authorized&filters[entity_type]=invoice&filters[entity_id]=904192&filters[payment_method]=amex&filters[currency]=EUR&filters[start_date]=2025-11-01&filters[end_date]=2025-11-21)
         in: query
-        name: entityType
+        name: filters
+        type: object
+      - default: created_at
+        description: Sort by field (reference_number, payment_method, currency, payment_date,
+          created_at, amount, status)
+        in: query
+        name: sortBy
         type: string
-      - description: Filter by entity ID
+      - default: desc
+        description: Sort order (asc or desc)
         in: query
-        name: entityId
-        type: string
-      - description: Filter by start date (YYYY-MM-DD)
-        in: query
-        name: startDate
-        type: string
-      - description: Filter by end date (YYYY-MM-DD)
-        in: query
-        name: endDate
+        name: sortOrder
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Paginated list of payments
           schema:
             $ref: '#/definitions/responses.PaymentListResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
         "500":
-          description: Internal Server Error
+          description: Server error
           schema:
             $ref: '#/definitions/responses.Error'
       security:
@@ -15784,6 +15813,29 @@ paths:
       summary: Retrieve operation descriptions
       tags:
       - Service
+  /service/schedule/labels:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the list of schedule labels configured in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleLabelsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule labels
+      tags:
+      - Schedule
   /service/schedule/operation-schedule:
     get:
       consumes:
