@@ -68,8 +68,8 @@ type EstimatesForCustomerRequest struct {
 
 // EstimateDeleteOperationRequest represents a request to delete an operation from an estimate
 type EstimateDeleteOperationRequest struct {
-	WorkOrder string `query:"WorkOrder" validate:"required"`
-	Operation string `query:"Operation" validate:"required"`
+	WorkOrder string `json:"workOrder" query:"WorkOrder" validate:"required"`
+	Operation string `json:"operation" query:"Operation" validate:"required"`
 }
 
 // EstimateRetrieveListRequest represents a request to retrieve a list of estimates

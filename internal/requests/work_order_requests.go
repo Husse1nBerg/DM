@@ -111,8 +111,8 @@ type WorkOrderCreateFromEstimateRequest struct {
 
 // WorkOrderDeleteOperationRequest represents a request to delete an operation from a work order
 type WorkOrderDeleteOperationRequest struct {
-	WorkOrder string `query:"WorkOrder" validate:"required"`
-	Operation string `query:"Operation" validate:"required"`
+	WorkOrder string `json:"workOrder" query:"WorkOrder" validate:"required"`
+	Operation string `json:"operation" query:"Operation" validate:"required"`
 }
 
 // WorkOrderListNewOrChangedRequest represents a request to list new or changed work orders
