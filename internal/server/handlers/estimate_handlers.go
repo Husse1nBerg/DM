@@ -800,7 +800,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 	estimateData := map[string]interface{}{
 		"woId":            req.EstId,
 		"clerkId":         req.ClerkId,
-		"custId":          req.CustId,
+		"CustId":          req.CustId,
 		"boatId":          req.BoatId,
 		"boatName":        req.BoatName,
 		"customerPhone":   req.CustomerPhone,

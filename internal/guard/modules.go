@@ -11,7 +11,7 @@ type ModuleConfig struct {
 var ModuleObjects = map[string]ModuleConfig{
 	// Core module - always available for all users (not stored in marina modules)
 	"core": {
-		Objects: []string{"profile", "users", "organizations", "marinas", "addresses", "roles", "marina_gallery", "history", "plans", "settings", "contacts"},
+		Objects: []string{"profile", "users", "organizations", "marinas", "addresses", "roles", "marina_gallery", "history", "plans", "settings", "contacts", "admin"},
 	},
 	"esign": {
 		Objects: []string{"esign_templates", "esign_documents", "esign_submissions"},
@@ -20,7 +20,7 @@ var ModuleObjects = map[string]ModuleConfig{
 		Objects: []string{"customers", "vessels", "messages", "documents", "boat_gallery"},
 	},
 	"serviceManagement": {
-		Objects: []string{"work_orders", "estimates"},
+		Objects: []string{"work_orders", "estimates", "service_management"},
 	},
 	"payments": {
 		Objects: []string{},
