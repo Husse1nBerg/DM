@@ -1613,7 +1613,7 @@ func (c *Client) DeleteEstimateOperation(ctx context.Context, estimateId string,
 	var result DeleteOperationResponse
 
 	// Build the endpoint with query parameters directly
-	endpoint := fmt.Sprintf("/Service/Estimates/DeleteOperation?WorkOrder=%s&Operation=%s",
+	endpoint := fmt.Sprintf("/Service/Estimates/DeleteOperation?EstimateId=%s&Operation=%s",
 		estimateId, operationCode)
 
 	// Make the request with POST method and query params in URL
