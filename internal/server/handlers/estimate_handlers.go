@@ -811,6 +811,8 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		"custPromiseDate": req.CustPromiseDate,
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
+		"status":          req.Status,
+		"type":            req.Type,
 		"operationCodes":  req.OperationCodes,
 	}
 

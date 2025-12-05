@@ -55,6 +55,8 @@ type EstimateUpdateRequest struct {
 	CustPromiseDate string                  `json:"custPromiseDate"`
 	CategoryCode    string                  `json:"categoryCode"`
 	Title           string                  `json:"title"`
+	Status          string                  `json:"status"`
+	Type            string                  `json:"type"`
 	OperationCodes  []OperationCode         `json:"operationCodes"`
 	Attachments     []AttachmentWithPublic  `json:"attachments"`
 }
