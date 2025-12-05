@@ -19316,6 +19316,9 @@
                 "opcode": {
                     "type": "string"
                 },
+                "reqCompDate": {
+                    "type": "string"
+                },
                 "standardHours": {
                     "type": "number"
                 },
@@ -21288,6 +21291,9 @@
                     "type": "string"
                 },
                 "opcode": {
+                    "type": "string"
+                },
+                "reqCompDate": {
                     "type": "string"
                 },
                 "standardHours": {

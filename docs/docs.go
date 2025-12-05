@@ -19323,6 +19323,9 @@ const docTemplate = `{
                 "opcode": {
                     "type": "string"
                 },
+                "reqCompDate": {
+                    "type": "string"
+                },
                 "standardHours": {
                     "type": "number"
                 },
@@ -21295,6 +21298,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "opcode": {
+                    "type": "string"
+                },
+                "reqCompDate": {
                     "type": "string"
                 },
                 "standardHours": {

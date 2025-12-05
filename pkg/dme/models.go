@@ -853,6 +853,7 @@ type WorkOrderOperation struct {
 	EstCompDate            string  `json:"estCompDate"`
 	EstStartDate           string  `json:"estStartDate"`
 	CustPromiseDate        string  `json:"custPromiseDate"`
+	ReqCompDate            string  `json:"reqCompDate"`
 	ForecastedPartsCharges float64 `json:"forecastedPartsCharges"`
 	ForecastedLaborCharges float64 `json:"forecastedLaborCharges"`
 	ForecastedLaborHours   float64 `json:"forecastedLaborHours"`
