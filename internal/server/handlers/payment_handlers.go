@@ -273,6 +273,7 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 
 		// Extract referenceNum from BatchData in metadata
 		var referenceNum string
+		var firstName, lastName, primaryEmail *string
 		if req.Metadata != nil {
 			if batchDataStr, ok := (*req.Metadata)["BatchData"]; ok && batchDataStr != "" {
 				var batchData map[string]interface{}
@@ -281,6 +282,22 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 						if receipt, ok := cashReceipts[0].(map[string]interface{}); ok {
 							if refNum, ok := receipt["referenceNum"].(string); ok {
 								referenceNum = refNum
+							}
+							// Extract customerId from BatchData if not already set from metadata
+							if customerIDPtr == nil {
+								if custID, ok := receipt["customerId"].(string); ok && custID != "" {
+									cpy := custID
+									customerIDPtr = &cpy
+								}
+							}
+							if fn, ok := receipt["firstName"].(string); ok && fn != "" {
+								firstName = &fn
+							}
+							if ln, ok := receipt["lastName"].(string); ok && ln != "" {
+								lastName = &ln
+							}
+							if email, ok := receipt["primaryEmail"].(string); ok && email != "" {
+								primaryEmail = &email
 							}
 						}
 					}
@@ -334,6 +351,9 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 			PaymentDate:         paymentDate,
 			InternalNotes:       nil,
 			AdyenPaymentPayload: &requestPayloadStr,
+			FirstName:           firstName,
+			LastName:            lastName,
+			PrimaryEmail:        primaryEmail,
 		})
 		if err != nil {
 			h.server.Logger.Zap.Debug("Failed to create minimal pending payment", zap.Error(err))
@@ -1021,6 +1041,19 @@ func (h *PaymentHandler) createPaymentRecord(ctx context.Context, notifMap map[s
 
 	// Get payment method from additionalData
 	paymentMethod, _ := additionalData["paymentMethod"].(string)
+	cardSummary, _ := additionalData["cardSummary"].(string)
+
+	// Extract firstName, lastName, and primaryEmail from receipt
+	var firstNamePtr, lastNamePtr, primaryEmailPtr *string
+	if receipt.FirstName != "" {
+		firstNamePtr = &receipt.FirstName
+	}
+	if receipt.LastName != "" {
+		lastNamePtr = &receipt.LastName
+	}
+	if receipt.PrimaryEmail != "" {
+		primaryEmailPtr = &receipt.PrimaryEmail
+	}
 
 	// Get payment if it already exists
 	// First try to find by AdyenSessionID (most reliable link to the payment created in CreatePaymentSession)
@@ -1071,6 +1104,10 @@ func (h *PaymentHandler) createPaymentRecord(ctx context.Context, notifMap map[s
 			PaymentDate:         paymentDate,
 			InternalNotes:       nil,
 			AdyenPaymentPayload: nil, // No request payload available when creating from webhook
+			FirstName:           firstNamePtr,
+			LastName:            lastNamePtr,
+			PrimaryEmail:        primaryEmailPtr,
+			CardSummary:         &cardSummary,
 		})
 		if err != nil {
 			h.server.Logger.Zap.Error("Failed to create payment record", zap.Error(err))
@@ -1087,6 +1124,10 @@ func (h *PaymentHandler) createPaymentRecord(ctx context.Context, notifMap map[s
 		TransactionID:        &transactionID,
 		AuthorizedAt:         authorizedAt,
 		AdyenPaymentResponse: &webhookJSON,
+		FirstName:            firstNamePtr,
+		LastName:             lastNamePtr,
+		PrimaryEmail:         primaryEmailPtr,
+		CardSummary:          &cardSummary,
 	})
 
 	if err != nil {

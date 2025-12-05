@@ -15,9 +15,13 @@ INSERT INTO payments (
     location_code,
     payment_date,
     internal_notes,
-    adyen_payment_payload
+    adyen_payment_payload,
+    first_name,
+    last_name,
+    primary_email,
+    card_summary
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
 ) RETURNING *;
 
 -- name: UpdatePaymentAuthorized :one
@@ -30,6 +34,10 @@ SET
     transaction_id = $5,
     authorized_at = $6,
     adyen_payment_response = $7,
+    first_name = COALESCE($8, first_name),
+    last_name = COALESCE($9, last_name),
+    primary_email = COALESCE($10, primary_email),
+    card_summary = COALESCE($11, card_summary),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;

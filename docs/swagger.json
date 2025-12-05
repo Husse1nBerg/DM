@@ -19856,13 +19856,22 @@
                 "customerId": {
                     "type": "string"
                 },
+                "firstName": {
+                    "type": "string"
+                },
                 "invPayments": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.InvPayment"
                     }
                 },
+                "lastName": {
+                    "type": "string"
+                },
                 "payType": {
+                    "type": "string"
+                },
+                "primaryEmail": {
                     "type": "string"
                 },
                 "referenceNum": {
@@ -25465,6 +25474,9 @@
                 "batchStatus": {
                     "type": "string"
                 },
+                "cardSummary": {
+                    "type": "string"
+                },
                 "completedAt": {
                     "type": "string"
                 },
@@ -25498,10 +25510,16 @@
                 "failedAt": {
                     "type": "string"
                 },
+                "firstName": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "internalNotes": {
+                    "type": "string"
+                },
+                "lastName": {
                     "type": "string"
                 },
                 "locationCode": {
@@ -25517,6 +25535,9 @@
                     "type": "string"
                 },
                 "paymentMethod": {
+                    "type": "string"
+                },
+                "primaryEmail": {
                     "type": "string"
                 },
                 "referenceNumber": {
