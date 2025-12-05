@@ -9502,7 +9502,7 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Estimate ID
+      - description: Entity ID (Estimate ID)
         in: query
         name: entityId
         required: true
@@ -9551,7 +9551,7 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Estimate ID
+      - description: Entity ID (Estimate ID)
         in: formData
         name: entityId
         required: true
@@ -9561,7 +9561,7 @@ paths:
         name: file
         required: true
         type: file
-      - description: Document description
+      - description: Description (e.g., 'Operation OPCODE')
         in: formData
         name: description
         type: string
@@ -9706,7 +9706,7 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Work Order ID
+      - description: Entity ID (Work Order ID)
         in: query
         name: entityId
         required: true
@@ -9755,7 +9755,7 @@ paths:
         name: marinaId
         required: true
         type: string
-      - description: Work Order ID
+      - description: Entity ID (Work Order ID)
         in: formData
         name: entityId
         required: true
@@ -9765,7 +9765,7 @@ paths:
         name: file
         required: true
         type: file
-      - description: Document description
+      - description: Description (e.g., 'Operation OPCODE')
         in: formData
         name: description
         type: string

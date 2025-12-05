@@ -4133,7 +4133,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Estimate ID",
+                        "description": "Entity ID (Estimate ID)",
                         "name": "entityId",
                         "in": "query",
                         "required": true
@@ -4212,7 +4212,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Estimate ID",
+                        "description": "Entity ID (Estimate ID)",
                         "name": "entityId",
                         "in": "formData",
                         "required": true
@@ -4226,7 +4226,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Document description",
+                        "description": "Description (e.g., 'Operation OPCODE')",
                         "name": "description",
                         "in": "formData"
                     }
@@ -4461,7 +4461,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Work Order ID",
+                        "description": "Entity ID (Work Order ID)",
                         "name": "entityId",
                         "in": "query",
                         "required": true
@@ -4540,7 +4540,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Work Order ID",
+                        "description": "Entity ID (Work Order ID)",
                         "name": "entityId",
                         "in": "formData",
                         "required": true
@@ -4554,7 +4554,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Document description",
+                        "description": "Description (e.g., 'Operation OPCODE')",
                         "name": "description",
                         "in": "formData"
                     }

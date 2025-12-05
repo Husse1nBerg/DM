@@ -1307,9 +1307,9 @@ func (h *DocumentHandler) DeleteDocument(c echo.Context) error {
 //	@Accept			multipart/form-data
 //	@Produce		json
 //	@Param			marinaId	formData	string	true	"Marina ID"	Format(uuid)
-//	@Param			entityId	formData	string	true	"Estimate ID"
+//	@Param			entityId	formData	string	true	"Entity ID (Estimate ID)"
 //	@Param			file		formData	file	true	"Document file"
-//	@Param			description	formData	string	false	"Document description"
+//	@Param			description	formData	string	false	"Description (e.g., 'Operation OPCODE')"
 //	@Success		201			{object}	responses.BaseResponse{data=responses.DocumentResponse}
 //	@Failure		400			{object}	responses.BaseResponse
 //	@Failure		404			{object}	responses.BaseResponse
@@ -1333,10 +1333,8 @@ func (h *DocumentHandler) EstimateUploadDocument(c echo.Context) error {
 	}
 	defer file.Close()
 
-	// Get optional description
-	description := c.FormValue("description")
-
 	entityType := "estimate"
+	description := c.FormValue("description")
 
 	// Upload the file to S3 using document storage service
 	filePath, err := h.server.DocumentService.UploadFileToS3(c.Request().Context(), file, header, entityType)
@@ -1381,13 +1379,13 @@ func (h *DocumentHandler) EstimateUploadDocument(c echo.Context) error {
 	}
 
 	// Handle DME estimate attachment update asynchronously
-	h.handleDMEEstimateAttachmentUpdate(marina, entityID, filePath, header, doc.ID, description)
+	h.handleDMEEstimateAttachmentUpdate(marina, entityID, filePath, header, description, doc.ID)
 
 	return response.JSON(c)
 }
 
 // handleDMEEstimateAttachmentUpdate handles DME estimate attachment update asynchronously
-func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, docID uuid.UUID, description string) {
+func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, description string, docID uuid.UUID) {
 	go func() {
 		ctx := context.Background()
 
@@ -1407,29 +1405,57 @@ func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, en
 
 		fileType := header.Header.Get("Content-Type")
 		datetime := time.Now().Format("2006-01-02 15:04:05")
-		attachmentDesc := description
-		if attachmentDesc == "" {
-			attachmentDesc = fmt.Sprintf("Document attachment %s", datetime)
+		descText := description
+		if descText == "" {
+			descText = fmt.Sprintf("Document attachment %s", datetime)
 		}
 		newAttachment := dme.Attachment{
 			FileName:    header.Filename,
-			Description: attachmentDesc,
+			Description: descText,
 			S3Path:      filePath,
 			FileType:    utils.Pointer(fileType),
 			FromDMWeb:   utils.Pointer(true),
 		}
 
-		// Append new attachment to existing attachments
-		updatedAttachments := dmeEstimate.Attachments
-		if updatedAttachments == nil {
-			updatedAttachments = []dme.Attachment{}
+		// Determine if this is an operation-level or estimate-level attachment
+		// If description starts with "Operation ", it's an operation-level attachment
+		if len(description) > 10 && description[:10] == "Operation " {
+			opcode := description[10:] // Extract operation code from description
+			// Find the operation and add the attachment to it
+			operationFound := false
+			for i, op := range dmeEstimate.Operations {
+				if op.Opcode == opcode {
+					if dmeEstimate.Operations[i].Attachments == nil {
+						dmeEstimate.Operations[i].Attachments = []dme.Attachment{}
+					}
+					dmeEstimate.Operations[i].Attachments = append(dmeEstimate.Operations[i].Attachments, newAttachment)
+					operationFound = true
+					break
+				}
+			}
+			if !operationFound {
+				h.server.Logger.Zap.Warn("[DME API] Operation not found in estimate for attachment",
+					"estimateID", entityID,
+					"opcode", opcode)
+				// Fall back to estimate-level attachment
+				if dmeEstimate.Attachments == nil {
+					dmeEstimate.Attachments = []dme.Attachment{}
+				}
+				dmeEstimate.Attachments = append(dmeEstimate.Attachments, newAttachment)
+			}
+		} else {
+			// Estimate-level attachment
+			if dmeEstimate.Attachments == nil {
+				dmeEstimate.Attachments = []dme.Attachment{}
+			}
+			dmeEstimate.Attachments = append(dmeEstimate.Attachments, newAttachment)
 		}
-		updatedAttachments = append(updatedAttachments, newAttachment)
 
-		// Build the update payload for the estimate
+		// Build estimate update payload
 		estimateUpdate := map[string]interface{}{
 			"woId":        dmeEstimate.ID,
-			"attachments": updatedAttachments,
+			"attachments": dmeEstimate.Attachments,
+			"operations":  dmeEstimate.Operations,
 		}
 
 		_, err = h.server.DME.UpdateEstimate(ctx, estimateUpdate, orgID, systemID)
@@ -1452,7 +1478,7 @@ func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, en
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	query		string	true	"Marina ID"	Format(uuid)
-//	@Param			entityId	query		string	true	"Estimate ID"
+//	@Param			entityId	query		string	true	"Entity ID (Estimate ID)"
 //	@Success		200			{array}		responses.BaseResponse{data=[]responses.DocumentResponse}
 //	@Failure		400			{object}	responses.BaseResponse
 //	@Failure		404			{object}	responses.BaseResponse
@@ -1498,9 +1524,9 @@ func (h *DocumentHandler) EstimateGetDocumentsByEntity(c echo.Context) error {
 //	@Accept			multipart/form-data
 //	@Produce		json
 //	@Param			marinaId	formData	string	true	"Marina ID"	Format(uuid)
-//	@Param			entityId	formData	string	true	"Work Order ID"
+//	@Param			entityId	formData	string	true	"Entity ID (Work Order ID)"
 //	@Param			file		formData	file	true	"Document file"
-//	@Param			description	formData	string	false	"Document description"
+//	@Param			description	formData	string	false	"Description (e.g., 'Operation OPCODE')"
 //	@Success		201			{object}	responses.BaseResponse{data=responses.DocumentResponse}
 //	@Failure		400			{object}	responses.BaseResponse
 //	@Failure		404			{object}	responses.BaseResponse
@@ -1524,10 +1550,8 @@ func (h *DocumentHandler) WorkOrderUploadDocument(c echo.Context) error {
 	}
 	defer file.Close()
 
-	// Get optional description
-	description := c.FormValue("description")
-
 	entityType := "work-order"
+	description := c.FormValue("description")
 
 	// Upload the file to S3 using document storage service
 	filePath, err := h.server.DocumentService.UploadFileToS3(c.Request().Context(), file, header, entityType)
@@ -1572,13 +1596,13 @@ func (h *DocumentHandler) WorkOrderUploadDocument(c echo.Context) error {
 	}
 
 	// Handle DME work order attachment update asynchronously
-	h.handleDMEWorkOrderAttachmentUpdate(marina, entityID, filePath, header, doc.ID, description)
+	h.handleDMEWorkOrderAttachmentUpdate(marina, entityID, filePath, header, description, doc.ID)
 
 	return response.JSON(c)
 }
 
 // handleDMEWorkOrderAttachmentUpdate handles DME work order attachment update asynchronously
-func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, docID uuid.UUID, description string) {
+func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, entityID string, filePath string, header *multipart.FileHeader, description string, docID uuid.UUID) {
 	go func() {
 		ctx := context.Background()
 
@@ -1598,29 +1622,57 @@ func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, e
 
 		fileType := header.Header.Get("Content-Type")
 		datetime := time.Now().Format("2006-01-02 15:04:05")
-		attachmentDesc := description
-		if attachmentDesc == "" {
-			attachmentDesc = fmt.Sprintf("Document attachment %s", datetime)
+		descText := description
+		if descText == "" {
+			descText = fmt.Sprintf("Document attachment %s", datetime)
 		}
 		newAttachment := dme.Attachment{
 			FileName:    header.Filename,
-			Description: attachmentDesc,
+			Description: descText,
 			S3Path:      filePath,
 			FileType:    utils.Pointer(fileType),
 			FromDMWeb:   utils.Pointer(true),
 		}
 
-		// Append new attachment to existing attachments
-		updatedAttachments := dmeWorkOrder.Attachments
-		if updatedAttachments == nil {
-			updatedAttachments = []dme.Attachment{}
+		// Determine if this is an operation-level or work order-level attachment
+		// If description starts with "Operation ", it's an operation-level attachment
+		if len(description) > 10 && description[:10] == "Operation " {
+			opcode := description[10:] // Extract operation code from description
+			// Find the operation and add the attachment to it
+			operationFound := false
+			for i, op := range dmeWorkOrder.Operations {
+				if op.Opcode == opcode {
+					if dmeWorkOrder.Operations[i].Attachments == nil {
+						dmeWorkOrder.Operations[i].Attachments = []dme.Attachment{}
+					}
+					dmeWorkOrder.Operations[i].Attachments = append(dmeWorkOrder.Operations[i].Attachments, newAttachment)
+					operationFound = true
+					break
+				}
+			}
+			if !operationFound {
+				h.server.Logger.Zap.Warn("[DME API] Operation not found in work order for attachment",
+					"workOrderID", entityID,
+					"opcode", opcode)
+				// Fall back to work order-level attachment
+				if dmeWorkOrder.Attachments == nil {
+					dmeWorkOrder.Attachments = []dme.Attachment{}
+				}
+				dmeWorkOrder.Attachments = append(dmeWorkOrder.Attachments, newAttachment)
+			}
+		} else {
+			// Work order-level attachment
+			if dmeWorkOrder.Attachments == nil {
+				dmeWorkOrder.Attachments = []dme.Attachment{}
+			}
+			dmeWorkOrder.Attachments = append(dmeWorkOrder.Attachments, newAttachment)
 		}
-		updatedAttachments = append(updatedAttachments, newAttachment)
 
-		// Build the update payload for the work order
+		// Build work order update payload
 		workOrderUpdate := map[string]interface{}{
 			"woId":        dmeWorkOrder.ID,
-			"attachments": updatedAttachments,
+			"attachments": dmeWorkOrder.Attachments,
+			"operations":  dmeWorkOrder.Operations,
 		}
 
 		_, err = h.server.DME.UpdateWorkOrder(ctx, workOrderUpdate, orgID, systemID)
@@ -1643,7 +1695,7 @@ func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, e
 //	@Accept			json
 //	@Produce		json
 //	@Param			marinaId	query		string	true	"Marina ID"	Format(uuid)
-//	@Param			entityId	query		string	true	"Work Order ID"
+//	@Param			entityId	query		string	true	"Entity ID (Work Order ID)"
 //	@Success		200			{array}		responses.BaseResponse{data=[]responses.DocumentResponse}
 //	@Failure		400			{object}	responses.BaseResponse
 //	@Failure		404			{object}	responses.BaseResponse
