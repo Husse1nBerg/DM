@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -1420,7 +1421,18 @@ func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, en
 		// Determine if this is an operation-level or estimate-level attachment
 		// If description starts with "Operation ", it's an operation-level attachment
 		if len(description) > 10 && description[:10] == "Operation " {
-			opcode := description[10:] // Extract operation code from description
+			opcodeOrID := description[10:] // Extract operation code or ID from description
+			
+			// Handle both formats: "Operation 01-04E" (opcode) or "Operation 504672*01-04E" (full ID)
+			// If it contains *, extract just the opcode part after the *
+			opcode := opcodeOrID
+			if strings.Contains(opcodeOrID, "*") {
+				parts := strings.SplitN(opcodeOrID, "*", 2)
+				if len(parts) == 2 {
+					opcode = parts[1]
+				}
+			}
+			
 			// Find the operation and add the attachment to it
 			operationFound := false
 			for i, op := range dmeEstimate.Operations {
@@ -1430,13 +1442,18 @@ func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, en
 					}
 					dmeEstimate.Operations[i].Attachments = append(dmeEstimate.Operations[i].Attachments, newAttachment)
 					operationFound = true
+					h.server.Logger.Zap.Info("[DME API] Adding attachment to operation",
+						"estimateID", entityID,
+						"opcode", opcode,
+						"fileName", header.Filename)
 					break
 				}
 			}
 			if !operationFound {
 				h.server.Logger.Zap.Warn("[DME API] Operation not found in estimate for attachment",
 					"estimateID", entityID,
-					"opcode", opcode)
+					"opcode", opcode,
+					"originalDescription", description)
 				// Fall back to estimate-level attachment
 				if dmeEstimate.Attachments == nil {
 					dmeEstimate.Attachments = []dme.Attachment{}
@@ -1651,7 +1668,18 @@ func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, e
 		// Determine if this is an operation-level or work order-level attachment
 		// If description starts with "Operation ", it's an operation-level attachment
 		if len(description) > 10 && description[:10] == "Operation " {
-			opcode := description[10:] // Extract operation code from description
+			opcodeOrID := description[10:] // Extract operation code or ID from description
+			
+			// Handle both formats: "Operation 01-04E" (opcode) or "Operation 504672*01-04E" (full ID)
+			// If it contains *, extract just the opcode part after the *
+			opcode := opcodeOrID
+			if strings.Contains(opcodeOrID, "*") {
+				parts := strings.SplitN(opcodeOrID, "*", 2)
+				if len(parts) == 2 {
+					opcode = parts[1]
+				}
+			}
+			
 			// Find the operation and add the attachment to it
 			operationFound := false
 			for i, op := range dmeWorkOrder.Operations {
@@ -1661,13 +1689,18 @@ func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, e
 					}
 					dmeWorkOrder.Operations[i].Attachments = append(dmeWorkOrder.Operations[i].Attachments, newAttachment)
 					operationFound = true
+					h.server.Logger.Zap.Info("[DME API] Adding attachment to operation",
+						"workOrderID", entityID,
+						"opcode", opcode,
+						"fileName", header.Filename)
 					break
 				}
 			}
 			if !operationFound {
 				h.server.Logger.Zap.Warn("[DME API] Operation not found in work order for attachment",
 					"workOrderID", entityID,
-					"opcode", opcode)
+					"opcode", opcode,
+					"originalDescription", description)
 				// Fall back to work order-level attachment
 				if dmeWorkOrder.Attachments == nil {
 					dmeWorkOrder.Attachments = []dme.Attachment{}
