@@ -86,6 +86,10 @@ type PaymentResponse struct {
 	ErrorMessage         *string    `json:"errorMessage,omitempty"`
 	ErrorCode            *string    `json:"errorCode,omitempty"`
 	InternalNotes        *string    `json:"internalNotes,omitempty"`
+	FirstName            *string    `json:"firstName,omitempty"`
+	LastName             *string    `json:"lastName,omitempty"`
+	PrimaryEmail         *string    `json:"primaryEmail,omitempty"`
+	CardSummary          *string    `json:"cardSummary,omitempty"`
 	CreatedAt            time.Time  `json:"createdAt"`
 	UpdatedAt            *time.Time `json:"updatedAt,omitempty"`
 }
@@ -200,6 +204,18 @@ func ConvertPaymentToResponse(payment db.Payment) PaymentResponse {
 	}
 	if payment.ErrorCode != nil {
 		response.ErrorCode = payment.ErrorCode
+	}
+	if payment.FirstName != nil {
+		response.FirstName = payment.FirstName
+	}
+	if payment.LastName != nil {
+		response.LastName = payment.LastName
+	}
+	if payment.PrimaryEmail != nil {
+		response.PrimaryEmail = payment.PrimaryEmail
+	}
+	if payment.CardSummary != nil {
+		response.CardSummary = payment.CardSummary
 	}
 
 	// Convert timestamp fields

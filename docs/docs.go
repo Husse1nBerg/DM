@@ -19863,13 +19863,22 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string"
                 },
+                "firstName": {
+                    "type": "string"
+                },
                 "invPayments": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.InvPayment"
                     }
                 },
+                "lastName": {
+                    "type": "string"
+                },
                 "payType": {
+                    "type": "string"
+                },
+                "primaryEmail": {
                     "type": "string"
                 },
                 "referenceNum": {
@@ -25472,6 +25481,9 @@ const docTemplate = `{
                 "batchStatus": {
                     "type": "string"
                 },
+                "cardSummary": {
+                    "type": "string"
+                },
                 "completedAt": {
                     "type": "string"
                 },
@@ -25505,10 +25517,16 @@ const docTemplate = `{
                 "failedAt": {
                     "type": "string"
                 },
+                "firstName": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "internalNotes": {
+                    "type": "string"
+                },
+                "lastName": {
                     "type": "string"
                 },
                 "locationCode": {
@@ -25524,6 +25542,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "paymentMethod": {
+                    "type": "string"
+                },
+                "primaryEmail": {
                     "type": "string"
                 },
                 "referenceNumber": {

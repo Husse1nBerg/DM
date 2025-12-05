@@ -25,6 +25,9 @@ type CashReceipt struct {
 	CCSurchargeTaxSchema   string       `json:"ccSurchargeTaxSchema" validate:"omitempty"`
 	CCSurchargeTaxIds      []string     `json:"ccSurchargeTaxIds" validate:"omitempty"`
 	InvPayments            []InvPayment `json:"invPayments" validate:"required,dive"`
+	FirstName              string       `json:"firstName" validate:"omitempty"`
+	LastName               string       `json:"lastName" validate:"omitempty"`
+	PrimaryEmail           string       `json:"primaryEmail" validate:"omitempty"`
 }
 
 // SubmitBatchRequest represents a request to submit a batch of payments

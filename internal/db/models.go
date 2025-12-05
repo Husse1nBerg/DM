@@ -409,6 +409,10 @@ type Payment struct {
 	UpdatedAt            pgtype.Timestamptz
 	AdyenPaymentResponse *string
 	AdyenPaymentPayload  *string
+	FirstName            *string
+	LastName             *string
+	PrimaryEmail         *string
+	CardSummary          *string
 }
 
 type PaymentLink struct {
