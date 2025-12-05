@@ -1451,11 +1451,21 @@ func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, en
 			dmeEstimate.Attachments = append(dmeEstimate.Attachments, newAttachment)
 		}
 
-		// Build estimate update payload
+		// Convert operations to operationCodes format expected by DME API
+		operationCodes := make([]map[string]interface{}, 0, len(dmeEstimate.Operations))
+		for _, op := range dmeEstimate.Operations {
+			opCode := map[string]interface{}{
+				"opcode":      op.Opcode,
+				"attachments": op.Attachments,
+			}
+			operationCodes = append(operationCodes, opCode)
+		}
+
+		// Build estimate update payload - DME expects "operationCodes" not "operations"
 		estimateUpdate := map[string]interface{}{
-			"woId":        dmeEstimate.ID,
-			"attachments": dmeEstimate.Attachments,
-			"operations":  dmeEstimate.Operations,
+			"woId":           dmeEstimate.ID,
+			"attachments":    dmeEstimate.Attachments,
+			"operationCodes": operationCodes,
 		}
 
 		_, err = h.server.DME.UpdateEstimate(ctx, estimateUpdate, orgID, systemID)
@@ -1668,11 +1678,21 @@ func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, e
 			dmeWorkOrder.Attachments = append(dmeWorkOrder.Attachments, newAttachment)
 		}
 
-		// Build work order update payload
+		// Convert operations to operationCodes format expected by DME API
+		operationCodes := make([]map[string]interface{}, 0, len(dmeWorkOrder.Operations))
+		for _, op := range dmeWorkOrder.Operations {
+			opCode := map[string]interface{}{
+				"opcode":      op.Opcode,
+				"attachments": op.Attachments,
+			}
+			operationCodes = append(operationCodes, opCode)
+		}
+
+		// Build work order update payload - DME expects "operationCodes" not "operations"
 		workOrderUpdate := map[string]interface{}{
-			"woId":        dmeWorkOrder.ID,
-			"attachments": dmeWorkOrder.Attachments,
-			"operations":  dmeWorkOrder.Operations,
+			"woId":           dmeWorkOrder.ID,
+			"attachments":    dmeWorkOrder.Attachments,
+			"operationCodes": operationCodes,
 		}
 
 		_, err = h.server.DME.UpdateWorkOrder(ctx, workOrderUpdate, orgID, systemID)
