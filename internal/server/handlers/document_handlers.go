@@ -1462,8 +1462,12 @@ func (h *DocumentHandler) handleDMEEstimateAttachmentUpdate(marina db.Marina, en
 		}
 
 		// Build estimate update payload - DME expects "operationCodes" not "operations"
+		// Include custId, locationCode, and clerkId to pass DME API validation
 		estimateUpdate := map[string]interface{}{
 			"woId":           dmeEstimate.ID,
+			"custId":         dmeEstimate.CustomerID,
+			"locationCode":   dmeEstimate.LocationCode,
+			"clerkId":        dmeEstimate.ClerkID,
 			"attachments":    dmeEstimate.Attachments,
 			"operationCodes": operationCodes,
 		}
@@ -1689,8 +1693,12 @@ func (h *DocumentHandler) handleDMEWorkOrderAttachmentUpdate(marina db.Marina, e
 		}
 
 		// Build work order update payload - DME expects "operationCodes" not "operations"
+		// Include custId, locationCode, and clerkId to pass DME API validation
 		workOrderUpdate := map[string]interface{}{
 			"woId":           dmeWorkOrder.ID,
+			"custId":         dmeWorkOrder.CustomerID,
+			"locationCode":   dmeWorkOrder.LocationCode,
+			"clerkId":        dmeWorkOrder.ClerkID,
 			"attachments":    dmeWorkOrder.Attachments,
 			"operationCodes": operationCodes,
 		}
