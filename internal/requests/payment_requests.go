@@ -7,14 +7,15 @@ import (
 
 // CreatePaymentSessionRequest represents the request to create a payment session
 type CreatePaymentSessionRequest struct {
-	Amount      int64               `json:"amount" validate:"required,min=1"`
-	Currency    string              `json:"currency" validate:"required,len=3"`
-	CountryCode string              `json:"country_code" validate:"required,len=2"`
-	ReturnURL   string              `json:"return_url" validate:"required,url"`
-	ShopperIP   string              `json:"shopper_ip,omitempty"`
-	LineItems   []checkout.LineItem `json:"line_items,omitempty"`
-	Metadata    *map[string]string  `json:"metadata,omitempty"`
-	Token       string              `json:"token,omitempty"` // Optional short-lived payment token
+	Amount         int64               `json:"amount" validate:"required,min=1"`
+	Currency       string              `json:"currency" validate:"required,len=3"`
+	CountryCode    string              `json:"country_code" validate:"required,len=2"`
+	ReturnURL      string              `json:"return_url" validate:"required,url"`
+	ShopperIP      string              `json:"shopper_ip,omitempty"`
+	LineItems      []checkout.LineItem `json:"line_items,omitempty"`
+	Metadata       *map[string]string  `json:"metadata,omitempty"`
+	Token          string              `json:"token,omitempty"`           // Optional short-lived payment token
+	PaymentMethods []string            `json:"payment_methods,omitempty"` // e.g., ["scheme", "ach"] for cards and ACH
 }
 
 // PaymentDetailsRequest represents the request to handle payment details
@@ -77,14 +78,15 @@ func (r *ValidatePaymentTokenRequest) Validate(validate *validator.Validate) err
 
 // CreatePaymentSessionWithTokenRequest represents creating an Adyen session using a token
 type CreatePaymentSessionWithTokenRequest struct {
-	Token       string              `json:"token" validate:"required"`
-	Amount      int64               `json:"amount" validate:"required,min=1"`
-	Currency    string              `json:"currency" validate:"required,len=3"`
-	CountryCode string              `json:"country_code" validate:"required,len=2"`
-	ReturnURL   string              `json:"return_url" validate:"required,url"`
-	ShopperIP   string              `json:"shopper_ip,omitempty"`
-	LineItems   []checkout.LineItem `json:"line_items,omitempty"`
-	Metadata    *map[string]string  `json:"metadata,omitempty"`
+	Token          string              `json:"token" validate:"required"`
+	Amount         int64               `json:"amount" validate:"required,min=1"`
+	Currency       string              `json:"currency" validate:"required,len=3"`
+	CountryCode    string              `json:"country_code" validate:"required,len=2"`
+	ReturnURL      string              `json:"return_url" validate:"required,url"`
+	ShopperIP      string              `json:"shopper_ip,omitempty"`
+	LineItems      []checkout.LineItem `json:"line_items,omitempty"`
+	Metadata       *map[string]string  `json:"metadata,omitempty"`
+	PaymentMethods []string            `json:"payment_methods,omitempty"` // e.g., ["scheme", "ach"] for cards and ACH
 }
 
 // Validate validates the CreatePaymentSessionWithTokenRequest

@@ -213,13 +213,14 @@ func (h *PaymentHandler) CreatePaymentSession(c echo.Context) error {
 
 	// Convert request to Adyen service request
 	adyenReq := adyen.CreateCheckoutSessionRequest{
-		Amount:      req.Amount,
-		Currency:    req.Currency,
-		CountryCode: req.CountryCode,
-		ReturnURL:   req.ReturnURL,
-		ShopperIP:   req.ShopperIP,
-		LineItems:   req.LineItems,
-		Metadata:    req.Metadata,
+		Amount:                req.Amount,
+		Currency:              req.Currency,
+		CountryCode:           req.CountryCode,
+		ReturnURL:             req.ReturnURL,
+		ShopperIP:             req.ShopperIP,
+		LineItems:             req.LineItems,
+		Metadata:              req.Metadata,
+		AllowedPaymentMethods: req.PaymentMethods, // e.g., ["scheme", "ach"] for cards and ACH
 	}
 
 	// Create checkout session
