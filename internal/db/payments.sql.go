@@ -42,6 +42,58 @@ func (q *Queries) CountPaymentsByStatus(ctx context.Context, arg CountPaymentsBy
 	return count, err
 }
 
+const countPaymentsWithFilters = `-- name: CountPaymentsWithFilters :one
+SELECT COUNT(*)
+FROM payments
+WHERE marina_id = $1
+  AND (
+    $2 = '' OR
+    reference_number ILIKE '%' || $2 || '%' OR
+    adyen_psp_reference ILIKE '%' || $2 || '%' OR
+    customer_id ILIKE '%' || $2 || '%' OR
+    COALESCE(payment_method, '') ILIKE '%' || $2 || '%'
+  )
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR customer_id = $4)
+  AND ($5 = '' OR entity_type = $5)
+  AND ($6 = '' OR entity_id = $6)
+  AND ($7 = '' OR payment_method = $7)
+  AND ($8 = '' OR currency = $8)
+  AND ($9::timestamptz IS NULL OR payment_date >= $9::timestamptz)
+  AND ($10::timestamptz IS NULL OR payment_date <= $10::timestamptz)
+`
+
+type CountPaymentsWithFiltersParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Column7  interface{}
+	Column8  interface{}
+	Column9  pgtype.Timestamptz
+	Column10 pgtype.Timestamptz
+}
+
+func (q *Queries) CountPaymentsWithFilters(ctx context.Context, arg CountPaymentsWithFiltersParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countPaymentsWithFilters,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createPayment = `-- name: CreatePayment :one
 INSERT INTO payments (
     marina_id,
@@ -58,10 +110,15 @@ INSERT INTO payments (
     customer_id,
     location_code,
     payment_date,
-    internal_notes
+    internal_notes,
+    adyen_payment_payload,
+    first_name,
+    last_name,
+    primary_email,
+    card_summary
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
-) RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+) RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
 `
 
 type CreatePaymentParams struct {
@@ -80,6 +137,11 @@ type CreatePaymentParams struct {
 	LocationCode        *string
 	PaymentDate         pgtype.Timestamptz
 	InternalNotes       *string
+	AdyenPaymentPayload *string
+	FirstName           *string
+	LastName            *string
+	PrimaryEmail        *string
+	CardSummary         *string
 }
 
 func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {
@@ -99,6 +161,11 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 		arg.LocationCode,
 		arg.PaymentDate,
 		arg.InternalNotes,
+		arg.AdyenPaymentPayload,
+		arg.FirstName,
+		arg.LastName,
+		arg.PrimaryEmail,
+		arg.CardSummary,
 	)
 	var i Payment
 	err := row.Scan(
@@ -134,12 +201,18 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }
 
 const getPaymentByAdyenPSPReference = `-- name: GetPaymentByAdyenPSPReference :one
-SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at FROM payments
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
 WHERE adyen_psp_reference = $1
 `
 
@@ -179,12 +252,69 @@ func (q *Queries) GetPaymentByAdyenPSPReference(ctx context.Context, adyenPspRef
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
+	)
+	return i, err
+}
+
+const getPaymentByAdyenSessionID = `-- name: GetPaymentByAdyenSessionID :one
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
+WHERE adyen_session_id = $1
+`
+
+func (q *Queries) GetPaymentByAdyenSessionID(ctx context.Context, adyenSessionID *string) (Payment, error) {
+	row := q.db.QueryRow(ctx, getPaymentByAdyenSessionID, adyenSessionID)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.OrganizationID,
+		&i.EntityType,
+		&i.EntityID,
+		&i.Amount,
+		&i.Currency,
+		&i.PaymentMethod,
+		&i.ReferenceNumber,
+		&i.Status,
+		&i.AuthorizationStatus,
+		&i.BatchStatus,
+		&i.AdyenPspReference,
+		&i.AdyenSessionID,
+		&i.BatchID,
+		&i.BatchPaymentID,
+		&i.PaymentDate,
+		&i.AuthorizedAt,
+		&i.CompletedAt,
+		&i.FailedAt,
+		&i.CustomerID,
+		&i.LocationCode,
+		&i.TransactionID,
+		&i.AuthCode,
+		&i.AdyenWebhookPayload,
+		&i.DmeBatchRequest,
+		&i.DmeBatchResponse,
+		&i.ErrorMessage,
+		&i.ErrorCode,
+		&i.InternalNotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }
 
 const getPaymentByID = `-- name: GetPaymentByID :one
-SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at FROM payments
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
 WHERE id = $1
 `
 
@@ -224,12 +354,18 @@ func (q *Queries) GetPaymentByID(ctx context.Context, id uuid.UUID) (Payment, er
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }
 
 const getPaymentByReferenceNumber = `-- name: GetPaymentByReferenceNumber :one
-SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at FROM payments
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
 WHERE reference_number = $1
 `
 
@@ -269,6 +405,12 @@ func (q *Queries) GetPaymentByReferenceNumber(ctx context.Context, referenceNumb
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }
@@ -317,7 +459,7 @@ func (q *Queries) GetPaymentStats(ctx context.Context, arg GetPaymentStatsParams
 }
 
 const listPaymentsByDateRange = `-- name: ListPaymentsByDateRange :many
-SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at FROM payments
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
 WHERE marina_id = $1
 AND payment_date >= $2
 AND payment_date <= $3
@@ -372,6 +514,12 @@ func (q *Queries) ListPaymentsByDateRange(ctx context.Context, arg ListPaymentsB
 			&i.InternalNotes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+			&i.FirstName,
+			&i.LastName,
+			&i.PrimaryEmail,
+			&i.CardSummary,
 		); err != nil {
 			return nil, err
 		}
@@ -384,7 +532,7 @@ func (q *Queries) ListPaymentsByDateRange(ctx context.Context, arg ListPaymentsB
 }
 
 const listPaymentsByEntity = `-- name: ListPaymentsByEntity :many
-SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at FROM payments
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
 WHERE marina_id = $1
 AND entity_type = $2
 AND entity_id = $3
@@ -439,6 +587,12 @@ func (q *Queries) ListPaymentsByEntity(ctx context.Context, arg ListPaymentsByEn
 			&i.InternalNotes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+			&i.FirstName,
+			&i.LastName,
+			&i.PrimaryEmail,
+			&i.CardSummary,
 		); err != nil {
 			return nil, err
 		}
@@ -451,7 +605,7 @@ func (q *Queries) ListPaymentsByEntity(ctx context.Context, arg ListPaymentsByEn
 }
 
 const listPaymentsByMarina = `-- name: ListPaymentsByMarina :many
-SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at FROM payments
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
 WHERE marina_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -505,6 +659,12 @@ func (q *Queries) ListPaymentsByMarina(ctx context.Context, arg ListPaymentsByMa
 			&i.InternalNotes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+			&i.FirstName,
+			&i.LastName,
+			&i.PrimaryEmail,
+			&i.CardSummary,
 		); err != nil {
 			return nil, err
 		}
@@ -517,7 +677,7 @@ func (q *Queries) ListPaymentsByMarina(ctx context.Context, arg ListPaymentsByMa
 }
 
 const listPaymentsByStatus = `-- name: ListPaymentsByStatus :many
-SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at FROM payments
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary FROM payments
 WHERE marina_id = $1
 AND status = $2
 ORDER BY created_at DESC
@@ -578,6 +738,12 @@ func (q *Queries) ListPaymentsByStatus(ctx context.Context, arg ListPaymentsBySt
 			&i.InternalNotes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+			&i.FirstName,
+			&i.LastName,
+			&i.PrimaryEmail,
+			&i.CardSummary,
 		); err != nil {
 			return nil, err
 		}
@@ -589,6 +755,384 @@ func (q *Queries) ListPaymentsByStatus(ctx context.Context, arg ListPaymentsBySt
 	return items, nil
 }
 
+const listPaymentsFilteredSortedAsc = `-- name: ListPaymentsFilteredSortedAsc :many
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
+FROM payments
+WHERE marina_id = $1
+  AND (
+    $2 = '' OR
+    reference_number ILIKE '%' || $2 || '%' OR
+    adyen_psp_reference ILIKE '%' || $2 || '%' OR
+    customer_id ILIKE '%' || $2 || '%' OR
+    COALESCE(payment_method, '') ILIKE '%' || $2 || '%'
+  )
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR customer_id = $4)
+  AND ($5 = '' OR entity_type = $5)
+  AND ($6 = '' OR entity_id = $6)
+  AND ($7 = '' OR payment_method = $7)
+  AND ($8 = '' OR currency = $8)
+  AND ($9::timestamptz IS NULL OR payment_date >= $9::timestamptz)
+  AND ($10::timestamptz IS NULL OR payment_date <= $10::timestamptz)
+ORDER BY
+  (CASE WHEN $11 = 'reference_number' THEN reference_number END) ASC,
+  (CASE WHEN $11 = 'payment_method' THEN payment_method END) ASC,
+  (CASE WHEN $11 = 'currency' THEN currency END) ASC,
+  (CASE WHEN $11 = 'payment_date' THEN payment_date END) ASC,
+  (CASE WHEN $11 = 'created_at' THEN created_at END) ASC,
+  (CASE WHEN $11 = 'amount' THEN amount END) ASC,
+  (CASE WHEN $11 = 'status' THEN
+    CASE status
+      WHEN 'pending' THEN 1
+      WHEN 'authorized' THEN 2
+      WHEN 'completed' THEN 3
+      WHEN 'failed' THEN 4
+      ELSE 5
+    END
+  END) ASC
+LIMIT $12 OFFSET $13
+`
+
+type ListPaymentsFilteredSortedAscParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Column7  interface{}
+	Column8  interface{}
+	Column9  pgtype.Timestamptz
+	Column10 pgtype.Timestamptz
+	Column11 interface{}
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListPaymentsFilteredSortedAsc(ctx context.Context, arg ListPaymentsFilteredSortedAscParams) ([]Payment, error) {
+	rows, err := q.db.Query(ctx, listPaymentsFilteredSortedAsc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
+		arg.Column11,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Payment
+	for rows.Next() {
+		var i Payment
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.OrganizationID,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Amount,
+			&i.Currency,
+			&i.PaymentMethod,
+			&i.ReferenceNumber,
+			&i.Status,
+			&i.AuthorizationStatus,
+			&i.BatchStatus,
+			&i.AdyenPspReference,
+			&i.AdyenSessionID,
+			&i.BatchID,
+			&i.BatchPaymentID,
+			&i.PaymentDate,
+			&i.AuthorizedAt,
+			&i.CompletedAt,
+			&i.FailedAt,
+			&i.CustomerID,
+			&i.LocationCode,
+			&i.TransactionID,
+			&i.AuthCode,
+			&i.AdyenWebhookPayload,
+			&i.DmeBatchRequest,
+			&i.DmeBatchResponse,
+			&i.ErrorMessage,
+			&i.ErrorCode,
+			&i.InternalNotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+			&i.FirstName,
+			&i.LastName,
+			&i.PrimaryEmail,
+			&i.CardSummary,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPaymentsFilteredSortedDesc = `-- name: ListPaymentsFilteredSortedDesc :many
+SELECT id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
+FROM payments
+WHERE marina_id = $1
+  AND (
+    $2 = '' OR
+    reference_number ILIKE '%' || $2 || '%' OR
+    adyen_psp_reference ILIKE '%' || $2 || '%' OR
+    customer_id ILIKE '%' || $2 || '%' OR
+    COALESCE(payment_method, '') ILIKE '%' || $2 || '%'
+  )
+  AND ($3 = '' OR status = $3)
+  AND ($4 = '' OR customer_id = $4)
+  AND ($5 = '' OR entity_type = $5)
+  AND ($6 = '' OR entity_id = $6)
+  AND ($7 = '' OR payment_method = $7)
+  AND ($8 = '' OR currency = $8)
+  AND ($9::timestamptz IS NULL OR payment_date >= $9::timestamptz)
+  AND ($10::timestamptz IS NULL OR payment_date <= $10::timestamptz)
+ORDER BY
+  (CASE WHEN $11 = 'reference_number' THEN reference_number END) DESC,
+  (CASE WHEN $11 = 'payment_method' THEN payment_method END) DESC,
+  (CASE WHEN $11 = 'currency' THEN currency END) DESC,
+  (CASE WHEN $11 = 'payment_date' THEN payment_date END) DESC,
+  (CASE WHEN $11 = 'created_at' THEN created_at END) DESC,
+  (CASE WHEN $11 = 'amount' THEN amount END) DESC,
+  (CASE WHEN $11 = 'status' THEN
+    CASE status
+      WHEN 'pending' THEN 1
+      WHEN 'authorized' THEN 2
+      WHEN 'completed' THEN 3
+      WHEN 'failed' THEN 4
+      ELSE 5
+    END
+  END) DESC
+LIMIT $12 OFFSET $13
+`
+
+type ListPaymentsFilteredSortedDescParams struct {
+	MarinaID uuid.UUID
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	Column5  interface{}
+	Column6  interface{}
+	Column7  interface{}
+	Column8  interface{}
+	Column9  pgtype.Timestamptz
+	Column10 pgtype.Timestamptz
+	Column11 interface{}
+	Limit    int32
+	Offset   int32
+}
+
+func (q *Queries) ListPaymentsFilteredSortedDesc(ctx context.Context, arg ListPaymentsFilteredSortedDescParams) ([]Payment, error) {
+	rows, err := q.db.Query(ctx, listPaymentsFilteredSortedDesc,
+		arg.MarinaID,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+		arg.Column5,
+		arg.Column6,
+		arg.Column7,
+		arg.Column8,
+		arg.Column9,
+		arg.Column10,
+		arg.Column11,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Payment
+	for rows.Next() {
+		var i Payment
+		if err := rows.Scan(
+			&i.ID,
+			&i.MarinaID,
+			&i.OrganizationID,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Amount,
+			&i.Currency,
+			&i.PaymentMethod,
+			&i.ReferenceNumber,
+			&i.Status,
+			&i.AuthorizationStatus,
+			&i.BatchStatus,
+			&i.AdyenPspReference,
+			&i.AdyenSessionID,
+			&i.BatchID,
+			&i.BatchPaymentID,
+			&i.PaymentDate,
+			&i.AuthorizedAt,
+			&i.CompletedAt,
+			&i.FailedAt,
+			&i.CustomerID,
+			&i.LocationCode,
+			&i.TransactionID,
+			&i.AuthCode,
+			&i.AdyenWebhookPayload,
+			&i.DmeBatchRequest,
+			&i.DmeBatchResponse,
+			&i.ErrorMessage,
+			&i.ErrorCode,
+			&i.InternalNotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AdyenPaymentResponse,
+			&i.AdyenPaymentPayload,
+			&i.FirstName,
+			&i.LastName,
+			&i.PrimaryEmail,
+			&i.CardSummary,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updatePaymentAdyenPayloadsByID = `-- name: UpdatePaymentAdyenPayloadsByID :one
+UPDATE payments
+SET 
+    adyen_payment_payload = $2,
+    adyen_payment_response = $3,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
+`
+
+type UpdatePaymentAdyenPayloadsByIDParams struct {
+	ID                   uuid.UUID
+	AdyenPaymentPayload  *string
+	AdyenPaymentResponse *string
+}
+
+func (q *Queries) UpdatePaymentAdyenPayloadsByID(ctx context.Context, arg UpdatePaymentAdyenPayloadsByIDParams) (Payment, error) {
+	row := q.db.QueryRow(ctx, updatePaymentAdyenPayloadsByID, arg.ID, arg.AdyenPaymentPayload, arg.AdyenPaymentResponse)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.OrganizationID,
+		&i.EntityType,
+		&i.EntityID,
+		&i.Amount,
+		&i.Currency,
+		&i.PaymentMethod,
+		&i.ReferenceNumber,
+		&i.Status,
+		&i.AuthorizationStatus,
+		&i.BatchStatus,
+		&i.AdyenPspReference,
+		&i.AdyenSessionID,
+		&i.BatchID,
+		&i.BatchPaymentID,
+		&i.PaymentDate,
+		&i.AuthorizedAt,
+		&i.CompletedAt,
+		&i.FailedAt,
+		&i.CustomerID,
+		&i.LocationCode,
+		&i.TransactionID,
+		&i.AuthCode,
+		&i.AdyenWebhookPayload,
+		&i.DmeBatchRequest,
+		&i.DmeBatchResponse,
+		&i.ErrorMessage,
+		&i.ErrorCode,
+		&i.InternalNotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
+	)
+	return i, err
+}
+
+const updatePaymentAdyenPayloadsByReferenceNumber = `-- name: UpdatePaymentAdyenPayloadsByReferenceNumber :one
+UPDATE payments
+SET 
+    adyen_payment_payload = $2,
+    adyen_payment_response = $3,
+    updated_at = CURRENT_TIMESTAMP
+WHERE reference_number = $1
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
+`
+
+type UpdatePaymentAdyenPayloadsByReferenceNumberParams struct {
+	ReferenceNumber      string
+	AdyenPaymentPayload  *string
+	AdyenPaymentResponse *string
+}
+
+func (q *Queries) UpdatePaymentAdyenPayloadsByReferenceNumber(ctx context.Context, arg UpdatePaymentAdyenPayloadsByReferenceNumberParams) (Payment, error) {
+	row := q.db.QueryRow(ctx, updatePaymentAdyenPayloadsByReferenceNumber, arg.ReferenceNumber, arg.AdyenPaymentPayload, arg.AdyenPaymentResponse)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.OrganizationID,
+		&i.EntityType,
+		&i.EntityID,
+		&i.Amount,
+		&i.Currency,
+		&i.PaymentMethod,
+		&i.ReferenceNumber,
+		&i.Status,
+		&i.AuthorizationStatus,
+		&i.BatchStatus,
+		&i.AdyenPspReference,
+		&i.AdyenSessionID,
+		&i.BatchID,
+		&i.BatchPaymentID,
+		&i.PaymentDate,
+		&i.AuthorizedAt,
+		&i.CompletedAt,
+		&i.FailedAt,
+		&i.CustomerID,
+		&i.LocationCode,
+		&i.TransactionID,
+		&i.AuthCode,
+		&i.AdyenWebhookPayload,
+		&i.DmeBatchRequest,
+		&i.DmeBatchResponse,
+		&i.ErrorMessage,
+		&i.ErrorCode,
+		&i.InternalNotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
+	)
+	return i, err
+}
+
 const updatePaymentAuthorized = `-- name: UpdatePaymentAuthorized :one
 UPDATE payments
 SET 
@@ -598,20 +1142,28 @@ SET
     auth_code = $4,
     transaction_id = $5,
     authorized_at = $6,
-    adyen_webhook_payload = $7,
+    adyen_payment_response = $7,
+    first_name = COALESCE($8, first_name),
+    last_name = COALESCE($9, last_name),
+    primary_email = COALESCE($10, primary_email),
+    card_summary = COALESCE($11, card_summary),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
 `
 
 type UpdatePaymentAuthorizedParams struct {
-	ID                  uuid.UUID
-	AuthorizationStatus *string
-	AdyenPspReference   *string
-	AuthCode            *string
-	TransactionID       *string
-	AuthorizedAt        pgtype.Timestamptz
-	AdyenWebhookPayload *string
+	ID                   uuid.UUID
+	AuthorizationStatus  *string
+	AdyenPspReference    *string
+	AuthCode             *string
+	TransactionID        *string
+	AuthorizedAt         pgtype.Timestamptz
+	AdyenPaymentResponse *string
+	FirstName            *string
+	LastName             *string
+	PrimaryEmail         *string
+	CardSummary          *string
 }
 
 func (q *Queries) UpdatePaymentAuthorized(ctx context.Context, arg UpdatePaymentAuthorizedParams) (Payment, error) {
@@ -622,7 +1174,11 @@ func (q *Queries) UpdatePaymentAuthorized(ctx context.Context, arg UpdatePayment
 		arg.AuthCode,
 		arg.TransactionID,
 		arg.AuthorizedAt,
-		arg.AdyenWebhookPayload,
+		arg.AdyenPaymentResponse,
+		arg.FirstName,
+		arg.LastName,
+		arg.PrimaryEmail,
+		arg.CardSummary,
 	)
 	var i Payment
 	err := row.Scan(
@@ -658,6 +1214,12 @@ func (q *Queries) UpdatePaymentAuthorized(ctx context.Context, arg UpdatePayment
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }
@@ -670,7 +1232,7 @@ SET
     batch_payment_id = $4,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
 `
 
 type UpdatePaymentBatchStatusParams struct {
@@ -721,6 +1283,12 @@ func (q *Queries) UpdatePaymentBatchStatus(ctx context.Context, arg UpdatePaymen
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }
@@ -737,7 +1305,7 @@ SET
     completed_at = $6,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
 `
 
 type UpdatePaymentCompletedParams struct {
@@ -792,6 +1360,12 @@ func (q *Queries) UpdatePaymentCompleted(ctx context.Context, arg UpdatePaymentC
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }
@@ -805,7 +1379,7 @@ SET
     failed_at = $4,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
 `
 
 type UpdatePaymentFailedParams struct {
@@ -856,6 +1430,72 @@ func (q *Queries) UpdatePaymentFailed(ctx context.Context, arg UpdatePaymentFail
 		&i.InternalNotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
+	)
+	return i, err
+}
+
+const updatePaymentReferenceNumberByID = `-- name: UpdatePaymentReferenceNumberByID :one
+UPDATE payments
+SET 
+    reference_number = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING id, marina_id, organization_id, entity_type, entity_id, amount, currency, payment_method, reference_number, status, authorization_status, batch_status, adyen_psp_reference, adyen_session_id, batch_id, batch_payment_id, payment_date, authorized_at, completed_at, failed_at, customer_id, location_code, transaction_id, auth_code, adyen_webhook_payload, dme_batch_request, dme_batch_response, error_message, error_code, internal_notes, created_at, updated_at, adyen_payment_response, adyen_payment_payload, first_name, last_name, primary_email, card_summary
+`
+
+type UpdatePaymentReferenceNumberByIDParams struct {
+	ID              uuid.UUID
+	ReferenceNumber string
+}
+
+func (q *Queries) UpdatePaymentReferenceNumberByID(ctx context.Context, arg UpdatePaymentReferenceNumberByIDParams) (Payment, error) {
+	row := q.db.QueryRow(ctx, updatePaymentReferenceNumberByID, arg.ID, arg.ReferenceNumber)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.MarinaID,
+		&i.OrganizationID,
+		&i.EntityType,
+		&i.EntityID,
+		&i.Amount,
+		&i.Currency,
+		&i.PaymentMethod,
+		&i.ReferenceNumber,
+		&i.Status,
+		&i.AuthorizationStatus,
+		&i.BatchStatus,
+		&i.AdyenPspReference,
+		&i.AdyenSessionID,
+		&i.BatchID,
+		&i.BatchPaymentID,
+		&i.PaymentDate,
+		&i.AuthorizedAt,
+		&i.CompletedAt,
+		&i.FailedAt,
+		&i.CustomerID,
+		&i.LocationCode,
+		&i.TransactionID,
+		&i.AuthCode,
+		&i.AdyenWebhookPayload,
+		&i.DmeBatchRequest,
+		&i.DmeBatchResponse,
+		&i.ErrorMessage,
+		&i.ErrorCode,
+		&i.InternalNotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AdyenPaymentResponse,
+		&i.AdyenPaymentPayload,
+		&i.FirstName,
+		&i.LastName,
+		&i.PrimaryEmail,
+		&i.CardSummary,
 	)
 	return i, err
 }

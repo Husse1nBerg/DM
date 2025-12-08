@@ -516,6 +516,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/general/departments": {
+            "get": {
+                "description": "Retrieves a list of departments from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "General"
+                ],
+                "summary": "List departments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.DepartmentListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/general/locations": {
             "get": {
                 "description": "Retrieves a list of business locations from the DME API",
@@ -1207,6 +1257,270 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/unit-sales/customer-contracts": {
+            "get": {
+                "description": "Retrieves contracts for a specific customer from DME UnitSales API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UnitSales"
+                ],
+                "summary": "Retrieve customer contracts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerContractsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/unit-sales/customer-quotes": {
+            "get": {
+                "description": "Retrieves quotes for a specific customer from DME UnitSales API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UnitSales"
+                ],
+                "summary": "Retrieve customer quotes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "CustomerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CustomerQuotesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vendors": {
+            "get": {
+                "description": "Retrieves a specific vendor by ID from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vendors"
+                ],
+                "summary": "Retrieve a vendor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Vendor ID",
+                        "name": "vendorId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VendorResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vendors/list": {
+            "get": {
+                "description": "Retrieves a list of all vendors from the DME API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vendors"
+                ],
+                "summary": "List all vendors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VendorListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vendors/search": {
+            "get": {
+                "description": "Search for vendors based on search criteria",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vendors"
+                ],
+                "summary": "Search vendors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "System ID",
+                        "name": "systemId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search string (vendor name, phone, email, etc.)",
+                        "name": "searchString",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only return result if exactly one match is found",
+                        "name": "directHit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.VendorSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Perform user login",
@@ -1469,6 +1783,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/boats/list-new-or-changed": {
+            "get": {
+                "description": "Retrieves boats created or changed after a specific date with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "List boats new or changed",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date/Time to query from (URL encoded)",
+                        "name": "LastUpdate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Current page being requested",
+                        "name": "Page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Number of records per page",
+                        "name": "PageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Name of list for paged data",
+                        "name": "ListName",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dme.BoatList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/boats/retrieve": {
             "get": {
                 "description": "Retrieves a boat by its ID",
@@ -1496,6 +1877,65 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.BoatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boats/retrieve-boats": {
+            "get": {
+                "description": "Retrieves boats with optional filters (CustomerId, LastUpdateDate, HasInsurance)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boats"
+                ],
+                "summary": "Retrieve boats with filters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves boats for a particular customer",
+                        "name": "CustomerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieve boats modified on or after this date",
+                        "name": "LastUpdateDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Optional: Filter by insurance status",
+                        "name": "HasInsurance",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dme.Boat"
+                            }
                         }
                     },
                     "400": {
@@ -2333,6 +2773,127 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.CustomerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/retrieve-customers": {
+            "get": {
+                "description": "Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Retrieve customers with filters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records modified on or after this date. Format MM-DD-YYYY",
+                        "name": "LastModifiedDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records with a matching primary email address",
+                        "name": "EmailAddress",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dme.Customer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/retrieve-customers-paginated": {
+            "get": {
+                "description": "Retrieves customers with category codes in a paginated format. Optimized for esignature and mass notification features.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Retrieve customers paginated with category codes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Current page (1-based)",
+                        "name": "Page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (max 500)",
+                        "name": "PageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cached list name for subsequent page requests",
+                        "name": "ListName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records modified on or after this date. Format MM-DD-YYYY",
+                        "name": "LastModifiedDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional: Retrieves records with a matching primary email address",
+                        "name": "EmailAddress",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dme.CustomerWithCategoryCodesPage"
                         }
                     },
                     "400": {
@@ -3543,6 +4104,173 @@ const docTemplate = `{
                 }
             }
         },
+        "/documents/estimate": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all documents for an estimate entity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get estimate documents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID (Estimate ID)",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new document for an estimate",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload estimate document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID (Estimate ID)",
+                        "name": "entityId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Description (e.g., 'Operation OPCODE')",
+                        "name": "description",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/documents/user": {
             "get": {
                 "security": [
@@ -3662,6 +4390,173 @@ const docTemplate = `{
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/responses.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/responses.DocumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/work-order": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all documents for a work order entity",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get work order documents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID (Work Order ID)",
+                        "name": "entityId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/responses.BaseResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/responses.DocumentResponse"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new document for a work order",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload work order document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID (Work Order ID)",
+                        "name": "entityId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Document file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Description (e.g., 'Operation OPCODE')",
+                        "name": "description",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -5690,6 +6585,300 @@ const docTemplate = `{
                 }
             }
         },
+        "/estimates/labor": {
+            "post": {
+                "description": "Submits a labor entry for an estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Submit estimate labor entry",
+                "parameters": [
+                    {
+                        "description": "Labor entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitEstimateLaborEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitEstimateLaborEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/labor-detail-records": {
+            "get": {
+                "description": "Retrieves comprehensive individual labor detail records for a specific estimate operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate labor detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateLaborDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/labor-entries": {
+            "get": {
+                "description": "Retrieves labor entries for a specific estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate labor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "estimatesId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateLaborResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/part": {
+            "post": {
+                "description": "Submits a part entry for an estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Submit estimate part entry",
+                "parameters": [
+                    {
+                        "description": "Part entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitEstimatePartEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitEstimatePartEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/part-detail": {
+            "get": {
+                "description": "Retrieves detailed part information for a specific estimate operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate part detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimatePartDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/parts": {
+            "get": {
+                "description": "Retrieves a list of part entries for a specific estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate parts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "estimatesId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimatePartsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/estimates/retrieve": {
             "get": {
                 "description": "Retrieves a single estimate with detail or summary information",
@@ -5824,6 +7013,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.EstimateSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/sublet": {
+            "post": {
+                "description": "Submits a sublet entry for an estimate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Submit estimate sublet entry",
+                "parameters": [
+                    {
+                        "description": "Sublet entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitEstimateSubletEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitEstimateSubletEntryResponse"
                         }
                     },
                     "400": {
@@ -7632,7 +8867,12 @@ const docTemplate = `{
         },
         "/invoices/customer": {
             "get": {
-                "description": "Retrieves invoices for a specific customer",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves invoices for a specific customer. If ` + "`" + `token` + "`" + ` is provided, validates the short-lived payment token and uses its customer/marina context. Otherwise, expects authenticated user context.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7656,6 +8896,20 @@ const docTemplate = `{
                         "description": "Invoice date (format: YYYY-MM-DD)",
                         "name": "invoiceDate",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID",
+                        "name": "marinaId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Short-lived payment token",
+                        "name": "token",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -7663,6 +8917,135 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.InvoiceListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoices/customer/invoice": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a specific invoice for a customer. If ` + "`" + `token` + "`" + ` is provided, validates the short-lived payment token and uses its customer/marina context; otherwise expects authenticated user with ` + "`" + `customerId` + "`" + ` and ` + "`" + `marinaId` + "`" + `.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Get specific customer invoice",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invoice ID",
+                        "name": "invoiceId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer ID (required without token)",
+                        "name": "customerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Marina ID (UUID, required without token)",
+                        "name": "marinaId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Short-lived payment token",
+                        "name": "token",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.InvoiceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoices/next-reference": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the next available AR reference number for a given customer from DME",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Get next AR reference number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Customer ID",
+                        "name": "customerId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.NextReferenceResponse"
                         }
                     },
                     "400": {
@@ -9830,7 +11213,8 @@ const docTemplate = `{
                             "alert",
                             "esign",
                             "document",
-                            "payment"
+                            "payment",
+                            "service"
                         ],
                         "type": "string",
                         "description": "Filter by notification type",
@@ -11160,7 +12544,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieves a paginated list of payments with optional filtering",
+                "description": "Returns a paginated list of payments. Supports search, flexible filters, and sorting.",
                 "consumes": [
                     "application/json"
                 ],
@@ -11175,66 +12559,56 @@ const docTemplate = `{
                     {
                         "minimum": 1,
                         "type": "integer",
+                        "default": 1,
                         "description": "Page number",
                         "name": "page",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
+                        "default": 10,
                         "description": "Page size",
                         "name": "pageSize",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by status (pending, authorized, completed, failed)",
-                        "name": "status",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by entity type (invoice, boat, customer, etc.)",
-                        "name": "entityType",
+                        "description": "Search term (matches reference_number, adyen_psp_reference, customer_id, payment_method)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Filters (e.g. filters[customer_id]=00811\u0026filters[status]=authorized\u0026filters[entity_type]=invoice\u0026filters[entity_id]=904192\u0026filters[payment_method]=amex\u0026filters[currency]=EUR\u0026filters[start_date]=2025-11-01\u0026filters[end_date]=2025-11-21)",
+                        "name": "filters",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by entity ID",
-                        "name": "entityId",
+                        "default": "created_at",
+                        "description": "Sort by field (reference_number, payment_method, currency, payment_date, created_at, amount, status)",
+                        "name": "sortBy",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by start date (YYYY-MM-DD)",
-                        "name": "startDate",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by end date (YYYY-MM-DD)",
-                        "name": "endDate",
+                        "default": "desc",
+                        "description": "Sort order (asc or desc)",
+                        "name": "sortOrder",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Paginated list of payments",
                         "schema": {
                             "$ref": "#/definitions/responses.PaymentListResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/responses.Error"
-                        }
-                    },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Server error",
                         "schema": {
                             "$ref": "#/definitions/responses.Error"
                         }
@@ -11244,6 +12618,11 @@ const docTemplate = `{
         },
         "/payments/details": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Handles payment completion redirects from Adyen",
                 "consumes": [
                     "application/json"
@@ -11347,8 +12726,140 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments/links": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generates a short-lived token tied to a customer and marina to fetch invoices and create sessions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create payment link",
+                "parameters": [
+                    {
+                        "description": "Create payment link request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreatePaymentLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentLinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/links/validate": {
+            "get": {
+                "description": "Validates a short-lived payment token and returns customer and marina identifiers if valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Validate payment token",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.PaymentTokenValidationResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/paytypes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetches the list of PayTypes from DME for the user's current marina/system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Retrieve DME Pay Types",
+                "responses": {
+                    "200": {
+                        "description": "List of pay types",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/payments/sessions": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new Adyen payment session for processing payments",
                 "consumes": [
                     "application/json"
@@ -12822,6 +14333,41 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.ServiceOperationDescriptionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/service/schedule/labels": {
+            "get": {
+                "description": "Retrieves the list of schedule labels configured in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedule"
+                ],
+                "summary": "Retrieve schedule labels",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ScheduleLabelsResponse"
                         }
                     },
                     "400": {
@@ -15017,6 +16563,107 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/labor-detail": {
+            "get": {
+                "description": "Retrieves labor detail entries for a specific work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order labor detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderLaborDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/labor-detail-records": {
+            "get": {
+                "description": "Retrieves comprehensive individual labor detail records for a specific work order operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order labor detail records",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderLaborDetailRecordsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/list": {
             "get": {
                 "description": "Retrieves a paginated list of work orders",
@@ -15213,6 +16860,153 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/operations/search": {
+            "post": {
+                "description": "Searches for operation codes by search string",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Search all work order operations",
+                "parameters": [
+                    {
+                        "description": "Search parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SearchAllOperationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SearchAllOperationsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/part-detail": {
+            "get": {
+                "description": "Retrieves detailed part information for a specific work order operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order part detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderPartDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/parts": {
+            "get": {
+                "description": "Retrieves part entries for a specific work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order parts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "workOrderId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation code filter",
+                        "name": "opcode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderPartsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/retrieve": {
             "get": {
                 "description": "Retrieves a work order by its ID",
@@ -15337,6 +17131,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.WorkOrderSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/work-orders/sublet": {
+            "post": {
+                "description": "Submits a sublet entry for a work order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Submit work order sublet entry",
+                "parameters": [
+                    {
+                        "description": "Sublet entry data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SubmitWorkOrderSubletEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SubmitSubletEntryResponse"
                         }
                     },
                     "400": {
@@ -15677,6 +17517,9 @@ const docTemplate = `{
         "dme.Boat": {
             "type": "object",
             "properties": {
+                "access": {
+                    "type": "string"
+                },
                 "attachments": {
                     "type": "array",
                     "items": {
@@ -15704,6 +17547,12 @@ const docTemplate = `{
                 "comments": {
                     "type": "string"
                 },
+                "contractEndDate": {
+                    "type": "string"
+                },
+                "contractStartDate": {
+                    "type": "string"
+                },
                 "customInformation": {
                     "type": "array",
                     "items": {
@@ -15715,6 +17564,18 @@ const docTemplate = `{
                 },
                 "draft": {
                     "type": "string"
+                },
+                "drives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Drive"
+                    }
+                },
+                "generators": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Generator"
+                    }
                 },
                 "height": {
                     "type": "string"
@@ -15797,6 +17658,21 @@ const docTemplate = `{
                 "trailerSerial": {
                     "type": "string"
                 },
+                "transomCondition": {
+                    "type": "string"
+                },
+                "transomHeight": {
+                    "type": "string"
+                },
+                "transomMaterial": {
+                    "type": "string"
+                },
+                "transomType": {
+                    "type": "string"
+                },
+                "transomTypeDesc": {
+                    "type": "string"
+                },
                 "winterSlip": {
                     "type": "string"
                 },
@@ -15813,6 +17689,29 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                }
+            }
+        },
+        "dme.BoatList": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Boat"
+                    }
+                },
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
                 }
             }
         },
@@ -15842,6 +17741,142 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.BoatModelInfo": {
+            "type": "object",
+            "properties": {
+                "beam": {
+                    "type": "string"
+                },
+                "bridgeClearance": {
+                    "type": "string"
+                },
+                "cabinHeadroom": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "deadRise": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "draft": {
+                    "type": "string"
+                },
+                "freightCost": {
+                    "type": "number"
+                },
+                "fuelCapacity": {
+                    "type": "string"
+                },
+                "hullMaterial": {
+                    "type": "string"
+                },
+                "hullType": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "string"
+                },
+                "lengthOverall": {
+                    "type": "string"
+                },
+                "listPrice": {
+                    "type": "number"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelNumber": {
+                    "type": "string"
+                },
+                "modelType": {
+                    "type": "string"
+                },
+                "motorRating": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.BoatModelOption"
+                    }
+                },
+                "pack": {
+                    "type": "number"
+                },
+                "prepCost": {
+                    "type": "number"
+                },
+                "price1": {
+                    "type": "number"
+                },
+                "price2": {
+                    "type": "number"
+                },
+                "price3": {
+                    "type": "number"
+                },
+                "price4": {
+                    "type": "number"
+                },
+                "price5": {
+                    "type": "number"
+                },
+                "riggingcost": {
+                    "type": "number"
+                },
+                "sleepCapacity": {
+                    "type": "string"
+                },
+                "unitCost": {
+                    "type": "number"
+                },
+                "vendorName": {
+                    "type": "string"
+                },
+                "wasteCapacity": {
+                    "type": "string"
+                },
+                "waterCapacity": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.BoatModelOption": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "groupCode": {
+                    "type": "string"
+                },
+                "modelCount": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelType": {
+                    "type": "string"
+                },
+                "optionCode": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.BoatSearch": {
             "type": "object",
             "properties": {
@@ -15857,6 +17892,9 @@ const docTemplate = `{
                 "departureDate": {
                     "type": "string"
                 },
+                "hin": {
+                    "type": "string"
+                },
                 "ownerName": {
                     "type": "string"
                 }
@@ -15865,6 +17903,9 @@ const docTemplate = `{
         "dme.BoatUpdate": {
             "type": "object",
             "properties": {
+                "access": {
+                    "type": "string"
+                },
                 "attachments": {
                     "type": "array",
                     "items": {
@@ -15892,6 +17933,12 @@ const docTemplate = `{
                 "comments": {
                     "type": "string"
                 },
+                "contractEndDate": {
+                    "type": "string"
+                },
+                "contractStartDate": {
+                    "type": "string"
+                },
                 "customInformation": {
                     "type": "array",
                     "items": {
@@ -15903,6 +17950,18 @@ const docTemplate = `{
                 },
                 "draft": {
                     "type": "string"
+                },
+                "drives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Drive"
+                    }
+                },
+                "generators": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Generator"
+                    }
                 },
                 "height": {
                     "type": "string"
@@ -15980,6 +18039,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "trailerSerial": {
+                    "type": "string"
+                },
+                "transomCondition": {
+                    "type": "string"
+                },
+                "transomHeight": {
+                    "type": "string"
+                },
+                "transomMaterial": {
+                    "type": "string"
+                },
+                "transomType": {
+                    "type": "string"
+                },
+                "transomTypeDesc": {
                     "type": "string"
                 },
                 "winterSlip": {
@@ -16215,6 +18289,87 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.CustomerContract": {
+            "type": "object",
+            "properties": {
+                "balanceDue": {
+                    "type": "number"
+                },
+                "boats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.UnitBoat"
+                    }
+                },
+                "contractId": {
+                    "type": "string"
+                },
+                "contractTotal": {
+                    "type": "number"
+                },
+                "customInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomInformation"
+                    }
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "isQuote": {
+                    "type": "boolean"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {}
+                },
+                "name": {
+                    "type": "string"
+                },
+                "otherUnits": {
+                    "type": "array",
+                    "items": {}
+                },
+                "prospectId": {
+                    "type": "string"
+                },
+                "salesDate": {
+                    "type": "string"
+                },
+                "salesLocation": {
+                    "type": "string"
+                },
+                "salesMan": {
+                    "type": "string"
+                },
+                "taxSchema": {
+                    "type": "string"
+                },
+                "thirdPartyIdentifier": {
+                    "type": "string"
+                },
+                "totalDeposits": {
+                    "type": "number"
+                },
+                "totalPrices": {
+                    "type": "number"
+                },
+                "tradeItems": {
+                    "type": "array",
+                    "items": {}
+                },
+                "trailers": {
+                    "type": "array",
+                    "items": {}
+                },
+                "writtenDate": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.CustomerMinimal": {
             "type": "object",
             "properties": {
@@ -16264,6 +18419,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workPhone": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.CustomerMinimalWithCategoryCodes": {
+            "type": "object",
+            "properties": {
+                "categoryCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CategoryCode"
+                    }
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inactive": {
+                    "type": "boolean"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -16433,6 +18611,102 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.CustomerWithCategoryCodesPage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerMinimalWithCategoryCodes"
+                    }
+                },
+                "currentPage": {
+                    "type": "integer"
+                },
+                "listName": {
+                    "type": "string"
+                },
+                "maxPages": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dme.Drive": {
+            "type": "object",
+            "properties": {
+                "condition": {
+                    "type": "string"
+                },
+                "conditionDesc": {
+                    "type": "string"
+                },
+                "gearRatio": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "typeDesc": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.Generator": {
+            "type": "object",
+            "properties": {
+                "condition": {
+                    "type": "string"
+                },
+                "conditionDesc": {
+                    "type": "string"
+                },
+                "fuelType": {
+                    "type": "string"
+                },
+                "fuelTypeDesc": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "integer"
+                },
+                "kilowatts": {
+                    "type": "string"
+                },
+                "make": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.Installment": {
             "type": "object",
             "properties": {
@@ -16488,14 +18762,88 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.LaborEntry": {
+            "type": "object",
+            "properties": {
+                "billedHours": {
+                    "type": "number"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "departmentDesc": {
+                    "type": "string"
+                },
+                "flagLaborFinished": {
+                    "type": "boolean"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "isApproved": {
+                    "type": "boolean"
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "laborRate": {
+                    "type": "number"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "stopTime": {
+                    "type": "string"
+                },
+                "techId": {
+                    "type": "string"
+                },
+                "techName": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.Motor": {
             "type": "object",
             "properties": {
+                "condition": {
+                    "type": "string"
+                },
+                "conditionDesc": {
+                    "type": "string"
+                },
                 "drive": {
+                    "type": "string"
+                },
+                "fuelType": {
+                    "type": "string"
+                },
+                "fuelTypeDesc": {
                     "type": "string"
                 },
                 "hours": {
                     "type": "number"
+                },
+                "hp": {
+                    "type": "integer"
                 },
                 "make": {
                     "type": "string"
@@ -16513,6 +18861,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transomId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "typeDesc": {
                     "type": "string"
                 },
                 "year": {
@@ -16750,6 +19104,120 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.UnitBoat": {
+            "type": "object",
+            "properties": {
+                "accessories": {
+                    "type": "array",
+                    "items": {}
+                },
+                "boatModelInfo": {
+                    "$ref": "#/definitions/dme.BoatModelInfo"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "comments": {
+                    "type": "string"
+                },
+                "currentPhysicalLoc": {
+                    "type": "string"
+                },
+                "customInfo": {
+                    "type": "array",
+                    "items": {}
+                },
+                "description": {
+                    "type": "string"
+                },
+                "freightCost": {
+                    "type": "number"
+                },
+                "freightPrice": {
+                    "type": "number"
+                },
+                "hin": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ignitionKeyNum": {
+                    "type": "string"
+                },
+                "listPrice": {
+                    "type": "number"
+                },
+                "manufacturedDate": {
+                    "type": "string"
+                },
+                "optionCost": {
+                    "type": "number"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {}
+                },
+                "pack": {
+                    "type": "number"
+                },
+                "prepCost": {
+                    "type": "number"
+                },
+                "prepPrice": {
+                    "type": "number"
+                },
+                "previousOwners": {
+                    "type": "array",
+                    "items": {}
+                },
+                "price1": {
+                    "type": "number"
+                },
+                "price2": {
+                    "type": "number"
+                },
+                "price3": {
+                    "type": "number"
+                },
+                "price4": {
+                    "type": "number"
+                },
+                "price5": {
+                    "type": "number"
+                },
+                "receivedDate": {
+                    "type": "string"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "riggingCost": {
+                    "type": "number"
+                },
+                "riggingPrice": {
+                    "type": "number"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "stockNumber": {
+                    "type": "string"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "unitCost": {
+                    "type": "number"
+                }
+            }
+        },
         "dme.WaitListEntry": {
             "type": "object",
             "properties": {
@@ -16934,6 +19402,124 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.WorkOrderDetailPartEntry": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "cost": {
+                    "type": "number"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partId": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "techId": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderLaborDetailRecord": {
+            "type": "object",
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "labor_billed_date": {
+                    "type": "string"
+                },
+                "labor_cost_extension": {
+                    "type": "number"
+                },
+                "labor_cost_factor": {
+                    "type": "string"
+                },
+                "labor_cost_rate": {
+                    "type": "number"
+                },
+                "labor_date": {
+                    "type": "string"
+                },
+                "labor_discount": {
+                    "type": "number"
+                },
+                "labor_effective_hours": {
+                    "type": "number"
+                },
+                "labor_employee": {
+                    "type": "string"
+                },
+                "labor_hours": {
+                    "type": "number"
+                },
+                "labor_invoice_id": {
+                    "type": "string"
+                },
+                "labor_price_extend": {
+                    "type": "number"
+                },
+                "labor_price_factor": {
+                    "type": "string"
+                },
+                "labor_price_rate": {
+                    "type": "number"
+                },
+                "labor_start_time": {
+                    "type": "string"
+                },
+                "labor_stop_time": {
+                    "type": "string"
+                },
+                "labor_tech_comments": {
+                    "type": "string"
+                },
+                "labor_uid": {
+                    "type": "string"
+                },
+                "line_number": {
+                    "type": "integer"
+                },
+                "operation_code": {
+                    "type": "string"
+                },
+                "work_order_detail_id": {
+                    "type": "string"
+                },
+                "work_order_id": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.WorkOrderOperation": {
             "type": "object",
             "properties": {
@@ -17012,10 +19598,90 @@ const docTemplate = `{
                 "opcode": {
                     "type": "string"
                 },
+                "reqCompDate": {
+                    "type": "string"
+                },
                 "standardHours": {
                     "type": "number"
                 },
                 "techDesc": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderPartDetail": {
+            "type": "object",
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "line_number": {
+                    "type": "integer"
+                },
+                "operation_code": {
+                    "type": "string"
+                },
+                "part": {
+                    "type": "string"
+                },
+                "part_billed_date": {
+                    "type": "string"
+                },
+                "part_comment": {
+                    "type": "string"
+                },
+                "part_cost": {
+                    "type": "number"
+                },
+                "part_date": {
+                    "type": "string"
+                },
+                "part_desc": {
+                    "type": "string"
+                },
+                "part_discount": {
+                    "type": "number"
+                },
+                "part_extend": {
+                    "type": "number"
+                },
+                "part_invoice_id": {
+                    "type": "string"
+                },
+                "part_loc_code": {
+                    "type": "string"
+                },
+                "part_loc_pos": {
+                    "type": "integer"
+                },
+                "part_price": {
+                    "type": "number"
+                },
+                "part_qty": {
+                    "type": "number"
+                },
+                "part_rigged_acc": {
+                    "type": "boolean"
+                },
+                "part_serial_num": {
+                    "type": "string"
+                },
+                "part_tech": {
+                    "type": "string"
+                },
+                "pick_list_print": {
+                    "type": "boolean"
+                },
+                "special_order": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                },
+                "work_order_detail_id": {
+                    "type": "string"
+                },
+                "work_order_id": {
                     "type": "string"
                 }
             }
@@ -17328,6 +19994,9 @@ const docTemplate = `{
                 "ownerId"
             ],
             "properties": {
+                "access": {
+                    "type": "string"
+                },
                 "attachments": {
                     "type": "array",
                     "items": {
@@ -17355,6 +20024,12 @@ const docTemplate = `{
                 "comments": {
                     "type": "string"
                 },
+                "contractEndDate": {
+                    "type": "string"
+                },
+                "contractStartDate": {
+                    "type": "string"
+                },
                 "customInformation": {
                     "type": "array",
                     "items": {
@@ -17366,6 +20041,18 @@ const docTemplate = `{
                 },
                 "draft": {
                     "type": "string"
+                },
+                "drives": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Drive"
+                    }
+                },
+                "generators": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Generator"
+                    }
                 },
                 "height": {
                     "type": "string"
@@ -17396,6 +20083,12 @@ const docTemplate = `{
                 },
                 "model": {
                     "type": "string"
+                },
+                "motors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.Motor"
+                    }
                 },
                 "name": {
                     "type": "string"
@@ -17436,6 +20129,21 @@ const docTemplate = `{
                 "trailerSerial": {
                     "type": "string"
                 },
+                "transomCondition": {
+                    "type": "string"
+                },
+                "transomHeight": {
+                    "type": "string"
+                },
+                "transomMaterial": {
+                    "type": "string"
+                },
+                "transomType": {
+                    "type": "string"
+                },
+                "transomTypeDesc": {
+                    "type": "string"
+                },
                 "winterSlip": {
                     "type": "string"
                 },
@@ -17448,7 +20156,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "amount",
-                "marinaId",
                 "paymentType"
             ],
             "properties": {
@@ -17467,6 +20174,9 @@ const docTemplate = `{
                         "CK",
                         "ACH"
                     ]
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },
@@ -17508,13 +20218,22 @@ const docTemplate = `{
                 "customerId": {
                     "type": "string"
                 },
+                "firstName": {
+                    "type": "string"
+                },
                 "invPayments": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/requests.InvPayment"
                     }
                 },
+                "lastName": {
+                    "type": "string"
+                },
                 "payType": {
+                    "type": "string"
+                },
+                "primaryEmail": {
                     "type": "string"
                 },
                 "referenceNum": {
@@ -17819,6 +20538,16 @@ const docTemplate = `{
                     "type": "string",
                     "example": "customer@example.com"
                 },
+                "estimateId": {
+                    "description": "Optional estimate ID for PDF attachment",
+                    "type": "string",
+                    "example": "EST123"
+                },
+                "estimatePdfUrl": {
+                    "description": "Optional estimate PDF URL",
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/estimates/est123.pdf"
+                },
                 "name": {
                     "type": "string",
                     "example": "Customer Agreement"
@@ -17952,6 +20681,9 @@ const docTemplate = `{
                 "sender": {
                     "type": "string"
                 },
+                "subject": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
                     "enum": [
@@ -17984,6 +20716,16 @@ const docTemplate = `{
                 "documentId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "estimateId": {
+                    "description": "Optional estimate ID for PDF attachment",
+                    "type": "string",
+                    "example": "EST123"
+                },
+                "estimatePdfUrl": {
+                    "description": "Optional estimate PDF URL",
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/estimates/est123.pdf"
                 },
                 "name": {
                     "type": "string",
@@ -18050,6 +20792,47 @@ const docTemplate = `{
                 "website": {
                     "type": "string",
                     "example": "https://example.com"
+                }
+            }
+        },
+        "requests.CreatePaymentLinkRequest": {
+            "type": "object",
+            "required": [
+                "customerId",
+                "marinaId"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "customMessage": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "invoiceId": {
+                    "type": "string"
+                },
+                "marinaId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "recipient": {
+                    "type": "string"
+                },
+                "replyName": {
+                    "type": "string"
+                },
+                "ttlMinutes": {
+                    "type": "integer",
+                    "maximum": 4320,
+                    "minimum": 5
                 }
             }
         },
@@ -18657,7 +21440,13 @@ const docTemplate = `{
                         "$ref": "#/definitions/requests.OperationCode"
                     }
                 },
+                "status": {
+                    "type": "string"
+                },
                 "title": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -18787,7 +21576,8 @@ const docTemplate = `{
                         "alert",
                         "document",
                         "esign",
-                        "payment"
+                        "payment",
+                        "service"
                     ],
                     "example": "message"
                 }
@@ -18866,6 +21656,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "opcode": {
+                    "type": "string"
+                },
+                "reqCompDate": {
                     "type": "string"
                 },
                 "standardHours": {
@@ -18966,6 +21759,15 @@ const docTemplate = `{
                 "pageSize"
             ],
             "properties": {
+                "categoryCode": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
                 "page": {
                     "type": "integer",
                     "minimum": 0
@@ -19011,7 +21813,6 @@ const docTemplate = `{
             "required": [
                 "apptDate",
                 "endTime",
-                "id",
                 "locationCode",
                 "opcode",
                 "startTime",
@@ -19033,6 +21834,7 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "id": {
+                    "description": "ID can be empty for new appointments - DME API will generate it",
                     "type": "string"
                 },
                 "isDeleted": {
@@ -19112,6 +21914,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sessionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.SearchAllOperationsRequest": {
+            "type": "object",
+            "required": [
+                "searchString"
+            ],
+            "properties": {
+                "directHit": {
+                    "type": "boolean"
+                },
+                "searchString": {
                     "type": "string"
                 }
             }
@@ -19240,6 +22056,183 @@ const docTemplate = `{
                 },
                 "postBatch": {
                     "type": "boolean"
+                }
+            }
+        },
+        "requests.SubmitEstimateLaborEntryRequest": {
+            "type": "object",
+            "required": [
+                "date",
+                "estimateId",
+                "opCode",
+                "techId"
+            ],
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "estimateId": {
+                    "type": "string"
+                },
+                "flagLaborFinished": {
+                    "type": "boolean"
+                },
+                "hours": {
+                    "type": "number"
+                },
+                "isApproved": {
+                    "type": "boolean"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "stopTime": {
+                    "type": "string"
+                },
+                "techId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.SubmitEstimatePartEntryRequest": {
+            "type": "object",
+            "required": [
+                "estimateId",
+                "opCode",
+                "partNumber",
+                "quantity"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "estimateId": {
+                    "type": "string"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partNumber": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "number",
+                    "minimum": 0.01
+                },
+                "unitPrice": {
+                    "type": "number"
+                }
+            }
+        },
+        "requests.SubmitEstimateSubletEntryRequest": {
+            "type": "object",
+            "required": [
+                "opCode",
+                "purchaseDate",
+                "vendorId",
+                "workOrderId"
+            ],
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "subletDiscount": {
+                    "type": "number"
+                },
+                "subletLaborDiscount": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.SubmitWorkOrderSubletEntryRequest": {
+            "type": "object",
+            "required": [
+                "opCode",
+                "purchaseDate",
+                "vendorId",
+                "workOrderId"
+            ],
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "locationCode": {
+                    "type": "string"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "subletDiscount": {
+                    "type": "number"
+                },
+                "subletLaborDiscount": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
                 }
             }
         },
@@ -19995,7 +22988,13 @@ const docTemplate = `{
                         "$ref": "#/definitions/requests.OperationCode"
                     }
                 },
+                "status": {
+                    "type": "string"
+                },
                 "title": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 },
                 "woId": {
@@ -20252,49 +23251,29 @@ const docTemplate = `{
             "description": "System clerk/user information from DME API",
             "type": "object",
             "properties": {
-                "createdDate": {
-                    "type": "string",
-                    "example": "2023-06-01T08:00:00Z"
-                },
-                "department": {
-                    "type": "string",
-                    "example": "Service"
-                },
-                "email": {
+                "emailAddress": {
                     "type": "string",
                     "example": "john.doe@marina.com"
                 },
-                "firstName": {
+                "groupEmailAddress": {
                     "type": "string",
-                    "example": "John"
+                    "example": "service@marina.com"
                 },
                 "id": {
                     "type": "string",
                     "example": "CLERK001"
                 },
+                "inactiveDate": {
+                    "type": "string",
+                    "example": ""
+                },
                 "isActive": {
                     "type": "boolean",
                     "example": true
                 },
-                "lastLogin": {
-                    "type": "string",
-                    "example": "2024-01-15T10:30:00Z"
-                },
-                "lastName": {
-                    "type": "string",
-                    "example": "Doe"
-                },
                 "name": {
                     "type": "string",
                     "example": "John Doe"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+15551234567"
-                },
-                "role": {
-                    "type": "string",
-                    "example": "Technician"
                 }
             }
         },
@@ -20480,6 +23459,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.CustomerContractsResponse": {
+            "type": "object",
+            "properties": {
+                "contracts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerContract"
+                    }
+                }
+            }
+        },
         "responses.CustomerListMinimalResponse": {
             "type": "object",
             "properties": {
@@ -20531,6 +23521,17 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "responses.CustomerQuotesResponse": {
+            "type": "object",
+            "properties": {
+                "quotes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.CustomerContract"
+                    }
                 }
             }
         },
@@ -20668,6 +23669,40 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.DMESysIDResponse"
+                }
+            }
+        },
+        "responses.DepartmentListResponse": {
+            "description": "List of departments from DME API",
+            "type": "object",
+            "properties": {
+                "departments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.DepartmentResponse"
+                    }
+                }
+            }
+        },
+        "responses.DepartmentResponse": {
+            "description": "Department information from DME API",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Service Department"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "DEPT001"
+                },
+                "internalCOS": {
+                    "type": "string",
+                    "example": "INT001"
+                },
+                "retailCOS": {
+                    "type": "string",
+                    "example": "RET001"
                 }
             }
         },
@@ -20977,6 +24012,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
                 },
+                "replyName": {
+                    "type": "string",
+                    "example": "Marina Manager"
+                },
                 "replyTo": {
                     "type": "string",
                     "example": "support@example.com"
@@ -21100,6 +24139,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440001"
                 },
+                "replyName": {
+                    "type": "string",
+                    "example": "Marina Manager"
+                },
                 "replyTo": {
                     "type": "string",
                     "example": "support@example.com"
@@ -21208,6 +24251,28 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.EstimateLaborDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderLaborDetailRecord"
+                    }
+                }
+            }
+        },
+        "responses.EstimateLaborResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.LaborEntry"
+                    }
+                }
+            }
+        },
         "responses.EstimateListResponse": {
             "type": "object",
             "properties": {
@@ -21232,6 +24297,28 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "responses.EstimatePartDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderPartDetail"
+                    }
+                }
+            }
+        },
+        "responses.EstimatePartsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderDetailPartEntry"
+                    }
                 }
             }
         },
@@ -21525,6 +24612,14 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dme.InvoiceDetailed"
                     }
+                }
+            }
+        },
+        "responses.InvoiceResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dme.InvoiceDetailed"
                 }
             }
         },
@@ -22152,6 +25247,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "sent"
                 },
+                "subject": {
+                    "type": "string",
+                    "example": "Important Update"
+                },
                 "type": {
                     "type": "string",
                     "example": "email"
@@ -22167,6 +25266,14 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.MessageResponse"
+                }
+            }
+        },
+        "responses.NextReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "referenceNumber": {
+                    "type": "string"
                 }
             }
         },
@@ -22693,6 +25800,20 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.PaymentLinkResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.PaymentListResponse": {
             "type": "object",
             "properties": {
@@ -22719,6 +25840,12 @@ const docTemplate = `{
         "responses.PaymentResponse": {
             "type": "object",
             "properties": {
+                "adyenPaymentPayload": {
+                    "type": "string"
+                },
+                "adyenPaymentResponse": {
+                    "type": "string"
+                },
                 "adyenPspReference": {
                     "type": "string"
                 },
@@ -22746,6 +25873,9 @@ const docTemplate = `{
                 "batchStatus": {
                     "type": "string"
                 },
+                "cardSummary": {
+                    "type": "string"
+                },
                 "completedAt": {
                     "type": "string"
                 },
@@ -22756,6 +25886,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "customerId": {
+                    "type": "string"
+                },
+                "dmeBatchRequest": {
+                    "type": "string"
+                },
+                "dmeBatchResponse": {
                     "type": "string"
                 },
                 "entityId": {
@@ -22773,10 +25909,16 @@ const docTemplate = `{
                 "failedAt": {
                     "type": "string"
                 },
+                "firstName": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "internalNotes": {
+                    "type": "string"
+                },
+                "lastName": {
                     "type": "string"
                 },
                 "locationCode": {
@@ -22792,6 +25934,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "paymentMethod": {
+                    "type": "string"
+                },
+                "primaryEmail": {
                     "type": "string"
                 },
                 "referenceNumber": {
@@ -22928,6 +26073,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PaymentTokenValidationResponse": {
+            "type": "object",
+            "properties": {
+                "customerId": {
+                    "type": "string"
+                },
+                "marinaId": {
                     "type": "string"
                 }
             }
@@ -23158,16 +26314,77 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ScheduleResponse": {
+        "responses.ScheduleLabelResponse": {
+            "description": "Schedule label with color and description",
             "type": "object",
             "properties": {
-                "data": {}
+                "color": {
+                    "type": "string",
+                    "example": "#FF0000"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Urgent"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 0
+                }
             }
         },
-        "responses.ScheduleUpdateResponse": {
+        "responses.ScheduleLabelsResponse": {
+            "description": "List of schedule labels",
             "type": "object",
             "properties": {
-                "data": {}
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.ScheduleLabelResponse"
+                    }
+                }
+            }
+        },
+        "responses.ScheduleResponse": {
+            "description": "Raw DME schedule payload; structure varies per endpoint",
+            "type": "object",
+            "additionalProperties": true
+        },
+        "responses.ScheduleUpdateResponse": {
+            "description": "Schedule update response",
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.SearchAllOperationsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.SearchOperationResult"
+                    }
+                }
+            }
+        },
+        "responses.SearchOperationResult": {
+            "type": "object",
+            "properties": {
+                "categoryCode": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "string"
+                }
             }
         },
         "responses.ServiceOPCategoryCodesResponse": {
@@ -23354,6 +26571,220 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.SubmitEstimateLaborEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SubmitEstimatePartEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SubmitEstimateSubletEntryResponse": {
+            "type": "object",
+            "properties": {
+                "billToAddress1": {
+                    "type": "string"
+                },
+                "billToAddress2": {
+                    "type": "string"
+                },
+                "billToAddress3": {
+                    "type": "string"
+                },
+                "billToAddress4": {
+                    "type": "string"
+                },
+                "billToAddress5": {
+                    "type": "string"
+                },
+                "billToAddress6": {
+                    "type": "string"
+                },
+                "billToName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "shipToAddress1": {
+                    "type": "string"
+                },
+                "shipToAddress2": {
+                    "type": "string"
+                },
+                "shipToAddress3": {
+                    "type": "string"
+                },
+                "shipToAddress4": {
+                    "type": "string"
+                },
+                "shipToAddress5": {
+                    "type": "string"
+                },
+                "shipToAddress6": {
+                    "type": "string"
+                },
+                "shipToName": {
+                    "type": "string"
+                },
+                "spid": {
+                    "type": "string"
+                },
+                "subletEntryId": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "totalPrice": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SubmitSubletEntryResponse": {
+            "type": "object",
+            "properties": {
+                "billToAddress1": {
+                    "type": "string"
+                },
+                "billToAddress2": {
+                    "type": "string"
+                },
+                "billToAddress3": {
+                    "type": "string"
+                },
+                "billToAddress4": {
+                    "type": "string"
+                },
+                "billToAddress5": {
+                    "type": "string"
+                },
+                "billToAddress6": {
+                    "type": "string"
+                },
+                "billToName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "laborCost": {
+                    "type": "number"
+                },
+                "laborPrice": {
+                    "type": "number"
+                },
+                "opCode": {
+                    "type": "string"
+                },
+                "partsCost": {
+                    "type": "number"
+                },
+                "partsPrice": {
+                    "type": "number"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "shipToAddress1": {
+                    "type": "string"
+                },
+                "shipToAddress2": {
+                    "type": "string"
+                },
+                "shipToAddress3": {
+                    "type": "string"
+                },
+                "shipToAddress4": {
+                    "type": "string"
+                },
+                "shipToAddress5": {
+                    "type": "string"
+                },
+                "shipToAddress6": {
+                    "type": "string"
+                },
+                "shipToName": {
+                    "type": "string"
+                },
+                "spid": {
+                    "type": "string"
+                },
+                "subletEntryId": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "totalCost": {
+                    "type": "number"
+                },
+                "totalPrice": {
+                    "type": "number"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.UnreadCountResponse": {
             "description": "Unread notification count",
             "type": "object",
@@ -23525,6 +26956,145 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.VendorDTO": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "address3": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "contactName": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "emailAddress": {
+                    "type": "string"
+                },
+                "fax": {
+                    "type": "string"
+                },
+                "paymentAddress1": {
+                    "type": "string"
+                },
+                "paymentAddress2": {
+                    "type": "string"
+                },
+                "paymentAddress3": {
+                    "type": "string"
+                },
+                "paymentCity": {
+                    "type": "string"
+                },
+                "paymentContactName": {
+                    "type": "string"
+                },
+                "paymentCountry": {
+                    "type": "string"
+                },
+                "paymentFax": {
+                    "type": "string"
+                },
+                "paymentName": {
+                    "type": "string"
+                },
+                "paymentPhone": {
+                    "type": "string"
+                },
+                "paymentPostalCode": {
+                    "type": "string"
+                },
+                "paymentState": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "postalCode": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.VendorListResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "vendors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.VendorDTO"
+                    }
+                }
+            }
+        },
+        "responses.VendorResponse": {
+            "type": "object",
+            "properties": {
+                "vendor": {
+                    "$ref": "#/definitions/responses.VendorDTO"
+                }
+            }
+        },
+        "responses.VendorSearchResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "vendors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.VendorSearchResultDTO"
+                    }
+                }
+            }
+        },
+        "responses.VendorSearchResultDTO": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "contactName": {
+                    "type": "string"
+                },
+                "emailAddress": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "vendorId": {
+                    "type": "string"
+                },
+                "vendorName": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.VesselGalleryItemResponse": {
             "description": "Vessel gallery item data including image URL, description, and main image flag",
             "type": "object",
@@ -23651,6 +27221,28 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.WorkOrderLaborDetailRecordsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderLaborDetailRecord"
+                    }
+                }
+            }
+        },
+        "responses.WorkOrderLaborDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.LaborEntry"
+                    }
+                }
+            }
+        },
         "responses.WorkOrderListNewOrChangedResponse": {
             "type": "object",
             "properties": {
@@ -23716,6 +27308,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.WorkOrderPartDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderPartDetail"
+                    }
+                }
+            }
+        },
         "responses.WorkOrderPartEntryResponse": {
             "type": "object",
             "properties": {
@@ -23725,6 +27328,17 @@ const docTemplate = `{
                 },
                 "result": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.WorkOrderPartsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderDetailPartEntry"
+                    }
                 }
             }
         },

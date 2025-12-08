@@ -55,6 +55,8 @@ type EstimateUpdateRequest struct {
 	CustPromiseDate string                  `json:"custPromiseDate"`
 	CategoryCode    string                  `json:"categoryCode"`
 	Title           string                  `json:"title"`
+	Status          string                  `json:"status"`
+	Type            string                  `json:"type"`
 	OperationCodes  []OperationCode         `json:"operationCodes"`
 	Attachments     []AttachmentWithPublic  `json:"attachments"`
 }
@@ -68,8 +70,8 @@ type EstimatesForCustomerRequest struct {
 
 // EstimateDeleteOperationRequest represents a request to delete an operation from an estimate
 type EstimateDeleteOperationRequest struct {
-	WorkOrder string `query:"WorkOrder" validate:"required"`
-	Operation string `query:"Operation" validate:"required"`
+	WorkOrder string `json:"workOrder" query:"WorkOrder" validate:"required"`
+	Operation string `json:"operation" query:"Operation" validate:"required"`
 }
 
 // EstimateRetrieveListRequest represents a request to retrieve a list of estimates
@@ -81,4 +83,71 @@ type EstimateRetrieveListRequest struct {
 	Detail         bool     `json:"detail"`
 	Page           int      `json:"page" validate:"required,min=0"`
 	PageSize       int      `json:"pageSize" validate:"required,min=1,max=100"`
+}
+
+// SubmitEstimateSubletEntryRequest represents a request to submit a sublet entry for an estimate
+type SubmitEstimateSubletEntryRequest struct {
+	WorkOrderId         string  `json:"workOrderId" validate:"required"`
+	OpCode              string  `json:"opCode" validate:"required"`
+	VendorId            string  `json:"vendorId" validate:"required"`
+	PurchaseDate        string  `json:"purchaseDate" validate:"required"`
+	PartsPrice          float64 `json:"partsPrice"`
+	PartsCost           float64 `json:"partsCost"`
+	LaborPrice          float64 `json:"laborPrice"`
+	LaborCost           float64 `json:"laborCost"`
+	Description         string  `json:"description,omitempty"`
+	SubletDiscount      float64 `json:"subletDiscount"`
+	SubletLaborDiscount float64 `json:"subletLaborDiscount"`
+	LocationCode        string  `json:"locationCode,omitempty"`
+	Department          string  `json:"department,omitempty"`
+}
+
+// SubmitEstimatePartEntryRequest represents a request to submit a part entry for an estimate
+type SubmitEstimatePartEntryRequest struct {
+	EstimateId   string  `json:"estimateId" validate:"required"`
+	OpCode       string  `json:"opCode" validate:"required"`
+	PartNumber   string  `json:"partNumber" validate:"required"`
+	Quantity     float64 `json:"quantity" validate:"required,min=0.01"`
+	UnitPrice    float64 `json:"unitPrice"`
+	Description  string  `json:"description,omitempty"`
+	LocationCode string  `json:"locationCode,omitempty"`
+}
+
+// SubmitEstimateLaborEntryRequest represents a request to submit a labor entry for an estimate
+type SubmitEstimateLaborEntryRequest struct {
+	EstimateId        string  `json:"estimateId" validate:"required"`
+	OpCode            string  `json:"opCode" validate:"required"`
+	TechId            string  `json:"techId" validate:"required"`
+	Date              string  `json:"date" validate:"required"`
+	StartTime         string  `json:"startTime,omitempty"`
+	StopTime          string  `json:"stopTime,omitempty"`
+	Hours             float64 `json:"hours,omitempty"`
+	Comments          string  `json:"comments,omitempty"`
+	Department        string  `json:"department,omitempty"`
+	IsApproved        *bool   `json:"isApproved,omitempty"`
+	FlagLaborFinished *bool   `json:"flagLaborFinished,omitempty"`
+}
+
+// RetrieveEstimatePartsRequest represents a request to retrieve parts for an estimate
+type RetrieveEstimatePartsRequest struct {
+	EstimatesId string `query:"estimatesId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
+}
+
+// RetrieveEstimateLaborRequest represents a request to retrieve labor entries for an estimate
+type RetrieveEstimateLaborRequest struct {
+	EstimatesId string `query:"estimatesId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
+}
+
+// EstimatePartDetailRequest represents a request to retrieve detailed part information for an estimate operation
+type EstimatePartDetailRequest struct {
+	WodID  string `query:"WodID" validate:"required"`
+	OpCode string `query:"OpCode" validate:"required"`
+}
+
+// EstimateLaborDetailRequest represents a request to retrieve detailed labor information for an estimate operation
+type EstimateLaborDetailRequest struct {
+	WodID  string `query:"WodID" validate:"required"`
+	OpCode string `query:"OpCode" validate:"required"`
 }

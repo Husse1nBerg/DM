@@ -57,6 +57,7 @@ type EsignSubmissionResponse struct {
 	Name                *string                         `json:"name,omitempty" example:"Customer Agreement"`
 	AttachmentRequired  *bool                           `json:"attachmentRequired,omitempty" example:"false"`
 	ReplyTo             *string                         `json:"replyTo,omitempty" example:"support@example.com"`
+	ReplyName           *string                         `json:"replyName,omitempty" example:"Marina Manager"`
 	CustomMessage       *string                         `json:"customMessage,omitempty" example:"Please sign the document as soon as possible."`
 	Logo                *string                         `json:"logo,omitempty" example:"https://s3.amazonaws.com/bucket/marina/logo.png"`
 	IsMultipleSignature bool                            `json:"isMultipleSignature" example:"true"`
@@ -151,6 +152,7 @@ func ConvertEsignSubmissionToResponse(submission db.EsignSubmission) EsignSubmis
 		Name:                submission.Name,
 		AttachmentRequired:  submission.AttachmentRequired,
 		ReplyTo:             submission.ReplyTo,
+		ReplyName:           submission.ReplyName,
 		CustomMessage:       submission.CustomMessage,
 		Logo:                nil,
 		IsMultipleSignature: submission.IsMultipleSignature,
@@ -189,6 +191,7 @@ func ConvertEsignSubmissionWithSignersToResponse(submission db.EsignSubmission, 
 		Name:                submission.Name,
 		AttachmentRequired:  submission.AttachmentRequired,
 		ReplyTo:             submission.ReplyTo,
+		ReplyName:           submission.ReplyName,
 		CustomMessage:       submission.CustomMessage,
 		Logo:                nil,
 		IsMultipleSignature: submission.IsMultipleSignature,
@@ -374,6 +377,7 @@ type EsignSubmissionWithSignersResponse struct {
 	Name                *string                         `json:"name,omitempty" example:"Multi-Signature Agreement"`
 	AttachmentRequired  *bool                           `json:"attachmentRequired,omitempty" example:"false"`
 	ReplyTo             *string                         `json:"replyTo,omitempty" example:"support@example.com"`
+	ReplyName           *string                         `json:"replyName,omitempty" example:"Marina Manager"`
 	CustomMessage       *string                         `json:"customMessage,omitempty" example:"Please sign the document as soon as possible."`
 	Logo                *string                         `json:"logo,omitempty" example:"https://s3.amazonaws.com/bucket/marina/logo.png"`
 	IsMultipleSignature bool                            `json:"isMultipleSignature" example:"true"`

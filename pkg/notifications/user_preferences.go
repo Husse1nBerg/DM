@@ -34,6 +34,11 @@ func GetDefaultNotificationPreferences() []DefaultNotificationPreferences {
 			Enabled:          true,
 			DeliveryMethod:   "all",
 		},
+		{
+			NotificationType: "service",
+			Enabled:          true,
+			DeliveryMethod:   "all",
+		},
 	}
 }
 
@@ -88,6 +93,11 @@ func CreateDefaultNotificationPreferencesForCustomer(ctx context.Context, querie
 		},
 		{
 			NotificationType: "esign",
+			Enabled:          true,
+			DeliveryMethod:   "all",
+		},
+		{
+			NotificationType: "service",
 			Enabled:          true,
 			DeliveryMethod:   "all",
 		},

@@ -27,6 +27,16 @@ type HTMLEmail struct {
 	PlainText   string // Plain text version of the email
 	Subject     string // Subject of the email
 	ReplyTo     string // Reply to email address
+	ReplyName   string // Reply to name
+}
+
+// Attachment represents an email attachment
+type Attachment struct {
+	Content     []byte // File content
+	Filename    string // Filename for the attachment
+	Type        string // MIME type (e.g., "application/pdf")
+	Disposition string // Content disposition (default: "attachment")
+	ContentID   string // Content ID for inline attachments (optional)
 }
 
 // TemplateEmail contains data for sending an email using a SendGrid template
@@ -35,7 +45,9 @@ type TemplateEmail struct {
 	TemplateID   string                 // SendGrid template ID
 	TemplateData map[string]interface{} // Dynamic template data
 	ReplyTo      string                 // Reply to email address
+	ReplyName    string                 // Reply to name
 	Subject      string                 // Subject of the email
+	Attachments  []Attachment           // Email attachments
 }
 
 // WelcomeTemplateData contains specific fields for the welcome email template
@@ -52,6 +64,7 @@ type PasswordResetTemplateData struct {
 	UserName        string `json:"user_name"`        // User's username for login
 	ResetURL        string `json:"reset_url"`        // URL for the login page
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+	Logo            string `json:"logo,omitempty"`   // URL for the customer logo
 }
 
 // MessageTemplateData contains specific fields for the message template
@@ -61,6 +74,7 @@ type MessageTemplateData struct {
 	Sender          string `json:"sender"`           // Sender name
 	HomeURL         string `json:"home_url"`         // URL for the home page
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+	Logo            string `json:"logo,omitempty"`   // URL for the customer logo
 }
 
 // MessageTemplateData contains specific fields for the message template
@@ -70,6 +84,7 @@ type ExternalMessageTemplateData struct {
 	Sender          string `json:"sender"`           // Sender name
 	ReplyTo         string `json:"reply_to"`         // Reply to email address
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+	Logo            string `json:"logo,omitempty"`   // URL for the customer logo
 }
 
 // InviteTemplateData contains specific fields for the invite template
@@ -77,12 +92,14 @@ type InviteTemplateData struct {
 	UserName        string `json:"user_name"`        // User's username for login
 	InviteURL       string `json:"invite_url"`       // URL for the invite
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+	Logo            string `json:"logo,omitempty"`   // URL for the customer logo
 }
 
 type InviteCustomerTemplateData struct {
 	UserName        string `json:"user_name"`        // User's username for login
 	InviteURL       string `json:"invite_url"`       // URL for the invite
 	TermsConditions string `json:"terms_conditions"` // URL for the terms and conditions
+	Logo            string `json:"logo,omitempty"`   // URL for the customer logo
 }
 
 // AssignedToMarinaTemplateData contains specific fields for the assigned_to_marina template
@@ -119,4 +136,20 @@ type NotificationTemplateData struct {
 	Type         string `json:"type"`      // Type of notification
 	CustomerName string `json:"customer_name"`
 	HomeURL      string `json:"home_url"`
+	Logo         string `json:"logo,omitempty"` // URL for the customer logo
+}
+
+// PaymentLinkTemplateData contains fields for the payment link template
+// Expected dynamic data keys in SendGrid template
+type PaymentLinkTemplateData struct {
+	Recipient       string `json:"recipient"`
+	Sender          string `json:"sender"`
+	TermsConditions string `json:"terms_conditions"`
+	Name            string `json:"name"`
+	ReplyName       string `json:"reply_name"`
+	CustomMessage   string `json:"custom_message"`
+	PaymentURL      string `json:"payment_url"`
+	InvoiceID       string `json:"invoice_id"`
+	Amount          string `json:"amount"`
+	Logo            string `json:"logo,omitempty"` // URL for the customer logo
 }

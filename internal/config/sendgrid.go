@@ -28,6 +28,7 @@ func LoadSendGridConfig() SendGridConfig {
 	templatesMap["assigned_to_marina"] = os.Getenv("SENDGRID_TEMPLATE_ASSIGNED_TO_MARINA")
 	templatesMap["esign_submission"] = os.Getenv("SENDGRID_TEMPLATE_ESIGN_SUBMISSION")
 	templatesMap["notification"] = os.Getenv("SENDGRID_TEMPLATE_NOTIFICATION")
+	templatesMap["payment_link"] = os.Getenv("SENDGRID_TEMPLATE_PAYMENT_LINK")
 	if templatesMap["message"] == "" {
 		templatesMap["message"] = "d-2a2afe50d47d417c99019692dc20079a"
 	}
@@ -51,6 +52,9 @@ func LoadSendGridConfig() SendGridConfig {
 	}
 	if templatesMap["esign_submission"] == "" {
 		templatesMap["esign_submission"] = "d-b14c44271dbb4893a34730bc59cb3c62"
+	}
+	if templatesMap["payment_link"] == "" {
+		templatesMap["payment_link"] = "d-d02373e4593b4cdaab42c1022abb189f"
 	}
 	if templatesMap["notification"] == "" {
 		templatesMap["notification"] = "d-e6168ddc800045b6abf536dfaa5681d9"

@@ -480,6 +480,23 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 		}
 	}
 
+	// Retrieve current work order to compare comments
+	// Only include comments in update if they have changed
+	shouldIncludeComments := true
+	currentWorkOrder, err := h.server.DME.WorkOrderRetrieve(ctx, req.WoId, false, orgID, *systemID)
+	if err != nil {
+		// Log warning but continue with update (include comments to be safe)
+		h.server.Logger.DesugarZap.Warn("Failed to retrieve current work order for comment comparison",
+			zap.Error(err),
+			zap.String("workOrderId", req.WoId))
+		// Keep shouldIncludeComments as true to include comments if retrieval fails
+	} else {
+		// Compare current comments with incoming comments
+		if currentWorkOrder.Comments == req.Comments {
+			shouldIncludeComments = false
+		}
+	}
+
 	// Create a map with all the work order data
 	// Directly map all fields without conditionals, just like in CreateWorkOrder
 	workOrderData := map[string]interface{}{
@@ -490,14 +507,20 @@ func (h *WorkOrderHandler) UpdateWorkOrder(c echo.Context) error {
 		"boatName":        req.BoatName,
 		"customerPhone":   req.CustomerPhone,
 		"customerEmail":   req.CustomerEmail,
-		"comments":        req.Comments,
 		"locationCode":    req.LocationCode,
 		"estCompDate":     req.EstCompDate,
 		"estStartDate":    req.EstStartDate,
 		"custPromiseDate": req.CustPromiseDate,
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
+		"status":          req.Status,
+		"type":            req.Type,
 		"operationCodes":  operationCodes,
+	}
+
+	// Only include comments if they have changed
+	if shouldIncludeComments {
+		workOrderData["comments"] = req.Comments
 	}
 
 	// Add attachments to work order data if provided
@@ -664,7 +687,7 @@ func (h *WorkOrderHandler) RetrieveAllWorkOrderOperations(c echo.Context) error 
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
 	}
 
-	dmeResponse, err := h.server.DME.RetrieveAllWorkOrderOperations(ctx, req.Page, req.PageSize, orgID, *systemID)
+	dmeResponse, err := h.server.DME.RetrieveAllWorkOrderOperations(ctx, req.Page, req.PageSize, req.OpCode, req.CategoryCode, req.Desc, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to retrieve all work order operations",
 			zap.Error(err))
@@ -672,6 +695,127 @@ func (h *WorkOrderHandler) RetrieveAllWorkOrderOperations(c echo.Context) error 
 	}
 
 	response := responses.ConvertWorkOrderAllOperations(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Search all work order operations
+// @Description Searches for operation codes by search string
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param request body requests.SearchAllOperationsRequest true "Search parameters"
+// @Success 200 {object} responses.SearchAllOperationsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/operations/search [post]
+func (h *WorkOrderHandler) SearchAllWorkOrderOperations(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SearchAllOperationsRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.SearchAllOperations(ctx, req.SearchString, req.DirectHit, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to search operations",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertSearchOperations(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit work order sublet entry
+// @Description Submits a sublet entry for a work order
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param request body requests.SubmitWorkOrderSubletEntryRequest true "Sublet entry data"
+// @Success 200 {object} responses.SubmitSubletEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/sublet [post]
+func (h *WorkOrderHandler) SubmitWorkOrderSubletEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SubmitWorkOrderSubletEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	subletEntry := map[string]interface{}{
+		"workOrderId":         req.WorkOrderId,
+		"opCode":              req.OpCode,
+		"vendorId":            req.VendorId,
+		"purchaseDate":        req.PurchaseDate,
+		"partsPrice":          req.PartsPrice,
+		"partsCost":           req.PartsCost,
+		"laborPrice":          req.LaborPrice,
+		"laborCost":           req.LaborCost,
+		"description":         req.Description,
+		"subletDiscount":      req.SubletDiscount,
+		"subletLaborDiscount": req.SubletLaborDiscount,
+		"locationCode":        req.LocationCode,
+		"department":          req.Department,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitWorkOrderSubletEntry(ctx, subletEntry, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit work order sublet entry",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertSubmitSubletResult(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -873,8 +1017,12 @@ func (h *WorkOrderHandler) ListWorkOrderSublets(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	// Pass empty strings for optional parameters
-	dmeResponse, err := h.server.DME.ListWorkOrderSublets(ctx, "", "", "", orgID, *systemID)
+	// Read optional query parameters for filtering
+	workOrderID := c.QueryParam("workOrderId")
+	opcode := c.QueryParam("opcode")
+	vendorID := c.QueryParam("vendorID")
+
+	dmeResponse, err := h.server.DME.ListWorkOrderSublets(ctx, workOrderID, opcode, vendorID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list work order sublets",
 			zap.Error(err))
@@ -1248,5 +1396,293 @@ func (h *WorkOrderHandler) RetrieveWorkOrdersList(c echo.Context) error {
 	}
 
 	response := responses.ConvertWorkOrderList(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve work order labor detail
+// @Description Retrieves labor detail entries for a specific work order
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param workOrderId query string true "Work Order ID"
+// @Param opcode query string false "Operation code filter"
+// @Success 200 {object} responses.WorkOrderLaborDetailResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/labor-detail [get]
+func (h *WorkOrderHandler) RetrieveWorkOrderLaborDetail(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.RetrieveWorkOrderLaborDetailRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// If a specific opcode is provided, fetch labor for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveWorkOrderLaborDetail(ctx, req.WorkOrderId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve work order labor detail",
+				zap.Error(err),
+				zap.String("workOrderId", req.WorkOrderId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertWorkOrderLaborDetail(dmeResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
+	// No opcode specified - fetch work order details to get all operations
+	workOrder, err := h.server.DME.WorkOrderRetrieve(ctx, req.WorkOrderId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order details",
+			zap.Error(err),
+			zap.String("workOrderId", req.WorkOrderId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve work order details").JSON(c)
+	}
+
+	// Extract operation codes from work order
+	var allLabor []dme.LaborEntry
+	if workOrder.Operations != nil {
+		for _, operation := range workOrder.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+			
+			labor, err := h.server.DME.RetrieveWorkOrderLaborDetail(ctx, req.WorkOrderId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve labor for operation",
+					zap.Error(err),
+					zap.String("workOrderId", req.WorkOrderId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allLabor = append(allLabor, labor...)
+		}
+	}
+
+	response := responses.ConvertWorkOrderLaborDetail(allLabor)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve work order parts
+// @Description Retrieves part entries for a specific work order
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param workOrderId query string true "Work Order ID"
+// @Param opcode query string false "Operation code filter"
+// @Success 200 {object} responses.WorkOrderPartsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/parts [get]
+func (h *WorkOrderHandler) RetrieveWorkOrderParts(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.RetrieveWorkOrderPartsRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// If a specific opcode is provided, fetch parts for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveWorkOrderParts(ctx, req.WorkOrderId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve work order parts",
+				zap.Error(err),
+				zap.String("workOrderId", req.WorkOrderId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertWorkOrderParts(dmeResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
+	// No opcode specified - fetch work order details to get all operations
+	workOrder, err := h.server.DME.WorkOrderRetrieve(ctx, req.WorkOrderId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order details",
+			zap.Error(err),
+			zap.String("workOrderId", req.WorkOrderId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve work order details").JSON(c)
+	}
+
+	// Extract operation codes from work order
+	var allParts []dme.WorkOrderDetailPartEntry
+	if workOrder.Operations != nil {
+		for _, operation := range workOrder.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+			
+			parts, err := h.server.DME.RetrieveWorkOrderParts(ctx, req.WorkOrderId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve parts for operation",
+					zap.Error(err),
+					zap.String("workOrderId", req.WorkOrderId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allParts = append(allParts, parts...)
+		}
+	}
+
+	response := responses.ConvertWorkOrderParts(allParts)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve work order part detail
+// @Description Retrieves detailed part information for a specific work order operation
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param WodID query string true "Work Order ID"
+// @Param OpCode query string true "Operation Code"
+// @Success 200 {object} responses.WorkOrderPartDetailResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/part-detail [get]
+func (h *WorkOrderHandler) RetrieveWorkOrderPartDetail(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrderPartDetailRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveWorkOrderPartDetail(ctx, req.WodID, req.OpCode, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order part detail",
+			zap.Error(err),
+			zap.String("workOrderId", req.WodID),
+			zap.String("opcode", req.OpCode))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderPartDetail(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve work order labor detail records
+// @Description Retrieves comprehensive individual labor detail records for a specific work order operation
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param WodID query string true "Work Order ID"
+// @Param OpCode query string true "Operation Code"
+// @Success 200 {object} responses.WorkOrderLaborDetailRecordsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/labor-detail-records [get]
+func (h *WorkOrderHandler) RetrieveWorkOrderLaborDetailRecords(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrderPartDetailRequest) // Reuse same request structure
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveWorkOrderLaborDetailRecords(ctx, req.WodID, req.OpCode, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order labor detail records",
+			zap.Error(err),
+			zap.String("workOrderId", req.WodID),
+			zap.String("opcode", req.OpCode))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderLaborDetailRecords(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }

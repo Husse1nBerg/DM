@@ -7,17 +7,12 @@ import (
 // ClerkResponse represents a system clerk (user) in the DME system
 // @Description System clerk/user information from DME API
 type ClerkResponse struct {
-	ID          string `json:"id" example:"CLERK001"`
-	Name        string `json:"name" example:"John Doe"`
-	FirstName   string `json:"firstName" example:"John"`
-	LastName    string `json:"lastName" example:"Doe"`
-	Email       string `json:"email" example:"john.doe@marina.com"`
-	Phone       string `json:"phone" example:"+15551234567"`
-	IsActive    bool   `json:"isActive" example:"true"`
-	Department  string `json:"department" example:"Service"`
-	Role        string `json:"role" example:"Technician"`
-	LastLogin   string `json:"lastLogin" example:"2024-01-15T10:30:00Z"`
-	CreatedDate string `json:"createdDate" example:"2023-06-01T08:00:00Z"`
+	ID                string `json:"id" example:"CLERK001"`
+	Name              string `json:"name" example:"John Doe"`
+	EmailAddress      string `json:"emailAddress" example:"john.doe@marina.com"`
+	GroupEmailAddress string `json:"groupEmailAddress" example:"service@marina.com"`
+	InactiveDate      string `json:"inactiveDate" example:""`
+	IsActive          bool   `json:"isActive" example:"true"`
 }
 
 // ClerkListResponse represents a list of system clerks
@@ -62,17 +57,12 @@ type LocationListResponse struct {
 // NewClerkResponse creates a new ClerkResponse from a DME Clerk
 func NewClerkResponse(clerk dme.Clerk) ClerkResponse {
 	return ClerkResponse{
-		ID:          clerk.ID,
-		Name:        clerk.Name,
-		FirstName:   clerk.FirstName,
-		LastName:    clerk.LastName,
-		Email:       clerk.Email,
-		Phone:       clerk.Phone,
-		IsActive:    clerk.IsActive,
-		Department:  clerk.Department,
-		Role:        clerk.Role,
-		LastLogin:   clerk.LastLogin,
-		CreatedDate: clerk.CreatedDate,
+		ID:                clerk.ID,
+		Name:              clerk.Name,
+		EmailAddress:      clerk.EmailAddress,
+		GroupEmailAddress: clerk.GroupEmailAddress,
+		InactiveDate:      clerk.InactiveDate,
+		IsActive:          clerk.IsActive,
 	}
 }
 
@@ -123,5 +113,41 @@ func NewLocationListResponse(locations []dme.Location) LocationListResponse {
 	}
 	return LocationListResponse{
 		Locations: locationResponses,
+	}
+}
+
+// DepartmentResponse represents a department from DME API
+// @Description Department information from DME API
+type DepartmentResponse struct {
+	ID          string `json:"id" example:"DEPT001"`
+	Description string `json:"description" example:"Service Department"`
+	InternalCOS string `json:"internalCOS" example:"INT001"`
+	RetailCOS   string `json:"retailCOS" example:"RET001"`
+}
+
+// DepartmentListResponse represents a list of departments
+// @Description List of departments from DME API
+type DepartmentListResponse struct {
+	Departments []DepartmentResponse `json:"departments"`
+}
+
+// NewDepartmentResponse creates a new DepartmentResponse from a DME Department
+func NewDepartmentResponse(department dme.Department) DepartmentResponse {
+	return DepartmentResponse{
+		ID:          department.ID,
+		Description: department.Description,
+		InternalCOS: department.InternalCOS,
+		RetailCOS:   department.RetailCOS,
+	}
+}
+
+// NewDepartmentListResponse creates a new DepartmentListResponse from a slice of DME Departments
+func NewDepartmentListResponse(departments []dme.Department) DepartmentListResponse {
+	departmentResponses := make([]DepartmentResponse, len(departments))
+	for i, department := range departments {
+		departmentResponses[i] = NewDepartmentResponse(department)
+	}
+	return DepartmentListResponse{
+		Departments: departmentResponses,
 	}
 }

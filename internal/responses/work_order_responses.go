@@ -233,3 +233,233 @@ func ConvertWorkOrderAllOperations(dmeResponse *dme.OperationsListResponse) *Wor
 		Content:     dmeResponse.Content,
 	}
 }
+
+// SearchOperationResult represents a single operation search result
+type SearchOperationResult struct {
+	Opcode       string `json:"opcode"`
+	Desc         string `json:"desc"`
+	CategoryCode string `json:"categoryCode"`
+}
+
+// SearchAllOperationsResponse represents the response for searching operations
+type SearchAllOperationsResponse struct {
+	Data []SearchOperationResult `json:"data"`
+}
+
+// ConvertSearchOperations converts search results to SearchAllOperationsResponse
+func ConvertSearchOperations(dmeResponse []map[string]interface{}) *SearchAllOperationsResponse {
+	results := make([]SearchOperationResult, 0, len(dmeResponse))
+	for _, item := range dmeResponse {
+		result := SearchOperationResult{}
+		if opcode, ok := item["opcode"].(string); ok {
+			result.Opcode = opcode
+		}
+		if desc, ok := item["desc"].(string); ok {
+			result.Desc = desc
+		}
+		if categoryCode, ok := item["categoryCode"].(string); ok {
+			result.CategoryCode = categoryCode
+		}
+		results = append(results, result)
+	}
+	return &SearchAllOperationsResponse{
+		Data: results,
+	}
+}
+
+// SubmitSubletEntryResponse represents the response from submitting a sublet entry
+type SubmitSubletEntryResponse struct {
+	Success             bool     `json:"success"`
+	Errors              []string `json:"errors,omitempty"`
+	SubletEntryId       string   `json:"subletEntryId,omitempty"`
+	SPID                string   `json:"spid,omitempty"`
+	WorkOrderId         string   `json:"workOrderId,omitempty"`
+	OpCode              string   `json:"opCode,omitempty"`
+	VendorId            string   `json:"vendorId,omitempty"`
+	PurchaseDate        string   `json:"purchaseDate,omitempty"`
+	PartsPrice          float64  `json:"partsPrice"`
+	PartsCost           float64  `json:"partsCost"`
+	LaborPrice          float64  `json:"laborPrice"`
+	LaborCost           float64  `json:"laborCost"`
+	Description         string   `json:"description,omitempty"`
+	TotalPrice          float64  `json:"totalPrice"`
+	TotalCost           float64  `json:"totalCost"`
+	BillToName          string   `json:"billToName,omitempty"`
+	BillToAddress1      string   `json:"billToAddress1,omitempty"`
+	BillToAddress2      string   `json:"billToAddress2,omitempty"`
+	BillToAddress3      string   `json:"billToAddress3,omitempty"`
+	BillToAddress4      string   `json:"billToAddress4,omitempty"`
+	BillToAddress5      string   `json:"billToAddress5,omitempty"`
+	BillToAddress6      string   `json:"billToAddress6,omitempty"`
+	ShipToName          string   `json:"shipToName,omitempty"`
+	ShipToAddress1      string   `json:"shipToAddress1,omitempty"`
+	ShipToAddress2      string   `json:"shipToAddress2,omitempty"`
+	ShipToAddress3      string   `json:"shipToAddress3,omitempty"`
+	ShipToAddress4      string   `json:"shipToAddress4,omitempty"`
+	ShipToAddress5      string   `json:"shipToAddress5,omitempty"`
+	ShipToAddress6      string   `json:"shipToAddress6,omitempty"`
+}
+
+// ConvertSubmitSubletResult converts DME response to SubmitSubletEntryResponse
+func ConvertSubmitSubletResult(dmeResponse *interface{}) *SubmitSubletEntryResponse {
+	// Convert the interface to a map for easier access
+	responseMap, ok := (*dmeResponse).(map[string]interface{})
+	if !ok {
+		return &SubmitSubletEntryResponse{
+			Success: false,
+			Errors:  []string{"Invalid response format"},
+		}
+	}
+
+	response := &SubmitSubletEntryResponse{}
+	
+	// Extract fields from the response map
+	if success, ok := responseMap["success"].(bool); ok {
+		response.Success = success
+	}
+	
+	if errors, ok := responseMap["errors"].([]interface{}); ok {
+		for _, err := range errors {
+			if errStr, ok := err.(string); ok {
+				response.Errors = append(response.Errors, errStr)
+			}
+		}
+	}
+	
+	// Extract all other fields
+	if subletEntryId, ok := responseMap["subletEntryId"].(string); ok {
+		response.SubletEntryId = subletEntryId
+	}
+	if spid, ok := responseMap["spid"].(string); ok {
+		response.SPID = spid
+	}
+	if workOrderId, ok := responseMap["workOrderId"].(string); ok {
+		response.WorkOrderId = workOrderId
+	}
+	if opCode, ok := responseMap["opCode"].(string); ok {
+		response.OpCode = opCode
+	}
+	if vendorId, ok := responseMap["vendorId"].(string); ok {
+		response.VendorId = vendorId
+	}
+	if purchaseDate, ok := responseMap["purchaseDate"].(string); ok {
+		response.PurchaseDate = purchaseDate
+	}
+	if partsPrice, ok := responseMap["partsPrice"].(float64); ok {
+		response.PartsPrice = partsPrice
+	}
+	if partsCost, ok := responseMap["partsCost"].(float64); ok {
+		response.PartsCost = partsCost
+	}
+	if laborPrice, ok := responseMap["laborPrice"].(float64); ok {
+		response.LaborPrice = laborPrice
+	}
+	if laborCost, ok := responseMap["laborCost"].(float64); ok {
+		response.LaborCost = laborCost
+	}
+	if description, ok := responseMap["description"].(string); ok {
+		response.Description = description
+	}
+	if totalPrice, ok := responseMap["totalPrice"].(float64); ok {
+		response.TotalPrice = totalPrice
+	}
+	if totalCost, ok := responseMap["totalCost"].(float64); ok {
+		response.TotalCost = totalCost
+	}
+	
+	// Billing address fields
+	if billToName, ok := responseMap["billToName"].(string); ok {
+		response.BillToName = billToName
+	}
+	if billToAddress1, ok := responseMap["billToAddress1"].(string); ok {
+		response.BillToAddress1 = billToAddress1
+	}
+	if billToAddress2, ok := responseMap["billToAddress2"].(string); ok {
+		response.BillToAddress2 = billToAddress2
+	}
+	if billToAddress3, ok := responseMap["billToAddress3"].(string); ok {
+		response.BillToAddress3 = billToAddress3
+	}
+	if billToAddress4, ok := responseMap["billToAddress4"].(string); ok {
+		response.BillToAddress4 = billToAddress4
+	}
+	if billToAddress5, ok := responseMap["billToAddress5"].(string); ok {
+		response.BillToAddress5 = billToAddress5
+	}
+	if billToAddress6, ok := responseMap["billToAddress6"].(string); ok {
+		response.BillToAddress6 = billToAddress6
+	}
+	
+	// Shipping address fields
+	if shipToName, ok := responseMap["shipToName"].(string); ok {
+		response.ShipToName = shipToName
+	}
+	if shipToAddress1, ok := responseMap["shipToAddress1"].(string); ok {
+		response.ShipToAddress1 = shipToAddress1
+	}
+	if shipToAddress2, ok := responseMap["shipToAddress2"].(string); ok {
+		response.ShipToAddress2 = shipToAddress2
+	}
+	if shipToAddress3, ok := responseMap["shipToAddress3"].(string); ok {
+		response.ShipToAddress3 = shipToAddress3
+	}
+	if shipToAddress4, ok := responseMap["shipToAddress4"].(string); ok {
+		response.ShipToAddress4 = shipToAddress4
+	}
+	if shipToAddress5, ok := responseMap["shipToAddress5"].(string); ok {
+		response.ShipToAddress5 = shipToAddress5
+	}
+	if shipToAddress6, ok := responseMap["shipToAddress6"].(string); ok {
+		response.ShipToAddress6 = shipToAddress6
+	}
+	
+	return response
+}
+
+// WorkOrderLaborDetailResponse represents a list of labor detail entries for a work order
+type WorkOrderLaborDetailResponse struct {
+	Data []dme.LaborEntry `json:"data"`
+}
+
+// ConvertWorkOrderLaborDetail converts DME response to WorkOrderLaborDetailResponse
+func ConvertWorkOrderLaborDetail(dmeResponse []dme.LaborEntry) *WorkOrderLaborDetailResponse {
+	return &WorkOrderLaborDetailResponse{
+		Data: dmeResponse,
+	}
+}
+
+// WorkOrderPartsResponse represents a list of parts for a work order
+type WorkOrderPartsResponse struct {
+	Data []dme.WorkOrderDetailPartEntry `json:"data"`
+}
+
+// ConvertWorkOrderParts converts DME response to WorkOrderPartsResponse
+func ConvertWorkOrderParts(dmeResponse []dme.WorkOrderDetailPartEntry) *WorkOrderPartsResponse {
+	return &WorkOrderPartsResponse{
+		Data: dmeResponse,
+	}
+}
+
+// WorkOrderPartDetailResponse represents detailed part information for a work order operation
+type WorkOrderPartDetailResponse struct {
+	Data []dme.WorkOrderPartDetail `json:"data"`
+}
+
+// ConvertWorkOrderPartDetail converts DME response to WorkOrderPartDetailResponse
+func ConvertWorkOrderPartDetail(dmeResponse []dme.WorkOrderPartDetail) *WorkOrderPartDetailResponse {
+	return &WorkOrderPartDetailResponse{
+		Data: dmeResponse,
+	}
+}
+
+// WorkOrderLaborDetailRecordsResponse represents comprehensive labor detail records for a work order operation
+type WorkOrderLaborDetailRecordsResponse struct {
+	Data []dme.WorkOrderLaborDetailRecord `json:"data"`
+}
+
+// ConvertWorkOrderLaborDetailRecords converts DME response to WorkOrderLaborDetailRecordsResponse
+func ConvertWorkOrderLaborDetailRecords(dmeResponse []dme.WorkOrderLaborDetailRecord) *WorkOrderLaborDetailRecordsResponse {
+	return &WorkOrderLaborDetailRecordsResponse{
+		Data: dmeResponse,
+	}
+}

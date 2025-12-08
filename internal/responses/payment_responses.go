@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/adyen/adyen-go-api-library/v14/src/checkout"
@@ -54,35 +55,43 @@ func NewPaymentResultResponse(result *checkout.PaymentDetailsResponse) *PaymentR
 
 // PaymentResponse represents a payment record
 type PaymentResponse struct {
-	ID                  uuid.UUID  `json:"id"`
-	MarinaID            uuid.UUID  `json:"marinaId"`
-	OrganizationID      uuid.UUID  `json:"organizationId"`
-	EntityType          *string    `json:"entityType,omitempty"`
-	EntityID            *string    `json:"entityId,omitempty"`
-	Amount              string     `json:"amount"`
-	Currency            string     `json:"currency"`
-	PaymentMethod       *string    `json:"paymentMethod,omitempty"`
-	ReferenceNumber     string     `json:"referenceNumber"`
-	Status              string     `json:"status"`
-	AuthorizationStatus *string    `json:"authorizationStatus,omitempty"`
-	BatchStatus         *string    `json:"batchStatus,omitempty"`
-	AdyenPSPReference   *string    `json:"adyenPspReference,omitempty"`
-	AdyenSessionID      *string    `json:"adyenSessionId,omitempty"`
-	BatchID             *string    `json:"batchId,omitempty"`
-	BatchPaymentID      *uuid.UUID `json:"batchPaymentId,omitempty"`
-	PaymentDate         *time.Time `json:"paymentDate,omitempty"`
-	AuthorizedAt        *time.Time `json:"authorizedAt,omitempty"`
-	CompletedAt         *time.Time `json:"completedAt,omitempty"`
-	FailedAt            *time.Time `json:"failedAt,omitempty"`
-	CustomerID          *string    `json:"customerId,omitempty"`
-	LocationCode        *string    `json:"locationCode,omitempty"`
-	TransactionID       *string    `json:"transactionId,omitempty"`
-	AuthCode            *string    `json:"authCode,omitempty"`
-	ErrorMessage        *string    `json:"errorMessage,omitempty"`
-	ErrorCode           *string    `json:"errorCode,omitempty"`
-	InternalNotes       *string    `json:"internalNotes,omitempty"`
-	CreatedAt           time.Time  `json:"createdAt"`
-	UpdatedAt           *time.Time `json:"updatedAt,omitempty"`
+	ID                   uuid.UUID  `json:"id"`
+	MarinaID             uuid.UUID  `json:"marinaId"`
+	OrganizationID       uuid.UUID  `json:"organizationId"`
+	EntityType           *string    `json:"entityType,omitempty"`
+	EntityID             *string    `json:"entityId,omitempty"`
+	Amount               string     `json:"amount"`
+	Currency             string     `json:"currency"`
+	PaymentMethod        *string    `json:"paymentMethod,omitempty"`
+	ReferenceNumber      string     `json:"referenceNumber"`
+	Status               string     `json:"status"`
+	AuthorizationStatus  *string    `json:"authorizationStatus,omitempty"`
+	BatchStatus          *string    `json:"batchStatus,omitempty"`
+	AdyenPSPReference    *string    `json:"adyenPspReference,omitempty"`
+	AdyenSessionID       *string    `json:"adyenSessionId,omitempty"`
+	AdyenPaymentPayload  *string    `json:"adyenPaymentPayload,omitempty"`
+	AdyenPaymentResponse *string    `json:"adyenPaymentResponse,omitempty"`
+	DmeBatchRequest      *string    `json:"dmeBatchRequest,omitempty"`
+	DmeBatchResponse     *string    `json:"dmeBatchResponse,omitempty"`
+	BatchID              *string    `json:"batchId,omitempty"`
+	BatchPaymentID       *uuid.UUID `json:"batchPaymentId,omitempty"`
+	PaymentDate          *time.Time `json:"paymentDate,omitempty"`
+	AuthorizedAt         *time.Time `json:"authorizedAt,omitempty"`
+	CompletedAt          *time.Time `json:"completedAt,omitempty"`
+	FailedAt             *time.Time `json:"failedAt,omitempty"`
+	CustomerID           *string    `json:"customerId,omitempty"`
+	LocationCode         *string    `json:"locationCode,omitempty"`
+	TransactionID        *string    `json:"transactionId,omitempty"`
+	AuthCode             *string    `json:"authCode,omitempty"`
+	ErrorMessage         *string    `json:"errorMessage,omitempty"`
+	ErrorCode            *string    `json:"errorCode,omitempty"`
+	InternalNotes        *string    `json:"internalNotes,omitempty"`
+	FirstName            *string    `json:"firstName,omitempty"`
+	LastName             *string    `json:"lastName,omitempty"`
+	PrimaryEmail         *string    `json:"primaryEmail,omitempty"`
+	CardSummary          *string    `json:"cardSummary,omitempty"`
+	CreatedAt            time.Time  `json:"createdAt"`
+	UpdatedAt            *time.Time `json:"updatedAt,omitempty"`
 }
 
 // PaymentListResponse represents a paginated list of payments
@@ -104,6 +113,27 @@ type PaymentStatsResponse struct {
 	TotalCompletedAmount string `json:"totalCompletedAmount"`
 	StartDate            string `json:"startDate,omitempty"`
 	EndDate              string `json:"endDate,omitempty"`
+}
+
+// PaymentLinkResponse represents the response for a generated payment link
+type PaymentLinkResponse struct {
+	Token     string `json:"token"`
+	URL       string `json:"url"`
+	ExpiresAt string `json:"expiresAt"`
+}
+
+func NewPaymentLinkResponse(frontendBaseURL, token string, expiresAt time.Time) PaymentLinkResponse {
+	return PaymentLinkResponse{
+		Token:     token,
+		URL:       fmt.Sprintf("%s/payment/%s", frontendBaseURL, token),
+		ExpiresAt: expiresAt.Format(time.RFC3339),
+	}
+}
+
+// PaymentTokenValidationResponse represents the response for a valid token check
+type PaymentTokenValidationResponse struct {
+	CustomerID string `json:"customerId"`
+	MarinaID   string `json:"marinaId"`
 }
 
 // ConvertPaymentToResponse converts a db.Payment to PaymentResponse
@@ -144,6 +174,18 @@ func ConvertPaymentToResponse(payment db.Payment) PaymentResponse {
 	if payment.AdyenSessionID != nil {
 		response.AdyenSessionID = payment.AdyenSessionID
 	}
+	if payment.AdyenPaymentPayload != nil {
+		response.AdyenPaymentPayload = payment.AdyenPaymentPayload
+	}
+	if payment.AdyenPaymentResponse != nil {
+		response.AdyenPaymentResponse = payment.AdyenPaymentResponse
+	}
+	if payment.DmeBatchRequest != nil {
+		response.DmeBatchRequest = payment.DmeBatchRequest
+	}
+	if payment.DmeBatchResponse != nil {
+		response.DmeBatchResponse = payment.DmeBatchResponse
+	}
 	if payment.BatchID != nil {
 		response.BatchID = payment.BatchID
 	}
@@ -162,6 +204,18 @@ func ConvertPaymentToResponse(payment db.Payment) PaymentResponse {
 	}
 	if payment.ErrorCode != nil {
 		response.ErrorCode = payment.ErrorCode
+	}
+	if payment.FirstName != nil {
+		response.FirstName = payment.FirstName
+	}
+	if payment.LastName != nil {
+		response.LastName = payment.LastName
+	}
+	if payment.PrimaryEmail != nil {
+		response.PrimaryEmail = payment.PrimaryEmail
+	}
+	if payment.CardSummary != nil {
+		response.CardSummary = payment.CardSummary
 	}
 
 	// Convert timestamp fields

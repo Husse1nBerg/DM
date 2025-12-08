@@ -89,6 +89,8 @@ type CreateEsignSubmissionRequest struct {
 	ReplyName          *string   `json:"replyName,omitempty" example:"Marina Manager"`
 	Name               *string   `json:"name,omitempty" example:"Customer Agreement"`
 	AttachmentRequired *bool     `json:"attachmentRequired,omitempty" example:"false"`
+	EstimateID         *string   `json:"estimateId,omitempty" example:"EST123"` // Optional estimate ID for PDF attachment
+	EstimatePDFURL     *string   `json:"estimatePdfUrl,omitempty" example:"https://s3.amazonaws.com/bucket/estimates/est123.pdf"` // Optional estimate PDF URL
 }
 
 // UpdateEsignSubmissionRequest represents the parameters that can be updated for an e-signature submission
@@ -155,6 +157,8 @@ type CreateMultipleEsignSubmissionRequest struct {
 	ReplyName          *string                 `json:"replyName,omitempty" example:"Marina Manager"`
 	Name               *string                 `json:"name,omitempty" example:"Multi-Signature Agreement"`
 	AttachmentRequired *bool                   `json:"attachmentRequired,omitempty" example:"false"`
+	EstimateID         *string                 `json:"estimateId,omitempty" example:"EST123"` // Optional estimate ID for PDF attachment
+	EstimatePDFURL     *string                 `json:"estimatePdfUrl,omitempty" example:"https://s3.amazonaws.com/bucket/estimates/est123.pdf"` // Optional estimate PDF URL
 }
 
 // UpdateEsignSubmissionSignerRequest represents the parameters to update a signer's status

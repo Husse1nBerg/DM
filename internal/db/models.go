@@ -182,6 +182,7 @@ type EsignSubmission struct {
 	CustomMessage       *string
 	IsMultipleSignature bool
 	CustomerName        *string
+	ReplyName           *string
 }
 
 type EsignSubmissionSigner struct {
@@ -299,6 +300,7 @@ type Message struct {
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
 	DeletedAt  pgtype.Timestamp
+	Subject    *string
 }
 
 type NotesMessagesPlan struct {
@@ -373,38 +375,59 @@ type PasswordRecovery struct {
 }
 
 type Payment struct {
-	ID                  uuid.UUID
-	MarinaID            uuid.UUID
-	OrganizationID      uuid.UUID
-	EntityType          *string
-	EntityID            *string
-	Amount              pgtype.Numeric
-	Currency            string
-	PaymentMethod       *string
-	ReferenceNumber     string
-	Status              string
-	AuthorizationStatus *string
-	BatchStatus         *string
-	AdyenPspReference   *string
-	AdyenSessionID      *string
-	BatchID             *string
-	BatchPaymentID      uuid.UUID
-	PaymentDate         pgtype.Timestamptz
-	AuthorizedAt        pgtype.Timestamptz
-	CompletedAt         pgtype.Timestamptz
-	FailedAt            pgtype.Timestamptz
-	CustomerID          *string
-	LocationCode        *string
-	TransactionID       *string
-	AuthCode            *string
-	AdyenWebhookPayload *string
-	DmeBatchRequest     *string
-	DmeBatchResponse    *string
-	ErrorMessage        *string
-	ErrorCode           *string
-	InternalNotes       *string
-	CreatedAt           pgtype.Timestamptz
-	UpdatedAt           pgtype.Timestamptz
+	ID                   uuid.UUID
+	MarinaID             uuid.UUID
+	OrganizationID       uuid.UUID
+	EntityType           *string
+	EntityID             *string
+	Amount               pgtype.Numeric
+	Currency             string
+	PaymentMethod        *string
+	ReferenceNumber      string
+	Status               string
+	AuthorizationStatus  *string
+	BatchStatus          *string
+	AdyenPspReference    *string
+	AdyenSessionID       *string
+	BatchID              *string
+	BatchPaymentID       uuid.UUID
+	PaymentDate          pgtype.Timestamptz
+	AuthorizedAt         pgtype.Timestamptz
+	CompletedAt          pgtype.Timestamptz
+	FailedAt             pgtype.Timestamptz
+	CustomerID           *string
+	LocationCode         *string
+	TransactionID        *string
+	AuthCode             *string
+	AdyenWebhookPayload  *string
+	DmeBatchRequest      *string
+	DmeBatchResponse     *string
+	ErrorMessage         *string
+	ErrorCode            *string
+	InternalNotes        *string
+	CreatedAt            pgtype.Timestamptz
+	UpdatedAt            pgtype.Timestamptz
+	AdyenPaymentResponse *string
+	AdyenPaymentPayload  *string
+	FirstName            *string
+	LastName             *string
+	PrimaryEmail         *string
+	CardSummary          *string
+}
+
+type PaymentLink struct {
+	ID             uuid.UUID
+	Token          string
+	OrganizationID uuid.UUID
+	MarinaID       uuid.UUID
+	CustomerID     string
+	Scope          string
+	ExpiresAt      pgtype.Timestamptz
+	Used           bool
+	Revoked        bool
+	CreatedAt      pgtype.Timestamptz
+	UsedAt         pgtype.Timestamptz
+	RevokedAt      pgtype.Timestamptz
 }
 
 type Role struct {

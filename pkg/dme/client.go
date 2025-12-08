@@ -461,8 +461,10 @@ func (c *Client) DoJSONRequest(ctx context.Context, method, endpoint string, bod
 	// Only decode if we expect a result and have content
 	if result != nil {
 		if len(responseBody) == 0 {
-			c.logger.DesugarZap.Warn("DME API returned empty response body", zap.String("method", method), zap.String("endpoint", endpoint))
-			return fmt.Errorf("DME API returned empty response body")
+			// Empty response is OK for some endpoints (e.g., when no data is found)
+			// Don't treat it as an error, just log it
+			c.logger.DesugarZap.Debug("DME API returned empty response body", zap.String("method", method), zap.String("endpoint", endpoint))
+			return nil
 		}
 
 		if err := json.Unmarshal(responseBody, result); err != nil {

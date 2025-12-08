@@ -264,8 +264,12 @@ func (h *EstimateHandler) ListEstimateSublets(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
-	// Pass empty strings for optional parameters
-	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, "", "", "", orgID, *systemID)
+	// Read optional query parameters for filtering
+	estimateID := c.QueryParam("estimateId")
+	opcode := c.QueryParam("opcode")
+	vendorID := c.QueryParam("vendorID")
+
+	dmeResponse, err := h.server.DME.ListEstimateSublets(ctx, estimateID, opcode, vendorID, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to list estimate sublets",
 			zap.Error(err))
@@ -277,7 +281,7 @@ func (h *EstimateHandler) ListEstimateSublets(c echo.Context) error {
 	for _, sublet := range dmeResponse {
 		genericResponse = append(genericResponse, sublet)
 	}
-	
+
 	response := responses.ConvertEstimateSublets(genericResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -437,7 +441,7 @@ func (h *EstimateHandler) RetrieveEstimatesList(c echo.Context) error {
 		"page":     req.Page,
 		"pageSize": req.PageSize,
 	}
-	
+
 	// Add optional fields if provided
 	if req.Status != "" {
 		listRequestData["status"] = req.Status
@@ -539,6 +543,160 @@ func (h *EstimateHandler) CreateEstimate(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
 
+	// Check if estimate has any approved operations
+	hasApprovedOperations := false
+	if len(req.OperationCodes) > 0 {
+		for _, opCode := range req.OperationCodes {
+			if opCode.Approved {
+				hasApprovedOperations = true
+				break
+			}
+		}
+	}
+
+	estimateID := ""
+	if dmeResponse != nil {
+		estimateID = dmeResponse.ID
+	}
+	h.server.Logger.DesugarZap.Info("Estimate creation notification check",
+		zap.String("estimateId", estimateID),
+		zap.Bool("hasApprovedOperations", hasApprovedOperations),
+		zap.Int("operationCodesCount", len(req.OperationCodes)),
+		zap.String("customerId", req.CustId))
+
+	// If NOT approved, send notification to customer users
+	if !hasApprovedOperations && dmeResponse != nil && dmeResponse.ID != "" {
+		go func() {
+			// Use a background context with timeout to avoid blocking the response
+			notifCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			// Get customer users for this estimate
+			customerID := &req.CustId
+			customerUsers, err := h.server.DB.Queries().GetMarinaCustomerUsersByCustomerID(notifCtx, db.GetMarinaCustomerUsersByCustomerIDParams{
+				MarinaID:   user.MarinaID,
+				CustomerID: customerID,
+			})
+
+			if err != nil {
+				h.server.Logger.DesugarZap.Error("Failed to get customer users for notification",
+					zap.Error(err),
+					zap.String("estimateId", dmeResponse.ID),
+					zap.String("customerId", req.CustId),
+					zap.String("marinaId", user.MarinaID.String()))
+				return
+			}
+
+			if len(customerUsers) == 0 {
+				h.server.Logger.DesugarZap.Warn("No customer users found for estimate notification",
+					zap.String("estimateId", dmeResponse.ID),
+					zap.String("customerId", req.CustId),
+					zap.String("marinaId", user.MarinaID.String()))
+				return
+			}
+
+			h.server.Logger.DesugarZap.Info("Found customer users for estimate notification",
+				zap.String("estimateId", dmeResponse.ID),
+				zap.String("customerId", req.CustId),
+				zap.Int("customerUsersCount", len(customerUsers)))
+
+			// Initialize notification service
+			notificationService := notifications.NewNotificationService(
+				h.server.DB.Queries(),
+				h.server.Redis,
+				h.server.Logger,
+				h.server.SendGrid,
+				h.server.Config,
+			)
+
+			// Get estimate details for notification
+			estimateDetail, err := h.server.DME.EstimateRetrieve(notifCtx, dmeResponse.ID, false, orgID, *systemID)
+			estimateTitle := req.Title
+			if err == nil && estimateDetail != nil && estimateDetail.Title != "" {
+				estimateTitle = estimateDetail.Title
+			}
+
+			// Prepare notification requests
+			var notificationRequests []notifications.SmartNotificationRequest
+
+			for _, customerUser := range customerUsers {
+				// Check if user is active
+				if customerUser.IsActive == nil || !*customerUser.IsActive {
+					continue
+				}
+
+				// Ensure customer user has "service" notification preference
+				// Check if preference exists, if not create it with defaults
+				_, err := h.server.DB.Queries().GetNotificationPreference(notifCtx, db.GetNotificationPreferenceParams{
+					UserID:           customerUser.ID,
+					NotificationType: "service",
+				})
+				if err != nil {
+					// Preference doesn't exist, create it with defaults for customer users
+					enabled := true
+					deliveryMethod := "all"
+					_, createErr := h.server.DB.Queries().CreateNotificationPreference(notifCtx, db.CreateNotificationPreferenceParams{
+						UserID:           customerUser.ID,
+						NotificationType: "service",
+						Enabled:          &enabled,
+						DeliveryMethod:   &deliveryMethod,
+					})
+					if createErr != nil {
+						h.server.Logger.DesugarZap.Warn("Failed to create service notification preference for customer user",
+							zap.String("user_id", customerUser.ID.String()),
+							zap.Error(createErr))
+						// Continue anyway - preference might exist now or will be created later
+					} else {
+						h.server.Logger.DesugarZap.Debug("Created service notification preference for customer user",
+							zap.String("user_id", customerUser.ID.String()))
+					}
+				}
+
+				// Prepare notification data
+				notificationData := map[string]interface{}{
+					"estimateId": dmeResponse.ID,
+					"title":      estimateTitle,
+					"link":       fmt.Sprintf("/customerPortal/estimates/%s", dmeResponse.ID),
+				}
+
+				notificationReq := notifications.SmartNotificationRequest{
+					UserID:         customerUser.ID,
+					OrganizationID: orgID,
+					MarinaID:       user.MarinaID,
+					Type:           "service",
+					Title:          "New Estimate Requires Approval",
+					Content:        fmt.Sprintf("A new estimate has been created and requires your approval: %s", estimateTitle),
+					Data:           notificationData,
+					Priority:       nil, // Use default priority
+				}
+
+				notificationRequests = append(notificationRequests, notificationReq)
+			}
+
+			// Send bulk notifications
+			if len(notificationRequests) > 0 {
+				results, err := notificationService.SendBulkSmartNotifications(notifCtx, notificationRequests)
+				if err != nil {
+					h.server.Logger.DesugarZap.Error("Failed to send bulk customer notifications",
+						zap.Error(err),
+						zap.String("estimateId", dmeResponse.ID),
+						zap.Int("recipientCount", len(notificationRequests)))
+				} else {
+					successCount := 0
+					for _, result := range results {
+						if result.SystemDelivered || result.EmailDelivered {
+							successCount++
+						}
+					}
+					h.server.Logger.DesugarZap.Info("Estimate creation notifications sent to customers",
+						zap.String("estimateId", dmeResponse.ID),
+						zap.Int("totalRecipients", len(notificationRequests)),
+						zap.Int("successfulNotifications", successCount))
+				}
+			}
+		}()
+	}
+
 	response := responses.ConvertEstimateUpdate(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -592,7 +750,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		for _, att := range req.Attachments {
 			attachmentsForDME = append(attachmentsForDME, att.Attachment)
 		}
-		
+
 		// Update public status in dme_attachment_metadata for each attachment
 		for _, att := range req.Attachments {
 			if att.S3Path == "" {
@@ -620,26 +778,49 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 		}
 	}
 
+	// Retrieve current estimate to compare comments
+	// Only include comments in update if they have changed
+	shouldIncludeComments := true
+	currentEstimate, err := h.server.DME.EstimateRetrieve(ctx, req.EstId, false, orgID, *systemID)
+	if err != nil {
+		// Log warning but continue with update (include comments to be safe)
+		h.server.Logger.DesugarZap.Warn("Failed to retrieve current estimate for comment comparison",
+			zap.Error(err),
+			zap.String("estimateId", req.EstId))
+		// Keep shouldIncludeComments as true to include comments if retrieval fails
+	} else {
+		// Compare current comments with incoming comments
+		if currentEstimate.Comments == req.Comments {
+			shouldIncludeComments = false
+		}
+	}
+
 	// Convert request to map for DME API
 	// Note: DME API expects "woId" for estimate ID (estimates are treated as work orders)
 	estimateData := map[string]interface{}{
 		"woId":            req.EstId,
 		"clerkId":         req.ClerkId,
-		"custId":          req.CustId,
+		"CustId":          req.CustId,
 		"boatId":          req.BoatId,
 		"boatName":        req.BoatName,
 		"customerPhone":   req.CustomerPhone,
 		"customerEmail":   req.CustomerEmail,
-		"comments":        req.Comments,
 		"locationCode":    req.LocationCode,
 		"estCompDate":     req.EstCompDate,
 		"estStartDate":    req.EstStartDate,
 		"custPromiseDate": req.CustPromiseDate,
 		"categoryCode":    req.CategoryCode,
 		"title":           req.Title,
+		"status":          req.Status,
+		"type":            req.Type,
 		"operationCodes":  req.OperationCodes,
 	}
-	
+
+	// Only include comments if they have changed
+	if shouldIncludeComments {
+		estimateData["comments"] = req.Comments
+	}
+
 	// Add attachments to estimate data if provided
 	if len(attachmentsForDME) > 0 {
 		estimateData["attachments"] = attachmentsForDME
@@ -657,7 +838,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 	operationsApproved := false
 	approvedCount := 0
 	var approvedTotalAmount float64
-	
+
 	if len(req.OperationCodes) > 0 {
 		// Check if any operation codes have approved: true
 		for _, opCode := range req.OperationCodes {
@@ -681,7 +862,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 			estimateDetail, err := h.server.DME.EstimateRetrieve(notifCtx, req.EstId, true, orgID, *systemID)
 			customerName := req.CustId // Fallback to customer ID
 			var totalEstimateAmount float64
-			
+
 			if err == nil && estimateDetail != nil {
 				if estimateDetail.CustomerName != "" {
 					customerName = estimateDetail.CustomerName
@@ -703,7 +884,7 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 				MarinaID:   user.MarinaID,
 				IsCustomer: &isCustomer,
 			})
-			
+
 			if err != nil {
 				h.server.Logger.DesugarZap.Error("Failed to get internal marina users for notification",
 					zap.Error(err),
@@ -761,22 +942,49 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 					continue
 				}
 
+				// Ensure internal user has "service" notification preference
+				// Check if preference exists, if not create it with defaults
+				_, err = h.server.DB.Queries().GetNotificationPreference(notifCtx, db.GetNotificationPreferenceParams{
+					UserID:           internalUser.ID,
+					NotificationType: "service",
+				})
+				if err != nil {
+					// Preference doesn't exist, create it with defaults for internal users
+					enabled := true
+					deliveryMethod := "all"
+					_, createErr := h.server.DB.Queries().CreateNotificationPreference(notifCtx, db.CreateNotificationPreferenceParams{
+						UserID:           internalUser.ID,
+						NotificationType: "service",
+						Enabled:          &enabled,
+						DeliveryMethod:   &deliveryMethod,
+					})
+					if createErr != nil {
+						h.server.Logger.DesugarZap.Warn("Failed to create service notification preference for internal user",
+							zap.String("user_id", internalUser.ID.String()),
+							zap.Error(createErr))
+						// Continue anyway - preference might exist now or will be created later
+					} else {
+						h.server.Logger.DesugarZap.Debug("Created service notification preference for internal user",
+							zap.String("user_id", internalUser.ID.String()))
+					}
+				}
+
 				// Prepare notification data
 				notificationData := map[string]interface{}{
-					"estimateId":           req.EstId,
-					"customerName":         customerName,
-					"approvedOperationsCount": approvedCount,
+					"estimateId":               req.EstId,
+					"customerName":             customerName,
+					"approvedOperationsCount":  approvedCount,
 					"approvedOperationsAmount": approvedTotalAmount,
-					"totalEstimateAmount":  totalEstimateAmount,
-					"approvalTimestamp":    time.Now().Format(time.RFC3339),
-					"link":                 fmt.Sprintf("/service/estimates/%s", req.EstId),
+					"totalEstimateAmount":      totalEstimateAmount,
+					"approvalTimestamp":        time.Now().Format(time.RFC3339),
+					"link":                     fmt.Sprintf("/service/estimates/%s", req.EstId),
 				}
 
 				notificationReq := notifications.SmartNotificationRequest{
 					UserID:         internalUser.ID,
 					OrganizationID: orgID,
 					MarinaID:       user.MarinaID,
-					Type:           "estimate_approved",
+					Type:           "service",
 					Title:          "Estimate Approved",
 					Content:        fmt.Sprintf("Customer %s has approved %d operation(s) for Estimate #%s", customerName, approvedCount, req.EstId),
 					Data:           notificationData,
@@ -812,5 +1020,509 @@ func (h *EstimateHandler) UpdateEstimate(c echo.Context) error {
 	}
 
 	response := responses.ConvertEstimateUpdate(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit estimate sublet entry
+// @Description Submits a sublet entry for an estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param request body requests.SubmitEstimateSubletEntryRequest true "Sublet entry data"
+// @Success 200 {object} responses.SubmitEstimateSubletEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/sublet [post]
+func (h *EstimateHandler) SubmitEstimateSubletEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SubmitEstimateSubletEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	subletEntry := map[string]interface{}{
+		"workOrderId":         req.WorkOrderId,
+		"opCode":              req.OpCode,
+		"vendorId":            req.VendorId,
+		"purchaseDate":        req.PurchaseDate,
+		"partsPrice":          req.PartsPrice,
+		"partsCost":           req.PartsCost,
+		"laborPrice":          req.LaborPrice,
+		"laborCost":           req.LaborCost,
+		"description":         req.Description,
+		"subletDiscount":      req.SubletDiscount,
+		"subletLaborDiscount": req.SubletLaborDiscount,
+		"locationCode":        req.LocationCode,
+		"department":          req.Department,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitEstimateSubletEntry(ctx, subletEntry, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit estimate sublet entry",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimateSubmitSubletResult(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit estimate part entry
+// @Description Submits a part entry for an estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param request body requests.SubmitEstimatePartEntryRequest true "Part entry data"
+// @Success 200 {object} responses.SubmitEstimatePartEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/part [post]
+func (h *EstimateHandler) SubmitEstimatePartEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SubmitEstimatePartEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	partEntry := map[string]interface{}{
+		"estimateId":   req.EstimateId,
+		"opCode":       req.OpCode,
+		"partNumber":   req.PartNumber,
+		"quantity":     req.Quantity,
+		"unitPrice":    req.UnitPrice,
+		"description":  req.Description,
+		"locationCode": req.LocationCode,
+	}
+
+	dmeResponse, err := h.server.DME.SubmitEstimatePartEntry(ctx, partEntry, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit estimate part entry",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimateSubmitPartResult(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve estimate parts
+// @Description Retrieves a list of part entries for a specific estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param estimatesId query string true "Estimate ID"
+// @Param opcode query string false "Operation code filter"
+// @Success 200 {object} responses.EstimatePartsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/parts [get]
+func (h *EstimateHandler) RetrieveEstimateParts(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.RetrieveEstimatePartsRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// If a specific opcode is provided, fetch parts for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveEstimateParts(ctx, req.EstimatesId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve estimate parts",
+				zap.Error(err),
+				zap.String("estimateId", req.EstimatesId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertEstimateParts(dmeResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
+	// No opcode specified - fetch estimate details to get all operations
+	estimate, err := h.server.DME.EstimateRetrieve(ctx, req.EstimatesId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate details",
+			zap.Error(err),
+			zap.String("estimateId", req.EstimatesId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve estimate details").JSON(c)
+	}
+
+	// Extract operation codes from estimate
+	var allParts []dme.WorkOrderDetailPartEntry
+	if estimate.Operations != nil {
+		for _, operation := range estimate.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+
+			parts, err := h.server.DME.RetrieveEstimateParts(ctx, req.EstimatesId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve parts for operation",
+					zap.Error(err),
+					zap.String("estimateId", req.EstimatesId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allParts = append(allParts, parts...)
+		}
+	}
+
+	response := responses.ConvertEstimateParts(allParts)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve estimate labor
+// @Description Retrieves labor entries for a specific estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param estimatesId query string true "Estimate ID"
+// @Param opcode query string false "Operation code filter"
+// @Success 200 {object} responses.EstimateLaborResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/labor-entries [get]
+func (h *EstimateHandler) RetrieveEstimateLabor(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.RetrieveEstimateLaborRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	// If a specific opcode is provided, fetch labor for that opcode only
+	if req.Opcode != "" {
+		dmeResponse, err := h.server.DME.RetrieveEstimateLabor(ctx, req.EstimatesId, req.Opcode, orgID, *systemID)
+		if err != nil {
+			h.server.Logger.DesugarZap.Error("Failed to retrieve estimate labor",
+				zap.Error(err),
+				zap.String("estimateId", req.EstimatesId),
+				zap.String("opcode", req.Opcode))
+			return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+		}
+		response := responses.ConvertEstimateLabor(dmeResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
+	// No opcode specified - fetch estimate details to get all operations
+	estimate, err := h.server.DME.EstimateRetrieve(ctx, req.EstimatesId, true, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate details",
+			zap.Error(err),
+			zap.String("estimateId", req.EstimatesId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve estimate details").JSON(c)
+	}
+
+	// Extract operation codes from estimate
+	var allLabor []dme.LaborEntry
+	if estimate.Operations != nil {
+		for _, operation := range estimate.Operations {
+			if operation.Opcode == "" {
+				continue
+			}
+
+			labor, err := h.server.DME.RetrieveEstimateLabor(ctx, req.EstimatesId, operation.Opcode, orgID, *systemID)
+			if err != nil {
+				h.server.Logger.DesugarZap.Warn("Failed to retrieve labor for operation",
+					zap.Error(err),
+					zap.String("estimateId", req.EstimatesId),
+					zap.String("opcode", operation.Opcode))
+				continue // Skip this operation but continue with others
+			}
+			allLabor = append(allLabor, labor...)
+		}
+	}
+
+	response := responses.ConvertEstimateLabor(allLabor)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Submit estimate labor entry
+// @Description Submits a labor entry for an estimate
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param request body requests.SubmitEstimateLaborEntryRequest true "Labor entry data"
+// @Success 200 {object} responses.SubmitEstimateLaborEntryResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/labor [post]
+func (h *EstimateHandler) SubmitEstimateLaborEntry(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req requests.SubmitEstimateLaborEntryRequest
+	if err := c.Bind(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	// Convert request to map for DME API
+	laborEntry := map[string]interface{}{
+		"workOrderId": req.EstimateId,
+		"opCode":      req.OpCode,
+		"techId":      req.TechId,
+		"date":        req.Date,
+	}
+
+	// Add optional fields if provided
+	if req.StartTime != "" {
+		laborEntry["startTime"] = req.StartTime
+	}
+	if req.StopTime != "" {
+		laborEntry["stopTime"] = req.StopTime
+	}
+	if req.Hours > 0 {
+		laborEntry["hours"] = req.Hours
+	}
+	if req.Comments != "" {
+		laborEntry["comments"] = req.Comments
+	}
+	if req.Department != "" {
+		laborEntry["department"] = req.Department
+	}
+	if req.IsApproved != nil {
+		laborEntry["isApproved"] = *req.IsApproved
+	}
+	if req.FlagLaborFinished != nil {
+		laborEntry["flagLaborFinished"] = *req.FlagLaborFinished
+	}
+
+	dmeResponse, err := h.server.DME.SubmitEstimateLaborEntry(ctx, laborEntry, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to submit estimate labor entry",
+			zap.Error(err),
+			zap.String("estimateId", req.EstimateId))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimateSubmitLaborResult(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve estimate part detail
+// @Description Retrieves detailed part information for a specific estimate operation
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param WodID query string true "Estimate ID"
+// @Param OpCode query string true "Operation Code"
+// @Success 200 {object} responses.EstimatePartDetailResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/part-detail [get]
+func (h *EstimateHandler) RetrieveEstimatePartDetail(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.EstimatePartDetailRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveEstimatePartDetail(ctx, req.WodID, req.OpCode, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate part detail",
+			zap.Error(err),
+			zap.String("estimateId", req.WodID),
+			zap.String("opcode", req.OpCode))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimatePartDetail(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve estimate labor detail
+// @Description Retrieves comprehensive individual labor detail records for a specific estimate operation
+// @Tags Estimates
+// @Accept json
+// @Produce json
+// @Param WodID query string true "Estimate ID"
+// @Param OpCode query string true "Operation Code"
+// @Success 200 {object} responses.EstimateLaborDetailResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /estimates/labor-detail-records [get]
+func (h *EstimateHandler) RetrieveEstimateLaborDetail(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.EstimateLaborDetailRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveEstimateLaborDetailRecords(ctx, req.WodID, req.OpCode, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve estimate labor detail",
+			zap.Error(err),
+			zap.String("estimateId", req.WodID),
+			zap.String("opcode", req.OpCode))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertEstimateLaborDetail(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }

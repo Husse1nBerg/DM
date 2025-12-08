@@ -373,6 +373,12 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 	// 	return responses.NewErrorResponse(http.StatusBadRequest, err.Error()).JSON(c)
 	// }
 
+	// Determine subject
+	subject := req.Subject
+	if subject == "" {
+		subject = "Message from " + req.Sender
+	}
+
 	// Create the message
 	params := db.CreateMessageParams{
 		MarinaID:   req.MarinaID,
@@ -385,6 +391,7 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Contact:    req.Contact,
 		Status:     "pending",
 		Pinned:     req.Pinned,
+		Subject:    &subject,
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
@@ -413,6 +420,22 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		allowEmail = true // Default to allowing if check fails
 	}
 
+	// Get marina to get organization ID and logo
+	marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if err != nil {
+		logger.Zap.Warnw("Failed to get marina", "marina_id", req.MarinaID, "error", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+	}
+
+	// Include marina logo if available
+	var logo string
+	if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
+
 	if !allowEmail {
 		logger.Zap.Infow("Skipping email send due to recipient preferences",
 			"recipient", req.Contact, "marina_id", req.MarinaID)
@@ -433,12 +456,13 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 		Recipient: req.Recipient,
 		Sender:    req.Sender,
 		HomeURL:   cfg.App.HomeURL(),
+		Logo:      logo,
 	}
 	to := []string{req.Contact}
-	subject := "Message from " + req.Sender
+	emailSubject := subject
 
 	// Send email asynchronously
-	taskID, resultChan, err := h.server.SendGrid.SendMessageEmail(to, subject, email)
+	taskID, resultChan, err := h.server.SendGrid.SendMessageEmail(to, emailSubject, email)
 	if err != nil {
 		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 	}
@@ -463,13 +487,6 @@ func (h *MessageHandler) CreateMessageHandler(c echo.Context) error {
 			}
 		}
 		marinaUsers = activeUsers
-
-		// Get marina to get organization ID
-		marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
-		if err != nil {
-			logger.Zap.Warnw("Failed to get marina for notification", "marina_id", req.MarinaID, "error", err)
-			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
-		}
 
 		// Debug: Log notification preferences for each marina user
 		for _, user := range marinaUsers {
@@ -582,6 +599,13 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 	} else {
 		direction = "to_customer"
 	}
+
+	// Determine subject
+	subjectText := req.Subject
+	if subjectText == "" {
+		subjectText = "Message from " + req.Sender
+	}
+
 	// Create the message
 	params := db.CreateMessageParams{
 		MarinaID:   req.MarinaID,
@@ -594,6 +618,7 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 		Contact:    req.Contact,
 		Status:     "pending",
 		Pinned:     req.Pinned,
+		Subject:    &subjectText,
 	}
 
 	message, err := queries.CreateMessage(c.Request().Context(), params)
@@ -689,18 +714,35 @@ func (h *MessageHandler) CreateMessageMarinaHandler(c echo.Context) error {
 			var taskID uuid.UUID
 			var resultChan <-chan sendgrid.EmailStatus
 
+			// Get marina for logo
+			marina, err := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+			if err != nil {
+				logger.Zap.Warnw("Failed to get marina", "marina_id", req.MarinaID, "error", err)
+				return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina information").JSON(c)
+			}
+
+			// Include marina logo if available
+			var logo string
+			if marina.Image != nil && *marina.Image != "" {
+				fullURL := utils.GetFullImageURL(marina.Image)
+				if fullURL != nil {
+					logo = *fullURL
+				}
+			}
+
 			// Create email data
 			email := sendgrid.MessageTemplateData{
 				Content:   req.Body,
 				Recipient: req.Recipient,
 				Sender:    req.Sender,
 				HomeURL:   cfg.App.HomeURL(),
+				Logo:      logo,
 			}
 			to := []string{req.Contact}
-			subject := "Message from " + req.Sender
+			emailSubject := subjectText
 
 			// Send email asynchronously
-			taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, subject, email)
+			taskID, resultChan, err = h.server.SendGrid.SendMessageEmail(to, emailSubject, email)
 			if err != nil {
 				return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
 			}

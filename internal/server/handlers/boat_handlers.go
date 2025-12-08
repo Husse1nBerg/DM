@@ -363,83 +363,104 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 
 	// Overlay the incoming changes onto the existing boat
 	// Only update fields that are present in the request
-	if reqStruct.Name != "" {
-		existingBoat.Name = reqStruct.Name
+	if reqStruct.Name != nil {
+		existingBoat.Name = *reqStruct.Name
 	}
-	if reqStruct.Registration != "" {
-		existingBoat.Registration = reqStruct.Registration
+	if reqStruct.Registration != nil {
+		existingBoat.Registration = *reqStruct.Registration
 	}
-	if reqStruct.Year != "" {
-		existingBoat.Year = reqStruct.Year
+	if reqStruct.Year != nil {
+		existingBoat.Year = *reqStruct.Year
 	}
-	if reqStruct.Make != "" {
-		existingBoat.Make = reqStruct.Make
+	if reqStruct.Make != nil {
+		existingBoat.Make = *reqStruct.Make
 	}
-	if reqStruct.Model != "" {
-		existingBoat.Model = reqStruct.Model
+	if reqStruct.Model != nil {
+		existingBoat.Model = *reqStruct.Model
 	}
-	if reqStruct.HIN != "" {
-		existingBoat.HIN = reqStruct.HIN
+	if reqStruct.HIN != nil {
+		existingBoat.HIN = *reqStruct.HIN
 	}
-	if reqStruct.LOA != "" {
-		existingBoat.LOA = reqStruct.LOA
+	if reqStruct.LOA != nil {
+		existingBoat.LOA = *reqStruct.LOA
 	}
-	if reqStruct.LWL != "" {
-		existingBoat.LWL = reqStruct.LWL
+	if reqStruct.LWL != nil {
+		existingBoat.LWL = *reqStruct.LWL
 	}
-	if reqStruct.Draft != "" {
-		existingBoat.Draft = reqStruct.Draft
+	if reqStruct.Draft != nil {
+		existingBoat.Draft = *reqStruct.Draft
 	}
-	if reqStruct.Beam != "" {
-		existingBoat.Beam = reqStruct.Beam
+	if reqStruct.Beam != nil {
+		existingBoat.Beam = *reqStruct.Beam
 	}
-	if reqStruct.Height != "" {
-		existingBoat.Height = reqStruct.Height
+	if reqStruct.Height != nil {
+		existingBoat.Height = *reqStruct.Height
 	}
-	if reqStruct.Color != "" {
-		existingBoat.Color = reqStruct.Color
+	if reqStruct.Color != nil {
+		existingBoat.Color = *reqStruct.Color
 	}
-	if reqStruct.TrailerMake != "" {
-		existingBoat.TrailerMake = reqStruct.TrailerMake
+	if reqStruct.TrailerMake != nil {
+		existingBoat.TrailerMake = *reqStruct.TrailerMake
 	}
-	if reqStruct.TrailerModel != "" {
-		existingBoat.TrailerModel = reqStruct.TrailerModel
+	if reqStruct.TrailerModel != nil {
+		existingBoat.TrailerModel = *reqStruct.TrailerModel
 	}
-	if reqStruct.TrailerSerial != "" {
-		existingBoat.TrailerSerial = reqStruct.TrailerSerial
+	if reqStruct.TrailerSerial != nil {
+		existingBoat.TrailerSerial = *reqStruct.TrailerSerial
 	}
-	if reqStruct.TrailerRegistration != "" {
-		existingBoat.TrailerRegistration = reqStruct.TrailerRegistration
+	if reqStruct.TrailerRegistration != nil {
+		existingBoat.TrailerRegistration = *reqStruct.TrailerRegistration
 	}
-	if reqStruct.TrailerLocation != "" {
-		existingBoat.TrailerLocation = reqStruct.TrailerLocation
+	if reqStruct.TrailerLocation != nil {
+		existingBoat.TrailerLocation = *reqStruct.TrailerLocation
 	}
-	if reqStruct.SummerSlip != "" {
-		existingBoat.SummerSlip = reqStruct.SummerSlip
+	if reqStruct.SummerSlip != nil {
+		existingBoat.SummerSlip = *reqStruct.SummerSlip
 	}
-	if reqStruct.WinterSlip != "" {
-		existingBoat.WinterSlip = reqStruct.WinterSlip
+	if reqStruct.WinterSlip != nil {
+		existingBoat.WinterSlip = *reqStruct.WinterSlip
 	}
-	if reqStruct.InsuranceCompany != "" {
-		existingBoat.InsuranceCompany = reqStruct.InsuranceCompany
+	if reqStruct.InsuranceCompany != nil {
+		existingBoat.InsuranceCompany = *reqStruct.InsuranceCompany
 	}
-	if reqStruct.InsuranceExpDate != "" {
-		existingBoat.InsuranceExpDate = reqStruct.InsuranceExpDate
+	if reqStruct.InsuranceExpDate != nil {
+		existingBoat.InsuranceExpDate = *reqStruct.InsuranceExpDate
 	}
-	if reqStruct.SlipID != "" {
-		existingBoat.SlipID = reqStruct.SlipID
+	if reqStruct.SlipID != nil {
+		existingBoat.SlipID = *reqStruct.SlipID
 	}
-	if reqStruct.Comments != "" {
-		existingBoat.Comments = reqStruct.Comments
+	if reqStruct.Comments != nil {
+		existingBoat.Comments = *reqStruct.Comments
 	}
-	if reqStruct.IntegrationID != "" {
-		existingBoat.IntegrationID = reqStruct.IntegrationID
+	if reqStruct.IntegrationID != nil {
+		existingBoat.IntegrationID = *reqStruct.IntegrationID
 	}
-	if reqStruct.OwnerIntegrationID != "" {
-		existingBoat.OwnerIntegrationID = reqStruct.OwnerIntegrationID
+	if reqStruct.OwnerIntegrationID != nil {
+		existingBoat.OwnerIntegrationID = *reqStruct.OwnerIntegrationID
 	}
-	if reqStruct.LastModified != "" {
-		existingBoat.LastModified = reqStruct.LastModified
+	if reqStruct.LastModified != nil {
+		existingBoat.LastModified = *reqStruct.LastModified
+	}
+	if reqStruct.ContractStartDate != nil {
+		existingBoat.ContractStartDate = *reqStruct.ContractStartDate
+	}
+	if reqStruct.ContractEndDate != nil {
+		existingBoat.ContractEndDate = *reqStruct.ContractEndDate
+	}
+	if reqStruct.TransomType != nil {
+		existingBoat.TransomType = *reqStruct.TransomType
+	}
+	if reqStruct.TransomHeight != nil {
+		existingBoat.TransomHeight = *reqStruct.TransomHeight
+	}
+	if reqStruct.TransomMaterial != nil {
+		existingBoat.TransomMaterial = *reqStruct.TransomMaterial
+	}
+	if reqStruct.TransomCondition != nil {
+		existingBoat.TransomCondition = *reqStruct.TransomCondition
+	}
+	if reqStruct.Access != nil {
+		existingBoat.Access = *reqStruct.Access
 	}
 	if reqStruct.Attachments != nil {
 		// Convert []AttachmentWithPublic to []dme.Attachment
@@ -477,9 +498,17 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 			}
 		}
 	}
-	existingBoat.DoNotLaunch = reqStruct.DoNotLaunch
+	if reqStruct.DoNotLaunch != nil {
+		existingBoat.DoNotLaunch = *reqStruct.DoNotLaunch
+	}
 	if reqStruct.Motors != nil {
 		existingBoat.Motors = reqStruct.Motors
+	}
+	if reqStruct.Drives != nil {
+		existingBoat.Drives = reqStruct.Drives
+	}
+	if reqStruct.Generators != nil {
+		existingBoat.Generators = reqStruct.Generators
 	}
 	// BillingCodes are intentionally set to empty array to clear existing billing configuration
 	existingBoat.BillingCodes = []dme.BillingCode{}
@@ -531,6 +560,8 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 		SlipID:               existingBoat.SlipID,
 		Slip:                 existingBoat.Slip,
 		Motors:               existingBoat.Motors,
+		Drives:               existingBoat.Drives,
+		Generators:           existingBoat.Generators,
 		DoNotLaunch:          existingBoat.DoNotLaunch,
 		BillingCodes:         existingBoat.BillingCodes,
 		BoatDescriptionCodes: existingBoat.BoatDescriptionCodes,
@@ -540,6 +571,14 @@ func (h *BoatHandler) UpdateBoat(c echo.Context) error {
 		OwnerIntegrationID:   existingBoat.OwnerIntegrationID,
 		LastModified:         existingBoat.LastModified,
 		Comments:             existingBoat.Comments,
+		ContractStartDate:    existingBoat.ContractStartDate,
+		ContractEndDate:      existingBoat.ContractEndDate,
+		TransomType:          existingBoat.TransomType,
+		TransomTypeDesc:      existingBoat.TransomTypeDesc,
+		TransomHeight:        existingBoat.TransomHeight,
+		TransomMaterial:      existingBoat.TransomMaterial,
+		TransomCondition:     existingBoat.TransomCondition,
+		Access:               existingBoat.Access,
 		Attachments:          existingBoat.Attachments,
 	}
 	dmeResponse, err := h.server.DME.UpdateBoat(ctx, &boatUpdate, orgID, *systemID)
@@ -627,6 +666,9 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 		InsuranceCompany:     req.InsuranceCompany,
 		InsuranceExpDate:     req.InsuranceExpDate,
 		SlipID:               req.SlipID,
+		Motors:               req.Motors,
+		Drives:               req.Drives,
+		Generators:           req.Generators,
 		DoNotLaunch:          req.DoNotLaunch,
 		BillingCodes:         req.BillingCodes,
 		BoatDescriptionCodes: req.BoatDescriptionCodes,
@@ -636,6 +678,15 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 		OwnerIntegrationID:   req.OwnerIntegrationID,
 		LastModified:         req.LastModified,
 		Comments:             req.Comments,
+		ContractStartDate:    req.ContractStartDate,
+		ContractEndDate:      req.ContractEndDate,
+		TransomType:          req.TransomType,
+		TransomTypeDesc:      req.TransomTypeDesc,
+		TransomHeight:        req.TransomHeight,
+		TransomMaterial:      req.TransomMaterial,
+		TransomCondition:     req.TransomCondition,
+		Access:               req.Access,
+		Attachments:          req.Attachments,
 	}
 
 	dmeResponse, err := h.server.DME.CreateBoat(ctx, boat, orgID, *systemID)
@@ -648,4 +699,115 @@ func (h *BoatHandler) CreateBoat(c echo.Context) error {
 
 	response := responses.ConvertBoat(dmeResponse)
 	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary List boats new or changed
+// @Description Retrieves boats created or changed after a specific date with pagination
+// @Tags Boats
+// @Accept json
+// @Produce json
+// @Param LastUpdate query string true "Date/Time to query from (URL encoded)"
+// @Param Page query int true "Current page being requested" minimum(1)
+// @Param PageSize query int true "Number of records per page" minimum(1) maximum(100)
+// @Param ListName query string false "Optional: Name of list for paged data"
+// @Success 200 {object} dme.BoatList
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /boats/list-new-or-changed [get]
+func (h *BoatHandler) ListBoatsNewOrChanged(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.BoatListNewOrChangedRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.BoatsListNewOrChanged(ctx, req.LastUpdate, req.Page, req.PageSize, req.ListName, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to list new or changed boats",
+			zap.Error(err),
+			zap.String("lastUpdate", req.LastUpdate),
+			zap.Int("page", req.Page),
+			zap.Int("pageSize", req.PageSize))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, dmeResponse)
+}
+
+// @Summary Retrieve boats with filters
+// @Description Retrieves boats with optional filters (CustomerId, LastUpdateDate, HasInsurance)
+// @Tags Boats
+// @Accept json
+// @Produce json
+// @Param CustomerId query string false "Optional: Retrieves boats for a particular customer"
+// @Param LastUpdateDate query string false "Optional: Retrieve boats modified on or after this date"
+// @Param HasInsurance query boolean false "Optional: Filter by insurance status" default(false)
+// @Success 200 {array} dme.Boat
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /boats/retrieve-boats [get]
+func (h *BoatHandler) RetrieveBoats(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.BoatRetrieveListRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveBoatsFiltered(ctx, req.CustomerID, req.LastUpdateDate, req.HasInsurance, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve boats with filters",
+			zap.Error(err),
+			zap.String("customerId", req.CustomerID),
+			zap.String("lastUpdateDate", req.LastUpdateDate),
+			zap.Bool("hasInsurance", req.HasInsurance))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, dmeResponse)
 }

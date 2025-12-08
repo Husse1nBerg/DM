@@ -35,6 +35,7 @@ type CreateMessageRequest struct {
 	Recipient  string    `json:"recipient" validate:"required"`
 	Contact    string    `json:"contact" validate:"required"`
 	Pinned     bool      `json:"pinned"`
+	Subject    string    `json:"subject"`
 }
 
 // UpdateCustomerMessageRequest is used to validate update customer message request body

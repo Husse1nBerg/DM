@@ -57,6 +57,8 @@ definitions:
     type: object
   dme.Boat:
     properties:
+      access:
+        type: string
       attachments:
         items:
           $ref: '#/definitions/dme.Attachment'
@@ -75,6 +77,10 @@ definitions:
         type: string
       comments:
         type: string
+      contractEndDate:
+        type: string
+      contractStartDate:
+        type: string
       customInformation:
         items:
           $ref: '#/definitions/dme.CustomInformation'
@@ -83,6 +89,14 @@ definitions:
         type: boolean
       draft:
         type: string
+      drives:
+        items:
+          $ref: '#/definitions/dme.Drive'
+        type: array
+      generators:
+        items:
+          $ref: '#/definitions/dme.Generator'
+        type: array
       height:
         type: string
       hin:
@@ -137,6 +151,16 @@ definitions:
         type: string
       trailerSerial:
         type: string
+      transomCondition:
+        type: string
+      transomHeight:
+        type: string
+      transomMaterial:
+        type: string
+      transomType:
+        type: string
+      transomTypeDesc:
+        type: string
       winterSlip:
         type: string
       year:
@@ -148,6 +172,21 @@ definitions:
         type: string
       description:
         type: string
+    type: object
+  dme.BoatList:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/dme.Boat'
+        type: array
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      pageSize:
+        type: integer
     type: object
   dme.BoatMinimal:
     properties:
@@ -166,6 +205,96 @@ definitions:
       slip:
         $ref: '#/definitions/dme.Slip'
     type: object
+  dme.BoatModelInfo:
+    properties:
+      beam:
+        type: string
+      bridgeClearance:
+        type: string
+      cabinHeadroom:
+        type: string
+      class:
+        type: string
+      deadRise:
+        type: string
+      desc:
+        type: string
+      draft:
+        type: string
+      freightCost:
+        type: number
+      fuelCapacity:
+        type: string
+      hullMaterial:
+        type: string
+      hullType:
+        type: string
+      length:
+        type: string
+      lengthOverall:
+        type: string
+      listPrice:
+        type: number
+      modelId:
+        type: string
+      modelNumber:
+        type: string
+      modelType:
+        type: string
+      motorRating:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/dme.BoatModelOption'
+        type: array
+      pack:
+        type: number
+      prepCost:
+        type: number
+      price1:
+        type: number
+      price2:
+        type: number
+      price3:
+        type: number
+      price4:
+        type: number
+      price5:
+        type: number
+      riggingcost:
+        type: number
+      sleepCapacity:
+        type: string
+      unitCost:
+        type: number
+      vendorName:
+        type: string
+      wasteCapacity:
+        type: string
+      waterCapacity:
+        type: string
+      weight:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.BoatModelOption:
+    properties:
+      desc:
+        type: string
+      groupCode:
+        type: string
+      modelCount:
+        type: string
+      modelId:
+        type: string
+      modelType:
+        type: string
+      optionCode:
+        type: string
+      price:
+        type: string
+    type: object
   dme.BoatSearch:
     properties:
       arrivalDate:
@@ -176,11 +305,15 @@ definitions:
         type: string
       departureDate:
         type: string
+      hin:
+        type: string
       ownerName:
         type: string
     type: object
   dme.BoatUpdate:
     properties:
+      access:
+        type: string
       attachments:
         items:
           $ref: '#/definitions/dme.Attachment'
@@ -199,6 +332,10 @@ definitions:
         type: string
       comments:
         type: string
+      contractEndDate:
+        type: string
+      contractStartDate:
+        type: string
       customInformation:
         items:
           $ref: '#/definitions/dme.CustomInformation'
@@ -207,6 +344,14 @@ definitions:
         type: boolean
       draft:
         type: string
+      drives:
+        items:
+          $ref: '#/definitions/dme.Drive'
+        type: array
+      generators:
+        items:
+          $ref: '#/definitions/dme.Generator'
+        type: array
       height:
         type: string
       hin:
@@ -258,6 +403,16 @@ definitions:
       trailerRegistration:
         type: string
       trailerSerial:
+        type: string
+      transomCondition:
+        type: string
+      transomHeight:
+        type: string
+      transomMaterial:
+        type: string
+      transomType:
+        type: string
+      transomTypeDesc:
         type: string
       winterSlip:
         type: string
@@ -413,6 +568,61 @@ definitions:
       zip:
         type: string
     type: object
+  dme.CustomerContract:
+    properties:
+      balanceDue:
+        type: number
+      boats:
+        items:
+          $ref: '#/definitions/dme.UnitBoat'
+        type: array
+      contractId:
+        type: string
+      contractTotal:
+        type: number
+      customInformation:
+        items:
+          $ref: '#/definitions/dme.CustomInformation'
+        type: array
+      customerId:
+        type: string
+      isQuote:
+        type: boolean
+      locationCode:
+        type: string
+      motors:
+        items: {}
+        type: array
+      name:
+        type: string
+      otherUnits:
+        items: {}
+        type: array
+      prospectId:
+        type: string
+      salesDate:
+        type: string
+      salesLocation:
+        type: string
+      salesMan:
+        type: string
+      taxSchema:
+        type: string
+      thirdPartyIdentifier:
+        type: string
+      totalDeposits:
+        type: number
+      totalPrices:
+        type: number
+      tradeItems:
+        items: {}
+        type: array
+      trailers:
+        items: {}
+        type: array
+      writtenDate:
+        type: string
+    type: object
   dme.CustomerMinimal:
     properties:
       address1:
@@ -446,6 +656,21 @@ definitions:
       state:
         type: string
       workPhone:
+        type: string
+    type: object
+  dme.CustomerMinimalWithCategoryCodes:
+    properties:
+      categoryCodes:
+        items:
+          $ref: '#/definitions/dme.CategoryCode'
+        type: array
+      email:
+        type: string
+      id:
+        type: string
+      inactive:
+        type: boolean
+      name:
         type: string
     type: object
   dme.CustomerSearch:
@@ -557,6 +782,69 @@ definitions:
       zip:
         type: string
     type: object
+  dme.CustomerWithCategoryCodesPage:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/dme.CustomerMinimalWithCategoryCodes'
+        type: array
+      currentPage:
+        type: integer
+      listName:
+        type: string
+      maxPages:
+        type: integer
+      pageSize:
+        type: integer
+    type: object
+  dme.Drive:
+    properties:
+      condition:
+        type: string
+      conditionDesc:
+        type: string
+      gearRatio:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      number:
+        type: integer
+      serial:
+        type: string
+      type:
+        type: string
+      typeDesc:
+        type: string
+      year:
+        type: string
+    type: object
+  dme.Generator:
+    properties:
+      condition:
+        type: string
+      conditionDesc:
+        type: string
+      fuelType:
+        type: string
+      fuelTypeDesc:
+        type: string
+      hours:
+        type: integer
+      kilowatts:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      number:
+        type: integer
+      serial:
+        type: string
+      year:
+        type: string
+    type: object
   dme.Installment:
     properties:
       amount:
@@ -593,12 +881,61 @@ definitions:
       unappliedPayment:
         type: boolean
     type: object
+  dme.LaborEntry:
+    properties:
+      billedHours:
+        type: number
+      comments:
+        type: string
+      date:
+        type: string
+      department:
+        type: string
+      departmentDesc:
+        type: string
+      flagLaborFinished:
+        type: boolean
+      hours:
+        type: number
+      isApproved:
+        type: boolean
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      laborRate:
+        type: number
+      opCode:
+        type: string
+      startTime:
+        type: string
+      stopTime:
+        type: string
+      techId:
+        type: string
+      techName:
+        type: string
+      uid:
+        type: string
+      workOrderId:
+        type: string
+    type: object
   dme.Motor:
     properties:
+      condition:
+        type: string
+      conditionDesc:
+        type: string
       drive:
+        type: string
+      fuelType:
+        type: string
+      fuelTypeDesc:
         type: string
       hours:
         type: number
+      hp:
+        type: integer
       make:
         type: string
       model:
@@ -610,6 +947,10 @@ definitions:
       size:
         type: string
       transomId:
+        type: string
+      type:
+        type: string
+      typeDesc:
         type: string
       year:
         type: string
@@ -766,6 +1107,83 @@ definitions:
       width:
         type: string
     type: object
+  dme.UnitBoat:
+    properties:
+      accessories:
+        items: {}
+        type: array
+      boatModelInfo:
+        $ref: '#/definitions/dme.BoatModelInfo'
+      color:
+        type: string
+      comments:
+        type: string
+      currentPhysicalLoc:
+        type: string
+      customInfo:
+        items: {}
+        type: array
+      description:
+        type: string
+      freightCost:
+        type: number
+      freightPrice:
+        type: number
+      hin:
+        type: string
+      id:
+        type: string
+      ignitionKeyNum:
+        type: string
+      listPrice:
+        type: number
+      manufacturedDate:
+        type: string
+      optionCost:
+        type: number
+      options:
+        items: {}
+        type: array
+      pack:
+        type: number
+      prepCost:
+        type: number
+      prepPrice:
+        type: number
+      previousOwners:
+        items: {}
+        type: array
+      price1:
+        type: number
+      price2:
+        type: number
+      price3:
+        type: number
+      price4:
+        type: number
+      price5:
+        type: number
+      receivedDate:
+        type: string
+      registration:
+        type: string
+      riggingCost:
+        type: number
+      riggingPrice:
+        type: number
+      serialNumber:
+        type: string
+      status:
+        type: string
+      stockNumber:
+        type: string
+      totalCost:
+        type: number
+      type:
+        type: string
+      unitCost:
+        type: number
+    type: object
   dme.WaitListEntry:
     properties:
       boatId:
@@ -888,6 +1306,84 @@ definitions:
       type:
         type: string
     type: object
+  dme.WorkOrderDetailPartEntry:
+    properties:
+      comments:
+        type: string
+      cost:
+        type: number
+      date:
+        type: string
+      department:
+        type: string
+      description:
+        type: string
+      discount:
+        type: number
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partId:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: number
+      techId:
+        type: string
+      uid:
+        type: string
+      workOrderId:
+        type: string
+    type: object
+  dme.WorkOrderLaborDetailRecord:
+    properties:
+      department:
+        type: string
+      labor_billed_date:
+        type: string
+      labor_cost_extension:
+        type: number
+      labor_cost_factor:
+        type: string
+      labor_cost_rate:
+        type: number
+      labor_date:
+        type: string
+      labor_discount:
+        type: number
+      labor_effective_hours:
+        type: number
+      labor_employee:
+        type: string
+      labor_hours:
+        type: number
+      labor_invoice_id:
+        type: string
+      labor_price_extend:
+        type: number
+      labor_price_factor:
+        type: string
+      labor_price_rate:
+        type: number
+      labor_start_time:
+        type: string
+      labor_stop_time:
+        type: string
+      labor_tech_comments:
+        type: string
+      labor_uid:
+        type: string
+      line_number:
+        type: integer
+      operation_code:
+        type: string
+      work_order_detail_id:
+        type: string
+      work_order_id:
+        type: string
+    type: object
   dme.WorkOrderOperation:
     properties:
       approved:
@@ -940,9 +1436,62 @@ definitions:
         type: string
       opcode:
         type: string
+      reqCompDate:
+        type: string
       standardHours:
         type: number
       techDesc:
+        type: string
+    type: object
+  dme.WorkOrderPartDetail:
+    properties:
+      department:
+        type: string
+      line_number:
+        type: integer
+      operation_code:
+        type: string
+      part:
+        type: string
+      part_billed_date:
+        type: string
+      part_comment:
+        type: string
+      part_cost:
+        type: number
+      part_date:
+        type: string
+      part_desc:
+        type: string
+      part_discount:
+        type: number
+      part_extend:
+        type: number
+      part_invoice_id:
+        type: string
+      part_loc_code:
+        type: string
+      part_loc_pos:
+        type: integer
+      part_price:
+        type: number
+      part_qty:
+        type: number
+      part_rigged_acc:
+        type: boolean
+      part_serial_num:
+        type: string
+      part_tech:
+        type: string
+      pick_list_print:
+        type: boolean
+      special_order:
+        type: string
+      uid:
+        type: string
+      work_order_detail_id:
+        type: string
+      work_order_id:
         type: string
     type: object
   dme.WorkOrderSearch:
@@ -1154,6 +1703,8 @@ definitions:
     type: object
   requests.BoatCreateRequest:
     properties:
+      access:
+        type: string
       attachments:
         items:
           $ref: '#/definitions/dme.Attachment'
@@ -1172,6 +1723,10 @@ definitions:
         type: string
       comments:
         type: string
+      contractEndDate:
+        type: string
+      contractStartDate:
+        type: string
       customInformation:
         items:
           $ref: '#/definitions/dme.CustomInformation'
@@ -1180,6 +1735,14 @@ definitions:
         type: boolean
       draft:
         type: string
+      drives:
+        items:
+          $ref: '#/definitions/dme.Drive'
+        type: array
+      generators:
+        items:
+          $ref: '#/definitions/dme.Generator'
+        type: array
       height:
         type: string
       hin:
@@ -1200,6 +1763,10 @@ definitions:
         type: string
       model:
         type: string
+      motors:
+        items:
+          $ref: '#/definitions/dme.Motor'
+        type: array
       name:
         type: string
       operationsHistory:
@@ -1226,6 +1793,16 @@ definitions:
         type: string
       trailerSerial:
         type: string
+      transomCondition:
+        type: string
+      transomHeight:
+        type: string
+      transomMaterial:
+        type: string
+      transomType:
+        type: string
+      transomTypeDesc:
+        type: string
       winterSlip:
         type: string
       year:
@@ -1248,9 +1825,10 @@ definitions:
         - CK
         - ACH
         type: string
+      token:
+        type: string
     required:
     - amount
-    - marinaId
     - paymentType
     type: object
   requests.CashReceipt:
@@ -1273,11 +1851,17 @@ definitions:
         type: string
       customerId:
         type: string
+      firstName:
+        type: string
       invPayments:
         items:
           $ref: '#/definitions/requests.InvPayment'
         type: array
+      lastName:
+        type: string
       payType:
+        type: string
+      primaryEmail:
         type: string
       referenceNum:
         type: string
@@ -1501,6 +2085,14 @@ definitions:
       email:
         example: customer@example.com
         type: string
+      estimateId:
+        description: Optional estimate ID for PDF attachment
+        example: EST123
+        type: string
+      estimatePdfUrl:
+        description: Optional estimate PDF URL
+        example: https://s3.amazonaws.com/bucket/estimates/est123.pdf
+        type: string
       name:
         example: Customer Agreement
         type: string
@@ -1594,6 +2186,8 @@ definitions:
         type: string
       sender:
         type: string
+      subject:
+        type: string
       type:
         enum:
         - email
@@ -1622,6 +2216,14 @@ definitions:
         type: string
       documentId:
         example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      estimateId:
+        description: Optional estimate ID for PDF attachment
+        example: EST123
+        type: string
+      estimatePdfUrl:
+        description: Optional estimate PDF URL
+        example: https://s3.amazonaws.com/bucket/estimates/est123.pdf
         type: string
       name:
         example: Multi-Signature Agreement
@@ -1674,6 +2276,34 @@ definitions:
     required:
     - email
     - name
+    type: object
+  requests.CreatePaymentLinkRequest:
+    properties:
+      amount:
+        type: string
+      customMessage:
+        type: string
+      customerId:
+        type: string
+      email:
+        type: string
+      invoiceId:
+        type: string
+      marinaId:
+        type: string
+      name:
+        type: string
+      recipient:
+        type: string
+      replyName:
+        type: string
+      ttlMinutes:
+        maximum: 4320
+        minimum: 5
+        type: integer
+    required:
+    - customerId
+    - marinaId
     type: object
   requests.CreatePaymentSessionRequest:
     type: object
@@ -2099,7 +2729,11 @@ definitions:
         items:
           $ref: '#/definitions/requests.OperationCode'
         type: array
+      status:
+        type: string
       title:
+        type: string
+      type:
         type: string
     type: object
   requests.FindPartsRequest:
@@ -2191,6 +2825,7 @@ definitions:
         - document
         - esign
         - payment
+        - service
         example: message
         type: string
     required:
@@ -2246,6 +2881,8 @@ definitions:
       longDesc:
         type: string
       opcode:
+        type: string
+      reqCompDate:
         type: string
       standardHours:
         type: number
@@ -2312,6 +2949,12 @@ definitions:
     type: object
   requests.RetrieveAllOperationsRequest:
     properties:
+      categoryCode:
+        type: string
+      desc:
+        type: string
+      opCode:
+        type: string
       page:
         minimum: 0
         type: integer
@@ -2354,6 +2997,8 @@ definitions:
       estHours:
         type: number
       id:
+        description: ID can be empty for new appointments - DME API will generate
+          it
         type: string
       isDeleted:
         type: boolean
@@ -2376,7 +3021,6 @@ definitions:
     required:
     - apptDate
     - endTime
-    - id
     - locationCode
     - opcode
     - startTime
@@ -2418,6 +3062,15 @@ definitions:
     - clerkId
     - locationCode
     - sessionId
+    type: object
+  requests.SearchAllOperationsRequest:
+    properties:
+      directHit:
+        type: boolean
+      searchString:
+        type: string
+    required:
+    - searchString
     type: object
   requests.SendHTMLEmailRequest:
     description: Send HTML email request payload
@@ -2508,6 +3161,127 @@ definitions:
     - cashReceipts
     - locationCode
     - postBatch
+    type: object
+  requests.SubmitEstimateLaborEntryRequest:
+    properties:
+      comments:
+        type: string
+      date:
+        type: string
+      department:
+        type: string
+      estimateId:
+        type: string
+      flagLaborFinished:
+        type: boolean
+      hours:
+        type: number
+      isApproved:
+        type: boolean
+      opCode:
+        type: string
+      startTime:
+        type: string
+      stopTime:
+        type: string
+      techId:
+        type: string
+    required:
+    - date
+    - estimateId
+    - opCode
+    - techId
+    type: object
+  requests.SubmitEstimatePartEntryRequest:
+    properties:
+      description:
+        type: string
+      estimateId:
+        type: string
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partNumber:
+        type: string
+      quantity:
+        minimum: 0.01
+        type: number
+      unitPrice:
+        type: number
+    required:
+    - estimateId
+    - opCode
+    - partNumber
+    - quantity
+    type: object
+  requests.SubmitEstimateSubletEntryRequest:
+    properties:
+      department:
+        type: string
+      description:
+        type: string
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      subletDiscount:
+        type: number
+      subletLaborDiscount:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
+        type: string
+    required:
+    - opCode
+    - purchaseDate
+    - vendorId
+    - workOrderId
+    type: object
+  requests.SubmitWorkOrderSubletEntryRequest:
+    properties:
+      department:
+        type: string
+      description:
+        type: string
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      locationCode:
+        type: string
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      subletDiscount:
+        type: number
+      subletLaborDiscount:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
+        type: string
+    required:
+    - opCode
+    - purchaseDate
+    - vendorId
+    - workOrderId
     type: object
   requests.UpdateAddressRequest:
     properties:
@@ -3036,7 +3810,11 @@ definitions:
         items:
           $ref: '#/definitions/requests.OperationCode'
         type: array
+      status:
+        type: string
       title:
+        type: string
+      type:
         type: string
       woId:
         type: string
@@ -3213,38 +3991,23 @@ definitions:
   responses.ClerkResponse:
     description: System clerk/user information from DME API
     properties:
-      createdDate:
-        example: "2023-06-01T08:00:00Z"
-        type: string
-      department:
-        example: Service
-        type: string
-      email:
+      emailAddress:
         example: john.doe@marina.com
         type: string
-      firstName:
-        example: John
+      groupEmailAddress:
+        example: service@marina.com
         type: string
       id:
         example: CLERK001
         type: string
+      inactiveDate:
+        example: ""
+        type: string
       isActive:
         example: true
         type: boolean
-      lastLogin:
-        example: "2024-01-15T10:30:00Z"
-        type: string
-      lastName:
-        example: Doe
-        type: string
       name:
         example: John Doe
-        type: string
-      phone:
-        example: "+15551234567"
-        type: string
-      role:
-        example: Technician
         type: string
     type: object
   responses.ConfirmTokenResponse:
@@ -3378,6 +4141,13 @@ definitions:
         example: "2023-01-01T00:00:00Z"
         type: string
     type: object
+  responses.CustomerContractsResponse:
+    properties:
+      contracts:
+        items:
+          $ref: '#/definitions/dme.CustomerContract'
+        type: array
+    type: object
   responses.CustomerListMinimalResponse:
     properties:
       currentPage:
@@ -3415,6 +4185,13 @@ definitions:
       total:
         example: 100
         type: integer
+    type: object
+  responses.CustomerQuotesResponse:
+    properties:
+      quotes:
+        items:
+          $ref: '#/definitions/dme.CustomerContract'
+        type: array
     type: object
   responses.CustomerResponse:
     properties:
@@ -3508,6 +4285,30 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.DMESysIDResponse'
+    type: object
+  responses.DepartmentListResponse:
+    description: List of departments from DME API
+    properties:
+      departments:
+        items:
+          $ref: '#/definitions/responses.DepartmentResponse'
+        type: array
+    type: object
+  responses.DepartmentResponse:
+    description: Department information from DME API
+    properties:
+      description:
+        example: Service Department
+        type: string
+      id:
+        example: DEPT001
+        type: string
+      internalCOS:
+        example: INT001
+        type: string
+      retailCOS:
+        example: RET001
+        type: string
     type: object
   responses.DocumentPlanResponse:
     description: Document plan data including limits and pricing
@@ -3732,6 +4533,9 @@ definitions:
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      replyName:
+        example: Marina Manager
+        type: string
       replyTo:
         example: support@example.com
         type: string
@@ -3822,6 +4626,9 @@ definitions:
       organizationId:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
+      replyName:
+        example: Marina Manager
+        type: string
       replyTo:
         example: support@example.com
         type: string
@@ -3898,6 +4705,20 @@ definitions:
       result:
         type: string
     type: object
+  responses.EstimateLaborDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderLaborDetailRecord'
+        type: array
+    type: object
+  responses.EstimateLaborResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.LaborEntry'
+        type: array
+    type: object
   responses.EstimateListResponse:
     properties:
       currentPage:
@@ -3916,6 +4737,20 @@ definitions:
       total:
         example: 100
         type: integer
+    type: object
+  responses.EstimatePartDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderPartDetail'
+        type: array
+    type: object
+  responses.EstimatePartsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderDetailPartEntry'
+        type: array
     type: object
   responses.EstimateResponse:
     properties:
@@ -4108,6 +4943,11 @@ definitions:
         items:
           $ref: '#/definitions/dme.InvoiceDetailed'
         type: array
+    type: object
+  responses.InvoiceResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dme.InvoiceDetailed'
     type: object
   responses.LocationListResponse:
     description: List of business locations from DME API
@@ -4564,6 +5404,9 @@ definitions:
       status:
         example: sent
         type: string
+      subject:
+        example: Important Update
+        type: string
       type:
         example: email
         type: string
@@ -4575,6 +5418,11 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.MessageResponse'
+    type: object
+  responses.NextReferenceResponse:
+    properties:
+      referenceNumber:
+        type: string
     type: object
   responses.NotesMessagesPlanResponse:
     description: Notes and messages plan data including limits and pricing
@@ -4943,6 +5791,15 @@ definitions:
       totalPrice:
         type: number
     type: object
+  responses.PaymentLinkResponse:
+    properties:
+      expiresAt:
+        type: string
+      token:
+        type: string
+      url:
+        type: string
+    type: object
   responses.PaymentListResponse:
     properties:
       data:
@@ -4960,6 +5817,10 @@ definitions:
     type: object
   responses.PaymentResponse:
     properties:
+      adyenPaymentPayload:
+        type: string
+      adyenPaymentResponse:
+        type: string
       adyenPspReference:
         type: string
       adyenSessionId:
@@ -4978,6 +5839,8 @@ definitions:
         type: string
       batchStatus:
         type: string
+      cardSummary:
+        type: string
       completedAt:
         type: string
       createdAt:
@@ -4985,6 +5848,10 @@ definitions:
       currency:
         type: string
       customerId:
+        type: string
+      dmeBatchRequest:
+        type: string
+      dmeBatchResponse:
         type: string
       entityId:
         type: string
@@ -4996,9 +5863,13 @@ definitions:
         type: string
       failedAt:
         type: string
+      firstName:
+        type: string
       id:
         type: string
       internalNotes:
+        type: string
+      lastName:
         type: string
       locationCode:
         type: string
@@ -5009,6 +5880,8 @@ definitions:
       paymentDate:
         type: string
       paymentMethod:
+        type: string
+      primaryEmail:
         type: string
       referenceNumber:
         type: string
@@ -5098,6 +5971,13 @@ definitions:
       surchargeType:
         type: string
       updatedAt:
+        type: string
+    type: object
+  responses.PaymentTokenValidationResponse:
+    properties:
+      customerId:
+        type: string
+      marinaId:
         type: string
     type: object
   responses.PurchaseOrderLineResponse:
@@ -5253,13 +6133,55 @@ definitions:
       task_id:
         type: string
     type: object
-  responses.ScheduleResponse:
+  responses.ScheduleLabelResponse:
+    description: Schedule label with color and description
     properties:
-      data: {}
+      color:
+        example: '#FF0000'
+        type: string
+      description:
+        example: Urgent
+        type: string
+      id:
+        example: 0
+        type: integer
+    type: object
+  responses.ScheduleLabelsResponse:
+    description: List of schedule labels
+    properties:
+      labels:
+        items:
+          $ref: '#/definitions/responses.ScheduleLabelResponse'
+        type: array
+    type: object
+  responses.ScheduleResponse:
+    additionalProperties: true
+    description: Raw DME schedule payload; structure varies per endpoint
     type: object
   responses.ScheduleUpdateResponse:
+    description: Schedule update response
     properties:
       data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  responses.SearchAllOperationsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.SearchOperationResult'
+        type: array
+    type: object
+  responses.SearchOperationResult:
+    properties:
+      categoryCode:
+        type: string
+      desc:
+        type: string
+      opcode:
+        type: string
     type: object
   responses.ServiceOPCategoryCodesResponse:
     properties:
@@ -5385,6 +6307,148 @@ definitions:
         example: Unlimited
         type: string
     type: object
+  responses.SubmitEstimateLaborEntryResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      result:
+        type: string
+    type: object
+  responses.SubmitEstimatePartEntryResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      result:
+        type: string
+    type: object
+  responses.SubmitEstimateSubletEntryResponse:
+    properties:
+      billToAddress1:
+        type: string
+      billToAddress2:
+        type: string
+      billToAddress3:
+        type: string
+      billToAddress4:
+        type: string
+      billToAddress5:
+        type: string
+      billToAddress6:
+        type: string
+      billToName:
+        type: string
+      description:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      shipToAddress1:
+        type: string
+      shipToAddress2:
+        type: string
+      shipToAddress3:
+        type: string
+      shipToAddress4:
+        type: string
+      shipToAddress5:
+        type: string
+      shipToAddress6:
+        type: string
+      shipToName:
+        type: string
+      spid:
+        type: string
+      subletEntryId:
+        type: string
+      success:
+        type: boolean
+      totalCost:
+        type: number
+      totalPrice:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
+        type: string
+    type: object
+  responses.SubmitSubletEntryResponse:
+    properties:
+      billToAddress1:
+        type: string
+      billToAddress2:
+        type: string
+      billToAddress3:
+        type: string
+      billToAddress4:
+        type: string
+      billToAddress5:
+        type: string
+      billToAddress6:
+        type: string
+      billToName:
+        type: string
+      description:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      laborCost:
+        type: number
+      laborPrice:
+        type: number
+      opCode:
+        type: string
+      partsCost:
+        type: number
+      partsPrice:
+        type: number
+      purchaseDate:
+        type: string
+      shipToAddress1:
+        type: string
+      shipToAddress2:
+        type: string
+      shipToAddress3:
+        type: string
+      shipToAddress4:
+        type: string
+      shipToAddress5:
+        type: string
+      shipToAddress6:
+        type: string
+      shipToName:
+        type: string
+      spid:
+        type: string
+      subletEntryId:
+        type: string
+      success:
+        type: boolean
+      totalCost:
+        type: number
+      totalPrice:
+        type: number
+      vendorId:
+        type: string
+      workOrderId:
+        type: string
+    type: object
   responses.UnreadCountResponse:
     description: Unread notification count
     properties:
@@ -5508,6 +6572,97 @@ definitions:
         example: invalid_value
         type: string
     type: object
+  responses.VendorDTO:
+    properties:
+      accountNumber:
+        type: string
+      address1:
+        type: string
+      address2:
+        type: string
+      address3:
+        type: string
+      city:
+        type: string
+      contactName:
+        type: string
+      country:
+        type: string
+      emailAddress:
+        type: string
+      fax:
+        type: string
+      paymentAddress1:
+        type: string
+      paymentAddress2:
+        type: string
+      paymentAddress3:
+        type: string
+      paymentCity:
+        type: string
+      paymentContactName:
+        type: string
+      paymentCountry:
+        type: string
+      paymentFax:
+        type: string
+      paymentName:
+        type: string
+      paymentPhone:
+        type: string
+      paymentPostalCode:
+        type: string
+      paymentState:
+        type: string
+      phone:
+        type: string
+      postalCode:
+        type: string
+      state:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
+  responses.VendorListResponse:
+    properties:
+      count:
+        type: integer
+      vendors:
+        items:
+          $ref: '#/definitions/responses.VendorDTO'
+        type: array
+    type: object
+  responses.VendorResponse:
+    properties:
+      vendor:
+        $ref: '#/definitions/responses.VendorDTO'
+    type: object
+  responses.VendorSearchResponse:
+    properties:
+      count:
+        type: integer
+      vendors:
+        items:
+          $ref: '#/definitions/responses.VendorSearchResultDTO'
+        type: array
+    type: object
+  responses.VendorSearchResultDTO:
+    properties:
+      accountNumber:
+        type: string
+      contactName:
+        type: string
+      emailAddress:
+        type: string
+      phone:
+        type: string
+      vendorId:
+        type: string
+      vendorName:
+        type: string
+    type: object
   responses.VesselGalleryItemResponse:
     description: Vessel gallery item data including image URL, description, and main
       image flag
@@ -5594,6 +6749,20 @@ definitions:
         items: {}
         type: array
     type: object
+  responses.WorkOrderLaborDetailRecordsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderLaborDetailRecord'
+        type: array
+    type: object
+  responses.WorkOrderLaborDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.LaborEntry'
+        type: array
+    type: object
   responses.WorkOrderListNewOrChangedResponse:
     properties:
       currentPage:
@@ -5639,6 +6808,13 @@ definitions:
           $ref: '#/definitions/dme.WorkOrderOperation'
         type: array
     type: object
+  responses.WorkOrderPartDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderPartDetail'
+        type: array
+    type: object
   responses.WorkOrderPartEntryResponse:
     properties:
       data: {}
@@ -5646,6 +6822,13 @@ definitions:
         type: string
       result:
         type: string
+    type: object
+  responses.WorkOrderPartsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderDetailPartEntry'
+        type: array
     type: object
   responses.WorkOrderResponse:
     properties:
@@ -6015,6 +7198,39 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: List system clerks (users)
+      tags:
+      - General
+  /api/v1/general/departments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of departments from the DME API
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.DepartmentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List departments
       tags:
       - General
   /api/v1/general/locations:
@@ -6476,6 +7692,182 @@ paths:
       summary: Test task operations
       tags:
       - test
+  /api/v1/unit-sales/customer-contracts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves contracts for a specific customer from DME UnitSales
+        API
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerContractsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer contracts
+      tags:
+      - UnitSales
+  /api/v1/unit-sales/customer-quotes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves quotes for a specific customer from DME UnitSales API
+      parameters:
+      - description: Customer ID
+        in: query
+        name: CustomerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CustomerQuotesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customer quotes
+      tags:
+      - UnitSales
+  /api/v1/vendors:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific vendor by ID from the DME API
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Vendor ID
+        in: query
+        name: vendorId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VendorResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve a vendor
+      tags:
+      - Vendors
+  /api/v1/vendors/list:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all vendors from the DME API
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VendorListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List all vendors
+      tags:
+      - Vendors
+  /api/v1/vendors/search:
+    get:
+      consumes:
+      - application/json
+      description: Search for vendors based on search criteria
+      parameters:
+      - description: System ID
+        in: query
+        name: systemId
+        required: true
+        type: string
+      - description: Search string (vendor name, phone, email, etc.)
+        in: query
+        name: searchString
+        required: true
+        type: string
+      - description: Only return result if exactly one match is found
+        in: query
+        name: directHit
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VendorSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search vendors
+      tags:
+      - Vendors
   /auth/login:
     post:
       consumes:
@@ -6650,6 +8042,52 @@ paths:
       summary: List boats by page
       tags:
       - Boats
+  /boats/list-new-or-changed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves boats created or changed after a specific date with pagination
+      parameters:
+      - description: Date/Time to query from (URL encoded)
+        in: query
+        name: LastUpdate
+        required: true
+        type: string
+      - description: Current page being requested
+        in: query
+        minimum: 1
+        name: Page
+        required: true
+        type: integer
+      - description: Number of records per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: PageSize
+        required: true
+        type: integer
+      - description: 'Optional: Name of list for paged data'
+        in: query
+        name: ListName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dme.BoatList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: List boats new or changed
+      tags:
+      - Boats
   /boats/retrieve:
     get:
       consumes:
@@ -6677,6 +8115,46 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve boat by ID
+      tags:
+      - Boats
+  /boats/retrieve-boats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves boats with optional filters (CustomerId, LastUpdateDate,
+        HasInsurance)
+      parameters:
+      - description: 'Optional: Retrieves boats for a particular customer'
+        in: query
+        name: CustomerId
+        type: string
+      - description: 'Optional: Retrieve boats modified on or after this date'
+        in: query
+        name: LastUpdateDate
+        type: string
+      - default: false
+        description: 'Optional: Filter by insurance status'
+        in: query
+        name: HasInsurance
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dme.Boat'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve boats with filters
       tags:
       - Boats
   /boats/search:
@@ -7225,6 +8703,90 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve customer by ID
+      tags:
+      - Customers
+  /customers/retrieve-customers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of customers with optional filters (LastModifiedDate,
+        EmailAddress)
+      parameters:
+      - description: 'Optional: Retrieves records modified on or after this date.
+          Format MM-DD-YYYY'
+        in: query
+        name: LastModifiedDate
+        type: string
+      - description: 'Optional: Retrieves records with a matching primary email address'
+        in: query
+        name: EmailAddress
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dme.Customer'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customers with filters
+      tags:
+      - Customers
+  /customers/retrieve-customers-paginated:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves customers with category codes in a paginated format.
+        Optimized for esignature and mass notification features.
+      parameters:
+      - description: Current page (1-based)
+        in: query
+        name: Page
+        required: true
+        type: integer
+      - description: Items per page (max 500)
+        in: query
+        name: PageSize
+        required: true
+        type: integer
+      - description: Cached list name for subsequent page requests
+        in: query
+        name: ListName
+        type: string
+      - description: 'Optional: Retrieves records modified on or after this date.
+          Format MM-DD-YYYY'
+        in: query
+        name: LastModifiedDate
+        type: string
+      - description: 'Optional: Retrieves records with a matching primary email address'
+        in: query
+        name: EmailAddress
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dme.CustomerWithCategoryCodesPage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve customers paginated with category codes
       tags:
       - Customers
   /customers/search:
@@ -8080,6 +9642,110 @@ paths:
       summary: Upload document
       tags:
       - Documents
+  /documents/estimate:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all documents for an estimate entity
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID (Estimate ID)
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.DocumentResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get estimate documents
+      tags:
+      - Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new document for an estimate
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID (Estimate ID)
+        in: formData
+        name: entityId
+        required: true
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Description (e.g., 'Operation OPCODE')
+        in: formData
+        name: description
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload estimate document
+      tags:
+      - Documents
   /documents/user:
     get:
       consumes:
@@ -8178,6 +9844,110 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Upload document
+      tags:
+      - Documents
+  /documents/work-order:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all documents for a work order entity
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID (Work Order ID)
+        in: query
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/responses.BaseResponse'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/responses.DocumentResponse'
+                    type: array
+                type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get work order documents
+      tags:
+      - Documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new document for a work order
+      parameters:
+      - description: Marina ID
+        format: uuid
+        in: formData
+        name: marinaId
+        required: true
+        type: string
+      - description: Entity ID (Work Order ID)
+        in: formData
+        name: entityId
+        required: true
+        type: string
+      - description: Document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Description (e.g., 'Operation OPCODE')
+        in: formData
+        name: description
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/responses.DocumentResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload work order document
       tags:
       - Documents
   /email/send-html:
@@ -9400,6 +11170,201 @@ paths:
       summary: Delete estimate operation
       tags:
       - Estimates
+  /estimates/labor:
+    post:
+      consumes:
+      - application/json
+      description: Submits a labor entry for an estimate
+      parameters:
+      - description: Labor entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitEstimateLaborEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitEstimateLaborEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit estimate labor entry
+      tags:
+      - Estimates
+  /estimates/labor-detail-records:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves comprehensive individual labor detail records for a specific
+        estimate operation
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateLaborDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate labor detail
+      tags:
+      - Estimates
+  /estimates/labor-entries:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves labor entries for a specific estimate
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: estimatesId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateLaborResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate labor
+      tags:
+      - Estimates
+  /estimates/part:
+    post:
+      consumes:
+      - application/json
+      description: Submits a part entry for an estimate
+      parameters:
+      - description: Part entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitEstimatePartEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitEstimatePartEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit estimate part entry
+      tags:
+      - Estimates
+  /estimates/part-detail:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed part information for a specific estimate operation
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimatePartDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate part detail
+      tags:
+      - Estimates
+  /estimates/parts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of part entries for a specific estimate
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: estimatesId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimatePartsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate parts
+      tags:
+      - Estimates
   /estimates/retrieve:
     get:
       consumes:
@@ -9498,6 +11463,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search estimates
+      tags:
+      - Estimates
+  /estimates/sublet:
+    post:
+      consumes:
+      - application/json
+      description: Submits a sublet entry for an estimate
+      parameters:
+      - description: Sublet entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitEstimateSubletEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitEstimateSubletEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit estimate sublet entry
       tags:
       - Estimates
   /estimates/sublets:
@@ -10655,7 +12650,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves invoices for a specific customer
+      description: Retrieves invoices for a specific customer. If `token` is provided,
+        validates the short-lived payment token and uses its customer/marina context.
+        Otherwise, expects authenticated user context.
       parameters:
       - description: Customer ID
         in: query
@@ -10665,6 +12662,16 @@ paths:
       - description: 'Invoice date (format: YYYY-MM-DD)'
         in: query
         name: invoiceDate
+        type: string
+      - description: Marina ID
+        format: uuid
+        in: query
+        name: marinaId
+        required: true
+        type: string
+      - description: Short-lived payment token
+        in: query
+        name: token
         type: string
       produces:
       - application/json
@@ -10681,7 +12688,95 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
       summary: Get customer invoices
+      tags:
+      - Invoices
+  /invoices/customer/invoice:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific invoice for a customer. If `token` is provided,
+        validates the short-lived payment token and uses its customer/marina context;
+        otherwise expects authenticated user with `customerId` and `marinaId`.
+      parameters:
+      - description: Invoice ID
+        in: query
+        name: invoiceId
+        required: true
+        type: string
+      - description: Customer ID (required without token)
+        in: query
+        name: customerId
+        type: string
+      - description: Marina ID (UUID, required without token)
+        format: uuid
+        in: query
+        name: marinaId
+        type: string
+      - description: Short-lived payment token
+        in: query
+        name: token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.InvoiceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get specific customer invoice
+      tags:
+      - Invoices
+  /invoices/next-reference:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the next available AR reference number for a given customer
+        from DME
+      parameters:
+      - description: Customer ID
+        in: query
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.NextReferenceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Get next AR reference number
       tags:
       - Invoices
   /marina-usage-history/{marinaId}/date-range:
@@ -12250,6 +14345,7 @@ paths:
         - esign
         - document
         - payment
+        - service
         in: query
         name: type
         type: string
@@ -12976,54 +15072,51 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves a paginated list of payments with optional filtering
+      description: Returns a paginated list of payments. Supports search, flexible
+        filters, and sorting.
       parameters:
-      - description: Page number
+      - default: 1
+        description: Page number
         in: query
         minimum: 1
         name: page
-        required: true
         type: integer
-      - description: Page size
+      - default: 10
+        description: Page size
         in: query
         maximum: 100
         minimum: 1
         name: pageSize
-        required: true
         type: integer
-      - description: Filter by status (pending, authorized, completed, failed)
+      - description: Search term (matches reference_number, adyen_psp_reference, customer_id,
+          payment_method)
         in: query
-        name: status
+        name: search
         type: string
-      - description: Filter by entity type (invoice, boat, customer, etc.)
+      - description: Filters (e.g. filters[customer_id]=00811&filters[status]=authorized&filters[entity_type]=invoice&filters[entity_id]=904192&filters[payment_method]=amex&filters[currency]=EUR&filters[start_date]=2025-11-01&filters[end_date]=2025-11-21)
         in: query
-        name: entityType
+        name: filters
+        type: object
+      - default: created_at
+        description: Sort by field (reference_number, payment_method, currency, payment_date,
+          created_at, amount, status)
+        in: query
+        name: sortBy
         type: string
-      - description: Filter by entity ID
+      - default: desc
+        description: Sort order (asc or desc)
         in: query
-        name: entityId
-        type: string
-      - description: Filter by start date (YYYY-MM-DD)
-        in: query
-        name: startDate
-        type: string
-      - description: Filter by end date (YYYY-MM-DD)
-        in: query
-        name: endDate
+        name: sortOrder
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Paginated list of payments
           schema:
             $ref: '#/definitions/responses.PaymentListResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/responses.Error'
         "500":
-          description: Internal Server Error
+          description: Server error
           schema:
             $ref: '#/definitions/responses.Error'
       security:
@@ -13093,6 +15186,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
       summary: Handle payment redirect
       tags:
       - Payments
@@ -13134,6 +15229,89 @@ paths:
       summary: Get payments by entity
       tags:
       - Payments
+  /payments/links:
+    post:
+      consumes:
+      - application/json
+      description: Generates a short-lived token tied to a customer and marina to
+        fetch invoices and create sessions
+      parameters:
+      - description: Create payment link request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreatePaymentLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentLinkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Create payment link
+      tags:
+      - Payments
+  /payments/links/validate:
+    get:
+      consumes:
+      - application/json
+      description: Validates a short-lived payment token and returns customer and
+        marina identifiers if valid
+      parameters:
+      - description: Payment token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.PaymentTokenValidationResponse'
+        "401":
+          description: Invalid or expired token
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Validate payment token
+      tags:
+      - Payments
+  /payments/paytypes:
+    get:
+      consumes:
+      - application/json
+      description: Fetches the list of PayTypes from DME for the user's current marina/system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of pay types
+          schema: {}
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
+      summary: Retrieve DME Pay Types
+      tags:
+      - Payments
   /payments/sessions:
     post:
       consumes:
@@ -13161,6 +15339,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/responses.Error'
+      security:
+      - BearerAuth: []
       summary: Create payment session
       tags:
       - Payments
@@ -14066,6 +16246,29 @@ paths:
       summary: Retrieve operation descriptions
       tags:
       - Service
+  /service/schedule/labels:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the list of schedule labels configured in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ScheduleLabelsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve schedule labels
+      tags:
+      - Schedule
   /service/schedule/operation-schedule:
     get:
       consumes:
@@ -15501,6 +17704,74 @@ paths:
       summary: Retrieve work order group descriptions
       tags:
       - WorkOrders
+  /work-orders/labor-detail:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves labor detail entries for a specific work order
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderLaborDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order labor detail
+      tags:
+      - WorkOrders
+  /work-orders/labor-detail-records:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves comprehensive individual labor detail records for a specific
+        work order operation
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderLaborDetailRecordsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order labor detail records
+      tags:
+      - WorkOrders
   /work-orders/list:
     get:
       consumes:
@@ -15633,6 +17904,103 @@ paths:
       summary: Retrieve all work order operations
       tags:
       - WorkOrders
+  /work-orders/operations/search:
+    post:
+      consumes:
+      - application/json
+      description: Searches for operation codes by search string
+      parameters:
+      - description: Search parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SearchAllOperationsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SearchAllOperationsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Search all work order operations
+      tags:
+      - WorkOrders
+  /work-orders/part-detail:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed part information for a specific work order operation
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderPartDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order part detail
+      tags:
+      - WorkOrders
+  /work-orders/parts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves part entries for a specific work order
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: workOrderId
+        required: true
+        type: string
+      - description: Operation code filter
+        in: query
+        name: opcode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderPartsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order parts
+      tags:
+      - WorkOrders
   /work-orders/retrieve:
     get:
       consumes:
@@ -15724,6 +18092,36 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search work orders
+      tags:
+      - WorkOrders
+  /work-orders/sublet:
+    post:
+      consumes:
+      - application/json
+      description: Submits a sublet entry for a work order
+      parameters:
+      - description: Sublet entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SubmitWorkOrderSubletEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SubmitSubletEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Submit work order sublet entry
       tags:
       - WorkOrders
   /work-orders/sublets:

@@ -162,11 +162,7 @@ func RunProdSeed() {
 				"boat_gallery.write":  true,
 				"boat_gallery.delete": true,
 				"boat_gallery.create": true,
-				// Service Management module objects
-				"work_orders.read":   true,
-				"work_orders.write":  true,
-				"work_orders.delete": true,
-				"work_orders.create": true,
+
 				// History module objects
 				"history.read": true,
 				// Plans module objects
@@ -196,6 +192,25 @@ func RunProdSeed() {
 				"admin.write":  true,
 				"admin.delete": true,
 				"admin.create": true,
+				// Estimates module objects
+				"estimates.read":   true,
+				"estimates.write":  true,
+				"estimates.delete": true,
+				"estimates.create": true,
+				// Service Management module objects
+				"work_orders.read":   true,
+				"work_orders.write":  true,
+				"work_orders.delete": true,
+				"work_orders.create": true,
+				// Service management subsystem
+				"service_management.read":   true,
+				"service_management.write":  true,
+				"service_management.delete": true,
+				"service_management.create": true,
+				"service_schedule.read":     true,
+				"service_schedule.write":    true,
+				"service_schedule.delete":   true,
+				"service_schedule.create":   true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -222,8 +237,6 @@ func RunProdSeed() {
 				"messages.read":     true,
 				"documents.read":    true,
 				"boat_gallery.read": true,
-				// Service Management module objects
-				"work_orders.read": true,
 				// History module objects
 				"history.read": true,
 				// Plans module objects
@@ -243,6 +256,25 @@ func RunProdSeed() {
 				"esign_submissions.delete": false,
 				// Admin module objects
 				"admin.read": true,
+				// Estimates module objects
+				"estimates.read":   true,
+				"estimates.write":  false,
+				"estimates.delete": false,
+				"estimates.create": false,
+				// Service Management module objects
+				"work_orders.read":   true,
+				"work_orders.write":  false,
+				"work_orders.delete": false,
+				"work_orders.create": false,
+				// Service management subsystem
+				"service_management.read":   true,
+				"service_management.write":  false,
+				"service_management.delete": false,
+				"service_management.create": false,
+				"service_schedule.read":     true,
+				"service_schedule.write":    false,
+				"service_schedule.delete":   false,
+				"service_schedule.create":   false,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -300,11 +332,6 @@ func RunProdSeed() {
 				"boat_gallery.write":  true,
 				"boat_gallery.delete": true,
 				"boat_gallery.create": true,
-				// Service Management module objects
-				"work_orders.read":   true,
-				"work_orders.write":  true,
-				"work_orders.delete": true,
-				"work_orders.create": true,
 				// History module objects
 				"history.read": true,
 				// Plans module objects
@@ -329,6 +356,27 @@ func RunProdSeed() {
 				"esign_submissions.create": true,
 				"esign_submissions.write":  true,
 				"esign_submissions.delete": true,
+				// Admin module objects
+				"admin.read": true,
+				// Estimates module objects
+				"estimates.read":   true,
+				"estimates.write":  true,
+				"estimates.delete": true,
+				"estimates.create": true,
+				// Service Management module objects
+				"work_orders.read":   true,
+				"work_orders.write":  true,
+				"work_orders.delete": true,
+				"work_orders.create": true,
+				// Service management subsystem
+				"service_management.read":   true,
+				"service_management.write":  true,
+				"service_management.delete": true,
+				"service_management.create": true,
+				"service_schedule.read":     true,
+				"service_schedule.write":    true,
+				"service_schedule.delete":   true,
+				"service_schedule.create":   true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -385,11 +433,6 @@ func RunProdSeed() {
 				"boat_gallery.write":  true,
 				"boat_gallery.delete": true,
 				"boat_gallery.create": true,
-				// Service Management module objects
-				"work_orders.read":   true,
-				"work_orders.write":  true,
-				"work_orders.delete": false,
-				"work_orders.create": true,
 				// History module objects
 				"history.read": true,
 				// Plans module objects
@@ -414,6 +457,27 @@ func RunProdSeed() {
 				"esign_submissions.create": true,
 				"esign_submissions.write":  true,
 				"esign_submissions.delete": true,
+				// Admin module objects
+				"admin.read": true,
+				// Estimates module objects
+				"estimates.read":   true,
+				"estimates.write":  true,
+				"estimates.delete": true,
+				"estimates.create": true,
+				// Service Management module objects
+				"work_orders.read":   true,
+				"work_orders.write":  true,
+				"work_orders.delete": true,
+				"work_orders.create": true,
+				// Service management subsystem
+				"service_management.read":   true,
+				"service_management.write":  true,
+				"service_management.delete": true,
+				"service_management.create": true,
+				"service_schedule.read":     true,
+				"service_schedule.write":    true,
+				"service_schedule.delete":   true,
+				"service_schedule.create":   true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -467,11 +531,6 @@ func RunProdSeed() {
 				"boat_gallery.write":  true,
 				"boat_gallery.delete": false,
 				"boat_gallery.create": true,
-				// Service Management module objects
-				"work_orders.read":   true,
-				"work_orders.write":  true,
-				"work_orders.delete": false,
-				"work_orders.create": true,
 				// History module objects
 				"history.read": true,
 				// Plans module objects
@@ -489,6 +548,27 @@ func RunProdSeed() {
 				"esign_submissions.create": true,
 				"esign_submissions.write":  true,
 				"esign_submissions.delete": false,
+				// Admin module objects
+				"admin.read": true,
+				// Estimates module objects
+				"estimates.read":   true,
+				"estimates.write":  true,
+				"estimates.delete": true,
+				"estimates.create": true,
+				// Service Management module objects
+				"work_orders.read":   true,
+				"work_orders.write":  true,
+				"work_orders.delete": false,
+				"work_orders.create": true,
+				// Service management subsystem
+				"service_management.read":   true,
+				"service_management.write":  true,
+				"service_management.delete": false,
+				"service_management.create": true,
+				"service_schedule.read":     true,
+				"service_schedule.write":    true,
+				"service_schedule.delete":   false,
+				"service_schedule.create":   true,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -515,8 +595,6 @@ func RunProdSeed() {
 				"messages.read":     true,
 				"documents.read":    true,
 				"boat_gallery.read": true,
-				// Service Management module objects
-				"work_orders.read": true,
 				// History module objects
 				"history.read": true,
 				// Plans module objects
@@ -534,6 +612,27 @@ func RunProdSeed() {
 				"esign_submissions.create": false,
 				"esign_submissions.write":  false,
 				"esign_submissions.delete": false,
+				// Admin module objects
+				"admin.read": true,
+				// Estimates module objects
+				"estimates.read":   true,
+				"estimates.write":  false,
+				"estimates.delete": false,
+				"estimates.create": false,
+				// Service Management module objects
+				"work_orders.read":   true,
+				"work_orders.write":  false,
+				"work_orders.delete": false,
+				"work_orders.create": false,
+				// Service management subsystem
+				"service_management.read":   true,
+				"service_management.write":  false,
+				"service_management.delete": false,
+				"service_management.create": false,
+				"service_schedule.read":     true,
+				"service_schedule.write":    false,
+				"service_schedule.delete":   false,
+				"service_schedule.create":   false,
 			},
 			isActive:       true,
 			isCustomerRole: false,
@@ -578,18 +677,39 @@ func RunProdSeed() {
 				"esign_templates.create":   false,
 				"esign_templates.write":    false,
 				"esign_templates.delete":   false,
-				"esign_documents.read":     false,
-				"esign_documents.create":   false,
+				"esign_documents.read":     true,
+				"esign_documents.create":   true,
 				"esign_documents.write":    false,
 				"esign_documents.delete":   false,
 				"esign_submissions.read":   true,
-				"esign_submissions.create": false,
-				"esign_submissions.write":  false,
+				"esign_submissions.create": true,
+				"esign_submissions.write":  true,
 				"esign_submissions.delete": false,
 				// Contacts module objects
 				"contacts.read":   true,
 				"contacts.write":  false,
 				"contacts.delete": false,
+				// Admin module objects
+				"admin.read": true,
+				// Estimates module objects
+				"estimates.read":   true,
+				"estimates.write":  true,
+				"estimates.delete": false,
+				"estimates.create": false,
+				// Service Management module objects
+				"work_orders.read":   true,
+				"work_orders.write":  true,
+				"work_orders.delete": false,
+				"work_orders.create": false,
+				// Service management subsystem
+				"service_management.read":   true,
+				"service_management.write":  true,
+				"service_management.delete": false,
+				"service_management.create": false,
+				"service_schedule.read":     true,
+				"service_schedule.write":    false,
+				"service_schedule.delete":   false,
+				"service_schedule.create":   false,
 			},
 			isActive:       true,
 			isCustomerRole: true,

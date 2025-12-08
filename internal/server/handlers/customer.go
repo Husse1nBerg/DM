@@ -551,6 +551,116 @@ func (h *CustomerHandler) ListCustomersShortByPage(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// @Summary Retrieve customers with filters
+// @Description Retrieves a list of customers with optional filters (LastModifiedDate, EmailAddress)
+// @Tags Customers
+// @Accept json
+// @Produce json
+// @Param LastModifiedDate query string false "Optional: Retrieves records modified on or after this date. Format MM-DD-YYYY"
+// @Param EmailAddress query string false "Optional: Retrieves records with a matching primary email address"
+// @Success 200 {array} dme.Customer
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /customers/retrieve-customers [get]
+func (h *CustomerHandler) RetrieveCustomers(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.CustomerRetrieveListRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(c.Request().Context(), userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(c.Request().Context(), user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveCustomersFiltered(ctx, req.LastModifiedDate, req.EmailAddress, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve customers with filters",
+			zap.Error(err),
+			zap.String("lastModifiedDate", req.LastModifiedDate),
+			zap.String("emailAddress", req.EmailAddress))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, dmeResponse)
+}
+
+// @Summary Retrieve customers paginated with category codes
+// @Description Retrieves customers with category codes in a paginated format. Optimized for esignature and mass notification features.
+// @Tags Customers
+// @Accept json
+// @Produce json
+// @Param Page query int true "Current page (1-based)"
+// @Param PageSize query int true "Items per page (max 500)"
+// @Param ListName query string false "Cached list name for subsequent page requests"
+// @Param LastModifiedDate query string false "Optional: Retrieves records modified on or after this date. Format MM-DD-YYYY"
+// @Param EmailAddress query string false "Optional: Retrieves records with a matching primary email address"
+// @Success 200 {object} dme.CustomerWithCategoryCodesPage
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /customers/retrieve-customers-paginated [get]
+func (h *CustomerHandler) RetrieveCustomersPaginated(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.CustomerRetrievePaginatedRequest)
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	// Check if systemID is nil before dereferencing
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Marina system ID is not configured").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveCustomersPaginated(ctx, req.Page, req.PageSize, req.ListName, req.LastModifiedDate, req.EmailAddress, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve customers paginated",
+			zap.Error(err),
+			zap.Int("page", req.Page),
+			zap.Int("pageSize", req.PageSize),
+			zap.String("listName", req.ListName))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	return c.JSON(http.StatusOK, dmeResponse)
+}
+
 // @Summary Create customer
 // @Description Creates a new customer
 // @Tags Customers
@@ -918,13 +1028,23 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 	isActive := true
 	isSuperuser := false
 
-	// Create customer user
+	// Hash the password BEFORE creating the user to ensure atomicity
+	passwordHash, err := utils.HashPassword(req.Password)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to hash password",
+			zap.Error(err),
+		)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to process password").JSON(c)
+	}
+
+	// Create customer user with password hash included
 	params := db.CreateCustomerUserParams{
 		Username:            username,
 		FirstName:           req.FirstName,
 		LastName:            req.LastName,
 		Email:               email,
 		Phone:               &req.Phone,
+		PasswordHash:        utils.Pointer(passwordHash),
 		OrganizationID:      orgID,
 		MarinaID:            marinaID,
 		RoleID:              customerRole.ID,
@@ -948,11 +1068,12 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create user: "+err.Error()).JSON(c)
 	}
 
-	// Assign user to marina
+	// Assign user to marina (RoleID is required for foreign key constraint)
 	assignUserToMarina := db.AssignUserToMarinaParams{
 		UserID:     user.ID,
 		MarinaID:   marinaID,
 		CustomerID: &dmeResponse.ID,
+		RoleID:     customerRole.ID,
 	}
 
 	err = queries.AssignUserToMarina(ctx, assignUserToMarina)
@@ -974,29 +1095,6 @@ func (h *CustomerHandler) CustomerIntake(c echo.Context) error {
 			zap.Error(err),
 		)
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create customer settings: "+err.Error()).JSON(c)
-	}
-
-	// Hash the password using the utility function from utils
-	passwordHash, err := utils.HashPassword(req.Password)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to hash password",
-			zap.Error(err),
-		)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to process password").JSON(c)
-	}
-
-	// Update the user with the new password
-	userPasswordParams := db.UpdateUserInviteParams{
-		ID:           user.ID,
-		PasswordHash: utils.Pointer(passwordHash),
-	}
-
-	_, err = queries.UpdateUserInvite(ctx, userPasswordParams)
-	if err != nil {
-		h.server.Logger.DesugarZap.Error("Failed to update user password",
-			zap.Error(err),
-		)
-		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to update user password").JSON(c)
 	}
 
 	// Create default notification preferences for the new customer user

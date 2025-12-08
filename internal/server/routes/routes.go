@@ -71,6 +71,18 @@ func RegisterRoutes(s *s.Server) {
 			return new(token.JwtCustomClaims)
 		},
 		SigningKey: []byte(s.Config.Auth.AccessSecret),
+		Skipper: func(c echo.Context) bool {
+			// Allow bearer or payment token access to specific endpoints
+			path := c.Request().URL.Path
+			if path == "/api/v1/payments/sessions" || path == "/api/v1/payment-tax/calculate" || path == "/api/v1/invoices/customer" || path == "/api/v1/invoices/customer/invoice" || path == "/api/v1/invoices/next-reference" {
+				auth := c.Request().Header.Get("Authorization")
+				if strings.HasPrefix(auth, "Bearer ") && len(auth) > len("Bearer ") {
+					return false
+				}
+				return true
+			}
+			return false
+		},
 		ErrorHandler: func(c echo.Context, err error) error {
 			s.Logger.Zap.Error("JWT validation failed", zap.Error(err))
 			return responses.NewErrorResponse(http.StatusUnauthorized, "Token validation failed").JSON(c)
@@ -159,7 +171,7 @@ func RegisterRoutes(s *s.Server) {
 	RegisterScheduleRoutes(s, permissionProtected)
 
 	// Invoice routes
-	RegisterInvoiceRoutes(s, permissionProtected)
+	RegisterInvoiceRoutes(s, base, protected, permissionProtected)
 
 	// Message routes
 	RegisterMessageRoutes(s, permissionProtected)
@@ -188,15 +200,18 @@ func RegisterRoutes(s *s.Server) {
 	// General DME API routes
 	RegisterGeneralRoutes(s, permissionProtected)
 
+	// Vendor routes
+	RegisterVendorRoutes(s, permissionProtected)
+
 	// Inventory routes
 	RegisterInventoryRoutes(s, base, permissionProtected)
 
-	// Payment routes (protected)
-	RegisterPaymentRoutes(s, permissionProtected)
+	// Unit Sales routes
+	RegisterUnitSalesRoutes(s, permissionProtected)
 
-	// Payment webhook routes (public)
-	RegisterPaymentWebhookRoutes(s, base)
+	// Payment routes (public and protected)
+	RegisterPaymentRoutes(s, base, permissionProtected)
 
 	// Payment tax configuration routes
-	RegisterPaymentTaxRoutes(s, permissionProtected)
+	RegisterPaymentTaxRoutes(s, base, permissionProtected)
 }

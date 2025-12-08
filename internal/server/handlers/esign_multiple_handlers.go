@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/dockworks/dm-web-backend/internal/db"
@@ -74,8 +75,51 @@ func (h *EsignHandler) sendEmailsToSignersSequentially(submission db.EsignSubmis
 	to := []string{firstSigner.Email}
 	subject := "New e-signature submission"
 
+	// Prepare attachments (estimate PDF if provided)
+	var attachments []sendgrid.Attachment
+	if req.EstimatePDFURL != nil && *req.EstimatePDFURL != "" {
+		// Download estimate PDF from URL
+		resp, err := http.Get(*req.EstimatePDFURL)
+		if err != nil {
+			h.server.Logger.Zap.Warnw("Failed to download estimate PDF for attachment",
+				"estimate_pdf_url", *req.EstimatePDFURL,
+				"error", err)
+		} else {
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				pdfBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					h.server.Logger.Zap.Warnw("Failed to read estimate PDF content",
+						"estimate_pdf_url", *req.EstimatePDFURL,
+						"error", err)
+					pdfBytes = nil
+				}
+				if len(pdfBytes) > 0 {
+					estimateID := "estimate"
+					if req.EstimateID != nil && *req.EstimateID != "" {
+						estimateID = *req.EstimateID
+					}
+					attachments = append(attachments, sendgrid.Attachment{
+						Content:     pdfBytes,
+						Filename:    fmt.Sprintf("estimate-%s.pdf", estimateID),
+						Type:        "application/pdf",
+						Disposition: "attachment",
+					})
+					h.server.Logger.Zap.Infow("Estimate PDF attached to e-sign email",
+						"estimate_id", estimateID,
+						"submission_id", submission.ID.String(),
+						"size_bytes", len(pdfBytes))
+				}
+			} else {
+				h.server.Logger.Zap.Warnw("Failed to download estimate PDF - non-200 status",
+					"estimate_pdf_url", *req.EstimatePDFURL,
+					"status_code", resp.StatusCode)
+			}
+		}
+	}
+
 	// Send email asynchronously
-	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email)
+	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email, attachments...)
 	if err != nil {
 		return fmt.Errorf("failed to send email to first signer: %w", err)
 	}
@@ -104,7 +148,7 @@ func (h *EsignHandler) sendEmailsToSignersSequentially(submission db.EsignSubmis
 }
 
 // processNextSigner processes the next signer in the sequence when a signer completes signing
-func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.UUID, customMessage *string, replyName *string, replyTo *string) {
+func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.UUID) {
 	// Get the next signer in order
 	nextSigner, err := h.server.DB.Queries().GetNextSignerForSubmission(ctx, submissionID)
 	if err != nil {
@@ -131,29 +175,22 @@ func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.
 		return
 	}
 
-	// Create email data for the next signer
-	// Use provided values from request, otherwise fall back to submission values
+	// Use submission's stored values (these come from the original creation)
 	var replyToValue string
-	if replyTo != nil && *replyTo != "" {
-		replyToValue = *replyTo
-	} else if submission.ReplyTo != nil && *submission.ReplyTo != "" {
+	if submission.ReplyTo != nil && *submission.ReplyTo != "" {
 		replyToValue = *submission.ReplyTo
 	} else {
 		replyToValue = marina.Email
 	}
 
 	var customMessageValue string
-	if customMessage != nil && *customMessage != "" {
-		customMessageValue = *customMessage
-	} else if submission.CustomMessage != nil && *submission.CustomMessage != "" {
+	if submission.CustomMessage != nil {
 		customMessageValue = *submission.CustomMessage
-	} else {
-		customMessageValue = ""
 	}
 
 	var replyNameValue string
-	if replyName != nil && *replyName != "" {
-		replyNameValue = *replyName
+	if submission.ReplyName != nil {
+		replyNameValue = *submission.ReplyName
 	}
 
 	// Include marina logo if available
@@ -187,8 +224,13 @@ func (h *EsignHandler) processNextSigner(ctx context.Context, submissionID uuid.
 	to := []string{nextSigner.Email}
 	subject := "E-signature document ready for your signature"
 
+	// Note: For multiple signers, we don't have access to the original request here
+	// Attachments would need to be stored with the submission or retrieved from document metadata
+	// For now, we'll send without attachments for subsequent signers
+	var attachments []sendgrid.Attachment
+
 	// Send email asynchronously
-	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email)
+	taskID, resultChan, err := h.server.SendGrid.SendESignSubmissionEmail(to, subject, email, attachments...)
 	if err != nil {
 		h.server.Logger.Zap.Errorw("Failed to send email to next signer",
 			"submission_id", submissionID,
@@ -326,6 +368,7 @@ func (h *EsignHandler) CreateMultipleEsignSubmission(c echo.Context) error {
 		Name:                req.Name,
 		AttachmentRequired:  req.AttachmentRequired,
 		ReplyTo:             req.ReplyTo,
+		ReplyName:           req.ReplyName,
 		CustomMessage:       req.CustomMessage,
 		IsMultipleSignature: true,
 		CustomerName:        customerName,
@@ -475,13 +518,21 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusNotFound, "Signer not found").JSON(c)
 	}
 
-	// If signer signed, persist customMessage and replyTo to submission if provided
+	// If signer signed, check if we need to send email to next signer
+	if req.Status == "signed" {
+		go func() {
+			// Use submission's stored values directly
+			h.processNextSigner(context.Background(), signer.SubmissionID)
+		}()
+	}
+
+	// If signer signed, persist customMessage, replyTo, and replyName to submission if provided
 	// This ensures subsequent signers can use these values even if not provided in their requests
-	if req.Status == "signed" && (req.CustomMessage != nil || req.ReplyTo != nil) {
+	if req.Status == "signed" && (req.CustomMessage != nil || req.ReplyTo != nil || req.ReplyName != nil) {
 		// Get existing submission to preserve other fields
 		existingSubmission, err := h.server.DB.Queries().GetEsignSubmissionByID(c.Request().Context(), signer.SubmissionID)
 		if err == nil {
-			// Update submission with customMessage and/or replyTo if provided
+			// Update submission with customMessage, replyTo, and/or replyName if provided
 			customMessage := existingSubmission.CustomMessage
 			if req.CustomMessage != nil && *req.CustomMessage != "" {
 				customMessage = req.CustomMessage
@@ -490,6 +541,11 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 			replyTo := existingSubmission.ReplyTo
 			if req.ReplyTo != nil && *req.ReplyTo != "" {
 				replyTo = req.ReplyTo
+			}
+
+			replyName := existingSubmission.ReplyName
+			if req.ReplyName != nil && *req.ReplyName != "" {
+				replyName = req.ReplyName
 			}
 
 			// Update submission asynchronously to avoid blocking the response
@@ -504,21 +560,17 @@ func (h *EsignHandler) UpdateEsignSubmissionSignerPublic(c echo.Context) error {
 					Name:               existingSubmission.Name,
 					AttachmentRequired: existingSubmission.AttachmentRequired,
 					ReplyTo:            replyTo,
+					ReplyName:          replyName,
 					CustomMessage:      customMessage,
 					CustomerName:       existingSubmission.CustomerName,
 				})
 				if updateErr != nil {
-					h.server.Logger.Zap.Errorw("Error updating submission with customMessage/replyTo",
+					h.server.Logger.Zap.Errorw("Error updating submission with customMessage/replyTo/replyName",
 						"submission_id", signer.SubmissionID,
 						"error", updateErr)
 				}
 			}()
 		}
-	}
-
-	// If signer signed, check if we need to send email to next signer
-	if req.Status == "signed" {
-		go h.processNextSigner(context.Background(), signer.SubmissionID, req.CustomMessage, req.ReplyName, req.ReplyTo)
 	}
 
 	return responses.NewEsignSubmissionSignerResponseSuccess(signer).JSON(c)

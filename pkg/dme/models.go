@@ -244,6 +244,25 @@ type CustomerListMinimal struct {
 	PageSize    int               `json:"pageSize"`
 }
 
+// CustomerMinimalWithCategoryCodes represents minimal customer info with category codes
+// Used for esignature and mass notification features
+type CustomerMinimalWithCategoryCodes struct {
+	ID            string         `json:"id"`
+	Name          string         `json:"name"`
+	Email         string         `json:"email"`
+	Inactive      bool           `json:"inactive"`
+	CategoryCodes []CategoryCode `json:"categoryCodes"`
+}
+
+// CustomerWithCategoryCodesPage represents a paginated list of customers with category codes
+type CustomerWithCategoryCodesPage struct {
+	Content     []CustomerMinimalWithCategoryCodes `json:"content"`
+	CurrentPage int                                `json:"currentPage"`
+	MaxPages    int                                `json:"maxPages"`
+	PageSize    int                                `json:"pageSize"`
+	ListName    string                             `json:"listName"`
+}
+
 //
 // BOAT MODELS
 //
@@ -254,6 +273,7 @@ type BoatList struct {
 	CurrentPage int    `json:"currentPage"`
 	MaxPages    int    `json:"maxPages"`
 	PageSize    int    `json:"pageSize"`
+	ListName    string `json:"listName"`
 }
 
 // BoatMinimal represents a minimal boat information set for list by page
@@ -277,15 +297,51 @@ type BoatListMinimal struct {
 
 // Motor represents motor information
 type Motor struct {
-	Number    int     `json:"number"`
-	Year      string  `json:"year"`
-	Make      string  `json:"make"`
-	Model     string  `json:"model"`
-	Serial    string  `json:"serial"`
-	TransomID string  `json:"transomId"`
-	Drive     string  `json:"drive"`
-	Size      string  `json:"size"`
-	Hours     float64 `json:"hours"`
+	Number        int      `json:"number"`
+	Year          string   `json:"year"`
+	Make          string   `json:"make"`
+	Model         string   `json:"model"`
+	Serial        string   `json:"serial"`
+	TransomID     string   `json:"transomId"`
+	Drive         string   `json:"drive"`
+	Size          string   `json:"size"`
+	Hours         *float64 `json:"hours,omitempty"`
+	HP            int      `json:"hp"`
+	FuelType      string   `json:"fuelType"`
+	FuelTypeDesc  string   `json:"fuelTypeDesc"`
+	Condition     string   `json:"condition"`
+	ConditionDesc string   `json:"conditionDesc"`
+	Type          string   `json:"type"`
+	TypeDesc      string   `json:"typeDesc"`
+}
+
+// Drive represents drive information
+type Drive struct {
+	Number        int    `json:"number"`
+	Year          string `json:"year"`
+	Make          string `json:"make"`
+	Model         string `json:"model"`
+	Serial        string `json:"serial"`
+	Type          string `json:"type"`
+	TypeDesc      string `json:"typeDesc"`
+	GearRatio     string `json:"gearRatio"`
+	Condition     string `json:"condition"`
+	ConditionDesc string `json:"conditionDesc"`
+}
+
+// Generator represents generator information
+type Generator struct {
+	Number        int    `json:"number"`
+	Year          string `json:"year"`
+	Make          string `json:"make"`
+	Model         string `json:"model"`
+	Serial        string `json:"serial"`
+	Kilowatts     string `json:"kilowatts"`
+	Hours         *int   `json:"hours,omitempty"`
+	FuelType      string `json:"fuelType"`
+	FuelTypeDesc  string `json:"fuelTypeDesc"`
+	Condition     string `json:"condition"`
+	ConditionDesc string `json:"conditionDesc"`
 }
 
 // Rate represents rate information
@@ -351,6 +407,8 @@ type Slip struct {
 type Boat struct {
 	DoNotLaunch          bool                  `json:"doNotLaunch"`
 	Motors               []Motor               `json:"motors"`
+	Drives               []Drive               `json:"drives"`
+	Generators           []Generator           `json:"generators"`
 	BillingCodes         []BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
 	CustomInformation    []CustomInformation   `json:"customInformation"`
@@ -382,6 +440,14 @@ type Boat struct {
 	InsuranceCompany     string                `json:"insuranceCompany"`
 	InsuranceExpDate     string                `json:"insuranceExpDate"`
 	Comments             string                `json:"comments"`
+	ContractStartDate    string                `json:"contractStartDate"`
+	ContractEndDate      string                `json:"contractEndDate"`
+	TransomType          string                `json:"transomType"`
+	TransomTypeDesc      string                `json:"transomTypeDesc"`
+	TransomHeight        string                `json:"transomHeight"`
+	TransomMaterial      string                `json:"transomMaterial"`
+	TransomCondition     string                `json:"transomCondition"`
+	Access               string                `json:"access"`
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
 	Attachments          []Attachment          `json:"attachments"`
@@ -414,6 +480,8 @@ type BoatUpdate struct {
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
 	Motors               []Motor               `json:"motors"`
+	Drives               []Drive               `json:"drives"`
+	Generators           []Generator           `json:"generators"`
 	DoNotLaunch          bool                  `json:"doNotLaunch"`
 	BillingCodes         []BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
@@ -423,6 +491,14 @@ type BoatUpdate struct {
 	OwnerIntegrationID   string                `json:"ownerIntegrationId"`
 	LastModified         string                `json:"lastModified"`
 	Comments             string                `json:"comments"`
+	ContractStartDate    string                `json:"contractStartDate"`
+	ContractEndDate      string                `json:"contractEndDate"`
+	TransomType          string                `json:"transomType"`
+	TransomTypeDesc      string                `json:"transomTypeDesc"`
+	TransomHeight        string                `json:"transomHeight"`
+	TransomMaterial      string                `json:"transomMaterial"`
+	TransomCondition     string                `json:"transomCondition"`
+	Access               string                `json:"access"`
 	Attachments          []Attachment          `json:"attachments"`
 }
 
@@ -453,6 +529,8 @@ type BoatCreate struct {
 	SlipID               string                `json:"slipId"`
 	Slip                 Slip                  `json:"slip"`
 	Motors               []Motor               `json:"motors"`
+	Drives               []Drive               `json:"drives"`
+	Generators           []Generator           `json:"generators"`
 	DoNotLaunch          bool                  `json:"doNotLaunch"`
 	BillingCodes         []BillingCode         `json:"billingCodes"`
 	BoatDescriptionCodes []BoatDescriptionCode `json:"boatDescriptionCodes"`
@@ -462,6 +540,14 @@ type BoatCreate struct {
 	OwnerIntegrationID   string                `json:"ownerIntegrationId"`
 	LastModified         string                `json:"lastModified"`
 	Comments             string                `json:"comments"`
+	ContractStartDate    string                `json:"contractStartDate"`
+	ContractEndDate      string                `json:"contractEndDate"`
+	TransomType          string                `json:"transomType"`
+	TransomTypeDesc      string                `json:"transomTypeDesc"`
+	TransomHeight        string                `json:"transomHeight"`
+	TransomMaterial      string                `json:"transomMaterial"`
+	TransomCondition     string                `json:"transomCondition"`
+	Access               string                `json:"access"`
 	Attachments          []Attachment          `json:"attachments"`
 }
 
@@ -476,6 +562,7 @@ type BoatSearch struct {
 	OwnerName     string `json:"ownerName"`
 	ArrivalDate   string `json:"arrivalDate"`
 	DepartureDate string `json:"departureDate"`
+	HIN           string `json:"hin"`
 }
 
 //
@@ -483,18 +570,14 @@ type BoatSearch struct {
 //
 
 // Clerk represents a system user/clerk in the DME system
+// This struct matches the actual DockMaster API response
 type Clerk struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	Email       string `json:"email"`
-	Phone       string `json:"phone"`
-	IsActive    bool   `json:"isActive"`
-	Department  string `json:"department"`
-	Role        string `json:"role"`
-	LastLogin   string `json:"lastLogin"`
-	CreatedDate string `json:"createdDate"`
+	ID                string `json:"id"`
+	Name              string `json:"name"`
+	EmailAddress      string `json:"emailAddress"`
+	GroupEmailAddress string `json:"groupEmailAddress"`
+	InactiveDate      string `json:"inactiveDate"`
+	IsActive          bool   `json:"isActive"`
 }
 
 //
@@ -700,6 +783,14 @@ type Location struct {
 	DMPayClientID  string `json:"dmPayClientId"`
 }
 
+// Department represents a department in the system
+type Department struct {
+	ID          string `json:"id"`
+	Description string `json:"description"`
+	InternalCOS string `json:"internalCOS"`
+	RetailCOS   string `json:"retailCOS"`
+}
+
 // WorkOrderList represents a paginated list of work orders
 type WorkOrderList struct {
 	Content     []WorkOrder `json:"content"`
@@ -762,6 +853,7 @@ type WorkOrderOperation struct {
 	EstCompDate            string  `json:"estCompDate"`
 	EstStartDate           string  `json:"estStartDate"`
 	CustPromiseDate        string  `json:"custPromiseDate"`
+	ReqCompDate            string  `json:"reqCompDate"`
 	ForecastedPartsCharges float64 `json:"forecastedPartsCharges"`
 	ForecastedLaborCharges float64 `json:"forecastedLaborCharges"`
 	ForecastedLaborHours   float64 `json:"forecastedLaborHours"`
@@ -799,6 +891,34 @@ type WorkOrderDetailPartEntry struct {
 	Discount     float64 `json:"discount"`
 	Comments     string  `json:"comments"`
 	UID          string  `json:"uid"`
+}
+
+// WorkOrderPartDetail represents detailed part information for a work order operation
+type WorkOrderPartDetail struct {
+	UID                string   `json:"uid"`
+	WorkOrderDetailID  string   `json:"work_order_detail_id"`
+	WorkOrderID        string   `json:"work_order_id"`
+	OperationCode      string   `json:"operation_code"`
+	Department         string   `json:"department"`
+	LineNumber         *int     `json:"line_number"`
+	Part               string   `json:"part"`
+	PartQty            *float64 `json:"part_qty"`
+	PartPrice          *float64 `json:"part_price"`
+	PartCost           *float64 `json:"part_cost"`
+	PartExtend         *float64 `json:"part_extend"`
+	PartDate           *string  `json:"part_date"`
+	PartDesc           string   `json:"part_desc"`
+	PartTech           string   `json:"part_tech"`
+	PartLocCode        string   `json:"part_loc_code"`
+	PartLocPos         *int     `json:"part_loc_pos"`
+	PartBilledDate     *string  `json:"part_billed_date"`
+	SpecialOrder       string   `json:"special_order"`
+	PartComment        string   `json:"part_comment"`
+	PartDiscount       *float64 `json:"part_discount"`
+	PartSerialNum      string   `json:"part_serial_num"`
+	PartInvoiceID      string   `json:"part_invoice_id"`
+	PickListPrint      *bool    `json:"pick_list_print"`
+	PartRiggedAcc      *bool    `json:"part_rigged_acc"`
 }
 
 // SubletPurchaseOrder represents a sublet purchase order
@@ -1164,4 +1284,67 @@ type RetrieveInventoryQuery struct {
 	OnHandOnly       bool     `json:"onHandOnly,omitempty"`
 	VendorID         string   `json:"vendorId,omitempty"`
 	ItemIds          []string `json:"itemIds,omitempty"`
+}
+
+//
+// LABOR DETAIL MODELS
+//
+
+// LaborEntry represents a labor entry for an estimate or work order
+type LaborEntry struct {
+	TechID            string  `json:"techId"`
+	TechName          string  `json:"techName"`
+	WorkOrderID       string  `json:"workOrderId"`
+	OpCode            string  `json:"opCode"`
+	Department        string  `json:"department"`
+	DepartmentDesc    string  `json:"departmentDesc"`
+	Date              string  `json:"date"`
+	StartTime         string  `json:"startTime"`
+	StopTime          string  `json:"stopTime"`
+	Hours             float64 `json:"hours"`
+	BilledHours       float64 `json:"billedHours"`
+	LaborRate         float64 `json:"laborRate"`
+	LaborPrice        float64 `json:"laborPrice"`
+	LaborCost         float64 `json:"laborCost"`
+	Comments          string  `json:"comments"`
+	IsApproved        bool    `json:"isApproved"`
+	FlagLaborFinished bool    `json:"flagLaborFinished"`
+	UID               string  `json:"uid"`
+}
+
+// WorkOrderLaborDetail represents detailed labor information for a work order
+type WorkOrderLaborDetail struct {
+	WorkOrderID    string       `json:"workOrderId"`
+	OpCode         string       `json:"opCode"`
+	OpDesc         string       `json:"opDesc"`
+	TotalHours     float64      `json:"totalHours"`
+	TotalBilled    float64      `json:"totalBilled"`
+	TotalCost      float64      `json:"totalCost"`
+	LaborEntries   []LaborEntry `json:"laborEntries"`
+}
+
+// WorkOrderLaborDetailRecord represents comprehensive individual labor detail record (from DockMaster_API WorkOrderLaborDetail endpoint)
+type WorkOrderLaborDetailRecord struct {
+	WorkOrderDetailID    string   `json:"work_order_detail_id"`
+	WorkOrderID          string   `json:"work_order_id"`
+	OperationCode        string   `json:"operation_code"`
+	Department           string   `json:"department"`
+	LineNumber           *int     `json:"line_number"`
+	LaborDate            *string  `json:"labor_date"`
+	LaborPriceRate       *float64 `json:"labor_price_rate"`
+	LaborCostRate        *float64 `json:"labor_cost_rate"`
+	LaborEmployee        string   `json:"labor_employee"`
+	LaborStartTime       string   `json:"labor_start_time"`
+	LaborStopTime        string   `json:"labor_stop_time"`
+	LaborPriceExtend     *float64 `json:"labor_price_extend"`
+	LaborHours           *float64 `json:"labor_hours"`
+	LaborBilledDate      *string  `json:"labor_billed_date"`
+	LaborTechComments    string   `json:"labor_tech_comments"`
+	LaborCostExtension   *float64 `json:"labor_cost_extension"`
+	LaborPriceFactor     string   `json:"labor_price_factor"`
+	LaborDiscount        *float64 `json:"labor_discount"`
+	LaborInvoiceID       string   `json:"labor_invoice_id"`
+	LaborCostFactor      string   `json:"labor_cost_factor"`
+	LaborEffectiveHours  *float64 `json:"labor_effective_hours"`
+	UID                  *string  `json:"labor_uid"`
 }

@@ -208,6 +208,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 		assignUserToMarina := db.AssignUserToMarinaParams{
 			UserID:   userByEmail.ID,
 			MarinaID: req.MarinaID,
+			RoleID:   req.RoleID,
 		}
 		err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
 		if err != nil {
@@ -279,6 +280,7 @@ func (g *UserHandler) CreateUserHandler(c echo.Context) error {
 	assignUserToMarina := db.AssignUserToMarinaParams{
 		UserID:   user.ID,
 		MarinaID: req.MarinaID,
+		RoleID:   req.RoleID,
 	}
 
 	err = queries.AssignUserToMarina(c.Request().Context(), assignUserToMarina)
@@ -1566,6 +1568,22 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 			return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to create new invitation").JSON(c)
 		}
 
+		// Fetch marina for logo
+		marina, err := queries.GetMarinaByID(c.Request().Context(), user.MarinaID)
+		if err != nil {
+			logger.Zap.Error("Error fetching marina by ID", err)
+			return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+		}
+
+		// Include marina logo if available
+		var logo string
+		if marina.Image != nil && *marina.Image != "" {
+			fullURL := utils.GetFullImageURL(marina.Image)
+			if fullURL != nil {
+				logo = *fullURL
+			}
+		}
+
 		// Initialize the SendGrid client
 		sgClient := g.server.SendGrid
 
@@ -1577,6 +1595,7 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 			UserName:        user.FirstName + " " + user.LastName,
 			InviteURL:       inviteURL,
 			TermsConditions: g.server.Config.App.TermsConditionsURL(),
+			Logo:            logo,
 		}
 
 		// Send invitation email
@@ -1635,6 +1654,22 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Error processing password recovery").JSON(c)
 	}
 
+	// Fetch marina for logo
+	marina, err := queries.GetMarinaByID(c.Request().Context(), user.MarinaID)
+	if err != nil {
+		logger.Zap.Error("Error fetching marina by ID", err)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+
+	// Include marina logo if available
+	var logo string
+	if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
+
 	// Initialize the SendGrid client if we have API key
 	// Create a SendGrid client
 	sgClient := g.server.SendGrid
@@ -1646,6 +1681,7 @@ func (g *UserHandler) ForgotPassword(c echo.Context) error {
 		UserName:        user.FirstName + " " + user.LastName,
 		ResetURL:        resetURL,
 		TermsConditions: g.server.Config.App.TermsConditionsURL(),
+		Logo:            logo,
 	}
 
 	// Send email using specialized password reset method
@@ -1875,10 +1911,28 @@ func (g *UserHandler) CreateCustomerUserHandler(c echo.Context) error {
 		cfg.App.FrontendBaseURL,
 		cfg.App.TermsConditionsRoute,
 	)
+	
+	// Fetch marina for logo
+	marina, marinaErr := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if marinaErr != nil {
+		logger.Zap.Error("Error fetching marina by ID", marinaErr)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+	
+	// Include marina logo if available
+	var logo string
+	if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
+	
 	templateData := sendgrid.InviteCustomerTemplateData{
 		UserName:        user.FirstName,
 		InviteURL:       inviteURL,
 		TermsConditions: termsConditionsURL,
+		Logo:            logo,
 	}
 	taskID, resultChan, err := g.server.SendGrid.SendInviteCustomerEmail(
 		[]string{user.Email},
@@ -2136,12 +2190,29 @@ func (g *UserHandler) CreateUserWithInvitationHandler(c echo.Context) error {
 		cfg.App.FrontendBaseURL,
 		cfg.App.TermsConditionsRoute,
 	)
+	
+	// Fetch marina for logo
+	marina, marinaErr := queries.GetMarinaByID(c.Request().Context(), req.MarinaID)
+	if marinaErr != nil {
+		logger.Zap.Error("Error fetching marina by ID", marinaErr)
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Error fetching marina").JSON(c)
+	}
+	
+	// Include marina logo if available
+	var logo string
+	if marina.Image != nil && *marina.Image != "" {
+		fullURL := utils.GetFullImageURL(marina.Image)
+		if fullURL != nil {
+			logo = *fullURL
+		}
+	}
 
 	// Prepare email template data
 	templateData := sendgrid.InviteTemplateData{
 		UserName:        user.FirstName,
 		InviteURL:       inviteURL,
 		TermsConditions: termsConditionsURL,
+		Logo:            logo,
 	}
 
 	// Send invitation email

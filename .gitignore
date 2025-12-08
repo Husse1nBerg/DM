@@ -30,6 +30,7 @@ tmp/
 
 # Project build
 main
+api
 *templ.go
 .env
 logs/

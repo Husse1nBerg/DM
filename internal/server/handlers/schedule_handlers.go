@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -78,6 +79,13 @@ func (h *ScheduleHandler) RetrieveSchedule(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		var emptyResponse interface{} = make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -135,6 +143,13 @@ func (h *ScheduleHandler) RetrieveScheduleForManager(c echo.Context) error {
 			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for manager: "+err.Error()).JSON(c)
+	}
+
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		var emptyResponse interface{} = make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -196,6 +211,13 @@ func (h *ScheduleHandler) RetrieveScheduleForTech(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for tech: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		var emptyResponse interface{} = make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -255,6 +277,13 @@ func (h *ScheduleHandler) RetrieveScheduleForWorkOrder(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule for work order: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		var emptyResponse interface{} = make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
@@ -310,6 +339,13 @@ func (h *ScheduleHandler) RetrieveWorkOrderSchedule(c echo.Context) error {
 			zap.String("sessionId", req.SessionID),
 			zap.Error(err))
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve work order schedule: "+err.Error()).JSON(c)
+	}
+
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		var emptyResponse interface{} = make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
 	}
 
 	response := responses.ConvertScheduleResponse(dmeResponse)
@@ -371,7 +407,57 @@ func (h *ScheduleHandler) RetrieveOperationSchedule(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve operation schedule: "+err.Error()).JSON(c)
 	}
 
+	// If dmeResponse is nil (empty response from API), return empty result
+	if dmeResponse == nil {
+		var emptyResponse interface{} = make(map[string]interface{})
+		response := responses.ConvertScheduleResponse(&emptyResponse)
+		return c.JSON(http.StatusOK, response)
+	}
+
 	response := responses.ConvertScheduleResponse(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}
+
+// @Summary Retrieve schedule labels
+// @Description Retrieves the list of schedule labels configured in the system
+// @Tags Schedule
+// @Accept json
+// @Produce json
+// @Success 200 {object} responses.ScheduleLabelsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /service/schedule/labels [get]
+func (h *ScheduleHandler) RetrieveScheduleLabels(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	labels, err := h.server.DME.RetrieveScheduleLabels(ctx, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve schedule labels",
+			zap.Error(err))
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to retrieve schedule labels: "+err.Error()).JSON(c)
+	}
+
+	response := responses.NewScheduleLabelsResponse(labels)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -416,15 +502,35 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
 	}
 
+	// Convert appointments to []interface{} to ensure proper JSON marshaling
+	appointmentsInterface := make([]interface{}, len(req.Appointments))
+	for i, appt := range req.Appointments {
+		appointmentsInterface[i] = appt
+	}
+
 	// Convert request to map for DME API
-	scheduleUpdate := map[string]interface{}{
+	// DME API expects the ServiceScheduleUpdate object directly (NOT wrapped)
+	payload := map[string]interface{}{
 		"locationCode": req.LocationCode,
 		"clerkId":      req.ClerkID,
 		"sessionId":    req.SessionID,
-		"appointments": req.Appointments,
+		"appointments": appointmentsInterface,
 	}
 
-	dmeResponse, err := h.server.DME.UpdateSchedule(ctx, scheduleUpdate, orgID, *systemID)
+	// Debug: Log the payload being sent
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to marshal payload for logging", zap.Error(err))
+	}
+	h.server.Logger.DesugarZap.Info("==================== SCHEDULE UPDATE PAYLOAD ====================")
+	h.server.Logger.DesugarZap.Info("Sending schedule update to DME",
+		zap.String("payload", string(payloadJSON)),
+		zap.String("clerkId", req.ClerkID),
+		zap.String("locationCode", req.LocationCode),
+		zap.Int("appointments_count", len(req.Appointments)))
+	h.server.Logger.DesugarZap.Info("===============================================================")
+
+	dmeResponse, err := h.server.DME.UpdateSchedule(ctx, payload, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to update schedule",
 			zap.String("locationCode", req.LocationCode),
@@ -480,14 +586,15 @@ func (h *ScheduleHandler) ResolveMergeConflict(c echo.Context) error {
 	}
 
 	// Convert request to map for DME API
-	conflictResolution := map[string]interface{}{
+	// DME API expects the ServiceScheduleUpdate object directly (NOT wrapped)
+	payload := map[string]interface{}{
 		"locationCode": req.LocationCode,
 		"clerkId":      req.ClerkID,
 		"sessionId":    req.SessionID,
 		"appointments": req.Appointments,
 	}
 
-	dmeResponse, err := h.server.DME.ResolveMergeConflict(ctx, conflictResolution, orgID, *systemID)
+	dmeResponse, err := h.server.DME.ResolveMergeConflict(ctx, payload, orgID, *systemID)
 	if err != nil {
 		h.server.Logger.DesugarZap.Error("Failed to resolve merge conflict",
 			zap.String("locationCode", req.LocationCode),

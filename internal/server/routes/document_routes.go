@@ -31,6 +31,14 @@ func RegisterDocumentRoutes(server *s.Server, base *echo.Group, permissionProtec
 	documents.POST("/user", documentHandler.UserUploadDocument)
 	documents.GET("/user", documentHandler.UserGetDocumentsByEntity)
 
+	// Estimate document routes
+	documents.POST("/estimate", documentHandler.EstimateUploadDocument)
+	documents.GET("/estimate", documentHandler.EstimateGetDocumentsByEntity)
+
+	// Work order document routes
+	documents.POST("/work-order", documentHandler.WorkOrderUploadDocument)
+	documents.GET("/work-order", documentHandler.WorkOrderGetDocumentsByEntity)
+
 	// General document routes
 	documents.GET("/:id", documentHandler.GetDocument)
 	documents.DELETE("/:id", documentHandler.DeleteDocument)

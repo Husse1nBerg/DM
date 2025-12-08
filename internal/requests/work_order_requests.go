@@ -45,6 +45,7 @@ type OperationCode struct {
 	EstCompDate            string  `json:"estCompDate"`
 	EstStartDate           string  `json:"estStartDate"`
 	CustPromiseDate        string  `json:"custPromiseDate"`
+	ReqCompDate            string  `json:"reqCompDate"`
 	ForecastedPartsCharges float64 `json:"forecastedPartsCharges"`
 	ForecastedLaborCharges float64 `json:"forecastedLaborCharges"`
 	ForecastedLaborHours   float64 `json:"forecastedLaborHours"`
@@ -86,6 +87,8 @@ type WorkOrderUpdateRequest struct {
 	CustPromiseDate string                  `json:"custPromiseDate"`
 	CategoryCode    string                  `json:"categoryCode"`
 	Title           string                  `json:"title"`
+	Status          string                  `json:"status"`
+	Type            string                  `json:"type"`
 	OperationCodes  []OperationCode         `json:"operationCodes"`
 	Attachments     []AttachmentWithPublic  `json:"attachments"`
 }
@@ -111,8 +114,14 @@ type WorkOrderCreateFromEstimateRequest struct {
 
 // WorkOrderDeleteOperationRequest represents a request to delete an operation from a work order
 type WorkOrderDeleteOperationRequest struct {
-	WorkOrder string `query:"WorkOrder" validate:"required"`
-	Operation string `query:"Operation" validate:"required"`
+	WorkOrder string `json:"workOrder" query:"WorkOrder" validate:"required"`
+	Operation string `json:"operation" query:"Operation" validate:"required"`
+}
+
+// WorkOrderPartDetailRequest represents a request to retrieve detailed part information for a work order operation
+type WorkOrderPartDetailRequest struct {
+	WodID  string `query:"WodID" validate:"required"`
+	OpCode string `query:"OpCode" validate:"required"`
 }
 
 // WorkOrderListNewOrChangedRequest represents a request to list new or changed work orders
@@ -160,8 +169,46 @@ type WorkOrderListTimeEntryRequest struct {
 	PageSize int    `query:"pageSize" validate:"required,min=1,max=100"`
 }
 
-// RetrieveAllOperationsRequest represents a request to retrieve all operation codes with pagination
+// RetrieveAllOperationsRequest represents a request to retrieve all operation codes with pagination and filters
 type RetrieveAllOperationsRequest struct {
-	Page     int `json:"page" validate:"required,min=0"`
-	PageSize int `json:"pageSize" validate:"required,min=1,max=1000"`
+	Page         int    `json:"page" validate:"required,min=0"`
+	PageSize     int    `json:"pageSize" validate:"required,min=1,max=1000"`
+	OpCode       string `json:"opCode,omitempty"`
+	CategoryCode string `json:"categoryCode,omitempty"`
+	Desc         string `json:"desc,omitempty"`
+}
+
+// SearchAllOperationsRequest represents a request to search for operation codes
+type SearchAllOperationsRequest struct {
+	SearchString string `json:"searchString" validate:"required"`
+	DirectHit    bool   `json:"directHit"`
+}
+
+// SubmitWorkOrderSubletEntryRequest represents a request to submit a sublet entry for a work order
+type SubmitWorkOrderSubletEntryRequest struct {
+	WorkOrderId         string  `json:"workOrderId" validate:"required"`
+	OpCode              string  `json:"opCode" validate:"required"`
+	VendorId            string  `json:"vendorId" validate:"required"`
+	PurchaseDate        string  `json:"purchaseDate" validate:"required"`
+	PartsPrice          float64 `json:"partsPrice"`
+	PartsCost           float64 `json:"partsCost"`
+	LaborPrice          float64 `json:"laborPrice"`
+	LaborCost           float64 `json:"laborCost"`
+	Description         string  `json:"description,omitempty"`
+	SubletDiscount      float64 `json:"subletDiscount"`
+	SubletLaborDiscount float64 `json:"subletLaborDiscount"`
+	LocationCode        string  `json:"locationCode,omitempty"`
+	Department          string  `json:"department,omitempty"`
+}
+
+// RetrieveWorkOrderLaborDetailRequest represents a request to retrieve labor detail for a work order
+type RetrieveWorkOrderLaborDetailRequest struct {
+	WorkOrderId string `query:"workOrderId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
+}
+
+// RetrieveWorkOrderPartsRequest represents a request to retrieve parts for a work order
+type RetrieveWorkOrderPartsRequest struct {
+	WorkOrderId string `query:"workOrderId" validate:"required"`
+	Opcode      string `query:"opcode,omitempty"`
 }

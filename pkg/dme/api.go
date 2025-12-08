@@ -36,6 +36,50 @@ func (c *Client) ListLocations(ctx context.Context, organizationID uuid.UUID, sy
 	return result, nil
 }
 
+// ListDepartments retrieves a list of departments
+func (c *Client) ListDepartments(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Department, error) {
+	var result []Department
+	endpoint := "/Departments/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list departments: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveCustomerQuotes retrieves customer quotes for Unit Sales module
+func (c *Client) RetrieveCustomerQuotes(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
+	var result []CustomerContract
+	endpoint := fmt.Sprintf("/UnitSales/RetrieveCustomerQuotes?CustomerId=%s", customerID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customer quotes: %w", err)
+	}
+
+	return result, nil
+}
+
 // ListClerks retrieves a list of system clerks (users)
 func (c *Client) ListClerks(ctx context.Context, organizationID uuid.UUID, systemID string, includeInactive bool) ([]Clerk, error) {
 	var result []Clerk
@@ -83,6 +127,28 @@ func (c *Client) RetrieveClerk(ctx context.Context, clerkID string, organization
 	}
 
 	return &result, nil
+}
+
+// RetrieveScheduleLabels retrieves the list of schedule labels configured in the system
+func (c *Client) RetrieveScheduleLabels(ctx context.Context, organizationID uuid.UUID, systemID string) ([]ScheduleLabel, error) {
+	var result []ScheduleLabel
+	endpoint := "/Service/Schedule/Labels"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve schedule labels: %w", err)
+	}
+
+	return result, nil
 }
 
 // -----
@@ -174,6 +240,103 @@ func (c *Client) CustomersListShort(ctx context.Context, page int, pageSize int,
 	}
 
 	return &result, nil
+}
+
+// RetrieveCustomersFiltered retrieves a list of customers with optional filters
+func (c *Client) RetrieveCustomersFiltered(ctx context.Context, lastModifiedDate string, emailAddress string, organizationID uuid.UUID, systemID string) ([]Customer, error) {
+	var result []Customer
+
+	// Build endpoint with optional query parameters
+	endpoint := "/Customers/RetrieveCustomers?"
+	params := []string{}
+
+	if lastModifiedDate != "" {
+		params = append(params, fmt.Sprintf("LastModifiedDate=%s", lastModifiedDate))
+	}
+
+	if emailAddress != "" {
+		params = append(params, fmt.Sprintf("EmailAddress=%s", emailAddress))
+	}
+
+	// Join parameters with &
+	if len(params) > 0 {
+		endpoint += strings.Join(params, "&")
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customers with filters: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveCustomersPaginated retrieves customers with category codes in a paginated format
+// Used for esignature and mass notification features
+func (c *Client) RetrieveCustomersPaginated(ctx context.Context, page, pageSize int, listName, lastModifiedDate, emailAddress string, organizationID uuid.UUID, systemID string) (*CustomerWithCategoryCodesPage, error) {
+	var result CustomerWithCategoryCodesPage
+
+	// Build endpoint with query parameters
+	endpoint := fmt.Sprintf("/Customers/RetrieveCustomersPaginated?Page=%d&PageSize=%d", page, pageSize)
+
+	if listName != "" {
+		endpoint += fmt.Sprintf("&ListName=%s", listName)
+	}
+
+	if lastModifiedDate != "" {
+		endpoint += fmt.Sprintf("&LastModifiedDate=%s", lastModifiedDate)
+	}
+
+	if emailAddress != "" {
+		endpoint += fmt.Sprintf("&EmailAddress=%s", emailAddress)
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customers paginated: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveCustomerContracts retrieves customer contracts for Unit Sales module
+func (c *Client) RetrieveCustomerContracts(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) ([]CustomerContract, error) {
+	var result []CustomerContract
+	endpoint := fmt.Sprintf("/UnitSales/RetrieveCustomerContracts?CustomerId=%s", customerID)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve customer contracts: %w", err)
+	}
+
+	return result, nil
 }
 
 // UpdateCustomer updates a customer
@@ -349,6 +512,75 @@ func (c *Client) SearchBoats(ctx context.Context, searchTerm string, directHit b
 	return result, nil
 }
 
+// BoatsListNewOrChanged retrieves boats created or changed after a specific date with pagination
+func (c *Client) BoatsListNewOrChanged(ctx context.Context, lastUpdate string, page int, pageSize int, listName string, organizationID uuid.UUID, systemID string) (*BoatList, error) {
+	var result BoatList
+
+	// Build endpoint with query parameters
+	endpoint := fmt.Sprintf("/Boats/ListNewOrChanged?LastUpdate=%s&Page=%d&PageSize=%d", lastUpdate, page, pageSize)
+	if listName != "" {
+		endpoint += fmt.Sprintf("&ListName=%s", listName)
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list new or changed boats: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveBoatsFiltered retrieves boats with optional filters
+func (c *Client) RetrieveBoatsFiltered(ctx context.Context, customerID string, lastUpdateDate string, hasInsurance bool, organizationID uuid.UUID, systemID string) ([]Boat, error) {
+	var result []Boat
+
+	// Build endpoint with optional query parameters
+	endpoint := "/Boats/RetrieveBoats?"
+	params := []string{}
+
+	if customerID != "" {
+		params = append(params, fmt.Sprintf("CustomerId=%s", customerID))
+	}
+
+	if lastUpdateDate != "" {
+		params = append(params, fmt.Sprintf("LastUpdateDate=%s", lastUpdateDate))
+	}
+
+	if hasInsurance {
+		params = append(params, "HasInsurance=true")
+	}
+
+	// Join parameters with &
+	if len(params) > 0 {
+		endpoint += strings.Join(params, "&")
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve boats with filters: %w", err)
+	}
+
+	return result, nil
+}
+
 // UpdateBoat updates a boat
 func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationID uuid.UUID, systemID string) (*Boat, error) {
 	var result BoatCreateUpdateResponse
@@ -358,6 +590,13 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	// Initialize all array fields if they are null
 	if boat.Motors == nil {
 		boat.Motors = []Motor{}
+	}
+	// Ensure Drives and Generators are present to satisfy DME validation
+	if boat.Drives == nil {
+		boat.Drives = []Drive{}
+	}
+	if boat.Generators == nil {
+		boat.Generators = []Generator{}
 	}
 
 	if boat.BoatDescriptionCodes == nil {
@@ -378,14 +617,12 @@ func (c *Client) UpdateBoat(ctx context.Context, boat *BoatUpdate, organizationI
 	// Initialize Slip if it's nil
 	if boat.Slip == (Slip{}) {
 		boat.Slip = Slip{
-			LastModifedDate: time.Now().Format("2000-01-01T00:00:00"),
+			LastModifedDate: time.Now().Format("2006-01-02T15:04:05"),
 		}
 	}
 
 	// Set LastModified if empty
-	if boat.LastModified == "" {
-		boat.LastModified = time.Now().Format("2000-01-01T00:00:00")
-	}
+	boat.LastModified = time.Now().Format("2006-01-02T15:04:05")
 
 	err := c.DoJSONRequest(
 		ctx,
@@ -412,9 +649,15 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 	var result BoatCreateUpdateResponse
 	endpoint := "/DockMaster/Boats/UpdateBoat"
 
-	// Initialize empty arrays if nil
+	// Initialize empty arrays if nil to satisfy DME validation
 	if boat.Motors == nil {
 		boat.Motors = []Motor{}
+	}
+	if boat.Drives == nil {
+		boat.Drives = []Drive{}
+	}
+	if boat.Generators == nil {
+		boat.Generators = []Generator{}
 	}
 
 	if boat.BoatDescriptionCodes == nil {
@@ -512,15 +755,15 @@ func (c *Client) CreateBoat(ctx context.Context, boat *BoatCreate, organizationI
 // -----
 
 // RetrieveInvoices retrieves invoices by IDs
-// func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) ([]InvoiceDetailed, error) {
-// 	var result []InvoiceDetailed
-// 	endpoint := "/AR/RetrieveInvoices"
-// 	err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, invoiceIDs, &result, organizationID, systemID, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to retrieve invoices: %w", err)
-// 	}
-// 	return result, nil
-// }
+func (c *Client) RetrieveInvoices(ctx context.Context, invoiceIDs []string, organizationID uuid.UUID, systemID string) ([]InvoiceDetailed, error) {
+	var result []InvoiceDetailed
+	endpoint := "/AR/RetrieveInvoices"
+	err := c.DoJSONRequest(ctx, http.MethodPost, endpoint, invoiceIDs, &result, organizationID, systemID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve invoices: %w", err)
+	}
+	return result, nil
+}
 
 // RetrieveCustomerInvoices retrieves invoices for a customer
 func (c *Client) RetrieveCustomerInvoices(ctx context.Context, customerID string, invoiceDate string, organizationID uuid.UUID, systemID string) ([]CustomerInvoiceInquiry, error) {
@@ -765,13 +1008,24 @@ func (c *Client) RetrieveWorkOrderOperations(ctx context.Context, page int, page
 }
 
 // RetrieveAllWorkOrderOperations retrieves all operation codes (not filtered by USE.ONLINE)
-func (c *Client) RetrieveAllWorkOrderOperations(ctx context.Context, page int, pageSize int, organizationID uuid.UUID, systemID string) (*OperationsListResponse, error) {
+func (c *Client) RetrieveAllWorkOrderOperations(ctx context.Context, page int, pageSize int, opCode string, categoryCode string, desc string, organizationID uuid.UUID, systemID string) (*OperationsListResponse, error) {
 	var result OperationsListResponse
 	endpoint := "/Service/WorkOrders/RetrieveAllOperations"
 
-	payload := PaginationRequest{
-		Page:     page,
-		PageSize: pageSize,
+	payload := map[string]interface{}{
+		"page":     page,
+		"pageSize": pageSize,
+	}
+
+	// Add optional filter parameters if provided
+	if opCode != "" {
+		payload["opCode"] = opCode
+	}
+	if categoryCode != "" {
+		payload["categoryCode"] = categoryCode
+	}
+	if desc != "" {
+		payload["desc"] = desc
 	}
 
 	err := c.DoJSONRequest(
@@ -789,6 +1043,32 @@ func (c *Client) RetrieveAllWorkOrderOperations(ctx context.Context, page int, p
 	}
 
 	return &result, nil
+}
+
+// SearchAllOperations searches for operation codes by search string
+func (c *Client) SearchAllOperations(ctx context.Context, searchString string, directHit bool, organizationID uuid.UUID, systemID string) ([]map[string]interface{}, error) {
+	var result []map[string]interface{}
+	endpoint := "/Service/WorkOrders/RetrieveAllOperations/Search"
+
+	params := make(map[string]string)
+	params["SearchString"] = searchString
+	params["DirectHit"] = fmt.Sprintf("%t", directHit)
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search operations: %w", err)
+	}
+
+	return result, nil
 }
 
 // RetrieveCompletedWorkOrders retrieves work orders completed on a specific date
@@ -852,10 +1132,7 @@ func (c *Client) RetrieveWorkOrderParts(ctx context.Context, workOrderID string,
 
 	params := map[string]string{
 		"WorkOrderId": workOrderID,
-	}
-
-	if opcode != "" {
-		params["Opcode"] = opcode
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
 	}
 
 	endpoint := "/Service/WorkOrders/RetrieveParts"
@@ -1008,6 +1285,72 @@ func (c *Client) SubmitWorkOrderTimeEntry(ctx context.Context, timeEntry map[str
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to submit work order time entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitWorkOrderSubletEntry submits a sublet entry for a work order
+func (c *Client) SubmitWorkOrderSubletEntry(ctx context.Context, subletEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/WorkOrders/SubmitSubletEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		subletEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit work order sublet entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitEstimateSubletEntry submits a sublet entry for an estimate
+func (c *Client) SubmitEstimateSubletEntry(ctx context.Context, subletEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Estimates/SubmitSubletEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		subletEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit estimate sublet entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitEstimatePartEntry submits a part entry for an estimate
+func (c *Client) SubmitEstimatePartEntry(ctx context.Context, partEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Estimates/SubmitPartEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		partEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit estimate part entry: %w", err)
 	}
 
 	return &result, nil
@@ -1177,10 +1520,7 @@ func (c *Client) RetrieveEstimateParts(ctx context.Context, estimateID string, o
 
 	params := map[string]string{
 		"EstimatesId": estimateID,
-	}
-
-	if opcode != "" {
-		params["Opcode"] = opcode
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
 	}
 
 	endpoint := "/Service/Estimates/RetrieveParts"
@@ -1273,7 +1613,7 @@ func (c *Client) DeleteEstimateOperation(ctx context.Context, estimateId string,
 	var result DeleteOperationResponse
 
 	// Build the endpoint with query parameters directly
-	endpoint := fmt.Sprintf("/Service/Estimates/DeleteOperation?WorkOrder=%s&Operation=%s",
+	endpoint := fmt.Sprintf("/Service/Estimates/DeleteOperation?EstimateId=%s&Operation=%s",
 		estimateId, operationCode)
 
 	// Make the request with POST method and query params in URL
@@ -2230,4 +2570,326 @@ type BatchSubmissionResponse struct {
 	SubmittedAt  time.Time `json:"submittedAt"`
 	TotalAmount  float64   `json:"totalAmount"`
 	ReceiptCount int       `json:"receiptCount"`
+}
+
+// -----
+// Vendor API
+// -----
+
+// ListVendors retrieves a list of all vendors
+func (c *Client) ListVendors(ctx context.Context, organizationID uuid.UUID, systemID string) ([]Vendor, error) {
+	var result []Vendor
+	endpoint := "/Vendors/List"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vendors: %w", err)
+	}
+
+	return result, nil
+}
+
+// SearchVendors searches for vendors based on search string
+func (c *Client) SearchVendors(ctx context.Context, searchString string, directHit bool, organizationID uuid.UUID, systemID string) ([]VendorSearchResult, error) {
+	var result []VendorSearchResult
+	endpoint := "/Vendors/Search"
+
+	params := map[string]string{
+		"SearchString": searchString,
+		"DirectHit":    fmt.Sprintf("%t", directHit),
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search vendors: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveVendor retrieves a single vendor by ID
+func (c *Client) RetrieveVendor(ctx context.Context, vendorID string, organizationID uuid.UUID, systemID string) (*Vendor, error) {
+	var result Vendor
+	endpoint := "/Vendors/RetrieveVendor"
+
+	params := map[string]string{
+		"VendorId": vendorID,
+	}
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve vendor: %w", err)
+	}
+
+	return &result, nil
+}
+
+// NextReferenceNumber retrieves the next AR reference number for a customer
+func (c *Client) NextReferenceNumber(ctx context.Context, customerID string, organizationID uuid.UUID, systemID string) (string, error) {
+	// The DME endpoint returns the next available AR reference number for a given customer
+	endpoint := fmt.Sprintf("/AR/NextReferenceNumber?CustomerId=%s", customerID)
+
+	// Decode into a generic map to be resilient to response shape differences
+	var result map[string]interface{}
+	if err := c.DoJSONRequest(ctx, http.MethodGet, endpoint, nil, &result, organizationID, systemID, nil); err != nil {
+		return "", fmt.Errorf("failed to retrieve next reference number: %w", err)
+	}
+
+	// Try common keys
+	keys := []string{"referenceNumber", "ReferenceNumber", "reference", "Reference"}
+	for _, k := range keys {
+		if v, ok := result[k]; ok {
+			if s, ok := v.(string); ok && s != "" {
+				return s, nil
+			}
+		}
+	}
+
+	// If the API returned a bare string, attempt to handle that as well
+	if v, ok := result["value"]; ok {
+		if s, ok := v.(string); ok && s != "" {
+			return s, nil
+		}
+	}
+
+	return "", fmt.Errorf("reference number not found in response")
+}
+
+// RetrievePayTypes retrieves available pay types from DME
+func (c *Client) RetrievePayTypes(ctx context.Context, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/General/PayTypes/RetrievePayTypes"
+
+	if err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	); err != nil {
+		return nil, fmt.Errorf("failed to retrieve pay types: %w", err)
+	}
+
+	return &result, nil
+}
+
+// SubmitEstimateLaborEntry submits a labor entry for an estimate
+func (c *Client) SubmitEstimateLaborEntry(ctx context.Context, laborEntry map[string]interface{}, organizationID uuid.UUID, systemID string) (*interface{}, error) {
+	var result interface{}
+	endpoint := "/Service/Estimates/SubmitLaborEntry"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodPost,
+		endpoint,
+		laborEntry,
+		&result,
+		organizationID,
+		systemID,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit estimate labor entry: %w", err)
+	}
+
+	return &result, nil
+}
+
+// RetrieveEstimateLabor retrieves labor entries for an estimate
+func (c *Client) RetrieveEstimateLabor(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]LaborEntry, error) {
+	var result []LaborEntry
+
+	params := map[string]string{
+		"EstimatesId": estimateID,
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
+	}
+
+	endpoint := "/Service/Estimates/RetrieveLabor"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate labor: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveWorkOrderLaborDetail retrieves labor detail for a work order
+func (c *Client) RetrieveWorkOrderLaborDetail(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]LaborEntry, error) {
+	var result []LaborEntry
+
+	params := map[string]string{
+		"WorkOrderId": workOrderID,
+		"OpCode":      opcode, // DockMaster API requires this parameter even if empty
+	}
+
+	endpoint := "/Service/WorkOrderLaborDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order labor detail: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveWorkOrderPartDetail retrieves detailed part information for a work order operation
+func (c *Client) RetrieveWorkOrderPartDetail(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderPartDetail, error) {
+	var result []WorkOrderPartDetail
+
+	params := map[string]string{
+		"WodID":  workOrderID,
+		"OpCode": opcode,
+	}
+
+	endpoint := "/Service/WorkOrderPartDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order part detail: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveWorkOrderLaborDetailRecords retrieves comprehensive individual labor detail records for a work order operation
+func (c *Client) RetrieveWorkOrderLaborDetailRecords(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderLaborDetailRecord, error) {
+	var result []WorkOrderLaborDetailRecord
+
+	params := map[string]string{
+		"WorkOrderId": workOrderID,
+		"OpCode":      opcode,
+	}
+
+	endpoint := "/Service/WorkOrderLaborDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order labor detail records: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveEstimatePartDetail retrieves detailed part information for an estimate operation
+func (c *Client) RetrieveEstimatePartDetail(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderPartDetail, error) {
+	var result []WorkOrderPartDetail
+
+	params := map[string]string{
+		"WodID":    estimateID,
+		"OpCode":   opcode,
+		"Estimate": "true",
+	}
+
+	endpoint := "/Service/WorkOrderPartDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate part detail: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveEstimateLaborDetailRecords retrieves comprehensive individual labor detail records for an estimate operation
+func (c *Client) RetrieveEstimateLaborDetailRecords(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderLaborDetailRecord, error) {
+	var result []WorkOrderLaborDetailRecord
+
+	params := map[string]string{
+		"WorkOrderId": estimateID,
+		"OpCode":      opcode,
+	}
+
+	endpoint := "/Service/WorkOrderLaborDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate labor detail records: %w", err)
+	}
+
+	return result, nil
 }

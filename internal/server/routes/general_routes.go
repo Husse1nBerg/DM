@@ -19,4 +19,7 @@ func RegisterGeneralRoutes(server *s.Server, permissionProtected *echo.Group) {
 
 	// Location routes
 	general.GET("/locations", generalHandler.ListLocationsHandler)
+
+	// Department routes
+	general.GET("/departments", generalHandler.ListDepartmentsHandler)
 }
