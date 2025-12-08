@@ -2808,3 +2808,88 @@ func (c *Client) RetrieveWorkOrderPartDetail(ctx context.Context, workOrderID st
 
 	return result, nil
 }
+
+// RetrieveWorkOrderLaborDetailRecords retrieves comprehensive individual labor detail records for a work order operation
+func (c *Client) RetrieveWorkOrderLaborDetailRecords(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderLaborDetailRecord, error) {
+	var result []WorkOrderLaborDetailRecord
+
+	params := map[string]string{
+		"WorkOrderId": workOrderID,
+		"OpCode":      opcode,
+	}
+
+	endpoint := "/Service/WorkOrderLaborDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order labor detail records: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveEstimatePartDetail retrieves detailed part information for an estimate operation
+func (c *Client) RetrieveEstimatePartDetail(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderPartDetail, error) {
+	var result []WorkOrderPartDetail
+
+	params := map[string]string{
+		"WodID":    estimateID,
+		"OpCode":   opcode,
+		"Estimate": "true",
+	}
+
+	endpoint := "/Service/WorkOrderPartDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate part detail: %w", err)
+	}
+
+	return result, nil
+}
+
+// RetrieveEstimateLaborDetailRecords retrieves comprehensive individual labor detail records for an estimate operation
+func (c *Client) RetrieveEstimateLaborDetailRecords(ctx context.Context, estimateID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderLaborDetailRecord, error) {
+	var result []WorkOrderLaborDetailRecord
+
+	params := map[string]string{
+		"WorkOrderId": estimateID,
+		"OpCode":      opcode,
+	}
+
+	endpoint := "/Service/WorkOrderLaborDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve estimate labor detail records: %w", err)
+	}
+
+	return result, nil
+}

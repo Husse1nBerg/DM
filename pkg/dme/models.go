@@ -1322,3 +1322,29 @@ type WorkOrderLaborDetail struct {
 	TotalCost      float64      `json:"totalCost"`
 	LaborEntries   []LaborEntry `json:"laborEntries"`
 }
+
+// WorkOrderLaborDetailRecord represents comprehensive individual labor detail record (from DockMaster_API WorkOrderLaborDetail endpoint)
+type WorkOrderLaborDetailRecord struct {
+	WorkOrderDetailID    string   `json:"work_order_detail_id"`
+	WorkOrderID          string   `json:"work_order_id"`
+	OperationCode        string   `json:"operation_code"`
+	Department           string   `json:"department"`
+	LineNumber           *int     `json:"line_number"`
+	LaborDate            *string  `json:"labor_date"`
+	LaborPriceRate       *float64 `json:"labor_price_rate"`
+	LaborCostRate        *float64 `json:"labor_cost_rate"`
+	LaborEmployee        string   `json:"labor_employee"`
+	LaborStartTime       string   `json:"labor_start_time"`
+	LaborStopTime        string   `json:"labor_stop_time"`
+	LaborPriceExtend     *float64 `json:"labor_price_extend"`
+	LaborHours           *float64 `json:"labor_hours"`
+	LaborBilledDate      *string  `json:"labor_billed_date"`
+	LaborTechComments    string   `json:"labor_tech_comments"`
+	LaborCostExtension   *float64 `json:"labor_cost_extension"`
+	LaborPriceFactor     string   `json:"labor_price_factor"`
+	LaborDiscount        *float64 `json:"labor_discount"`
+	LaborInvoiceID       string   `json:"labor_invoice_id"`
+	LaborCostFactor      string   `json:"labor_cost_factor"`
+	LaborEffectiveHours  *float64 `json:"labor_effective_hours"`
+	UID                  *string  `json:"labor_uid"`
+}

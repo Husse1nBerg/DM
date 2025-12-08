@@ -298,6 +298,30 @@ func ConvertEstimateParts(dmeResponse []dme.WorkOrderDetailPartEntry) *EstimateP
 	}
 }
 
+// EstimatePartDetailResponse represents detailed part information for an estimate operation
+type EstimatePartDetailResponse struct {
+	Data []dme.WorkOrderPartDetail `json:"data"`
+}
+
+// ConvertEstimatePartDetail converts DME response to EstimatePartDetailResponse
+func ConvertEstimatePartDetail(dmeResponse []dme.WorkOrderPartDetail) *EstimatePartDetailResponse {
+	return &EstimatePartDetailResponse{
+		Data: dmeResponse,
+	}
+}
+
+// EstimateLaborDetailResponse represents detailed labor information for an estimate operation
+type EstimateLaborDetailResponse struct {
+	Data []dme.WorkOrderLaborDetailRecord `json:"data"`
+}
+
+// ConvertEstimateLaborDetail converts DME response to EstimateLaborDetailResponse
+func ConvertEstimateLaborDetail(dmeResponse []dme.WorkOrderLaborDetailRecord) *EstimateLaborDetailResponse {
+	return &EstimateLaborDetailResponse{
+		Data: dmeResponse,
+	}
+}
+
 // EstimateLaborResponse represents a list of labor entries for an estimate
 type EstimateLaborResponse struct {
 	Data []dme.LaborEntry `json:"data"`

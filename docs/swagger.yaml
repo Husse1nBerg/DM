@@ -1337,6 +1337,53 @@ definitions:
       workOrderId:
         type: string
     type: object
+  dme.WorkOrderLaborDetailRecord:
+    properties:
+      department:
+        type: string
+      labor_billed_date:
+        type: string
+      labor_cost_extension:
+        type: number
+      labor_cost_factor:
+        type: string
+      labor_cost_rate:
+        type: number
+      labor_date:
+        type: string
+      labor_discount:
+        type: number
+      labor_effective_hours:
+        type: number
+      labor_employee:
+        type: string
+      labor_hours:
+        type: number
+      labor_invoice_id:
+        type: string
+      labor_price_extend:
+        type: number
+      labor_price_factor:
+        type: string
+      labor_price_rate:
+        type: number
+      labor_start_time:
+        type: string
+      labor_stop_time:
+        type: string
+      labor_tech_comments:
+        type: string
+      labor_uid:
+        type: string
+      line_number:
+        type: integer
+      operation_code:
+        type: string
+      work_order_detail_id:
+        type: string
+      work_order_id:
+        type: string
+    type: object
   dme.WorkOrderOperation:
     properties:
       approved:
@@ -4658,6 +4705,13 @@ definitions:
       result:
         type: string
     type: object
+  responses.EstimateLaborDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderLaborDetailRecord'
+        type: array
+    type: object
   responses.EstimateLaborResponse:
     properties:
       data:
@@ -4683,6 +4737,13 @@ definitions:
       total:
         example: 100
         type: integer
+    type: object
+  responses.EstimatePartDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderPartDetail'
+        type: array
     type: object
   responses.EstimatePartsResponse:
     properties:
@@ -6686,6 +6747,13 @@ definitions:
     properties:
       data:
         items: {}
+        type: array
+    type: object
+  responses.WorkOrderLaborDetailRecordsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderLaborDetailRecord'
         type: array
     type: object
   responses.WorkOrderLaborDetailResponse:
@@ -11132,6 +11200,41 @@ paths:
       summary: Submit estimate labor entry
       tags:
       - Estimates
+  /estimates/labor-detail-records:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves comprehensive individual labor detail records for a specific
+        estimate operation
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimateLaborDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate labor detail
+      tags:
+      - Estimates
   /estimates/labor-entries:
     get:
       consumes:
@@ -11193,6 +11296,40 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Submit estimate part entry
+      tags:
+      - Estimates
+  /estimates/part-detail:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed part information for a specific estimate operation
+      parameters:
+      - description: Estimate ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.EstimatePartDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve estimate part detail
       tags:
       - Estimates
   /estimates/parts:
@@ -17598,6 +17735,41 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Retrieve work order labor detail
+      tags:
+      - WorkOrders
+  /work-orders/labor-detail-records:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves comprehensive individual labor detail records for a specific
+        work order operation
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderLaborDetailRecordsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order labor detail records
       tags:
       - WorkOrders
   /work-orders/list:

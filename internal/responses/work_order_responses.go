@@ -451,3 +451,15 @@ func ConvertWorkOrderPartDetail(dmeResponse []dme.WorkOrderPartDetail) *WorkOrde
 		Data: dmeResponse,
 	}
 }
+
+// WorkOrderLaborDetailRecordsResponse represents comprehensive labor detail records for a work order operation
+type WorkOrderLaborDetailRecordsResponse struct {
+	Data []dme.WorkOrderLaborDetailRecord `json:"data"`
+}
+
+// ConvertWorkOrderLaborDetailRecords converts DME response to WorkOrderLaborDetailRecordsResponse
+func ConvertWorkOrderLaborDetailRecords(dmeResponse []dme.WorkOrderLaborDetailRecord) *WorkOrderLaborDetailRecordsResponse {
+	return &WorkOrderLaborDetailRecordsResponse{
+		Data: dmeResponse,
+	}
+}

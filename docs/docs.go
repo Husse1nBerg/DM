@@ -6631,6 +6631,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/estimates/labor-detail-records": {
+            "get": {
+                "description": "Retrieves comprehensive individual labor detail records for a specific estimate operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate labor detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimateLaborDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/estimates/labor-entries": {
             "get": {
                 "description": "Retrieves labor entries for a specific estimate",
@@ -6710,6 +6761,57 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.SubmitEstimatePartEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/estimates/part-detail": {
+            "get": {
+                "description": "Retrieves detailed part information for a specific estimate operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Estimates"
+                ],
+                "summary": "Retrieve estimate part detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Estimate ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.EstimatePartDetailResponse"
                         }
                     },
                     "400": {
@@ -16511,6 +16613,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/labor-detail-records": {
+            "get": {
+                "description": "Retrieves comprehensive individual labor detail records for a specific work order operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order labor detail records",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderLaborDetailRecordsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/list": {
             "get": {
                 "description": "Retrieves a paginated list of work orders",
@@ -19292,6 +19445,77 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workOrderId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dme.WorkOrderLaborDetailRecord": {
+            "type": "object",
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "labor_billed_date": {
+                    "type": "string"
+                },
+                "labor_cost_extension": {
+                    "type": "number"
+                },
+                "labor_cost_factor": {
+                    "type": "string"
+                },
+                "labor_cost_rate": {
+                    "type": "number"
+                },
+                "labor_date": {
+                    "type": "string"
+                },
+                "labor_discount": {
+                    "type": "number"
+                },
+                "labor_effective_hours": {
+                    "type": "number"
+                },
+                "labor_employee": {
+                    "type": "string"
+                },
+                "labor_hours": {
+                    "type": "number"
+                },
+                "labor_invoice_id": {
+                    "type": "string"
+                },
+                "labor_price_extend": {
+                    "type": "number"
+                },
+                "labor_price_factor": {
+                    "type": "string"
+                },
+                "labor_price_rate": {
+                    "type": "number"
+                },
+                "labor_start_time": {
+                    "type": "string"
+                },
+                "labor_stop_time": {
+                    "type": "string"
+                },
+                "labor_tech_comments": {
+                    "type": "string"
+                },
+                "labor_uid": {
+                    "type": "string"
+                },
+                "line_number": {
+                    "type": "integer"
+                },
+                "operation_code": {
+                    "type": "string"
+                },
+                "work_order_detail_id": {
+                    "type": "string"
+                },
+                "work_order_id": {
                     "type": "string"
                 }
             }
@@ -24027,6 +24251,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.EstimateLaborDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderLaborDetailRecord"
+                    }
+                }
+            }
+        },
         "responses.EstimateLaborResponse": {
             "type": "object",
             "properties": {
@@ -24062,6 +24297,17 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 100
+                }
+            }
+        },
+        "responses.EstimatePartDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderPartDetail"
+                    }
                 }
             }
         },
@@ -26972,6 +27218,17 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {}
+                }
+            }
+        },
+        "responses.WorkOrderLaborDetailRecordsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderLaborDetailRecord"
+                    }
                 }
             }
         },

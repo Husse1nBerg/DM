@@ -1631,3 +1631,58 @@ func (h *WorkOrderHandler) RetrieveWorkOrderPartDetail(c echo.Context) error {
 	response := responses.ConvertWorkOrderPartDetail(dmeResponse)
 	return c.JSON(http.StatusOK, response)
 }
+
+// @Summary Retrieve work order labor detail records
+// @Description Retrieves comprehensive individual labor detail records for a specific work order operation
+// @Tags WorkOrders
+// @Accept json
+// @Produce json
+// @Param WodID query string true "Work Order ID"
+// @Param OpCode query string true "Operation Code"
+// @Success 200 {object} responses.WorkOrderLaborDetailRecordsResponse
+// @Failure 400 {object} responses.Error
+// @Failure 500 {object} responses.Error
+// @Router /work-orders/labor-detail-records [get]
+func (h *WorkOrderHandler) RetrieveWorkOrderLaborDetailRecords(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := new(requests.WorkOrderPartDetailRequest) // Reuse same request structure
+	if err := c.Bind(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, err).JSON(c)
+	}
+
+	userToken := c.Get("user").(*jwt.Token)
+	claims := userToken.Claims.(*token.JwtCustomClaims)
+	userID := claims.ID
+	user, err := h.server.DB.Queries().GetUserByID(ctx, userID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get user: "+err.Error()).JSON(c)
+	}
+
+	marina, err := h.server.DB.Queries().GetMarinaByID(ctx, user.MarinaID)
+	if err != nil {
+		return responses.NewErrorResponse(http.StatusInternalServerError, "Failed to get marina: "+err.Error()).JSON(c)
+	}
+
+	orgID := marina.OrganizationID
+	systemID := marina.SystemID
+
+	if systemID == nil {
+		return responses.NewErrorResponse(http.StatusBadRequest, "System ID is required for DME operations").JSON(c)
+	}
+
+	dmeResponse, err := h.server.DME.RetrieveWorkOrderLaborDetailRecords(ctx, req.WodID, req.OpCode, orgID, *systemID)
+	if err != nil {
+		h.server.Logger.DesugarZap.Error("Failed to retrieve work order labor detail records",
+			zap.Error(err),
+			zap.String("workOrderId", req.WodID),
+			zap.String("opcode", req.OpCode))
+		return responses.NewErrorResponse(http.StatusInternalServerError, err).JSON(c)
+	}
+
+	response := responses.ConvertWorkOrderLaborDetailRecords(dmeResponse)
+	return c.JSON(http.StatusOK, response)
+}

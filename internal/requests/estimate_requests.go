@@ -139,3 +139,15 @@ type RetrieveEstimateLaborRequest struct {
 	EstimatesId string `query:"estimatesId" validate:"required"`
 	Opcode      string `query:"opcode,omitempty"`
 }
+
+// EstimatePartDetailRequest represents a request to retrieve detailed part information for an estimate operation
+type EstimatePartDetailRequest struct {
+	WodID  string `query:"WodID" validate:"required"`
+	OpCode string `query:"OpCode" validate:"required"`
+}
+
+// EstimateLaborDetailRequest represents a request to retrieve detailed labor information for an estimate operation
+type EstimateLaborDetailRequest struct {
+	WodID  string `query:"WodID" validate:"required"`
+	OpCode string `query:"OpCode" validate:"required"`
+}
