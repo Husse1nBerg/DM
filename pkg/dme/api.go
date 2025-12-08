@@ -2780,3 +2780,31 @@ func (c *Client) RetrieveWorkOrderLaborDetail(ctx context.Context, workOrderID s
 
 	return result, nil
 }
+
+// RetrieveWorkOrderPartDetail retrieves detailed part information for a work order operation
+func (c *Client) RetrieveWorkOrderPartDetail(ctx context.Context, workOrderID string, opcode string, organizationID uuid.UUID, systemID string) ([]WorkOrderPartDetail, error) {
+	var result []WorkOrderPartDetail
+
+	params := map[string]string{
+		"WodID":  workOrderID,
+		"OpCode": opcode,
+	}
+
+	endpoint := "/Service/WorkOrderPartDetail"
+
+	err := c.DoJSONRequest(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+		&result,
+		organizationID,
+		systemID,
+		params,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve work order part detail: %w", err)
+	}
+
+	return result, nil
+}

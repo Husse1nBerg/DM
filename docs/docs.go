@@ -16753,6 +16753,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/work-orders/part-detail": {
+            "get": {
+                "description": "Retrieves detailed part information for a specific work order operation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WorkOrders"
+                ],
+                "summary": "Retrieve work order part detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Work Order ID",
+                        "name": "WodID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Operation Code",
+                        "name": "OpCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkOrderPartDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/work-orders/parts": {
             "get": {
                 "description": "Retrieves part entries for a specific work order",
@@ -19334,6 +19385,83 @@ const docTemplate = `{
                 }
             }
         },
+        "dme.WorkOrderPartDetail": {
+            "type": "object",
+            "properties": {
+                "department": {
+                    "type": "string"
+                },
+                "line_number": {
+                    "type": "integer"
+                },
+                "operation_code": {
+                    "type": "string"
+                },
+                "part": {
+                    "type": "string"
+                },
+                "part_billed_date": {
+                    "type": "string"
+                },
+                "part_comment": {
+                    "type": "string"
+                },
+                "part_cost": {
+                    "type": "number"
+                },
+                "part_date": {
+                    "type": "string"
+                },
+                "part_desc": {
+                    "type": "string"
+                },
+                "part_discount": {
+                    "type": "number"
+                },
+                "part_extend": {
+                    "type": "number"
+                },
+                "part_invoice_id": {
+                    "type": "string"
+                },
+                "part_loc_code": {
+                    "type": "string"
+                },
+                "part_loc_pos": {
+                    "type": "integer"
+                },
+                "part_price": {
+                    "type": "number"
+                },
+                "part_qty": {
+                    "type": "number"
+                },
+                "part_rigged_acc": {
+                    "type": "boolean"
+                },
+                "part_serial_num": {
+                    "type": "string"
+                },
+                "part_tech": {
+                    "type": "string"
+                },
+                "pick_list_print": {
+                    "type": "boolean"
+                },
+                "special_order": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                },
+                "work_order_detail_id": {
+                    "type": "string"
+                },
+                "work_order_id": {
+                    "type": "string"
+                }
+            }
+        },
         "dme.WorkOrderSearch": {
             "type": "object",
             "properties": {
@@ -21088,7 +21216,13 @@ const docTemplate = `{
                         "$ref": "#/definitions/requests.OperationCode"
                     }
                 },
+                "status": {
+                    "type": "string"
+                },
                 "title": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -22630,7 +22764,13 @@ const docTemplate = `{
                         "$ref": "#/definitions/requests.OperationCode"
                     }
                 },
+                "status": {
+                    "type": "string"
+                },
                 "title": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 },
                 "woId": {
@@ -26907,6 +27047,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dme.WorkOrderOperation"
+                    }
+                }
+            }
+        },
+        "responses.WorkOrderPartDetailResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dme.WorkOrderPartDetail"
                     }
                 }
             }

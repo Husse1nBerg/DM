@@ -439,3 +439,15 @@ func ConvertWorkOrderParts(dmeResponse []dme.WorkOrderDetailPartEntry) *WorkOrde
 		Data: dmeResponse,
 	}
 }
+
+// WorkOrderPartDetailResponse represents detailed part information for a work order operation
+type WorkOrderPartDetailResponse struct {
+	Data []dme.WorkOrderPartDetail `json:"data"`
+}
+
+// ConvertWorkOrderPartDetail converts DME response to WorkOrderPartDetailResponse
+func ConvertWorkOrderPartDetail(dmeResponse []dme.WorkOrderPartDetail) *WorkOrderPartDetailResponse {
+	return &WorkOrderPartDetailResponse{
+		Data: dmeResponse,
+	}
+}

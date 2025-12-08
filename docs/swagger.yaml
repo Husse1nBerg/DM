@@ -1396,6 +1396,57 @@ definitions:
       techDesc:
         type: string
     type: object
+  dme.WorkOrderPartDetail:
+    properties:
+      department:
+        type: string
+      line_number:
+        type: integer
+      operation_code:
+        type: string
+      part:
+        type: string
+      part_billed_date:
+        type: string
+      part_comment:
+        type: string
+      part_cost:
+        type: number
+      part_date:
+        type: string
+      part_desc:
+        type: string
+      part_discount:
+        type: number
+      part_extend:
+        type: number
+      part_invoice_id:
+        type: string
+      part_loc_code:
+        type: string
+      part_loc_pos:
+        type: integer
+      part_price:
+        type: number
+      part_qty:
+        type: number
+      part_rigged_acc:
+        type: boolean
+      part_serial_num:
+        type: string
+      part_tech:
+        type: string
+      pick_list_print:
+        type: boolean
+      special_order:
+        type: string
+      uid:
+        type: string
+      work_order_detail_id:
+        type: string
+      work_order_id:
+        type: string
+    type: object
   dme.WorkOrderSearch:
     properties:
       boat:
@@ -2631,7 +2682,11 @@ definitions:
         items:
           $ref: '#/definitions/requests.OperationCode'
         type: array
+      status:
+        type: string
       title:
+        type: string
+      type:
         type: string
     type: object
   requests.FindPartsRequest:
@@ -3708,7 +3763,11 @@ definitions:
         items:
           $ref: '#/definitions/requests.OperationCode'
         type: array
+      status:
+        type: string
       title:
+        type: string
+      type:
         type: string
       woId:
         type: string
@@ -6679,6 +6738,13 @@ definitions:
       data:
         items:
           $ref: '#/definitions/dme.WorkOrderOperation'
+        type: array
+    type: object
+  responses.WorkOrderPartDetailResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dme.WorkOrderPartDetail'
         type: array
     type: object
   responses.WorkOrderPartEntryResponse:
@@ -17694,6 +17760,40 @@ paths:
           schema:
             $ref: '#/definitions/responses.Error'
       summary: Search all work order operations
+      tags:
+      - WorkOrders
+  /work-orders/part-detail:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed part information for a specific work order operation
+      parameters:
+      - description: Work Order ID
+        in: query
+        name: WodID
+        required: true
+        type: string
+      - description: Operation Code
+        in: query
+        name: OpCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkOrderPartDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Retrieve work order part detail
       tags:
       - WorkOrders
   /work-orders/parts:

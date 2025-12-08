@@ -893,6 +893,34 @@ type WorkOrderDetailPartEntry struct {
 	UID          string  `json:"uid"`
 }
 
+// WorkOrderPartDetail represents detailed part information for a work order operation
+type WorkOrderPartDetail struct {
+	UID                string   `json:"uid"`
+	WorkOrderDetailID  string   `json:"work_order_detail_id"`
+	WorkOrderID        string   `json:"work_order_id"`
+	OperationCode      string   `json:"operation_code"`
+	Department         string   `json:"department"`
+	LineNumber         *int     `json:"line_number"`
+	Part               string   `json:"part"`
+	PartQty            *float64 `json:"part_qty"`
+	PartPrice          *float64 `json:"part_price"`
+	PartCost           *float64 `json:"part_cost"`
+	PartExtend         *float64 `json:"part_extend"`
+	PartDate           *string  `json:"part_date"`
+	PartDesc           string   `json:"part_desc"`
+	PartTech           string   `json:"part_tech"`
+	PartLocCode        string   `json:"part_loc_code"`
+	PartLocPos         *int     `json:"part_loc_pos"`
+	PartBilledDate     *string  `json:"part_billed_date"`
+	SpecialOrder       string   `json:"special_order"`
+	PartComment        string   `json:"part_comment"`
+	PartDiscount       *float64 `json:"part_discount"`
+	PartSerialNum      string   `json:"part_serial_num"`
+	PartInvoiceID      string   `json:"part_invoice_id"`
+	PickListPrint      *bool    `json:"pick_list_print"`
+	PartRiggedAcc      *bool    `json:"part_rigged_acc"`
+}
+
 // SubletPurchaseOrder represents a sublet purchase order
 type SubletPurchaseOrder struct {
 	ID              string  `json:"id"`

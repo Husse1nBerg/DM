@@ -118,6 +118,12 @@ type WorkOrderDeleteOperationRequest struct {
 	Operation string `json:"operation" query:"Operation" validate:"required"`
 }
 
+// WorkOrderPartDetailRequest represents a request to retrieve detailed part information for a work order operation
+type WorkOrderPartDetailRequest struct {
+	WodID  string `query:"WodID" validate:"required"`
+	OpCode string `query:"OpCode" validate:"required"`
+}
+
 // WorkOrderListNewOrChangedRequest represents a request to list new or changed work orders
 type WorkOrderListNewOrChangedRequest struct {
 	AsOfDate string `query:"AsOfDate" validate:"required"`
