@@ -23,6 +23,7 @@ type Config struct {
 	SendGrid        SendGridConfig
 	Telgorithm      TelgorithmConfig
 	Adyen           AdyenConfig
+	Sadie           SadieConfig
 }
 
 func New() *Config {
@@ -56,6 +57,7 @@ func New() *Config {
 		SendGrid:        LoadSendGridConfig(),
 		Telgorithm:      LoadTelgorithmConfig(),
 		Adyen:           LoadAdyenConfig(),
+		Sadie:           LoadSadieConfig(),
 	}
 }
 

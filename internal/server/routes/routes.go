@@ -55,6 +55,22 @@ func RegisterRoutes(s *s.Server) {
 	// Base Routes
 	s.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
+	// SADIE routes (at root level, not under /api/v1)
+	RegisterSadieRoutes(s, s.Echo)
+
+	// Root-level auth routes (for backward compatibility)
+	// These routes are also available at /api/v1/auth/*
+	authHandler := h.NewAuthHandler(s)
+	userHandler := h.NewUserHandler(s)
+	rootAuth := s.Echo.Group("/auth")
+	rootAuth.POST("/register", authHandler.Register)
+	rootAuth.POST("/login", authHandler.Login)
+	rootAuth.POST("/refresh", authHandler.RefreshToken)
+
+	rootUser := s.Echo.Group("/user")
+	rootUser.POST("/forgot-password", userHandler.ForgotPassword)
+	rootUser.POST("/recover-password", userHandler.RecoverPassword)
+
 	// Versioned Routes
 	base := s.Echo.Group("/api/v1")
 
@@ -112,6 +128,61 @@ func RegisterRoutes(s *s.Server) {
 	if permissionMiddleware != nil {
 		permissionProtected.Use(permissionMiddleware.RequirePermission())
 	}
+
+	// Root-level protected routes (for backward compatibility)
+	// These routes are also available at /api/v1/user/profile and /api/v1/customers/list
+	rootProtected := s.Echo.Group("")
+	rootConfig := echojwt.Config{
+		NewClaimsFunc: func(_ echo.Context) jwt.Claims {
+			return new(token.JwtCustomClaims)
+		},
+		SigningKey: []byte(s.Config.Auth.AccessSecret),
+		Skipper: func(c echo.Context) bool {
+			// Skip JWT validation for public routes
+			path := c.Request().URL.Path
+			// Skip auth routes (they're public)
+			if strings.HasPrefix(path, "/auth/") || strings.HasPrefix(path, "/api/v1/auth/") {
+				return true
+			}
+			// Skip health and swagger routes
+			if path == "/health" || path == "/api/v1/health" || strings.HasPrefix(path, "/swagger/") {
+				return true
+			}
+			// Only require JWT for the specific root-level routes we're adding
+			if path != "/user/profile" && path != "/customers/list" {
+				return true
+			}
+			return false
+		},
+		ErrorHandler: func(c echo.Context, err error) error {
+			s.Logger.Zap.Error("JWT validation failed", zap.Error(err))
+			return responses.NewErrorResponse(http.StatusUnauthorized, "Token validation failed").JSON(c)
+		},
+		TokenLookup: "header:Authorization:Bearer ",
+		ParseTokenFunc: func(c echo.Context, auth string) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(auth, &token.JwtCustomClaims{}, func(t *jwt.Token) (interface{}, error) {
+				return []byte(s.Config.Auth.AccessSecret), nil
+			})
+			if err != nil {
+				return nil, err
+			}
+			if !token.Valid {
+				return nil, jwt.ErrTokenExpired
+			}
+			return token, nil
+		},
+	}
+	rootProtected.Use(echojwt.WithConfig(rootConfig))
+
+	rootPermissionProtected := rootProtected.Group("")
+	if permissionMiddleware != nil {
+		rootPermissionProtected.Use(permissionMiddleware.RequirePermission())
+	}
+
+	// Register root-level user and customer routes
+	customerHandler := h.NewCustomerHandler(s)
+	rootPermissionProtected.GET("/user/profile", userHandler.GetMyUserHandler)
+	rootPermissionProtected.GET("/customers/list", customerHandler.ListCustomersByPage)
 
 	// Invite routes (public and protected)
 	RegisterInviteRoutes(s, base, permissionProtected)
